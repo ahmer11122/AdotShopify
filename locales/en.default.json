@@ -4,6 +4,19 @@
     "not_found": "Page not found.",
     "back_to_shopping": "Back to shopping"
   },
+  "general": {
+    "from": "From {{ price }}"
+  },
+  "products": {
+    "product": {
+      "on_sale": "Sale",
+      "sold_out": "Sold out",
+      "price": {
+        "regular_price": "Regular price",
+        "sale_price": "Sale price"
+      }
+    }
+  },
   "blog": {
     "article_comments": "Comments",
     "article_metadata_html": "{{ date }} by {{ author }}",
@@ -28,7 +41,8 @@
     }
   },
   "collections": {
-    "title": "Collections"
+    "title": "Collections",
+    "no_matches": "No products found in this collection."
   },
   "gift_card": {
     "add_to_apple_wallet": "Add to Apple Wallet",

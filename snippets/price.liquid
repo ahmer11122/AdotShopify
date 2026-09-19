@@ -1,0 +1,109 @@
+{% doc %}
+  Renders a product or variant price.
+
+  @param {product} [product] - The product object
+  @param {variant} [variant] - Optional specific variant object
+  @param {boolean} [use_variant] - Whether to use the selected_or_first_available_variant price
+  @param {boolean} [show_badges] - Whether to show on-sale or sold-out badges
+  @param {string} [class] - Optional extra class
+{% enddoc %}
+
+{% liquid
+  if variant
+    assign target = variant
+  elsif use_variant
+    assign target = product.selected_or_first_available_variant
+  else
+    assign target = product
+  endif
+
+  assign compare_at_price = target.compare_at_price
+  assign price = target.price | default: 1999
+  assign available = target.available
+  if available == nil
+    assign available = true
+  endif
+
+  assign money_price = price | money
+
+  if target == product and product.price_varies
+    assign money_price = 'general.from' | t: price: money_price | default: money_price
+  endif
+%}
+
+<div class="price {% if compare_at_price > price %}price--on-sale{% endif %} {% unless available %}price--sold-out{% endunless %} {{ class }}">
+  <div class="price__container">
+    {% if compare_at_price > price %}
+      <span class="visually-hidden">{{ 'products.product.price.sale_price' | t | default: 'Sale price' }}</span>
+      <span class="price__item price__item--sale">{{ money_price }}</span>
+      <span class="visually-hidden">{{ 'products.product.price.regular_price' | t | default: 'Regular price' }}</span>
+      <s class="price__item price__item--regular">{{ compare_at_price | money }}</s>
+    {% else %}
+      <span class="visually-hidden">{{ 'products.product.price.regular_price' | t | default: 'Regular price' }}</span>
+      <span class="price__item price__item--regular">{{ money_price }}</span>
+    {% endif %}
+  </div>
+
+  {% if show_badges %}
+    {% if compare_at_price > price and available %}
+      <span class="badge badge--sale text-micro">{{ 'products.product.on_sale' | t | default: 'Sale' }}</span>
+    {% elsif available == false %}
+      <span class="badge badge--sold-out text-micro">{{ 'products.product.sold_out' | t | default: 'Sold out' }}</span>
+    {% endif %}
+  {% endif %}
+</div>
+
+{% stylesheet %}
+  .price {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    flex-wrap: wrap;
+    font-family: var(--font-body);
+    font-size: var(--font-size-body);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-normal);
+    color: var(--color-text);
+  }
+
+  .price__container {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--space-xs);
+  }
+
+  .price__item--sale {
+    color: var(--color-sale);
+    font-weight: 500;
+  }
+
+  .price__item--regular {
+    color: var(--color-text);
+  }
+
+  .price--on-sale s.price__item--regular {
+    color: var(--color-text-subtle);
+    text-decoration: line-through;
+    font-size: var(--font-size-caption);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.5rem;
+    border-radius: var(--radius-none);
+    line-height: 1;
+    font-family: var(--font-body);
+  }
+
+  .badge--sale {
+    background-color: var(--color-sale);
+    color: var(--color-white);
+  }
+
+  .badge--sold-out {
+    background-color: var(--color-surface);
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+  }
+{% endstylesheet %}
