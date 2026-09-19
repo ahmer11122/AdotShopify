@@ -12,5 +12,5 @@
 # Ignore templates and sections with a regular expression:
 #   /(templates|sections)/.*\.json/
 # Ignore internal AI rules and reference repos
-.agent/
-.reference/
+.agent/*
+.reference/*
