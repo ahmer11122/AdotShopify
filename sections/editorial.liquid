@@ -1,0 +1,222 @@
+{% comment %}
+  Modern Editorial Brand Statement / Manifesto
+  Asymmetric split layout showcasing craftsmanship philosophy and editorial imagery.
+{% endcomment %}
+
+<section class="editorial-section container" data-section-id="{{ section.id }}">
+  <div class="editorial-section__inner {% if section.settings.image_position == 'right' %}editorial-section__inner--reverse{% endif %}">
+    <div class="editorial-section__media">
+      {% if section.settings.image != blank %}
+        {{
+          section.settings.image
+          | image_url: width: 1400
+          | image_tag:
+            loading: 'lazy',
+            widths: '500, 750, 1000, 1400',
+            sizes: '(min-width: 990px) 50vw, 100vw',
+            class: 'editorial-section__image',
+            alt: section.settings.image.alt | default: section.settings.heading | escape
+        }}
+      {% else %}
+        <div class="editorial-section__placeholder">
+          {{ 'lifestyle-2' | placeholder_svg_tag: 'placeholder-svg' }}
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="editorial-section__content">
+      {% if section.settings.eyebrow != blank %}
+        <span class="editorial-section__eyebrow text-micro">{{ section.settings.eyebrow }}</span>
+      {% endif %}
+
+      <blockquote class="editorial-section__quote">
+        &ldquo;{{ section.settings.quote }}&rdquo;
+      </blockquote>
+
+      {% if section.settings.body_text != blank %}
+        <div class="editorial-section__body caption">
+          {{ section.settings.body_text }}
+        </div>
+      {% endif %}
+
+      {% if section.settings.author != blank %}
+        <cite class="editorial-section__author text-micro">{{ section.settings.author }}</cite>
+      {% endif %}
+
+      {% if section.settings.button_label != blank %}
+        <div class="editorial-section__action">
+          <a href="{{ section.settings.button_link | default: routes.root_url }}" class="btn btn-outline">
+            {{ section.settings.button_label }}
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+  .editorial-section {
+    margin-bottom: var(--space-xl);
+  }
+
+  .editorial-section__inner {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-md);
+    align-items: center;
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    padding-block: var(--space-lg);
+  }
+
+  @media (min-width: 990px) {
+    .editorial-section__inner {
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-xl);
+      padding-block: var(--space-xl);
+    }
+
+    .editorial-section__inner--reverse {
+      direction: rtl;
+    }
+
+    .editorial-section__inner--reverse > * {
+      direction: ltr;
+    }
+  }
+
+  .editorial-section__media {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    background-color: var(--color-surface);
+  }
+
+  .editorial-section__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .editorial-section__placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-surface);
+  }
+
+  .editorial-section__placeholder svg {
+    width: 40%;
+    height: 40%;
+    opacity: 0.3;
+  }
+
+  .editorial-section__content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    max-width: 54ch;
+  }
+
+  .editorial-section__eyebrow {
+    color: var(--color-text-subtle);
+  }
+
+  .editorial-section__quote {
+    font-family: var(--font-display);
+    font-size: var(--font-size-h2);
+    font-weight: 400;
+    line-height: var(--leading-tight);
+    color: var(--color-text);
+    margin: 0;
+    font-style: italic;
+  }
+
+  .editorial-section__body {
+    line-height: var(--leading-normal);
+    color: var(--color-text-muted);
+  }
+
+  .editorial-section__author {
+    color: var(--color-text-subtle);
+    font-style: normal;
+  }
+
+  .editorial-section__action {
+    margin-top: var(--space-xs);
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Editorial Statement",
+  "tag": "section",
+  "class": "section-editorial",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Editorial Image"
+    },
+    {
+      "type": "select",
+      "id": "image_position",
+      "label": "Image Position",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow Text",
+      "default": "THE STUDIO / MANIFESTO"
+    },
+    {
+      "type": "textarea",
+      "id": "quote",
+      "label": "Quote / Manifesto",
+      "default": "Form. Fabric. Permanence. Wardrobe staples designed with architectural discipline."
+    },
+    {
+      "type": "textarea",
+      "id": "body_text",
+      "label": "Story Body",
+      "default": "We reject seasonal obsolescence in favor of enduring silhouettes. Each piece is developed through exhaustive material research—custom loopback fleeces, high-density Japanese twills, and precise relaxed tailoring made to weather years of continuous wear."
+    },
+    {
+      "type": "text",
+      "id": "author",
+      "label": "Author / Location",
+      "default": "ADOT STUDIO · AUTUMN / WINTER 2026"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button Label",
+      "default": "Read Brand Story"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button Link"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Editorial Statement"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,235 @@
+{% comment %}
+  Modern Editorial Hero Banner
+  High-impact photography with fluid Cormorant Garamond headline and monolithic CTA.
+{% endcomment %}
+
+<section class="hero {% if section.settings.full_width %}hero--full{% else %}container{% endif %}" data-section-id="{{ section.id }}">
+  <div class="hero__inner">
+    <div class="hero__media">
+      {% if section.settings.image != blank %}
+        {{
+          section.settings.image
+          | image_url: width: 2400
+          | image_tag:
+            loading: 'eager',
+            fetchpriority: 'high',
+            widths: '750, 1100, 1500, 1920, 2400',
+            sizes: '100vw',
+            class: 'hero__image',
+            alt: section.settings.image.alt | default: section.settings.heading | escape
+        }}
+      {% else %}
+        <div class="hero__placeholder">
+          {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg' }}
+        </div>
+      {% endif %}
+      <div class="hero__overlay"></div>
+    </div>
+
+    <div class="hero__content hero__content--{{ section.settings.text_alignment }} container">
+      {% if section.settings.eyebrow != blank %}
+        <span class="hero__eyebrow text-micro">{{ section.settings.eyebrow }}</span>
+      {% endif %}
+
+      <h1 class="hero__heading hero-title">{{ section.settings.heading }}</h1>
+
+      {% if section.settings.subheading != blank %}
+        <p class="hero__subheading">{{ section.settings.subheading }}</p>
+      {% endif %}
+
+      {% if section.settings.button_label != blank %}
+        <div class="hero__action">
+          <a href="{{ section.settings.button_link | default: routes.all_products_collection_url }}" class="btn btn-primary">
+            {{ section.settings.button_label }}
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+  .hero {
+    position: relative;
+    width: 100%;
+    margin-bottom: var(--space-lg);
+  }
+
+  .hero--full {
+    max-width: 100%;
+    padding: 0;
+  }
+
+  .hero__inner {
+    position: relative;
+    min-height: 70vh;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+    background-color: var(--color-surface);
+  }
+
+  @media (min-width: 750px) {
+    .hero__inner {
+      min-height: 82vh;
+    }
+  }
+
+  .hero__media {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+  }
+
+  .hero__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  .hero__placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-border) 100%);
+  }
+
+  .hero__placeholder svg {
+    width: 40%;
+    height: 40%;
+    opacity: 0.35;
+  }
+
+  .hero__overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to top,
+      rgba(21, 21, 21, 0.45) 0%,
+      rgba(21, 21, 21, 0.15) 50%,
+      transparent 100%
+    );
+    z-index: 2;
+  }
+
+  .hero__content {
+    position: relative;
+    z-index: 3;
+    padding-block: var(--space-lg);
+    color: var(--color-white);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+
+  .hero__content--center {
+    align-items: center;
+    text-align: center;
+  }
+
+  .hero__content--left {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .hero__eyebrow {
+    color: var(--color-white);
+    opacity: 0.9;
+  }
+
+  .hero__heading {
+    color: var(--color-white);
+    margin: 0;
+    max-width: 18ch;
+  }
+
+  .hero__subheading {
+    font-family: var(--font-body);
+    font-size: var(--font-size-body);
+    line-height: var(--leading-normal);
+    max-width: 50ch;
+    color: var(--color-white);
+    opacity: 0.92;
+    margin: 0 0 var(--space-xs);
+  }
+
+  .hero__action {
+    margin-top: var(--space-xs);
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Hero Banner",
+  "tag": "section",
+  "class": "section-hero",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Hero Image"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow Text",
+      "default": "SEASON 01 / NEW ESSENTIALS"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "The Art of Restraint"
+    },
+    {
+      "type": "textarea",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Modern menswear tailored for everyday discipline. Heavyweight fleece, poplin shirts, and relaxed pleated trousers."
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button Label",
+      "default": "Explore Collection"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button Link"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text Alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "label": "Full Width",
+      "default": true
+    }
+  ],
+  "presets": [
+    {
+      "name": "Hero Banner"
+    }
+  ]
+}
+{% endschema %}

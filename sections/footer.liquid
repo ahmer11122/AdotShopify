@@ -1,55 +1,258 @@
-<footer>
-  <div class="footer__copyright">
-    &copy;
-    {{ 'now' | date: '%Y' }}
-    {{ shop.name | link_to: routes.root_url }}, {{ powered_by_link }}
-  </div>
+{% comment %}
+  Modern Editorial Inverted Dark Footer
+  Quiet luxury aesthetic using --color-surface-dark and --color-text-inverse.
+{% endcomment %}
 
-  <div class="footer__links">
-    {% for link in section.settings.menu.links %}
-      {{ link.title | link_to: link.url }}
-    {% endfor %}
-  </div>
+<footer class="footer" data-section-id="{{ section.id }}">
+  <div class="footer__inner container">
+    <div class="footer__grid">
+      <!-- Column 1: Brand & Philosophy -->
+      <div class="footer__col footer__col--brand">
+        <h2 class="footer__logo">
+          <a href="{{ routes.root_url }}">{{ shop.name }}</a>
+        </h2>
+        <p class="footer__tagline caption">
+          {{ section.settings.tagline | default: 'Modern menswear tailored with architectural discipline. Heavyweight essentials made for permanence.' }}
+        </p>
+      </div>
 
-  <div class="footer__payment">
-    {% if section.settings.show_payment_icons %}
-      {% for type in shop.enabled_payment_types %}
-        {{ type | payment_type_svg_tag }}
-      {% endfor %}
-    {% endif %}
+      <!-- Column 2: Navigation Links -->
+      <div class="footer__col footer__col--nav">
+        <span class="footer__heading text-micro">{{ 'general.navigation' | t | default: 'COLLECTION' }}</span>
+        <ul class="footer__links">
+          {% for link in section.settings.menu.links %}
+            <li>
+              <a href="{{ link.url }}" class="footer__link">{{ link.title }}</a>
+            </li>
+          {% else %}
+            <li><a href="{{ routes.collections_url }}/hoodies" class="footer__link">Hoodies</a></li>
+            <li><a href="{{ routes.collections_url }}/shirts" class="footer__link">Shirts</a></li>
+            <li><a href="{{ routes.collections_url }}/trousers" class="footer__link">Trousers</a></li>
+            <li><a href="{{ routes.root_url }}pages/size-guide" class="footer__link">Size Guide</a></li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <!-- Column 3: Editorial Newsletter -->
+      <div class="footer__col footer__col--newsletter">
+        <span class="footer__heading text-micro">{{ 'general.newsletter.title' | t | default: 'THE DISPATCH' }}</span>
+        <p class="footer__newsletter-desc caption">
+          {{ section.settings.newsletter_text | default: 'Sign up to receive early access to seasonal drops and material studies.' }}
+        </p>
+        {% form 'customer', class: 'footer__form' %}
+          <input type="hidden" name="contact[tags]" value="newsletter">
+          <div class="footer__input-group">
+            <input
+              type="email"
+              name="contact[email]"
+              id="FooterEmail-{{ section.id }}"
+              class="footer__input"
+              placeholder="{{ 'general.newsletter.placeholder' | t | default: 'Enter your email' }}"
+              required
+            >
+            <button type="submit" class="btn btn-primary footer__submit" aria-label="Subscribe">
+              &rarr;
+            </button>
+          </div>
+          {% if form.posted_successfully? %}
+            <p class="footer__success text-micro">{{ 'general.newsletter.success' | t | default: 'Thank you for subscribing.' }}</p>
+          {% endif %}
+        {% endform %}
+      </div>
+    </div>
+
+    <!-- Bottom Bar -->
+    <div class="footer__bottom">
+      <div class="footer__copyright text-micro">
+        &copy; {{ 'now' | date: '%Y' }} {{ shop.name }}. All rights reserved.
+      </div>
+
+      <div class="footer__payment">
+        {% if section.settings.show_payment_icons %}
+          {% for type in shop.enabled_payment_types %}
+            {{ type | payment_type_svg_tag }}
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
   </div>
 </footer>
 
 {% stylesheet %}
-  footer {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 2rem;
+  .footer {
+    background-color: var(--color-surface-dark);
+    color: var(--color-text-inverse);
+    margin-top: var(--space-xl);
+    padding-top: var(--space-xl);
+    padding-bottom: var(--space-lg);
+    border-top: 1px solid var(--color-border-dark);
   }
-  footer a {
+
+  .footer__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-lg);
+    padding-bottom: var(--space-xl);
+    border-bottom: 1px solid var(--color-border-dark);
+  }
+
+  @media (min-width: 750px) {
+    .footer__grid {
+      grid-template-columns: 1.5fr 1fr 1.5fr;
+      gap: var(--space-xl);
+    }
+  }
+
+  .footer__logo a {
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    font-weight: 400;
+    letter-spacing: var(--tracking-tight);
+    color: var(--color-text-inverse);
     text-decoration: none;
-    color: var(--color-foreground);
   }
-  footer .footer__links,
-  footer .footer__payment {
+
+  .footer__tagline {
+    margin-top: var(--space-xs);
+    color: var(--color-text-subtle);
+    max-width: 36ch;
+    line-height: var(--leading-normal);
+  }
+
+  .footer__heading {
+    display: block;
+    color: var(--color-text-subtle);
+    margin-bottom: var(--space-sm);
+  }
+
+  .footer__links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
     display: flex;
-    gap: 1rem;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+
+  .footer__link {
+    color: var(--color-text-inverse);
+    text-decoration: none;
+    font-family: var(--font-body);
+    font-size: var(--font-size-caption);
+    transition: opacity var(--transition-fast);
+  }
+
+  .footer__link:hover {
+    opacity: 0.7;
+  }
+
+  .footer__newsletter-desc {
+    color: var(--color-text-subtle);
+    margin-bottom: var(--space-xs);
+    line-height: var(--leading-normal);
+  }
+
+  .footer__input-group {
+    display: flex;
+    position: relative;
+    border: 1px solid var(--color-border-dark);
+    background-color: rgba(255, 255, 255, 0.04);
+  }
+
+  .footer__input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 0.75rem 1rem;
+    color: var(--color-text-inverse);
+    font-family: var(--font-body);
+    font-size: var(--font-size-caption);
+    outline: none;
+  }
+
+  .footer__input::placeholder {
+    color: var(--color-text-subtle);
+  }
+
+  .footer__submit {
+    background-color: var(--color-white);
+    color: var(--color-surface-dark);
+    border: none;
+    padding: 0 1.25rem;
+    cursor: pointer;
+    font-size: 1.25rem;
+    transition: opacity var(--transition-fast);
+    min-height: 44px;
+  }
+
+  .footer__submit:hover {
+    background-color: var(--color-white);
+    opacity: 0.85;
+  }
+
+  .footer__success {
+    margin-top: var(--space-xs);
+    color: var(--color-in-stock);
+  }
+
+  .footer__bottom {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-top: var(--space-md);
+  }
+
+  @media (min-width: 750px) {
+    .footer__bottom {
+      flex-direction: row;
+      align-items: center;
+    }
+  }
+
+  .footer__copyright {
+    color: var(--color-text-subtle);
+  }
+
+  .footer__payment {
+    display: flex;
+    gap: var(--space-xs);
+  }
+
+  .footer__payment svg {
+    height: 1.5rem;
+    width: auto;
   }
 {% endstylesheet %}
 
 {% schema %}
 {
-  "name": "t:general.footer",
+  "name": "Footer",
+  "tag": "footer",
   "settings": [
+    {
+      "type": "textarea",
+      "id": "tagline",
+      "label": "Brand Tagline",
+      "default": "Modern menswear tailored with architectural discipline. Heavyweight essentials made for permanence."
+    },
     {
       "type": "link_list",
       "id": "menu",
-      "label": "t:labels.menu"
+      "label": "Footer Menu",
+      "default": "footer"
+    },
+    {
+      "type": "textarea",
+      "id": "newsletter_text",
+      "label": "Newsletter Description",
+      "default": "Sign up to receive early access to seasonal drops and material studies."
     },
     {
       "type": "checkbox",
       "id": "show_payment_icons",
-      "label": "t:labels.show_payment_icons",
+      "label": "Show Payment Icons",
       "default": true
     }
   ]

@@ -1,0 +1,169 @@
+{% comment %}
+  Modern Editorial Featured Collection Grid
+  Displays a curated collection grid using the product-card snippet.
+{% endcomment %}
+
+<section class="featured-collection container" data-section-id="{{ section.id }}">
+  <div class="featured-collection__header">
+    <div class="featured-collection__title-group">
+      {% if section.settings.eyebrow != blank %}
+        <span class="featured-collection__eyebrow text-micro">{{ section.settings.eyebrow }}</span>
+      {% endif %}
+      {% if section.settings.heading != blank %}
+        <h2 class="featured-collection__heading">{{ section.settings.heading }}</h2>
+      {% endif %}
+    </div>
+
+    {% if section.settings.show_view_all and section.settings.collection != blank %}
+      <a href="{{ section.settings.collection.url }}" class="featured-collection__view-all text-micro">
+        {{ 'collections.view_all' | t }} &rarr;
+      </a>
+    {% endif %}
+  </div>
+
+  <div class="featured-collection__grid">
+    {% assign selected_collection = section.settings.collection %}
+    {% if selected_collection != blank and selected_collection.products_count > 0 %}
+      {% for product in selected_collection.products limit: section.settings.products_to_show %}
+        <div class="featured-collection__item">
+          {% render 'product-card', product: product, show_vendor: section.settings.show_vendor %}
+        </div>
+      {% endfor %}
+    {% else %}
+      {% for i in (1..section.settings.products_to_show) %}
+        <div class="featured-collection__item">
+          <div class="product-card">
+            <div class="product-card__media-wrapper">
+              <div class="product-card__placeholder">
+                {% assign placeholder_num = i | modulo: 4 | plus: 1 %}
+                {{ 'product-' | append: placeholder_num | placeholder_svg_tag: 'placeholder-svg' }}
+              </div>
+            </div>
+            <div class="product-card__content">
+              <span class="product-card__vendor text-micro">EDITORIAL ESSENTIALS</span>
+              <h3 class="product-card__title">
+                <span class="product-card__link">Heavyweight Boxy Hoodie</span>
+              </h3>
+              <div class="product-card__price">
+                <span class="price__item price__item--regular">$145.00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    {% endif %}
+  </div>
+</section>
+
+{% stylesheet %}
+  .featured-collection {
+    margin-bottom: var(--space-xl);
+  }
+
+  .featured-collection__header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: var(--space-md);
+    padding-bottom: var(--space-xs);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .featured-collection__eyebrow {
+    color: var(--color-text-subtle);
+    display: block;
+    margin-bottom: var(--space-2xs);
+  }
+
+  .featured-collection__heading {
+    font-family: var(--font-display);
+    font-size: var(--font-size-h2);
+    font-weight: 400;
+    line-height: var(--leading-tight);
+    margin: 0;
+    color: var(--color-text);
+  }
+
+  .featured-collection__view-all {
+    color: var(--color-text);
+    text-decoration: none;
+    transition: opacity var(--transition-fast);
+  }
+
+  .featured-collection__view-all:hover {
+    opacity: 0.7;
+  }
+
+  .featured-collection__grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-sm);
+  }
+
+  @media (min-width: 750px) {
+    .featured-collection__grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-md);
+    }
+  }
+
+  @media (min-width: 990px) {
+    .featured-collection__grid {
+      grid-template-columns: repeat(4, 1fr);
+      gap: var(--grid-gap);
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Featured Collection",
+  "tag": "section",
+  "class": "section-featured-collection",
+  "settings": [
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow Text",
+      "default": "NEW ARRIVALS / DROP 01"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Essential Wardrobe"
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "min": 4,
+      "max": 16,
+      "step": 2,
+      "label": "Products to Show",
+      "default": 8
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "label": "Show Category / Vendor",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_view_all",
+      "label": "Show 'View All' Link",
+      "default": true
+    }
+  ],
+  "presets": [
+    {
+      "name": "Featured Collection"
+    }
+  ]
+}
+{% endschema %}
