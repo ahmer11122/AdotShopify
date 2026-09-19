@@ -3,7 +3,7 @@
   Quiet luxury aesthetic using --color-surface-dark and --color-text-inverse.
 {% endcomment %}
 
-<footer class="footer" data-section-id="{{ section.id }}">
+<footer class="footer full-width" data-section-id="{{ section.id }}">
   <div class="footer__inner container">
     <div class="footer__grid">
       <!-- Column 1: Brand & Philosophy -->
@@ -80,12 +80,16 @@
 
 {% stylesheet %}
   .footer {
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
     background-color: var(--color-surface-dark);
     color: var(--color-text-inverse);
     margin-top: var(--space-xl);
     padding-top: var(--space-xl);
     padding-bottom: var(--space-lg);
     border-top: 1px solid var(--color-border-dark);
+    box-sizing: border-box;
   }
 
   .footer__grid {

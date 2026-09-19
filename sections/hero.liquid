@@ -3,7 +3,7 @@
   High-impact photography with fluid Cormorant Garamond headline and monolithic CTA.
 {% endcomment %}
 
-<section class="hero {% if section.settings.full_width %}hero--full{% else %}container{% endif %}" data-section-id="{{ section.id }}">
+<section class="hero {% if section.settings.full_width %}hero--full full-width{% else %}container{% endif %}" data-section-id="{{ section.id }}">
   <div class="hero__inner">
     <div class="hero__media">
       {% if section.settings.image != blank %}
@@ -52,26 +52,29 @@
   .hero {
     position: relative;
     width: 100%;
-    margin-bottom: var(--space-lg);
+    margin-bottom: var(--space-xl);
   }
 
   .hero--full {
-    max-width: 100%;
-    padding: 0;
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+    max-width: 100vw;
   }
 
   .hero__inner {
     position: relative;
-    min-height: 70vh;
+    min-height: 75svh;
     display: flex;
     align-items: flex-end;
     overflow: hidden;
     background-color: var(--color-surface);
+    width: 100%;
   }
 
-  @media (min-width: 750px) {
+  @media (min-width: 990px) {
     .hero__inner {
-      min-height: 82vh;
+      min-height: 88vh;
     }
   }
 

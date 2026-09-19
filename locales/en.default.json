@@ -45,6 +45,9 @@
       "password": "Password",
       "submit": "Sign in",
       "title": "Login"
+    },
+    "account": {
+      "title": "Account"
     }
   },
   "collections": {
