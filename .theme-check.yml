@@ -1,0 +1,15 @@
+root: .
+ignore:
+  - .reference/**
+  - .agent/**
+  - node_modules/**
+AssetSizeCSS:
+  enabled: true
+  threshold_in_bytes: 100000
+AssetSizeJavaScript:
+  enabled: true
+  threshold_in_bytes: 10000
+ImgWidthAndHeight:
+  enabled: true
+ParserBlockingScript:
+  enabled: true
