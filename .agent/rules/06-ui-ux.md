@@ -23,11 +23,14 @@
 - Test real content edge cases before calling a component done: long product titles, out-of-stock state, empty collection, empty search results, single-item vs many-item grids.
 
 ## Visual consistency
-
-- Every spacing value comes from `var(--space-*)` — no arbitrary `margin: 17px`.
-- Every color comes from `var(--color-*)` — no one-off hex values.
-- Hover/active/disabled states derive from token math (`color-mix()`, opacity applied to a token) — not new hardcoded colors invented per component.
-- Display serif (Cormorant Garamond or equivalent) never used below ~20px — falls back to body font at small/UI sizes.
+ 
+ - Every spacing value comes from `var(--space-*)` — no arbitrary `margin: 17px`.
+ - Every color comes from `var(--color-*)` — no one-off hex values. Use `var(--color-sale)` for discounts, `var(--color-in-stock)` for stock signals, and `var(--color-text-subtle)` for metadata.
+ - Primary actions are monolithic: `var(--color-btn-bg)` (#151515) with `var(--color-btn-text)` (#F5F2EC). Accent color is reserved for secondary brand moments.
+ - Geometry is razor-sharp: `0px` border-radius (`var(--radius-none)`) for buttons, cards, tags, and form fields.
+ - Micro-typography: All tags, metadata, SKUs, and category pills use uppercase tracked typography (`var(--font-size-micro)` with `var(--tracking-micro)`: `0.12em`).
+ - Hover/active/disabled states derive from token math (`color-mix()`, opacity applied to a token) — not new hardcoded colors invented per component.
+ - Display serif (Cormorant Garamond or equivalent) never used below ~20px — falls back to body font at small/UI sizes.
 
 ## Definition of done for any component
 

@@ -31,7 +31,7 @@ input,
 textarea,
 select {
   font: inherit;
-  border-radius: var(--style-border-radius-inputs);
+  border-radius: var(--radius-input, var(--style-border-radius-inputs, 0px));
 }
 
 select {
@@ -41,7 +41,7 @@ select {
 
 dialog {
   background-color: var(--color-background);
-  color: var(--color-foreground);
+  color: var(--color-text, var(--color-foreground));
 }
 
 p {
@@ -73,9 +73,9 @@ p:empty {
 
 /** Theme styles below */
 body {
-  font-family: var(--font-primary--family);
+  font-family: var(--font-body, var(--font-primary--family));
   background-color: var(--color-background);
-  color: var(--color-foreground);
+  color: var(--color-text, var(--color-foreground));
 }
 
 /** Section layout utilities */
@@ -93,10 +93,10 @@ body {
  */
 .shopify-section {
   --content-width: min(
-    calc(var(--page-width) - var(--page-margin) * 2),
-    calc(100% - var(--page-margin) * 2)
+    calc(var(--container-max, var(--page-width)) - var(--space-sm, var(--page-margin)) * 2),
+    calc(100% - var(--space-sm, var(--page-margin)) * 2)
   );
-  --content-margin: minmax(var(--page-margin), 1fr);
+  --content-margin: minmax(var(--space-sm, var(--page-margin)), 1fr);
   --content-grid: var(--content-margin) var(--content-width) var(--content-margin);
 
   /* This is required to make <img> elements work as background images */

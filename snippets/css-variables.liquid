@@ -1,18 +1,47 @@
 {% style %}
-  {% # Loads all font variantions with display: swap %}
-  {{ settings.type_primary_font | font_face: font_display: 'swap' }}
-  {{ settings.type_primary_font | font_modify: 'weight', 'bold' | font_face: font_display: 'swap' }}
-  {{ settings.type_primary_font | font_modify: 'weight', 'bold' | font_modify: 'style', 'italic' | font_face: font_display: 'swap' }}
-  {{ settings.type_primary_font | font_modify: 'style', 'italic' | font_face: font_display: 'swap' }}
+  {% # Loads font variations via Shopify CDN with font-display: swap %}
+  {% if settings.type_display_font %}
+    {{ settings.type_display_font | font_face: font_display: 'swap' }}
+    {{ settings.type_display_font | font_modify: 'weight', 'bold' | font_face: font_display: 'swap' }}
+    {{ settings.type_display_font | font_modify: 'style', 'italic' | font_face: font_display: 'swap' }}
+  {% endif %}
+
+  {% if settings.type_body_font %}
+    {{ settings.type_body_font | font_face: font_display: 'swap' }}
+    {{ settings.type_body_font | font_modify: 'weight', 'bold' | font_face: font_display: 'swap' }}
+    {{ settings.type_body_font | font_modify: 'style', 'italic' | font_face: font_display: 'swap' }}
+  {% endif %}
 
   :root {
-    --font-primary--family: {{ settings.type_primary_font.family }}, {{ settings.type_primary_font.fallback_families }};
-    --font-primary--style: {{ settings.type_primary_font.style }};
-    --font-primary--weight: {{ settings.type_primary_font.weight }};
-    --page-width: {{ settings.max_page_width }};
-    --page-margin: {{ settings.min_page_margin }}px;
-    --color-background: {{ settings.background_color }};
-    --color-foreground: {{ settings.foreground_color }};
-    --style-border-radius-inputs: {{ settings.input_corner_radius }}px;
+    {% comment %}
+      Theme defaults to Cormorant Garamond & Inter in tokens.css.
+      Only override if merchant explicitly changed the font in the Theme Editor:
+    {% endcomment %}
+    {% if settings.type_display_font and settings.type_display_font.family != 'Playfair Display' %}
+      --font-display: {{ settings.type_display_font.family }}, {{ settings.type_display_font.fallback_families }};
+    {% endif %}
+    {% if settings.type_body_font and settings.type_body_font.family != 'Assistant' %}
+      --font-body: {{ settings.type_body_font.family }}, {{ settings.type_body_font.fallback_families }};
+      --font-primary--family: var(--font-body);
+    {% endif %}
+
+    {% if settings.max_page_width %}
+      --page-width: {{ settings.max_page_width }};
+    {% endif %}
+    {% if settings.min_page_margin %}
+      --page-margin: {{ settings.min_page_margin }}px;
+    {% endif %}
+
+    {% if settings.background_color %}
+      --color-background: {{ settings.background_color }};
+    {% endif %}
+    {% if settings.foreground_color %}
+      --color-foreground: {{ settings.foreground_color }};
+      --color-text: {{ settings.foreground_color }};
+    {% endif %}
+    {% if settings.input_corner_radius %}
+      --style-border-radius-inputs: {{ settings.input_corner_radius }}px;
+      --radius-input: {{ settings.input_corner_radius }}px;
+    {% endif %}
   }
 {% endstyle %}

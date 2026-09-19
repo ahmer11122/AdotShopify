@@ -161,22 +161,78 @@ Shopify gives you three mechanisms. Use all three, for different jobs — this i
 ```css
 /* assets/tokens.css */
 :root {
-  --color-background: #F5F2EC;
-  --color-surface:    #ECE8E0;
-  --color-text:       #151515;
-  --color-muted:      #6F6B63;
-  --color-border:     #D8D3CA;
-  --color-dark:       #20201E;
-  --color-accent:     #5B6048; /* swap per client: brown / navy / burgundy / black */
+  /* High-Fashion Neutral Foundation */
+  --color-background:       #F5F2EC; /* Warm bone / heavy uncoated art paper */
+  --color-surface:          #ECE8E0; /* Elevated card / drawer neutral */
+  --color-surface-dark:     #1E1E1C; /* Inverted editorial strip / footer / hero overlay */
+  
+  --color-text:             #151515; /* Soft charcoal off-black */
+  --color-text-muted:       #6F6B63; /* Warm mid-tone for secondary copy */
+  --color-text-subtle:      #99948B; /* Micro-metadata / inactive states */
+  --color-text-inverse:     #F5F2EC; /* Text on dark surfaces */
+  
+  --color-border:           #D8D3CA; /* Hairline editorial border */
+  --color-border-subtle:    rgba(21, 21, 21, 0.08);
+  --color-border-dark:      #2A2A28;
+  --color-white:            #FFFFFF;
 
-  --font-display: "Cormorant Garamond", Georgia, serif;
-  --font-body:    "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  /* Semantic E-Commerce & State Tokens */
+  --color-accent:           #5B6048; /* Editorial olive / secondary brand accent (swap per client) */
+  --color-sale:             #8F382B; /* Refined terracotta brick (never garish neon red) */
+  --color-in-stock:         #3D4D3D; /* Muted cypress green */
+  --color-sold-out:         #99948B;
+  --color-focus:            #151515; /* Accessibility focus outline */
 
-  --space-xs: 0.5rem;  --space-sm: 1rem;   --space-md: 2rem;
-  --space-lg: 4rem;    --space-xl: 8rem;
+  /* Monolithic Editorial Buttons */
+  --color-btn-bg:           #151515;
+  --color-btn-text:         #F5F2EC;
+  --color-btn-hover-bg:     #2D2D2A;
+  --color-btn-hover-text:   #FFFFFF;
+
+  /* Typography */
+  --font-display:           "Cormorant Garamond", Georgia, serif;
+  --font-body:              "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* Fluid Editorial Scale */
+  --font-size-hero:         clamp(2.75rem, 6vw, 5rem);
+  --font-size-h1:           clamp(2.25rem, 4.5vw, 3.75rem);
+  --font-size-h2:           clamp(1.75rem, 3vw, 2.5rem);
+  --font-size-h3:           clamp(1.25rem, 2vw, 1.75rem);
+  --font-size-h4:           1.125rem;
+  --font-size-body:         1rem;
+  --font-size-caption:      0.875rem;
+  --font-size-micro:        0.6875rem; /* 11px */
+
+  --tracking-tight:         -0.02em;
+  --tracking-normal:        0em;
+  --tracking-wide:          0.04em;
+  --tracking-micro:         0.12em;    /* For uppercase tags, SKUs, and category pills */
+
+  --leading-tight:          1.15;
+  --leading-snug:           1.3;
+  --leading-normal:         1.6;
+
+  /* Modular Spacing Scale & Grid */
+  --space-2xs: 0.25rem;  --space-xs: 0.5rem;   --space-sm: 1rem;
+  --space-md: 2rem;      --space-lg: 4rem;     --space-xl: 7rem;
 
   --container-max: 1440px;
+  --container-narrow: 960px;
   --grid-gap: 2rem;
+  --header-height: 80px;
+
+  /* Geometry & Elevation (Zero-Radius Luxury) */
+  --radius-none: 0px;
+  --radius-subtle: 1px;
+  --radius-input: 0px;
+  --shadow-drawer: -6px 0 35px rgba(21, 21, 21, 0.06);
+
+  /* Backward Compatibility Aliases for Skeleton */
+  --color-foreground: var(--color-text);
+  --font-primary--family: var(--font-body);
+  --page-width: var(--container-max);
+  --page-margin: var(--space-sm);
+  --style-border-radius-inputs: var(--radius-input);
 }
 ```
 
@@ -190,21 +246,25 @@ Never hardcode "olive = menswear" in component logic. The brand preset is a toke
 **Is not:** pure brutalism, generic SaaS minimalism, overly organic, black-and-gold "luxury template" cliché.
 
 Core principles:
-- Strong typography as the primary visual identity (not UI chrome)
-- Large, high-quality photography, full-bleed where it earns it
-- Generous whitespace, strict grid, near-zero decorative UI
-- Minimal borders, little-to-no shadow, restrained motion
-- Mobile-first, but mobile is a **separate design**, not a squeezed desktop
+- Strong typography as the primary visual identity (not UI chrome).
+- Monolithic action hierarchy: Primary buttons are solid off-black (`#151515`) on warm bone (`#F5F2EC`). Accent color (`--color-accent`) is for secondary brand moments and editorial highlights, never garish CTA buttons.
+- Editorial micro-typography: Uppercase tracked labels (`--tracking-micro: 0.12em`) for SKUs, categories, and breadcrumbs.
+- Sharp geometry: `0px` border-radius across inputs, buttons, and badges. No bubbly SaaS curves.
+- Large, high-quality photography, full-bleed where it earns it.
+- Generous whitespace, strict grid, near-zero decorative UI.
+- Inverted rhythm: alternating light art-paper sections with inky dark surfaces (`--color-surface-dark`).
+- Mobile-first, but mobile is a **separate design**, not a squeezed desktop.
 
 **Typography rules:**
 - Display: Cormorant Garamond (or equivalent refined serif) — hero headlines, collection titles, editorial statements, large campaign type only.
 - Body/UI: Inter (or equivalent) — nav, product names, prices, buttons, filters, forms, body copy.
 - Never run the display serif at small/UI sizes — it degrades on mobile. Below ~20px, always fall back to body font.
+- Display fonts must be loaded with `display=swap` and preconnect headers.
 
 **Desktop layout pattern:**
 ```
 Hero → Editorial statement → Collection → Product grid → Editorial image/text
-     → New arrivals → Brand story → Newsletter → Footer
+     → New arrivals → Brand story → Newsletter → Inverted Dark Footer
 ```
 Not every section is a centered card — use full-width photography, asymmetric grids, deliberate whitespace.
 
@@ -368,7 +428,10 @@ Skeleton ships with none of the conversion features merchants expect from a $280
 
 **Visual consistency**
 - Every spacing value comes from `--space-*` tokens — no arbitrary `margin: 17px`.
-- Every color comes from `--color-*` tokens — no one-off hex values in component CSS.
+- Every color comes from `--color-*` tokens — no one-off hex values in component CSS. Use `--color-sale`, `--color-in-stock`, and `--color-text-subtle` for e-commerce states.
+- Geometry is razor-sharp: `0px` border-radius (`var(--radius-none)`) for all buttons, form inputs, and badges. No bubbly SaaS curves.
+- Primary actions are monolithic: `--color-btn-bg` (`#151515`) with `--color-btn-text` (`#F5F2EC`).
+- Micro-typography: Uppercase tracked text for metadata, product tags, SKUs, and category labels (`var(--font-size-micro)` + `var(--tracking-micro)`).
 - Component states (hover/active/disabled) shift opacity/color via token math (`color-mix()`, opacity on the token), not new hardcoded colors.
 
 **Definition of done for any component:** matches the token system, passes Theme Check clean, has keyboard + screen-reader-sane markup, has explicit states for every interaction, works at all three breakpoints, and has no hardcoded design values.

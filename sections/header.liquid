@@ -1,24 +1,24 @@
-<header>
-  <h2 class="header__title">
-    {{ shop.name | link_to: routes.root_url }}
-  </h2>
-
-  <div class="header__menu">
-    {% for link in section.settings.menu.links %}
-      {{ link.title | link_to: link.url }}
-    {% endfor %}
+<header class="header container">
+  <div class="header__title">
+    <a href="{{ routes.root_url }}">{{ shop.name }}</a>
   </div>
+
+  <nav class="header__menu" aria-label="Main Navigation">
+    {% for link in section.settings.menu.links %}
+      <a href="{{ link.url }}" class="header__link">{{ link.title }}</a>
+    {% endfor %}
+  </nav>
 
   <div class="header__icons">
     {% if shop.customer_accounts_enabled %}
-      <shopify-account menu="{{ section.settings.customer_account_menu }}">
+      <shopify-account menu="{{ section.settings.customer_account_menu }}" class="header__icon-btn">
         {{ 'icon-account.svg' | inline_asset_content }}
       </shopify-account>
     {% endif %}
 
-    <a href="{{ routes.cart_url }}">
+    <a href="{{ routes.cart_url }}" class="header__icon-btn header__cart-btn" aria-label="Cart">
       {% if cart.item_count > 0 %}
-        <sup>{{ cart.item_count }}</sup>
+        <span class="header__cart-count">{{ cart.item_count }}</span>
       {% endif %}
 
       {{ 'icon-cart.svg' | inline_asset_content }}
@@ -27,33 +27,87 @@
 </header>
 
 {% stylesheet %}
-  header {
-    height: 5rem;
+  header.header {
+    height: var(--header-height);
     display: flex;
     align-items: center;
     justify-content: space-between;
+    border-bottom: 1px solid var(--color-border);
   }
-  header a {
-    position: relative;
+
+  .header__title a {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 400;
+    letter-spacing: var(--tracking-tight);
+    color: var(--color-text);
     text-decoration: none;
-    color: var(--color-foreground);
+  }
+
+  .header__menu {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+  }
+
+  .header__link {
+    font-family: var(--font-body);
+    font-size: var(--font-size-caption);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    font-weight: 500;
+    color: var(--color-text);
+    text-decoration: none;
+    transition: opacity var(--transition-fast);
+  }
+
+  .header__link:hover {
+    opacity: 0.7;
+  }
+
+  .header__icons {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
+  .header__icon-btn {
+    position: relative;
+    color: var(--color-text);
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 44px;
+    height: 44px; /* Touch target minimum */
+    text-decoration: none;
+    transition: opacity var(--transition-fast);
   }
-  header a sup {
+
+  .header__icon-btn:hover {
+    opacity: 0.7;
+  }
+
+  .header__icon-btn svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .header__cart-count {
     position: absolute;
-    left: 100%;
-    overflow: hidden;
-    max-width: var(--page-margin);
-  }
-  header svg {
-    width: 2rem;
-  }
-  header .header__menu,
-  header .header__icons {
+    top: 6px;
+    right: 4px;
+    font-family: var(--font-body);
+    font-size: var(--font-size-micro);
+    font-weight: 600;
+    background-color: var(--color-text);
+    color: var(--color-background);
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
     display: flex;
-    gap: 1rem;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
   }
 {% endstylesheet %}
 

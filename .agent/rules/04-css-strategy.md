@@ -10,7 +10,7 @@ Use for: design tokens (color/type/spacing custom properties), CSS reset, base t
 
 Use for: all component-level styling. Automatically deduped — if a block renders 5 times on a page, its CSS still ships once. Colocated with the markup it styles, which is also what makes components portable across client themes.
 
-Rule: every value inside a `{% stylesheet %}` block is a token reference (`var(--color-accent)`, `var(--space-md)`) — never a raw hex/px/rem literal, except for genuinely one-off geometry (e.g. a specific `border-radius` unique to one component) that has no token equivalent.
+Rule: every value inside a `{% stylesheet %}` block is a token reference (`var(--color-text)`, `var(--color-accent)`, `var(--space-md)`, `var(--color-btn-bg)`) — never a raw hex/px/rem literal, except for genuinely one-off geometry that has no token equivalent. Buttons follow the monolithic style: background `var(--color-btn-bg)` (#151515) with `var(--color-btn-text)` (#F5F2EC). State badges use semantic tokens: `var(--color-sale)`, `var(--color-in-stock)`, `var(--color-sold-out)`.
 
 ## `{% style %}` inside a section/block file — rare, per-instance only
 

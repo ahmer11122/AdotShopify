@@ -1,39 +1,107 @@
 /* assets/tokens.css */
-/* Modern Editorial Minimalism Design Tokens — Smart Solutions Foundation */
+/* ==========================================================================
+   Modern Editorial Minimalism Design Tokens — Smart Solutions Foundation
+   Quiet luxury aesthetic: tactile art-paper neutrals, monolithic typography,
+   strict editorial grid, hairline borders, and zero-radius geometry.
+   ========================================================================== */
 
 :root {
-  /* Color Palette — Quiet Luxury / Editorial Neutral Palette */
-  --color-background: #F5F2EC;
-  --color-surface:    #ECE8E0;
-  --color-text:       #151515;
-  --color-muted:      #6F6B63;
-  --color-border:     #D8D3CA;
-  --color-dark:       #20201E;
-  --color-accent:     #5B6048; /* Brand accent token — swappable per client */
-  --color-white:      #FFFFFF;
+  /* ==========================================================================
+     1. Color Palette — High-Fashion Neutral Foundation
+     ========================================================================== */
+  --color-background:       #F5F2EC; /* Warm bone / tactile heavy uncoated art paper */
+  --color-surface:          #ECE8E0; /* Elevated card / drawer neutral */
+  --color-surface-dark:     #1E1E1C; /* Inverted editorial strip / footer / hero overlay */
+  
+  --color-text:             #151515; /* Soft charcoal off-black (primary reading text) */
+  --color-text-muted:       #6F6B63; /* Warm mid-tone for secondary details */
+  --color-text-subtle:      #99948B; /* Micro-metadata / inactive states / breadcrumbs */
+  --color-text-inverse:     #F5F2EC; /* Text on dark surfaces */
+  
+  --color-border:           #D8D3CA; /* Hairline editorial border */
+  --color-border-subtle:    rgba(21, 21, 21, 0.08); /* Transparent hairline divider */
+  --color-border-dark:      #2A2A28; /* Border on dark surfaces */
+  --color-white:            #FFFFFF;
 
-  /* Typography */
-  --font-display: "Cormorant Garamond", Georgia, serif;
-  --font-body:    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  /* ==========================================================================
+     2. Semantic E-Commerce & State Tokens
+     ========================================================================== */
+  --color-accent:           #5B6048; /* Editorial olive / secondary brand accent */
+  --color-sale:             #8F382B; /* Refined terracotta brick (replaces neon red) */
+  --color-in-stock:         #3D4D3D; /* Muted cypress green */
+  --color-sold-out:         #99948B; /* Inactive / sold out muted slate */
+  --color-focus:            #151515; /* High-contrast accessibility focus ring */
 
-  /* Modular Spacing Scale */
-  --space-xs: 0.5rem;   /* 8px */
-  --space-sm: 1rem;     /* 16px */
-  --space-md: 2rem;     /* 32px */
-  --space-lg: 4rem;     /* 64px */
-  --space-xl: 8rem;     /* 128px */
+  /* Button / Action States (Monolithic Editorial Treatment) */
+  --color-btn-bg:           #151515;
+  --color-btn-text:         #F5F2EC;
+  --color-btn-hover-bg:     #2D2D2A;
+  --color-btn-hover-text:   #FFFFFF;
 
-  /* Layout & Grid */
-  --container-max: 1440px;
-  --grid-gap: 2rem;
-  --header-height: 80px;
+  /* ==========================================================================
+     3. Typography
+     ========================================================================== */
+  --font-display:           "Cormorant Garamond", Georgia, serif;
+  --font-body:              "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+  /* Fluid Typographic Scale */
+  --font-size-hero:         clamp(2.75rem, 6vw, 5rem);
+  --font-size-h1:           clamp(2.25rem, 4.5vw, 3.75rem);
+  --font-size-h2:           clamp(1.75rem, 3vw, 2.5rem);
+  --font-size-h3:           clamp(1.25rem, 2vw, 1.75rem);
+  --font-size-h4:           1.125rem;  /* 18px */
+  --font-size-body:         1rem;      /* 16px */
+  --font-size-caption:      0.875rem;  /* 14px */
+  --font-size-micro:        0.6875rem; /* 11px */
+
+  /* Letter Spacing */
+  --tracking-tight:         -0.02em;
+  --tracking-normal:        0em;
+  --tracking-wide:          0.04em;
+  --tracking-micro:         0.12em;    /* For uppercase tags, SKUs, and category pills */
+
+  /* Line Heights */
+  --leading-tight:          1.15;
+  --leading-snug:           1.3;
+  --leading-normal:         1.6;
+
+  /* ==========================================================================
+     4. Modular Spacing Scale & Layout Grid
+     ========================================================================== */
+  --space-2xs:              0.25rem;  /* 4px */
+  --space-xs:               0.5rem;   /* 8px */
+  --space-sm:               1rem;     /* 16px */
+  --space-md:               2rem;     /* 32px */
+  --space-lg:               4rem;     /* 64px */
+  --space-xl:               7rem;     /* 112px */
+
+  --container-max:          1440px;
+  --container-narrow:       960px;
+  --grid-gap:               2rem;
+  --header-height:          80px;
+
+  /* ==========================================================================
+     5. Geometry & Restrained Elevation (Zero-Radius Luxury)
+     ========================================================================== */
+  --radius-none:            0px;
+  --radius-subtle:          1px;
+  --radius-input:           0px;      /* Sharp editorial input corners */
 
   /* Transitions */
-  --transition-fast: 150ms ease;
-  --transition-base: 250ms cubic-bezier(0.16, 1, 0.3, 1);
-  --transition-slow: 400ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-fast:        150ms ease;
+  --transition-base:        250ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-slow:        400ms cubic-bezier(0.16, 1, 0.3, 1);
 
-  /* Elevation / Shadows (restrained, near-zero decorative UI per editorial principles) */
-  --shadow-subtle: 0 4px 20px rgba(21, 21, 21, 0.04);
-  --shadow-drawer: -4px 0 30px rgba(21, 21, 21, 0.08);
+  /* Shadows (restrained, near-zero decorative UI per editorial principles) */
+  --shadow-subtle:          0 4px 20px rgba(21, 21, 21, 0.04);
+  --shadow-drawer:          -6px 0 35px rgba(21, 21, 21, 0.06);
+
+  /* ==========================================================================
+     6. Backward Compatibility Aliases for Shopify Skeleton Boilerplate
+     ========================================================================== */
+  --color-foreground:       var(--color-text);
+  --font-primary--family:   var(--font-body);
+  --page-width:             var(--container-max);
+  --page-margin:            var(--space-sm);
+  --style-border-radius-inputs: var(--radius-input);
 }
