@@ -85,16 +85,14 @@
     <div class="hero__content-wrapper container">
       <div class="hero__content">
         
-        <!-- Live Status Pill Badge & Season Tag -->
+        <!-- Season Eyebrow & Drop Info (Clean Luxury Fashion Typography) -->
         {% if section.settings.badge_label != blank or section.settings.eyebrow != blank %}
-          <div class="hero__badge-wrapper">
-            <div class="hero__badge">
-              <span class="hero__badge-dot" aria-hidden="true"></span>
-              <span class="hero__badge-text text-micro">
-                {{ section.settings.badge_label | default: section.settings.eyebrow }}
-              </span>
-            </div>
+          <div class="hero__eyebrow-wrapper">
+            <span class="hero__eyebrow text-micro">
+              {{ section.settings.badge_label | default: section.settings.eyebrow }}
+            </span>
             {% if section.settings.edition_tag != blank %}
+              <span class="hero__eyebrow-sep" aria-hidden="true">&middot;</span>
               <span class="hero__edition-tag text-micro">{{ section.settings.edition_tag }}</span>
             {% endif %}
           </div>
@@ -351,40 +349,28 @@
     justify-content: flex-end;
   }
 
-  /* Eyebrow / Live Badge */
-  .hero__badge-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-    margin-bottom: var(--space-2xs);
-    animation: heroFadeInUp 350ms var(--ease-out) 100ms backwards;
-  }
-
-  .hero__badge {
+  /* Eyebrow / Season Tag (Pure Typographic, No AI Pill or Radar Dot) */
+  .hero__eyebrow-wrapper {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.35rem 0.85rem;
-    background: rgba(255, 255, 255, 0.12);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 9999px;
-    color: var(--color-white);
+    flex-wrap: wrap;
+    margin-bottom: var(--space-xs);
+    animation: heroFadeInUp 350ms var(--ease-out) 100ms backwards;
   }
 
-  .hero__badge-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background-color: var(--color-live-indicator, #22C55E);
-    box-shadow: 0 0 8px rgba(34, 197, 94, 0.7);
-    animation: heroPulseDot 2.2s infinite ease-in-out;
+  .hero__eyebrow {
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 500;
+  }
+
+  .hero__eyebrow-sep {
+    color: rgba(255, 255, 255, 0.35);
+    user-select: none;
   }
 
   .hero__edition-tag {
-    color: rgba(255, 255, 255, 0.75);
+    color: rgba(255, 255, 255, 0.65);
     font-variant-numeric: tabular-nums;
   }
 
@@ -742,10 +728,10 @@
     }
 
     .hero__hud-link {
-      padding: 0.4rem 0.85rem;
-      background: rgba(255, 255, 255, 0.12);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      border-radius: 9999px;
+      padding: 0.35rem 0.75rem;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: var(--radius-none, 0px);
       white-space: nowrap;
       flex-shrink: 0;
     }
@@ -756,12 +742,11 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .hero__badge-wrapper,
+    .hero__eyebrow-wrapper,
     .hero__heading,
     .hero__subheading,
     .hero__actions,
     .hero__bottom-bar,
-    .hero__badge-dot,
     .hero__scroll-arrow {
       animation: none !important;
       transform: none !important;
@@ -832,27 +817,27 @@
     {
       "type": "text",
       "id": "badge_label",
-      "label": "Live Status Badge",
+      "label": "Season / Eyebrow Tag",
       "default": "AUTUMN / WINTER 2026"
     },
     {
       "type": "text",
       "id": "edition_tag",
-      "label": "Edition Index Tag",
-      "default": "EDITION NO. 001"
+      "label": "Drop / Collection Tag",
+      "default": "DROP 01"
     },
     {
       "type": "text",
       "id": "heading",
-      "label": "Editorial Heading",
-      "default": "The Art of Restraint",
+      "label": "Heading",
+      "default": "Built for Daily Wear",
       "info": "Use <em>word</em> or <i>word</i> for italic emphasis."
     },
     {
       "type": "textarea",
       "id": "subheading",
-      "label": "Subheading Narrative",
-      "default": "Modern menswear tailored for everyday discipline. Heavyweight fleece, poplin shirts, and relaxed pleated trousers."
+      "label": "Subheading",
+      "default": "Heavyweight hoodies, relaxed poplin shirts, and tailored trousers designed for everyday comfort."
     },
     {
       "type": "select",
@@ -878,7 +863,7 @@
       "type": "text",
       "id": "primary_button_label",
       "label": "Primary Button Label",
-      "default": "Explore Collection"
+      "default": "Shop Collection"
     },
     {
       "type": "url",

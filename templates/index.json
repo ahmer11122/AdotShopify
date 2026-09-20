@@ -6,11 +6,11 @@
         "hero_height": "100svh",
         "overlay_opacity": 45,
         "badge_label": "AUTUMN / WINTER 2026",
-        "edition_tag": "EDITION NO. 001",
-        "heading": "The Art of <em>Restraint</em>",
-        "subheading": "Modern menswear tailored for everyday discipline. Heavyweight fleece, poplin shirts, and relaxed pleated trousers.",
+        "edition_tag": "DROP 01",
+        "heading": "Built for Daily Wear",
+        "subheading": "Heavyweight hoodies, relaxed poplin shirts, and tailored trousers designed for everyday comfort.",
         "text_alignment": "left",
-        "primary_button_label": "Explore Collection",
+        "primary_button_label": "Shop Collection",
         "secondary_button_label": "View Lookbook",
         "show_category_bar": true,
         "show_scroll_indicator": true,
@@ -24,21 +24,21 @@
           "type": "tile",
           "settings": {
             "title": "Hoodies",
-            "subtitle": "450GSM Heavyweight Loopback"
+            "subtitle": "450 GSM Loopback Fleece"
           }
         },
         "tile_shirts": {
           "type": "tile",
           "settings": {
             "title": "Shirts",
-            "subtitle": "Relaxed Japanese Poplin"
+            "subtitle": "Relaxed Poplin"
           }
         },
         "tile_trousers": {
           "type": "tile",
           "settings": {
             "title": "Trousers",
-            "subtitle": "Single-Pleat Tailored Chinos"
+            "subtitle": "Tailored Pleated Chinos"
           }
         }
       },
@@ -48,15 +48,15 @@
         "tile_trousers"
       ],
       "settings": {
-        "eyebrow": "CATALOGUE / WARDROBE CORE",
-        "heading": "Curated Categories"
+        "eyebrow": "COLLECTIONS",
+        "heading": "Shop by Category"
       }
     },
     "featured_collection": {
       "type": "featured-collection",
       "settings": {
-        "eyebrow": "NEW ARRIVALS / DROP 01",
-        "heading": "Essential Wardrobe",
+        "eyebrow": "NEW ARRIVALS",
+        "heading": "Latest Drops",
         "products_to_show": 8,
         "show_vendor": true,
         "show_view_all": true
@@ -66,11 +66,11 @@
       "type": "editorial",
       "settings": {
         "image_position": "left",
-        "eyebrow": "THE STUDIO / MANIFESTO",
-        "quote": "Form. Fabric. Permanence. Wardrobe staples designed with architectural discipline.",
-        "body_text": "We reject seasonal obsolescence in favor of enduring silhouettes. Each piece is developed through exhaustive material research—custom loopback fleeces, high-density Japanese twills, and precise relaxed tailoring made to weather years of continuous wear.",
-        "author": "ADOT STUDIO · AUTUMN / WINTER 2026",
-        "button_label": "Read Brand Story"
+        "eyebrow": "OUR APPROACH",
+        "quote": "Durable fabrics and relaxed silhouettes, made for daily wear.",
+        "body_text": "We make timeless wardrobe staples instead of chasing seasonal trends. Every piece is cut from heavyweight organic cotton and dense twill, designed for an easy, relaxed fit that lasts.",
+        "author": "ADOT STUDIO",
+        "button_label": "Our Story"
       }
     }
   },
