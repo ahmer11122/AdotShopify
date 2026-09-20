@@ -91,11 +91,20 @@
 <search-modal class="search-modal" id="SearchModal" role="dialog" aria-modal="true" aria-label="Search Store" data-currency="{{ cart.currency.symbol | default: '$' }}">
   <div class="search-modal__backdrop" data-search-close></div>
   <div class="search-modal__content">
-    <div class="container search-modal__container">
-      
-      <!-- Top Bar: Quick Discovery label + Minimalist Close Button -->
-      <div class="search-modal__header">
-        <span class="text-micro search-modal__label">ADOT STUDIO · DISCOVERY</span>
+    
+    <!-- Top Header Bar with Brand Logo and Close Button -->
+    <div class="search-modal__topbar">
+      <div class="container search-modal__topbar-inner">
+        <a href="{{ routes.root_url }}" class="search-modal__logo-link" aria-label="{{ shop.name }}">
+          <img
+            src="{{ 'logo.png' | asset_url }}"
+            alt="{{ shop.name }}"
+            class="search-modal__logo-img"
+            width="44"
+            height="47"
+            loading="lazy"
+          >
+        </a>
         <button type="button" class="search-modal__close" data-search-close aria-label="Close search">
           <span class="search-modal__close-key text-micro" aria-hidden="true">ESC</span>
           <svg class="search-modal__close-icon" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
@@ -104,50 +113,92 @@
           </svg>
         </button>
       </div>
+    </div>
 
-      <!-- Main Search Form -->
-      <form action="{{ routes.search_url }}" method="get" role="search" class="search-modal__form">
-        <div class="search-modal__input-wrapper">
-          <svg class="search-modal__search-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="11" cy="11" r="7.5"></circle>
-            <line x1="21" y1="21" x2="16.5" y2="16.5"></line>
-          </svg>
-          <input
-            type="search"
-            name="q"
-            class="search-modal__input"
-            placeholder="Search essentials, styles, collections..."
-            autocomplete="off"
-            autocorrect="off"
-            autocapitalize="none"
-            spellcheck="false"
-            enterkeyhint="search"
-            data-search-input
-          >
-          <button type="button" class="search-modal__clear" data-search-clear aria-label="Clear search text" hidden>
-            <svg width="14" height="14" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
-              <line x1="1" y1="1" x2="17" y2="17"></line>
-              <line x1="17" y1="1" x2="1" y2="17"></line>
+    <!-- Main Discovery Body (Scrollable Full-Canvas) -->
+    <div class="search-modal__body">
+      <div class="container search-modal__container">
+
+        <!-- Main Search Form -->
+        <form action="{{ routes.search_url }}" method="get" role="search" class="search-modal__form">
+          <div class="search-modal__input-wrapper">
+            <svg class="search-modal__search-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="7.5"></circle>
+              <line x1="21" y1="21" x2="16.5" y2="16.5"></line>
             </svg>
-          </button>
-        </div>
-      </form>
+            <input
+              type="search"
+              name="q"
+              class="search-modal__input"
+              placeholder="Search essentials, styles, collections..."
+              autocomplete="off"
+              autocorrect="off"
+              autocapitalize="none"
+              spellcheck="false"
+              enterkeyhint="search"
+              data-search-input
+            >
+            <button type="button" class="search-modal__clear" data-search-clear aria-label="Clear search text" hidden>
+              <svg width="14" height="14" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+                <line x1="1" y1="1" x2="17" y2="17"></line>
+                <line x1="17" y1="1" x2="1" y2="17"></line>
+              </svg>
+            </button>
+          </div>
+        </form>
 
-      <!-- Zero-State: Trending Suggestions -->
-      <div class="search-modal__suggestions" data-search-suggestions>
-        <p class="text-micro search-modal__suggestions-title">POPULAR SEARCHES</p>
-        <div class="search-modal__tags">
-          <button type="button" class="search-modal__tag" data-tag-search="Hoodie">Hoodies</button>
-          <button type="button" class="search-modal__tag" data-tag-search="Shirt">Shirts</button>
-          <button type="button" class="search-modal__tag" data-tag-search="Trouser">Trousers</button>
-          <button type="button" class="search-modal__tag" data-tag-search="Snowboard">Snowboards</button>
-          <button type="button" class="search-modal__tag" data-tag-search="Winter">Winter</button>
+        <!-- Zero-State: Trending Suggestions & Curated Quick Exploration -->
+        <div class="search-modal__suggestions" data-search-suggestions>
+          <div class="search-modal__suggestions-group">
+            <p class="text-micro search-modal__suggestions-title">POPULAR SEARCHES</p>
+            <div class="search-modal__tags">
+              <button type="button" class="search-modal__tag" data-tag-search="Hoodie">Hoodies</button>
+              <button type="button" class="search-modal__tag" data-tag-search="Shirt">Shirts</button>
+              <button type="button" class="search-modal__tag" data-tag-search="Trouser">Trousers</button>
+              <button type="button" class="search-modal__tag" data-tag-search="Snowboard">Snowboards</button>
+              <button type="button" class="search-modal__tag" data-tag-search="Winter">Winter</button>
+            </div>
+          </div>
+
+          <div class="search-modal__quick-group">
+            <p class="text-micro search-modal__suggestions-title">DISCOVER COLLECTIONS</p>
+            <div class="search-modal__quick-links">
+              <a href="{{ routes.all_products_collection_url }}" class="search-modal__quick-link">
+                <span>All Essentials</span>
+                <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <line x1="1" y1="7" x2="13" y2="7"></line>
+                  <polyline points="8 2 13 7 8 12"></polyline>
+                </svg>
+              </a>
+              <a href="{{ routes.collections_url }}/hoodies" class="search-modal__quick-link">
+                <span>Hoodies Collection</span>
+                <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <line x1="1" y1="7" x2="13" y2="7"></line>
+                  <polyline points="8 2 13 7 8 12"></polyline>
+                </svg>
+              </a>
+              <a href="{{ routes.collections_url }}/shirts" class="search-modal__quick-link">
+                <span>Shirts Collection</span>
+                <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <line x1="1" y1="7" x2="13" y2="7"></line>
+                  <polyline points="8 2 13 7 8 12"></polyline>
+                </svg>
+              </a>
+              <a href="{{ routes.collections_url }}/trousers" class="search-modal__quick-link">
+                <span>Trousers Collection</span>
+                <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <line x1="1" y1="7" x2="13" y2="7"></line>
+                  <polyline points="8 2 13 7 8 12"></polyline>
+                </svg>
+              </a>
+            </div>
+          </div>
         </div>
+
+        <!-- Live Predictive Results -->
+        <div class="search-modal__results" data-search-results hidden></div>
+
       </div>
-
-      <!-- Live Predictive Results -->
-      <div class="search-modal__results" data-search-results hidden></div>
-
     </div>
   </div>
 </search-modal>
@@ -893,12 +944,12 @@
   }
 
   /* ==========================================================================
-     Modern Search Overlay & Live Predictive Search
+     Modern Full-Screen Luxury Search Takeover & Live Predictive Discovery
      ========================================================================== */
   .search-modal {
     position: fixed;
     inset: 0;
-    z-index: 1020;
+    z-index: 1050;
     visibility: hidden;
     pointer-events: none;
     transition: visibility 0s linear 260ms;
@@ -913,9 +964,9 @@
   .search-modal__backdrop {
     position: absolute;
     inset: 0;
-    background-color: rgba(17, 17, 17, 0.45);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    background-color: rgba(17, 17, 17, 0.5);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     opacity: 0;
     transition: opacity 240ms var(--ease-out);
   }
@@ -925,20 +976,18 @@
   }
 
   .search-modal__content {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
     background-color: var(--color-background, #FFFFFF);
-    border-bottom: 1px solid var(--color-border);
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.08);
-    max-height: 88vh;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    padding-block: var(--space-md) var(--space-lg);
-    transform: translateY(-16px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transform: translateY(-8px);
     opacity: 0;
-    transition: transform 260ms cubic-bezier(0.23, 1, 0.32, 1),
+    transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1),
                 opacity 220ms var(--ease-out);
     will-change: transform, opacity;
   }
@@ -948,39 +997,47 @@
     opacity: 1;
   }
 
-  @media (max-width: 749px) {
-    .search-modal__content {
-      height: 100dvh;
-      max-height: 100dvh;
-      padding-block: var(--space-sm) var(--space-md);
-    }
-  }
-
-  .search-modal__container {
-    max-width: var(--container-narrow, 960px);
-    margin-inline: auto;
-    padding-inline: var(--space-md);
+  /* Top Bar Header with Brand Logo & Close Trigger */
+  .search-modal__topbar {
+    width: 100%;
+    height: var(--header-height-desktop, 72px);
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    background-color: var(--color-background, #FFFFFF);
+    flex-shrink: 0;
   }
 
   @media (max-width: 749px) {
-    .search-modal__container {
-      padding-inline: var(--space-sm);
+    .search-modal__topbar {
+      height: var(--header-height-mobile, 60px);
     }
   }
 
-  .search-modal__header {
+  .search-modal__topbar-inner {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding-bottom: var(--space-sm);
-    border-bottom: 1px solid var(--color-border-subtle);
-    margin-bottom: var(--space-md);
+    width: 100%;
+    padding-inline: var(--space-md);
   }
 
-  .search-modal__label {
-    color: var(--color-text-subtle);
-    letter-spacing: var(--tracking-micro);
-    font-weight: 500;
+  .search-modal__logo-link {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+  }
+
+  .search-modal__logo-img {
+    display: block;
+    height: clamp(30px, 4vw, 38px);
+    width: auto;
+    object-fit: contain;
+    transition: opacity 160ms var(--ease-out);
+  }
+
+  .search-modal__logo-link:hover .search-modal__logo-img {
+    opacity: 0.8;
   }
 
   .search-modal__close {
@@ -1023,8 +1080,30 @@
     }
   }
 
+  /* Scrollable Discovery Canvas */
+  .search-modal__body {
+    flex: 1;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-block: clamp(2rem, 5vh, 4rem) var(--space-xl);
+  }
+
+  .search-modal__container {
+    max-width: 1140px;
+    margin-inline: auto;
+    padding-inline: var(--space-md);
+  }
+
+  @media (max-width: 749px) {
+    .search-modal__container {
+      padding-inline: var(--space-sm);
+    }
+  }
+
+  /* Form & Zero-Border Input Styling */
   .search-modal__form {
     width: 100%;
+    margin-bottom: clamp(1.75rem, 3.5vh, 3rem);
   }
 
   .search-modal__input-wrapper {
@@ -1033,6 +1112,7 @@
     align-items: center;
     width: 100%;
     border-bottom: 1.5px solid var(--color-text);
+    padding-bottom: 0.25rem;
   }
 
   .search-modal__search-icon {
@@ -1042,25 +1122,43 @@
     pointer-events: none;
   }
 
+  /* Completely eliminate the bad box border from base.css input[type="search"] */
+  .search-modal input[type="search"].search-modal__input,
   .search-modal__input {
     width: 100%;
-    background: transparent;
-    border: none;
-    border-radius: 0;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    outline: none !important;
     font-family: var(--font-display);
-    font-size: clamp(1.4rem, 2.5vw, 2.25rem);
+    font-size: clamp(1.6rem, 3vw, 2.75rem);
     font-weight: 400;
     letter-spacing: var(--tracking-tight);
     color: var(--color-text);
-    padding: var(--space-sm) 2.5rem var(--space-sm) 2.25rem;
-    outline: none;
+    padding: var(--space-xs) 2.5rem var(--space-xs) 2.5rem;
     -webkit-appearance: none;
     appearance: none;
+  }
+
+  .search-modal input[type="search"].search-modal__input:focus,
+  .search-modal input[type="search"].search-modal__input:focus-visible {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
   }
 
   .search-modal__input::placeholder {
     color: var(--color-text-subtle);
     font-weight: 350;
+  }
+
+  @media (max-width: 749px) {
+    .search-modal input[type="search"].search-modal__input,
+    .search-modal__input {
+      font-size: 16px;
+      padding: 0.5rem 2rem 0.5rem 2rem;
+    }
   }
 
   .search-modal__clear {
@@ -1088,15 +1186,11 @@
     transform: scale(0.92);
   }
 
-  @media (max-width: 749px) {
-    .search-modal__input {
-      font-size: 16px;
-      padding: 0.75rem 2rem 0.75rem 2rem;
-    }
-  }
-
+  /* Suggestions & Curated Quick Links */
   .search-modal__suggestions {
-    margin-top: var(--space-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
   }
 
   .search-modal__suggestions-title {
@@ -1118,7 +1212,7 @@
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     color: var(--color-text);
-    padding: 0.4rem 0.85rem;
+    padding: 0.45rem 1rem;
     font-size: var(--font-size-micro);
     font-weight: 500;
     letter-spacing: var(--tracking-micro);
@@ -1146,17 +1240,43 @@
     }
   }
 
+  .search-modal__quick-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+  }
+
+  .search-modal__quick-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-text);
+    font-size: var(--font-size-caption);
+    font-weight: 500;
+    letter-spacing: var(--tracking-tight);
+    text-decoration: none;
+    padding-bottom: 2px;
+    border-bottom: 1px solid transparent;
+    transition: border-color 160ms ease, opacity 160ms ease;
+  }
+
+  .search-modal__quick-link:hover {
+    border-bottom-color: var(--color-text);
+    opacity: 0.85;
+  }
+
+  /* Predictive Results Grid */
   .search-modal__results {
-    margin-top: var(--space-md);
-    padding-top: var(--space-md);
-    border-top: 1px solid var(--color-border);
+    margin-top: var(--space-sm);
   }
 
   .search-modal__results-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: var(--space-sm);
+    margin-bottom: var(--space-md);
+    padding-bottom: var(--space-xs);
+    border-bottom: 1px solid var(--color-border);
   }
 
   .search-modal__results-title {
@@ -1167,8 +1287,14 @@
 
   .search-modal__grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    grid-template-columns: repeat(4, 1fr);
     gap: var(--space-md);
+  }
+
+  @media (max-width: 989px) {
+    .search-modal__grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
   }
 
   @media (max-width: 749px) {
@@ -1196,11 +1322,11 @@
   .search-modal__card-media {
     position: relative;
     width: 100%;
-    aspect-ratio: 1 / 1;
+    aspect-ratio: 3 / 4;
     background-color: var(--color-surface);
     overflow: hidden;
-    margin-bottom: 0.5rem;
-    outline: 1px solid rgba(0, 0, 0, 0.05);
+    margin-bottom: 0.6rem;
+    outline: 1px solid rgba(0, 0, 0, 0.04);
   }
 
   .search-modal__card-img {
@@ -1208,19 +1334,19 @@
     height: 100%;
     object-fit: cover;
     display: block;
-    transition: transform 300ms var(--ease-out);
+    transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   @media (hover: hover) and (pointer: fine) {
     .search-modal__card:hover .search-modal__card-img {
-      transform: scale(1.04);
+      transform: scale(1.05);
     }
   }
 
   .search-modal__card-info {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 3px;
   }
 
   .search-modal__card-title {
@@ -1242,20 +1368,24 @@
   .search-modal__view-all {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    margin-top: var(--space-md);
+    gap: 0.5rem;
+    margin-top: var(--space-lg);
     color: var(--color-text);
     text-decoration: none;
     font-size: var(--font-size-caption);
     font-weight: 500;
-    border-bottom: 1px solid var(--color-text);
-    padding-bottom: 2px;
-    touch-action: manipulation;
-    transition: opacity 160ms var(--ease-out);
+    padding: 0.6rem 1.25rem;
+    border: 1px solid var(--color-border);
+    background-color: var(--color-surface);
+    transition: background-color 160ms var(--ease-out),
+                color 160ms var(--ease-out),
+                border-color 160ms var(--ease-out);
   }
 
-  .search-modal__view-all:active {
-    opacity: 0.7;
+  .search-modal__view-all:hover {
+    background-color: var(--color-text);
+    color: var(--color-white);
+    border-color: var(--color-text);
   }
 
   .search-modal__empty {
