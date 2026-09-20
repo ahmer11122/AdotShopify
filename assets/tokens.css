@@ -31,7 +31,7 @@
   --color-accent:           #111111; /* Monolithic brand presence */
   --color-sale:             #991B1B; /* Refined oxblood crimson for sale prices (WCAG AAA: 8.29:1) */
   --color-in-stock:         #166534; /* Evergreen stock confirmation (WCAG AAA: 9.6:1) */
-  --color-sold-out:         #8A8A8A; /* Inactive / sold out muted slate */
+  --color-sold-out:         #A3A3A3; /* Inactive / sold out muted slate */
   --color-live-indicator:   #22C55E; /* Emerald active pulse indicator */
   --color-focus:            #111111; /* High-contrast accessibility focus ring */
 

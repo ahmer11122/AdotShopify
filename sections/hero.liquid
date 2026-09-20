@@ -4,7 +4,7 @@
   - 100svh full-bleed immersion across top, bottom, left, right (zero mobile URL-bar jitter)
   - Responsive dual media: separate desktop (landscape) & mobile (portrait) photography + optional video
   - Seamless frosted glassmorphism integration with transparent overlay header
-  - Fluid Cormorant Garamond display typography with text-wrap: balance & editorial italic accents
+  - Modern Inter Tight display typography with text-wrap: balance & high-contrast clarity
   - Dual Action Cluster (Primary Monolithic CTA + Secondary Frosted Glass CTA) with :active scale(0.96)
   - Floating Bottom Category HUD & Mobile Quick-Access Category Chip Rail
   - Emil Kowalski & Mobile-Native touch/motion design engineering standards
@@ -56,12 +56,12 @@
           {% else %}
             <img
               src="{{ 'hero-desktop.png' | asset_url }}"
-              alt="{{ section.settings.heading | default: shop.name | escape }}"
+              alt="{{ section.settings.image.alt | default: 'Man wearing a black polo shirt with white trim and grey trousers' | escape }}"
               class="hero__image"
               loading="eager"
               fetchpriority="high"
               width="2560"
-              height="1700"
+              height="1440"
             >
           {% endif %}
         </picture>
@@ -74,12 +74,12 @@
           >
           <img
             src="{{ 'hero-desktop.png' | asset_url }}"
-            alt="{{ section.settings.heading | default: shop.name | escape }}"
+            alt="{{ section.settings.image.alt | default: 'Man wearing a black polo shirt with white trim and grey trousers' | escape }}"
             class="hero__image"
             loading="eager"
             fetchpriority="high"
             width="2560"
-            height="1700"
+            height="1440"
           >
         </picture>
       {% endif %}
@@ -108,7 +108,7 @@
           </div>
         {% endif %}
 
-        <!-- Fluid Cormorant Garamond Display Headline -->
+        <!-- Inter Tight Display Headline -->
         {% if section.settings.heading != blank %}
           <h1 class="hero__heading hero-title">
             {{ section.settings.heading }}
@@ -155,7 +155,7 @@
     <!-- ==========================================================================
          3. Floating Bottom Editorial HUD & Category Quick Access
          ========================================================================== -->
-    {% if section.settings.show_category_bar or section.settings.show_scroll_indicator %}
+    {% if section.settings.show_category_bar or section.settings.show_scroll_indicator or section.settings.footer_metadata != blank %}
       <div class="hero__bottom-bar">
         <div class="container hero__bottom-container">
           
@@ -277,28 +277,10 @@
     }
   }
 
-  .hero__placeholder {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: radial-gradient(circle at 60% 40%, #2D2D2A 0%, #171716 100%);
-    position: relative;
-  }
-
-  .hero__placeholder-svg {
-    width: 48%;
-    height: 48%;
-    opacity: 0.22;
-    filter: grayscale(100%);
-  }
-
-  .hero__placeholder-ambient {
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at 80% 20%, rgba(91, 96, 72, 0.18) 0%, transparent 60%);
-    pointer-events: none;
+  @media (max-width: 749px) {
+    .hero__image {
+      object-position: 78% center;
+    }
   }
 
   /* Dual Layer Progressive Vignette */
@@ -312,16 +294,15 @@
     z-index: 2;
     background: linear-gradient(
       to top,
-      rgba(18, 18, 18, 0.85) 0%,
-      rgba(18, 18, 18, 0.45) 45%,
-      rgba(18, 18, 18, 0.2) 75%,
-      rgba(18, 18, 18, 0.55) 100%
+      rgba(18, 18, 18, 0.6) 0%,
+      rgba(18, 18, 18, 0) 50%,
+      rgba(18, 18, 18, 0.3) 100%
     );
   }
 
   .hero__overlay--tint {
     z-index: 3;
-    background-color: rgba(21, 21, 21, var(--hero-overlay-opacity, 0.4));
+    background-color: rgba(21, 21, 21, var(--hero-overlay-opacity, 0.2));
   }
 
   /* ==========================================================================
@@ -403,13 +384,7 @@
     animation: heroFadeInUp 400ms var(--ease-out) 180ms backwards;
   }
 
-  .hero__heading em,
-  .hero__heading i {
-    font-style: italic;
-    font-family: var(--font-display);
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.95);
-  }
+
 
   /* Subheading */
   .hero__subheading {
@@ -633,8 +608,9 @@
   }
 
   .hero__meta-stamp {
-    color: rgba(255, 255, 255, 0.55);
+    color: rgba(255, 255, 255, 0.65);
     font-variant-numeric: tabular-nums;
+    margin-inline-start: auto;
   }
 
   /* ==========================================================================
@@ -648,17 +624,6 @@
     to {
       opacity: 1;
       transform: translateY(0);
-    }
-  }
-
-  @keyframes heroPulseDot {
-    0%, 100% {
-      opacity: 1;
-      transform: scale(1);
-    }
-    50% {
-      opacity: 0.4;
-      transform: scale(0.85);
     }
   }
 
@@ -721,9 +686,14 @@
 
     .hero__hud-label,
     .hero__hud-sep,
-    .hero__scroll-indicator,
-    .hero__meta-stamp {
+    .hero__scroll-indicator {
       display: none;
+    }
+
+    .hero__meta-stamp {
+      display: block;
+      width: 100%;
+      text-align: right;
     }
 
     /* Swipeable category pill rail for mobile */
@@ -840,7 +810,7 @@
       "step": 5,
       "unit": "%",
       "label": "Atmospheric Overlay Opacity",
-      "default": 45
+      "default": 20
     },
     {
       "type": "header",
@@ -850,26 +820,24 @@
       "type": "text",
       "id": "badge_label",
       "label": "Season / Eyebrow Tag",
-      "default": "AUTUMN / WINTER 2026"
+      "default": "New Autumn Collection"
     },
     {
       "type": "text",
       "id": "edition_tag",
-      "label": "Drop / Collection Tag",
-      "default": "DROP 01"
+      "label": "Drop / Collection Tag"
     },
     {
       "type": "text",
       "id": "heading",
       "label": "Heading",
-      "default": "Built for Daily Wear",
-      "info": "Use <em>word</em> or <i>word</i> for italic emphasis."
+      "default": "Polos and Trousers. Made for Daily Wear."
     },
     {
       "type": "textarea",
       "id": "subheading",
       "label": "Subheading",
-      "default": "Heavyweight hoodies, relaxed poplin shirts, and tailored trousers designed for everyday comfort."
+      "default": "Soft cotton polos and clean trousers. Easy to wear every day."
     },
     {
       "type": "select",
@@ -895,7 +863,7 @@
       "type": "text",
       "id": "primary_button_label",
       "label": "Primary Button Label",
-      "default": "Shop Collection"
+      "default": "Shop Polos"
     },
     {
       "type": "url",
@@ -905,8 +873,7 @@
     {
       "type": "text",
       "id": "secondary_button_label",
-      "label": "Secondary Button Label",
-      "default": "View Lookbook"
+      "label": "Secondary Button Label"
     },
     {
       "type": "url",
@@ -921,19 +888,19 @@
       "type": "checkbox",
       "id": "show_category_bar",
       "label": "Show Category Shortcuts",
-      "default": true
+      "default": false
     },
     {
       "type": "checkbox",
       "id": "show_scroll_indicator",
       "label": "Show Scroll Indicator",
-      "default": true
+      "default": false
     },
     {
       "type": "text",
       "id": "footer_metadata",
       "label": "Footer Metadata Tag",
-      "default": "ADOT STUDIO · 100% ORGANIC COTTON"
+      "default": "Cash on Delivery · Easy Exchange"
     }
   ],
   "presets": [

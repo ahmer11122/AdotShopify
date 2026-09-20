@@ -5,17 +5,18 @@
       "settings": {
         "hero_height": "100svh",
         "desktop_image_position": "top",
-        "overlay_opacity": 45,
-        "badge_label": "AUTUMN / WINTER 2026",
-        "edition_tag": "DROP 01",
-        "heading": "Built for Daily Wear",
-        "subheading": "Heavyweight hoodies, relaxed poplin shirts, and tailored trousers designed for everyday comfort.",
+        "overlay_opacity": 20,
+        "badge_label": "New Autumn Collection",
+        "edition_tag": "",
+        "heading": "Polos and Trousers. Made for Daily Wear.",
+        "subheading": "Soft cotton polos and clean trousers. Easy to wear every day.",
         "text_alignment": "left",
-        "primary_button_label": "Shop Collection",
-        "secondary_button_label": "View Lookbook",
-        "show_category_bar": true,
-        "show_scroll_indicator": true,
-        "footer_metadata": "ADOT STUDIO · 100% ORGANIC COTTON"
+        "primary_button_label": "Shop Polos",
+        "primary_button_link": "/collections/shirts",
+        "secondary_button_label": "",
+        "show_category_bar": false,
+        "show_scroll_indicator": false,
+        "footer_metadata": "Cash on Delivery · Easy Exchange"
       }
     },
     "category_tiles": {
