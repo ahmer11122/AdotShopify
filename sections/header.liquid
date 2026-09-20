@@ -58,7 +58,7 @@
 
       <ul class="header-drawer__secondary-links">
         <li>
-          <a href="{{ routes.search_url }}" class="header-drawer__secondary-link text-micro">
+          <a href="{{ routes.search_url }}" class="header-drawer__secondary-link text-micro" data-search-trigger>
             Search
           </a>
         </li>
@@ -86,6 +86,71 @@
     </div>
   </div>
 </header-drawer>
+
+<!-- Accessible Modern Search Overlay & Live Predictive Search -->
+<search-modal class="search-modal" id="SearchModal" role="dialog" aria-modal="true" aria-label="Search Store" data-currency="{{ cart.currency.symbol | default: '$' }}">
+  <div class="search-modal__backdrop" data-search-close></div>
+  <div class="search-modal__content">
+    <div class="container search-modal__container">
+      
+      <!-- Top Bar: Quick Discovery label + Minimalist Close Button -->
+      <div class="search-modal__header">
+        <span class="text-micro search-modal__label">ADOT STUDIO · DISCOVERY</span>
+        <button type="button" class="search-modal__close" data-search-close aria-label="Close search">
+          <span class="search-modal__close-key text-micro" aria-hidden="true">ESC</span>
+          <svg class="search-modal__close-icon" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+            <line x1="1" y1="1" x2="17" y2="17"></line>
+            <line x1="17" y1="1" x2="1" y2="17"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Main Search Form -->
+      <form action="{{ routes.search_url }}" method="get" role="search" class="search-modal__form">
+        <div class="search-modal__input-wrapper">
+          <svg class="search-modal__search-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="7.5"></circle>
+            <line x1="21" y1="21" x2="16.5" y2="16.5"></line>
+          </svg>
+          <input
+            type="search"
+            name="q"
+            class="search-modal__input"
+            placeholder="Search essentials, styles, collections..."
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="none"
+            spellcheck="false"
+            enterkeyhint="search"
+            data-search-input
+          >
+          <button type="button" class="search-modal__clear" data-search-clear aria-label="Clear search text" hidden>
+            <svg width="14" height="14" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+              <line x1="1" y1="1" x2="17" y2="17"></line>
+              <line x1="17" y1="1" x2="1" y2="17"></line>
+            </svg>
+          </button>
+        </div>
+      </form>
+
+      <!-- Zero-State: Trending Suggestions -->
+      <div class="search-modal__suggestions" data-search-suggestions>
+        <p class="text-micro search-modal__suggestions-title">POPULAR SEARCHES</p>
+        <div class="search-modal__tags">
+          <button type="button" class="search-modal__tag" data-tag-search="Hoodie">Hoodies</button>
+          <button type="button" class="search-modal__tag" data-tag-search="Shirt">Shirts</button>
+          <button type="button" class="search-modal__tag" data-tag-search="Trouser">Trousers</button>
+          <button type="button" class="search-modal__tag" data-tag-search="Snowboard">Snowboards</button>
+          <button type="button" class="search-modal__tag" data-tag-search="Winter">Winter</button>
+        </div>
+      </div>
+
+      <!-- Live Predictive Results -->
+      <div class="search-modal__results" data-search-results hidden></div>
+
+    </div>
+  </div>
+</search-modal>
 
 <!-- Main Header Bar -->
 <header class="header {% if section.settings.sticky %}header--sticky{% endif %} header--overlay full-width" data-section-id="{{ section.id }}">
@@ -157,7 +222,7 @@
       <!-- Right: Minimalist Utility Icons (Desktop & Mobile) -->
       <div class="header__utilities-right">
         <!-- Search Icon Trigger -->
-        <a href="{{ routes.search_url }}" class="header__icon-btn header__icon-btn--search" aria-label="Search">
+        <a href="{{ routes.search_url }}" class="header__icon-btn header__icon-btn--search" aria-label="Search" data-search-trigger>
           <svg class="header__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <circle cx="11" cy="11" r="7.5"></circle>
             <line x1="21" y1="21" x2="16.5" y2="16.5"></line>
@@ -826,6 +891,387 @@
     color: var(--color-text-subtle);
     letter-spacing: var(--tracking-micro);
   }
+
+  /* ==========================================================================
+     Modern Search Overlay & Live Predictive Search
+     ========================================================================== */
+  .search-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1020;
+    visibility: hidden;
+    pointer-events: none;
+    transition: visibility 0s linear 260ms;
+  }
+
+  .search-modal.is-open {
+    visibility: visible;
+    pointer-events: auto;
+    transition-delay: 0s;
+  }
+
+  .search-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(17, 17, 17, 0.45);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    opacity: 0;
+    transition: opacity 240ms var(--ease-out);
+  }
+
+  .search-modal.is-open .search-modal__backdrop {
+    opacity: 1;
+  }
+
+  .search-modal__content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: var(--color-background, #FFFFFF);
+    border-bottom: 1px solid var(--color-border);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.08);
+    max-height: 88vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-block: var(--space-md) var(--space-lg);
+    transform: translateY(-16px);
+    opacity: 0;
+    transition: transform 260ms cubic-bezier(0.23, 1, 0.32, 1),
+                opacity 220ms var(--ease-out);
+    will-change: transform, opacity;
+  }
+
+  .search-modal.is-open .search-modal__content {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  @media (max-width: 749px) {
+    .search-modal__content {
+      height: 100dvh;
+      max-height: 100dvh;
+      padding-block: var(--space-sm) var(--space-md);
+    }
+  }
+
+  .search-modal__container {
+    max-width: var(--container-narrow, 960px);
+    margin-inline: auto;
+    padding-inline: var(--space-md);
+  }
+
+  @media (max-width: 749px) {
+    .search-modal__container {
+      padding-inline: var(--space-sm);
+    }
+  }
+
+  .search-modal__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: var(--space-sm);
+    border-bottom: 1px solid var(--color-border-subtle);
+    margin-bottom: var(--space-md);
+  }
+
+  .search-modal__label {
+    color: var(--color-text-subtle);
+    letter-spacing: var(--tracking-micro);
+    font-weight: 500;
+  }
+
+  .search-modal__close {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--color-text);
+    padding: 0.5rem;
+    min-width: 44px;
+    min-height: 44px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: transform 160ms var(--ease-out), opacity var(--transition-fast) var(--ease-out);
+  }
+
+  .search-modal__close:active {
+    transform: scale(0.92);
+  }
+
+  .search-modal__close-key {
+    display: inline-block;
+    padding: 2px 6px;
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    border: 1px solid var(--color-border);
+    border-radius: 0;
+    color: var(--color-text-muted);
+    line-height: 1;
+  }
+
+  @media (max-width: 749px) {
+    .search-modal__close-key {
+      display: none;
+    }
+  }
+
+  .search-modal__form {
+    width: 100%;
+  }
+
+  .search-modal__input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    border-bottom: 1.5px solid var(--color-text);
+  }
+
+  .search-modal__search-icon {
+    position: absolute;
+    left: 0;
+    color: var(--color-text);
+    pointer-events: none;
+  }
+
+  .search-modal__input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.4rem, 2.5vw, 2.25rem);
+    font-weight: 400;
+    letter-spacing: var(--tracking-tight);
+    color: var(--color-text);
+    padding: var(--space-sm) 2.5rem var(--space-sm) 2.25rem;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .search-modal__input::placeholder {
+    color: var(--color-text-subtle);
+    font-weight: 350;
+  }
+
+  .search-modal__clear {
+    position: absolute;
+    right: 0;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--color-text-muted);
+    padding: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    min-height: 36px;
+    touch-action: manipulation;
+    transition: color 150ms ease, transform 160ms var(--ease-out);
+  }
+
+  .search-modal__clear:hover {
+    color: var(--color-text);
+  }
+
+  .search-modal__clear:active {
+    transform: scale(0.92);
+  }
+
+  @media (max-width: 749px) {
+    .search-modal__input {
+      font-size: 16px;
+      padding: 0.75rem 2rem 0.75rem 2rem;
+    }
+  }
+
+  .search-modal__suggestions {
+    margin-top: var(--space-md);
+  }
+
+  .search-modal__suggestions-title {
+    color: var(--color-text-subtle);
+    letter-spacing: var(--tracking-micro);
+    margin-bottom: var(--space-xs);
+    font-weight: 500;
+  }
+
+  .search-modal__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .search-modal__tag {
+    display: inline-flex;
+    align-items: center;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+    padding: 0.4rem 0.85rem;
+    font-size: var(--font-size-micro);
+    font-weight: 500;
+    letter-spacing: var(--tracking-micro);
+    text-transform: uppercase;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: background-color 160ms var(--ease-out),
+                color 160ms var(--ease-out),
+                border-color 160ms var(--ease-out),
+                transform 160ms var(--ease-out);
+  }
+
+  .search-modal__tag:active {
+    transform: scale(0.95);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .search-modal__tag:hover {
+      background-color: var(--color-text);
+      color: var(--color-white);
+      border-color: var(--color-text);
+    }
+  }
+
+  .search-modal__results {
+    margin-top: var(--space-md);
+    padding-top: var(--space-md);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .search-modal__results-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-sm);
+  }
+
+  .search-modal__results-title {
+    color: var(--color-text-subtle);
+    letter-spacing: var(--tracking-micro);
+    font-weight: 500;
+  }
+
+  .search-modal__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: var(--space-md);
+  }
+
+  @media (max-width: 749px) {
+    .search-modal__grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-sm);
+    }
+  }
+
+  .search-modal__card {
+    text-decoration: none;
+    color: var(--color-text);
+    display: flex;
+    flex-direction: column;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 160ms var(--ease-out);
+    will-change: transform;
+  }
+
+  .search-modal__card:active {
+    transform: scale(0.97);
+  }
+
+  .search-modal__card-media {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background-color: var(--color-surface);
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+    outline: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .search-modal__card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 300ms var(--ease-out);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .search-modal__card:hover .search-modal__card-img {
+      transform: scale(1.04);
+    }
+  }
+
+  .search-modal__card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .search-modal__card-title {
+    font-size: var(--font-size-caption);
+    font-weight: 500;
+    color: var(--color-text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1.3;
+  }
+
+  .search-modal__card-price {
+    font-size: var(--font-size-micro);
+    color: var(--color-text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .search-modal__view-all {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: var(--space-md);
+    color: var(--color-text);
+    text-decoration: none;
+    font-size: var(--font-size-caption);
+    font-weight: 500;
+    border-bottom: 1px solid var(--color-text);
+    padding-bottom: 2px;
+    touch-action: manipulation;
+    transition: opacity 160ms var(--ease-out);
+  }
+
+  .search-modal__view-all:active {
+    opacity: 0.7;
+  }
+
+  .search-modal__empty {
+    padding-block: var(--space-md);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-body);
+    text-align: center;
+  }
+
+  .search-modal__loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-block: var(--space-lg);
+    color: var(--color-text-muted);
+  }
 {% endstylesheet %}
 
 {% javascript %}
@@ -938,6 +1384,268 @@
 
   if (!customElements.get('header-drawer')) {
     customElements.define('header-drawer', HeaderDrawer);
+  }
+
+  class SearchModal extends HTMLElement {
+    constructor() {
+      super();
+      this.isOpen = false;
+      this.triggerButtons = document.querySelectorAll('[data-search-trigger]');
+      this.closeButtons = this.querySelectorAll('[data-search-close]');
+      this.input = this.querySelector('[data-search-input]');
+      this.clearButton = this.querySelector('[data-search-clear]');
+      this.suggestions = this.querySelector('[data-search-suggestions]');
+      this.resultsContainer = this.querySelector('[data-search-results]');
+      this.form = this.querySelector('form');
+      this.currencySymbol = this.dataset.currency || '$';
+      this.lastFocusedElement = null;
+      this.debounceTimeout = null;
+      this.activeAbortController = null;
+
+      this.init();
+    }
+
+    init() {
+      this.triggerButtons.forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.lastFocusedElement = e.currentTarget;
+
+          // If mobile drawer is currently open, close it first
+          const drawer = document.querySelector('header-drawer');
+          if (drawer && drawer.isOpen) {
+            drawer.close();
+          }
+
+          this.open();
+        });
+      });
+
+      this.closeButtons.forEach((btn) => {
+        btn.addEventListener('click', () => this.close());
+      });
+
+      if (this.clearButton && this.input) {
+        this.clearButton.addEventListener('click', () => {
+          this.input.value = '';
+          this.input.focus();
+          this.clearButton.hidden = true;
+          this.resetResults();
+        });
+      }
+
+      if (this.input) {
+        this.input.addEventListener('input', (e) => {
+          const query = e.target.value.trim();
+          if (this.clearButton) {
+            this.clearButton.hidden = query.length === 0;
+          }
+
+          if (query.length === 0) {
+            this.resetResults();
+            return;
+          }
+
+          clearTimeout(this.debounceTimeout);
+          this.debounceTimeout = setTimeout(() => {
+            this.fetchResults(query);
+          }, 220);
+        });
+      }
+
+      // Quick Tag Search Buttons
+      this.querySelectorAll('[data-tag-search]').forEach((tagBtn) => {
+        tagBtn.addEventListener('click', (e) => {
+          const term = e.currentTarget.getAttribute('data-tag-search');
+          if (this.input) {
+            this.input.value = term;
+            if (this.clearButton) this.clearButton.hidden = false;
+            this.input.focus();
+            this.fetchResults(term);
+          }
+        });
+      });
+
+      // Escape key to close
+      document.addEventListener('keydown', (e) => {
+        if (!this.isOpen) return;
+
+        if (e.key === 'Escape') {
+          this.close();
+          return;
+        }
+
+        // Tab trapping
+        if (e.key === 'Tab') {
+          const focusable = this.querySelectorAll(
+            'button:not([hidden]), [href], input:not([hidden]), [tabindex]:not([tabindex="-1"])'
+          );
+          if (focusable.length === 0) return;
+
+          const first = focusable[0];
+          const last = focusable[focusable.length - 1];
+
+          if (e.shiftKey) {
+            if (document.activeElement === first) {
+              e.preventDefault();
+              last.focus();
+            }
+          } else {
+            if (document.activeElement === last) {
+              e.preventDefault();
+              first.focus();
+            }
+          }
+        }
+      });
+    }
+
+    open() {
+      this.isOpen = true;
+      this.classList.add('is-open');
+      document.body.style.overflow = 'hidden';
+
+      setTimeout(() => {
+        if (this.input) {
+          this.input.focus();
+        }
+      }, 50);
+    }
+
+    close() {
+      this.isOpen = false;
+      this.classList.remove('is-open');
+      document.body.style.overflow = '';
+
+      if (this.lastFocusedElement) {
+        this.lastFocusedElement.focus();
+      }
+    }
+
+    resetResults() {
+      if (this.resultsContainer) {
+        this.resultsContainer.hidden = true;
+        this.resultsContainer.innerHTML = '';
+      }
+      if (this.suggestions) {
+        this.suggestions.hidden = false;
+      }
+    }
+
+    formatPrice(amount) {
+      if (!amount) return '';
+      const num = parseFloat(amount);
+      if (isNaN(num)) return amount;
+      return this.currencySymbol + num.toFixed(2);
+    }
+
+    escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    async fetchResults(query) {
+      if (this.activeAbortController) {
+        this.activeAbortController.abort();
+      }
+      this.activeAbortController = new AbortController();
+
+      if (this.suggestions) {
+        this.suggestions.hidden = true;
+      }
+      if (this.resultsContainer) {
+        this.resultsContainer.hidden = false;
+        this.resultsContainer.innerHTML = `
+          <div class="search-modal__loading">
+            <p class="text-micro">SEARCHING STORE...</p>
+          </div>
+        `;
+      }
+
+      try {
+        const response = await fetch(
+          `/search/suggest.json?q=${encodeURIComponent(query)}&resources[type]=product&resources[limit]=6`,
+          { signal: this.activeAbortController.signal }
+        );
+
+        if (!response.ok) throw new Error('Search failed');
+
+        const data = await response.json();
+        const products = data.resources?.results?.products || [];
+
+        this.renderProducts(products, query);
+      } catch (err) {
+        if (err.name === 'AbortError') return;
+        if (this.resultsContainer) {
+          this.resultsContainer.innerHTML = `
+            <div class="search-modal__empty">
+              <p>Unable to load results. Press enter to perform full search.</p>
+            </div>
+          `;
+        }
+      }
+    }
+
+    renderProducts(products, query) {
+      if (!this.resultsContainer) return;
+
+      if (products.length === 0) {
+        this.resultsContainer.innerHTML = `
+          <div class="search-modal__empty">
+            <p>No products found matching "<strong>${this.escapeHtml(query)}</strong>"</p>
+          </div>
+        `;
+        return;
+      }
+
+      const productsHtml = products
+        .map((product) => {
+          const imgUrl = product.image || product.featured_image?.url || '';
+          const title = this.escapeHtml(product.title);
+          const url = this.escapeHtml(product.url);
+          const price = this.formatPrice(product.price);
+
+          return `
+            <a href="${url}" class="search-modal__card">
+              <div class="search-modal__card-media">
+                ${imgUrl ? `<img src="${imgUrl}" alt="${title}" class="search-modal__card-img" width="300" height="300" loading="lazy">` : ''}
+              </div>
+              <div class="search-modal__card-info">
+                <span class="search-modal__card-title">${title}</span>
+                <span class="search-modal__card-price text-micro">${price}</span>
+              </div>
+            </a>
+          `;
+        })
+        .join('');
+
+      const viewAllUrl = `/search?q=${encodeURIComponent(query)}`;
+
+      this.resultsContainer.innerHTML = `
+        <div class="search-modal__results-header">
+          <span class="text-micro search-modal__results-title">MATCHING PRODUCTS (${products.length})</span>
+        </div>
+        <div class="search-modal__grid">
+          ${productsHtml}
+        </div>
+        <a href="${viewAllUrl}" class="search-modal__view-all">
+          <span>View all results for "${this.escapeHtml(query)}"</span>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="1" y1="7" x2="13" y2="7"></line>
+            <polyline points="8 2 13 7 8 12"></polyline>
+          </svg>
+        </a>
+      `;
+    }
+  }
+
+  if (!customElements.get('search-modal')) {
+    customElements.define('search-modal', SearchModal);
   }
 
   // Dynamic Scroll State for Sticky Frosted Glass Header
