@@ -6,7 +6,7 @@
 
 html,
 body {
-  overflow-x: clip;
+  overflow-x: hidden;
   max-width: 100%;
 }
 
@@ -240,64 +240,6 @@ a:hover {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
-  }
-}
-
-/* ==========================================================================
-   Editorial Curtain Overlap & Cinematic Scroll Depth (Buttery Smooth 120fps)
-   ========================================================================== */
-#MainContent {
-  position: relative;
-}
-
-.section-hero {
-  position: -webkit-sticky;
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  width: 100%;
-}
-
-.section-category-tiles {
-  position: relative;
-  z-index: 2;
-  background-color: var(--color-background);
-  box-shadow: 0 -24px 60px -12px rgba(0, 0, 0, 0.07);
-  border-top: 1px solid var(--color-border-subtle);
-  padding-top: clamp(3rem, 5.5vw, 5.5rem);
-}
-
-.section-featured-collection,
-.section-editorial,
-.shopify-section-group-footer-group,
-footer {
-  position: relative;
-  z-index: 2;
-  background-color: var(--color-background);
-}
-
-/* GPU Scroll-Driven Parallax Depth */
-@supports (animation-timeline: scroll()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .section-hero .hero__inner {
-      animation: hero-curtain-depth linear both;
-      animation-timeline: scroll(root block);
-      animation-range: 0vh 100vh;
-      transform-origin: center center;
-    }
-
-    @keyframes hero-curtain-depth {
-      0% {
-        transform: translateY(0) scale(1);
-        opacity: 1;
-        filter: brightness(1);
-      }
-      100% {
-        transform: translateY(12%) scale(0.97);
-        opacity: 0.6;
-        filter: brightness(0.82);
-      }
-    }
   }
 }
 
