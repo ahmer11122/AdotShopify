@@ -4,6 +4,7 @@
       "type": "hero",
       "settings": {
         "hero_height": "100svh",
+        "desktop_image_position": "top",
         "overlay_opacity": 45,
         "badge_label": "AUTUMN / WINTER 2026",
         "edition_tag": "DROP 01",

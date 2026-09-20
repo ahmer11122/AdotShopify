@@ -13,7 +13,7 @@
 <section
   class="hero hero--full hero--height-{{ section.settings.hero_height | default: '100svh' }} hero--align-{{ section.settings.text_alignment | default: 'left' }}"
   data-section-id="{{ section.id }}"
-  style="--hero-overlay-opacity: {{ section.settings.overlay_opacity | default: 45 | divided_by: 100.0 }};"
+  style="--hero-overlay-opacity: {{ section.settings.overlay_opacity | default: 45 | divided_by: 100.0 }}; --hero-image-position-desktop: {{ section.settings.desktop_image_position | default: 'top' }};"
 >
   <div class="hero__inner">
     <!-- ==========================================================================
@@ -53,25 +53,35 @@
                 class: 'hero__image',
                 alt: section.settings.image.alt | default: section.settings.heading | escape
             }}
-          {% elsif section.settings.image_mobile != blank %}
-            {{
-              section.settings.image_mobile
-              | image_url: width: 1100
-              | image_tag:
-                loading: 'eager',
-                fetchpriority: 'high',
-                widths: '750, 1100',
-                sizes: '100vw',
-                class: 'hero__image',
-                alt: section.settings.image_mobile.alt | default: section.settings.heading | escape
-            }}
+          {% else %}
+            <img
+              src="{{ 'hero-desktop.png' | asset_url }}"
+              alt="{{ section.settings.heading | default: shop.name | escape }}"
+              class="hero__image"
+              loading="eager"
+              fetchpriority="high"
+              width="2560"
+              height="1700"
+            >
           {% endif %}
         </picture>
       {% else %}
-        <div class="hero__placeholder">
-          {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg hero__placeholder-svg' }}
-          <div class="hero__placeholder-ambient" aria-hidden="true"></div>
-        </div>
+        <!-- Desktop Hero Photography (assets/hero-desktop.png) -->
+        <picture class="hero__picture">
+          <source
+            media="(min-width: 750px)"
+            srcset="{{ 'hero-desktop.png' | asset_url }}"
+          >
+          <img
+            src="{{ 'hero-desktop.png' | asset_url }}"
+            alt="{{ section.settings.heading | default: shop.name | escape }}"
+            class="hero__image"
+            loading="eager"
+            fetchpriority="high"
+            width="2560"
+            height="1700"
+          >
+        </picture>
       {% endif %}
 
       <!-- Layered Progressive Vignette & Atmosphere Overlays -->
@@ -259,6 +269,12 @@
     object-fit: cover;
     object-position: center;
     display: block;
+  }
+
+  @media (min-width: 750px) {
+    .hero__image {
+      object-position: center var(--hero-image-position-desktop, top);
+    }
   }
 
   .hero__placeholder {
@@ -768,6 +784,22 @@
       "type": "image_picker",
       "id": "image",
       "label": "Desktop Hero Image (Landscape)"
+    },
+    {
+      "type": "select",
+      "id": "desktop_image_position",
+      "label": "Desktop Image Alignment",
+      "options": [
+        {
+          "value": "top",
+          "label": "Top (Clear Header / Best Headroom)"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        }
+      ],
+      "default": "top"
     },
     {
       "type": "image_picker",
