@@ -378,13 +378,13 @@
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background-color: #7BB86A;
-    box-shadow: 0 0 8px rgba(123, 184, 106, 0.9);
+    background-color: var(--color-live-indicator, #22C55E);
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.7);
     animation: heroPulseDot 2.2s infinite ease-in-out;
   }
 
   .hero__edition-tag {
-    color: rgba(245, 242, 236, 0.75);
+    color: rgba(255, 255, 255, 0.75);
     font-variant-numeric: tabular-nums;
   }
 
@@ -397,7 +397,7 @@
     font-size: clamp(2.5rem, 6.2vw, 5.5rem);
     line-height: 1.04;
     letter-spacing: var(--tracking-tight);
-    font-weight: 400;
+    font-weight: 600;
     animation: heroFadeInUp 400ms var(--ease-out) 180ms backwards;
   }
 
@@ -405,8 +405,8 @@
   .hero__heading i {
     font-style: italic;
     font-family: var(--font-display);
-    font-weight: 400;
-    color: rgba(245, 242, 236, 0.95);
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.95);
   }
 
   /* Subheading */
@@ -415,7 +415,7 @@
     font-size: clamp(0.9375rem, 1.25vw, 1.125rem);
     line-height: var(--leading-normal);
     max-width: 50ch;
-    color: rgba(245, 242, 236, 0.88);
+    color: rgba(255, 255, 255, 0.88);
     margin: 0 0 var(--space-xs);
     text-wrap: pretty;
     animation: heroFadeInUp 400ms var(--ease-out) 260ms backwards;
@@ -550,7 +550,7 @@
   }
 
   .hero__hud-label {
-    color: rgba(245, 242, 236, 0.5);
+    color: rgba(255, 255, 255, 0.5);
     margin-right: 0.25rem;
   }
 
@@ -558,7 +558,7 @@
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
-    color: rgba(245, 242, 236, 0.85);
+    color: rgba(255, 255, 255, 0.85);
     text-decoration: none;
     position: relative;
     font-variant-numeric: tabular-nums;
@@ -607,7 +607,7 @@
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    color: rgba(245, 242, 236, 0.75);
+    color: rgba(255, 255, 255, 0.75);
     text-decoration: none;
     user-select: none;
     touch-action: manipulation;
@@ -631,7 +631,7 @@
   }
 
   .hero__meta-stamp {
-    color: rgba(245, 242, 236, 0.55);
+    color: rgba(255, 255, 255, 0.55);
     font-variant-numeric: tabular-nums;
   }
 

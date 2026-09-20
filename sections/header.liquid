@@ -201,11 +201,11 @@
 
   /* When scrolled down: smoothly transition into frosted glassmorphism */
   .header.header--scrolled {
-    background-color: rgba(245, 242, 236, 0.88);
+    background-color: rgba(255, 255, 255, 0.9);
     backdrop-filter: blur(20px) saturate(160%);
     -webkit-backdrop-filter: blur(20px) saturate(160%);
-    border-bottom: 1px solid rgba(21, 21, 21, 0.08);
-    box-shadow: 0 4px 20px rgba(21, 21, 21, 0.03);
+    border-bottom: 1px solid var(--color-border);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
   }
 
   /* Unscrolled state over dark hero on homepage: crisp white text & icons with subtle top gradient */
@@ -248,10 +248,10 @@
   }
 
   body:not(.template-index) .header:not(.header--scrolled) {
-    background-color: rgba(245, 242, 236, 0.88);
+    background-color: rgba(255, 255, 255, 0.9);
     backdrop-filter: blur(20px) saturate(160%);
     -webkit-backdrop-filter: blur(20px) saturate(160%);
-    border-bottom: 1px solid rgba(21, 21, 21, 0.08);
+    border-bottom: 1px solid var(--color-border);
   }
 
   .header__main {

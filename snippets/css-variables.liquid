@@ -1,30 +1,5 @@
 {% style %}
-  {% # Loads font variations via Shopify CDN with font-display: swap %}
-  {% if settings.type_display_font %}
-    {{ settings.type_display_font | font_face: font_display: 'swap' }}
-    {{ settings.type_display_font | font_modify: 'weight', 'bold' | font_face: font_display: 'swap' }}
-    {{ settings.type_display_font | font_modify: 'style', 'italic' | font_face: font_display: 'swap' }}
-  {% endif %}
-
-  {% if settings.type_body_font %}
-    {{ settings.type_body_font | font_face: font_display: 'swap' }}
-    {{ settings.type_body_font | font_modify: 'weight', 'bold' | font_face: font_display: 'swap' }}
-    {{ settings.type_body_font | font_modify: 'style', 'italic' | font_face: font_display: 'swap' }}
-  {% endif %}
-
   :root {
-    {% comment %}
-      Theme defaults to Cormorant Garamond & Inter in tokens.css.
-      Only override if merchant explicitly changed the font in the Theme Editor:
-    {% endcomment %}
-    {% if settings.type_display_font and settings.type_display_font.family != 'Playfair Display' %}
-      --font-display: {{ settings.type_display_font.family }}, {{ settings.type_display_font.fallback_families }};
-    {% endif %}
-    {% if settings.type_body_font and settings.type_body_font.family != 'Assistant' %}
-      --font-body: {{ settings.type_body_font.family }}, {{ settings.type_body_font.fallback_families }};
-      --font-primary--family: var(--font-body);
-    {% endif %}
-
     {% if settings.max_page_width %}
       --page-width: {{ settings.max_page_width }};
     {% endif %}
@@ -32,10 +7,10 @@
       --page-margin: {{ settings.min_page_margin }}px;
     {% endif %}
 
-    {% if settings.background_color %}
+    {% if settings.background_color and settings.background_color != blank %}
       --color-background: {{ settings.background_color }};
     {% endif %}
-    {% if settings.foreground_color %}
+    {% if settings.foreground_color and settings.foreground_color != blank %}
       --color-foreground: {{ settings.foreground_color }};
       --color-text: {{ settings.foreground_color }};
     {% endif %}

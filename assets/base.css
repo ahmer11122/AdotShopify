@@ -22,10 +22,11 @@ h2, .h2,
 h3, .h3,
 h4, .h4 {
   font-family: var(--font-display);
-  font-weight: 400;
+  font-weight: 600;
   line-height: var(--leading-tight);
   letter-spacing: var(--tracking-tight);
   color: var(--color-text);
+  text-wrap: balance;
 }
 
 .hero-title {
@@ -33,7 +34,8 @@ h4, .h4 {
   font-size: var(--font-size-hero);
   line-height: 1.05;
   letter-spacing: var(--tracking-tight);
-  font-weight: 400;
+  font-weight: 600;
+  text-wrap: balance;
 }
 
 h1, .h1 {
@@ -51,8 +53,22 @@ h3, .h3 {
 h4, .h4 {
   font-size: var(--font-size-h4);
   font-family: var(--font-body);
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: var(--tracking-normal);
+}
+
+p,
+.body-text {
+  text-wrap: pretty;
+}
+
+/* Tabular numerals prevent layout shifting during price / counter updates */
+.price,
+.product-price,
+.badge,
+[data-price],
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
 }
 
 /* ==========================================================================
@@ -75,6 +91,22 @@ h4, .h4 {
 }
 
 /* ==========================================================================
+   Inputs & Form Controls (Border Strong 3.5:1 Boundary Contrast)
+   ========================================================================== */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+input[type="tel"],
+input[type="number"],
+textarea,
+select {
+  border: 1px solid var(--color-border-strong);
+  background-color: var(--color-background);
+  color: var(--color-text);
+}
+
+/* ==========================================================================
    Links & Interactive Elements
    ========================================================================== */
 a {
@@ -87,10 +119,10 @@ a:hover {
   opacity: 0.75;
 }
 
-/* Keyboard accessibility focus ring */
+/* Keyboard accessibility focus ring (2px offset prevents black-on-black collision) */
 :focus-visible {
   outline: 2px solid var(--color-focus);
-  outline-offset: 3px;
+  outline-offset: 2px;
 }
 
 /* ==========================================================================
@@ -133,8 +165,8 @@ a:hover {
 
 .btn-primary:disabled,
 .btn-primary[aria-disabled="true"] {
-  background-color: var(--color-border);
-  color: var(--color-text-subtle);
+  background-color: var(--color-btn-disabled-bg);
+  color: var(--color-btn-disabled-text);
   border-color: var(--color-border);
   cursor: not-allowed;
   transform: none;

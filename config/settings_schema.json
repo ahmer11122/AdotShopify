@@ -1,32 +1,11 @@
 [
   {
     "name": "theme_info",
-    "theme_name": "Skeleton",
-    "theme_version": "0.1.0",
-    "theme_author": "Shopify",
+    "theme_name": "AdotShopify",
+    "theme_version": "1.0.0",
+    "theme_author": "ADOT STUDIO",
     "theme_documentation_url": "https://help.shopify.com/manual/online-store/themes",
     "theme_support_url": "https://support.shopify.com/"
-  },
-  {
-    "name": "t:general.typography",
-    "settings": [
-      {
-        "type": "header",
-        "content": "t:general.fonts"
-      },
-      {
-        "type": "font_picker",
-        "id": "type_display_font",
-        "default": "playfair_display_n4",
-        "label": "Display Font"
-      },
-      {
-        "type": "font_picker",
-        "id": "type_body_font",
-        "default": "assistant_n4",
-        "label": "Body Font"
-      }
-    ]
   },
   {
     "name": "t:general.layout",
@@ -65,13 +44,13 @@
       {
         "type": "color",
         "id": "background_color",
-        "default": "#F5F2EC",
+        "default": "#FFFFFF",
         "label": "t:labels.background"
       },
       {
         "type": "color",
         "id": "foreground_color",
-        "default": "#151515",
+        "default": "#111111",
         "label": "t:labels.foreground"
       },
       {
