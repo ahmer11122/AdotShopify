@@ -1,54 +1,211 @@
 {% comment %}
-  Modern Editorial Hero Banner
-  High-impact photography with fluid Cormorant Garamond headline and monolithic CTA.
+  Modern Editorial Luxury Hero Banner — Smart Solutions
+  Features:
+  - 100svh full-bleed immersion across top, bottom, left, right (zero mobile URL-bar jitter)
+  - Responsive dual media: separate desktop (landscape) & mobile (portrait) photography + optional video
+  - Seamless frosted glassmorphism integration with transparent overlay header
+  - Fluid Cormorant Garamond display typography with text-wrap: balance & editorial italic accents
+  - Dual Action Cluster (Primary Monolithic CTA + Secondary Frosted Glass CTA) with :active scale(0.96)
+  - Floating Bottom Category HUD & Mobile Quick-Access Category Chip Rail
+  - Emil Kowalski & Mobile-Native touch/motion design engineering standards
 {% endcomment %}
 
-<section class="hero {% if section.settings.full_width %}hero--full full-width{% else %}container{% endif %}" data-section-id="{{ section.id }}">
+<section
+  class="hero hero--full hero--height-{{ section.settings.hero_height | default: '100svh' }} hero--align-{{ section.settings.text_alignment | default: 'left' }}"
+  data-section-id="{{ section.id }}"
+  style="--hero-overlay-opacity: {{ section.settings.overlay_opacity | default: 45 | divided_by: 100.0 }};"
+>
   <div class="hero__inner">
+    <!-- ==========================================================================
+         1. Background Media Layer (Desktop, Mobile, Video, Placeholder)
+         ========================================================================== -->
     <div class="hero__media">
-      {% if section.settings.image != blank %}
-        {{
-          section.settings.image
-          | image_url: width: 2400
-          | image_tag:
-            loading: 'eager',
-            fetchpriority: 'high',
-            widths: '750, 1100, 1500, 1920, 2400',
-            sizes: '100vw',
-            class: 'hero__image',
-            alt: section.settings.image.alt | default: section.settings.heading | escape
-        }}
+      {% if section.settings.video_url != blank %}
+        <video
+          class="hero__video"
+          autoplay
+          loop
+          muted
+          playsinline
+          preload="auto"
+          {% if section.settings.image != blank %}poster="{{ section.settings.image | image_url: width: 1920 }}"{% endif %}
+        >
+          <source src="{{ section.settings.video_url }}" type="video/mp4">
+        </video>
+      {% elsif section.settings.image != blank or section.settings.image_mobile != blank %}
+        <picture class="hero__picture">
+          {% if section.settings.image_mobile != blank %}
+            <source
+              media="(max-width: 749px)"
+              srcset="{{ section.settings.image_mobile | image_url: width: 750 }} 750w, {{ section.settings.image_mobile | image_url: width: 1100 }} 1100w"
+              sizes="100vw"
+            >
+          {% endif %}
+          {% if section.settings.image != blank %}
+            {{
+              section.settings.image
+              | image_url: width: 2400
+              | image_tag:
+                loading: 'eager',
+                fetchpriority: 'high',
+                widths: '750, 1100, 1500, 1920, 2400',
+                sizes: '100vw',
+                class: 'hero__image',
+                alt: section.settings.image.alt | default: section.settings.heading | escape
+            }}
+          {% elsif section.settings.image_mobile != blank %}
+            {{
+              section.settings.image_mobile
+              | image_url: width: 1100
+              | image_tag:
+                loading: 'eager',
+                fetchpriority: 'high',
+                widths: '750, 1100',
+                sizes: '100vw',
+                class: 'hero__image',
+                alt: section.settings.image_mobile.alt | default: section.settings.heading | escape
+            }}
+          {% endif %}
+        </picture>
       {% else %}
         <div class="hero__placeholder">
-          {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg' }}
+          {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg hero__placeholder-svg' }}
+          <div class="hero__placeholder-ambient" aria-hidden="true"></div>
         </div>
       {% endif %}
-      <div class="hero__overlay"></div>
+
+      <!-- Layered Progressive Vignette & Atmosphere Overlays -->
+      <div class="hero__overlay hero__overlay--vignette" aria-hidden="true"></div>
+      <div class="hero__overlay hero__overlay--tint" aria-hidden="true"></div>
     </div>
 
-    <div class="hero__content hero__content--{{ section.settings.text_alignment }} container">
-      {% if section.settings.eyebrow != blank %}
-        <span class="hero__eyebrow text-micro">{{ section.settings.eyebrow }}</span>
-      {% endif %}
+    <!-- ==========================================================================
+         2. Main Editorial Content Container
+         ========================================================================== -->
+    <div class="hero__content-wrapper container">
+      <div class="hero__content">
+        
+        <!-- Live Status Pill Badge & Season Tag -->
+        {% if section.settings.badge_label != blank or section.settings.eyebrow != blank %}
+          <div class="hero__badge-wrapper">
+            <div class="hero__badge">
+              <span class="hero__badge-dot" aria-hidden="true"></span>
+              <span class="hero__badge-text text-micro">
+                {{ section.settings.badge_label | default: section.settings.eyebrow }}
+              </span>
+            </div>
+            {% if section.settings.edition_tag != blank %}
+              <span class="hero__edition-tag text-micro">{{ section.settings.edition_tag }}</span>
+            {% endif %}
+          </div>
+        {% endif %}
 
-      <h1 class="hero__heading hero-title">{{ section.settings.heading }}</h1>
+        <!-- Fluid Cormorant Garamond Display Headline -->
+        {% if section.settings.heading != blank %}
+          <h1 class="hero__heading hero-title">
+            {{ section.settings.heading }}
+          </h1>
+        {% endif %}
 
-      {% if section.settings.subheading != blank %}
-        <p class="hero__subheading">{{ section.settings.subheading }}</p>
-      {% endif %}
+        <!-- Editorial Subheading & Narrative -->
+        {% if section.settings.subheading != blank %}
+          <p class="hero__subheading">
+            {{ section.settings.subheading }}
+          </p>
+        {% endif %}
 
-      {% if section.settings.button_label != blank %}
-        <div class="hero__action">
-          <a href="{{ section.settings.button_link | default: routes.all_products_collection_url }}" class="btn btn-primary">
-            {{ section.settings.button_label }}
-          </a>
+        <!-- Dual Monolithic & Frosted Glass Action Cluster -->
+        {% if section.settings.primary_button_label != blank or section.settings.secondary_button_label != blank %}
+          <div class="hero__actions">
+            {% if section.settings.primary_button_label != blank %}
+              <a
+                href="{{ section.settings.primary_button_link | default: routes.all_products_collection_url }}"
+                class="btn btn-hero-primary"
+              >
+                <span>{{ section.settings.primary_button_label }}</span>
+                <svg class="btn-hero__arrow" width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <line x1="1" y1="7" x2="13" y2="7"></line>
+                  <polyline points="8 2 13 7 8 12"></polyline>
+                </svg>
+              </a>
+            {% endif %}
+
+            {% if section.settings.secondary_button_label != blank %}
+              <a
+                href="{{ section.settings.secondary_button_link | default: routes.collections_url }}"
+                class="btn btn-hero-secondary"
+              >
+                <span>{{ section.settings.secondary_button_label }}</span>
+              </a>
+            {% endif %}
+          </div>
+        {% endif %}
+
+      </div>
+    </div>
+
+    <!-- ==========================================================================
+         3. Floating Bottom Editorial HUD & Category Quick Access
+         ========================================================================== -->
+    {% if section.settings.show_category_bar or section.settings.show_scroll_indicator %}
+      <div class="hero__bottom-bar">
+        <div class="container hero__bottom-container">
+          
+          <!-- Category Quick Access (Desktop bar / Mobile swipeable rail) -->
+          {% if section.settings.show_category_bar %}
+            <div class="hero__categories-hud" role="navigation" aria-label="Hero Category Shortcuts">
+              <span class="hero__hud-label text-micro">Capsule Direct:</span>
+              <a href="{{ routes.collections_url }}/hoodies" class="hero__hud-link text-micro">
+                <span class="hero__hud-index">01</span>
+                <span class="hero__hud-title">Hoodies</span>
+              </a>
+              <span class="hero__hud-sep" aria-hidden="true">/</span>
+              <a href="{{ routes.collections_url }}/shirts" class="hero__hud-link text-micro">
+                <span class="hero__hud-index">02</span>
+                <span class="hero__hud-title">Shirts</span>
+              </a>
+              <span class="hero__hud-sep" aria-hidden="true">/</span>
+              <a href="{{ routes.collections_url }}/trousers" class="hero__hud-link text-micro">
+                <span class="hero__hud-index">03</span>
+                <span class="hero__hud-title">Trousers</span>
+              </a>
+              <span class="hero__hud-sep" aria-hidden="true">/</span>
+              <a href="{{ routes.all_products_collection_url }}" class="hero__hud-link text-micro">
+                <span class="hero__hud-index">04</span>
+                <span class="hero__hud-title">All Essentials</span>
+              </a>
+            </div>
+          {% endif %}
+
+          <!-- Interactive Smooth Scroll Prompt -->
+          {% if section.settings.show_scroll_indicator %}
+            <a href="#MainContent" class="hero__scroll-indicator" aria-label="Scroll to browse catalogue">
+              <span class="text-micro hero__scroll-text">Discover</span>
+              <svg class="hero__scroll-arrow" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="6" y1="1" x2="6" y2="11"></line>
+                <polyline points="2 7 6 11 10 7"></polyline>
+              </svg>
+            </a>
+          {% endif %}
+
+          <!-- Edition Metadata / Timestamp -->
+          {% if section.settings.footer_metadata != blank %}
+            <div class="hero__meta-stamp text-micro">
+              <span>{{ section.settings.footer_metadata }}</span>
+            </div>
+          {% endif %}
+
         </div>
-      {% endif %}
-    </div>
+      </div>
+    {% endif %}
+
   </div>
 </section>
 
 {% stylesheet %}
+  /* ==========================================================================
+     Hero Architecture & Full-Bleed 100svh Canvas
+     ========================================================================== */
   .hero {
     position: relative;
     width: 100%;
@@ -57,40 +214,53 @@
 
   .hero--full {
     width: 100vw;
-    margin-left: calc(50% - 50vw);
-    margin-right: calc(50% - 50vw);
+    margin-inline: calc(50% - 50vw);
     max-width: 100vw;
   }
 
   .hero__inner {
     position: relative;
-    min-height: 75svh;
-    display: flex;
-    align-items: flex-end;
-    overflow: hidden;
-    background-color: var(--color-surface);
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+    background-color: var(--color-surface-dark);
   }
 
-  @media (min-width: 990px) {
-    .hero__inner {
-      min-height: 88vh;
-    }
+  /* Height variants */
+  .hero--height-100svh .hero__inner {
+    min-height: 100svh;
   }
 
+  .hero--height-85svh .hero__inner {
+    min-height: 85svh;
+  }
+
+  .hero--height-75svh .hero__inner {
+    min-height: 75svh;
+  }
+
+  /* ==========================================================================
+     Media Layer: Video, Picture, Placeholders & Layered Vignette
+     ========================================================================== */
   .hero__media {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
     z-index: 1;
+    overflow: hidden;
   }
 
-  .hero__image {
+  .hero__picture,
+  .hero__image,
+  .hero__video {
     width: 100%;
     height: 100%;
     object-fit: cover;
     object-position: center;
+    display: block;
   }
 
   .hero__placeholder {
@@ -99,70 +269,503 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-border) 100%);
+    background: radial-gradient(circle at 60% 40%, #2D2D2A 0%, #171716 100%);
+    position: relative;
   }
 
-  .hero__placeholder svg {
-    width: 40%;
-    height: 40%;
-    opacity: 0.35;
+  .hero__placeholder-svg {
+    width: 48%;
+    height: 48%;
+    opacity: 0.22;
+    filter: grayscale(100%);
   }
 
+  .hero__placeholder-ambient {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 80% 20%, rgba(91, 96, 72, 0.18) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  /* Dual Layer Progressive Vignette */
   .hero__overlay {
     position: absolute;
     inset: 0;
+    pointer-events: none;
+  }
+
+  .hero__overlay--vignette {
+    z-index: 2;
     background: linear-gradient(
       to top,
-      rgba(21, 21, 21, 0.45) 0%,
-      rgba(21, 21, 21, 0.15) 50%,
-      transparent 100%
+      rgba(18, 18, 18, 0.85) 0%,
+      rgba(18, 18, 18, 0.45) 45%,
+      rgba(18, 18, 18, 0.2) 75%,
+      rgba(18, 18, 18, 0.55) 100%
     );
-    z-index: 2;
+  }
+
+  .hero__overlay--tint {
+    z-index: 3;
+    background-color: rgba(21, 21, 21, var(--hero-overlay-opacity, 0.4));
+  }
+
+  /* ==========================================================================
+     Content Layer & Typographic Hierarchy (better-typography & better-layout)
+     ========================================================================== */
+  .hero__content-wrapper {
+    position: relative;
+    z-index: 4;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding-top: calc(var(--header-height) + var(--space-lg));
+    padding-bottom: var(--space-md);
   }
 
   .hero__content {
-    position: relative;
-    z-index: 3;
-    padding-block: var(--space-lg);
-    color: var(--color-white);
     display: flex;
     flex-direction: column;
     gap: var(--space-xs);
+    max-width: 820px;
   }
 
-  .hero__content--center {
-    align-items: center;
-    text-align: center;
-  }
-
-  .hero__content--left {
+  /* Alignment variations */
+  .hero--align-left .hero__content {
     align-items: flex-start;
     text-align: left;
   }
 
-  .hero__eyebrow {
-    color: var(--color-white);
-    opacity: 0.9;
+  .hero--align-center .hero__content-wrapper {
+    align-items: center;
   }
 
+  .hero--align-center .hero__content {
+    align-items: center;
+    text-align: center;
+    margin-inline: auto;
+  }
+
+  .hero--align-split .hero__content-wrapper {
+    justify-content: flex-end;
+  }
+
+  /* Eyebrow / Live Badge */
+  .hero__badge-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: var(--space-2xs);
+    animation: heroFadeInUp 350ms var(--ease-out) 100ms backwards;
+  }
+
+  .hero__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.85rem;
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 9999px;
+    color: var(--color-white);
+  }
+
+  .hero__badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #7BB86A;
+    box-shadow: 0 0 8px rgba(123, 184, 106, 0.9);
+    animation: heroPulseDot 2.2s infinite ease-in-out;
+  }
+
+  .hero__edition-tag {
+    color: rgba(245, 242, 236, 0.75);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Display Headline */
   .hero__heading {
     color: var(--color-white);
     margin: 0;
-    max-width: 18ch;
+    max-width: 20ch;
+    text-wrap: balance;
+    font-size: clamp(2.5rem, 6.2vw, 5.5rem);
+    line-height: 1.04;
+    letter-spacing: var(--tracking-tight);
+    font-weight: 400;
+    animation: heroFadeInUp 400ms var(--ease-out) 180ms backwards;
   }
 
+  .hero__heading em,
+  .hero__heading i {
+    font-style: italic;
+    font-family: var(--font-display);
+    font-weight: 400;
+    color: rgba(245, 242, 236, 0.95);
+  }
+
+  /* Subheading */
   .hero__subheading {
     font-family: var(--font-body);
-    font-size: var(--font-size-body);
+    font-size: clamp(0.9375rem, 1.25vw, 1.125rem);
     line-height: var(--leading-normal);
     max-width: 50ch;
-    color: var(--color-white);
-    opacity: 0.92;
+    color: rgba(245, 242, 236, 0.88);
     margin: 0 0 var(--space-xs);
+    text-wrap: pretty;
+    animation: heroFadeInUp 400ms var(--ease-out) 260ms backwards;
   }
 
-  .hero__action {
-    margin-top: var(--space-xs);
+  /* Action Cluster & Tactile Buttons (better-ui & emil-design-eng) */
+  .hero__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+    margin-top: var(--space-2xs);
+    animation: heroFadeInUp 400ms var(--ease-out) 340ms backwards;
+  }
+
+  .btn-hero-primary {
+    background-color: var(--color-white);
+    color: var(--color-text);
+    border: 1px solid var(--color-white);
+    padding: 0.95rem 2rem;
+    font-family: var(--font-body);
+    font-size: var(--font-size-caption);
+    font-weight: 600;
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    border-radius: var(--radius-none);
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color var(--transition-fast),
+                color var(--transition-fast),
+                border-color var(--transition-fast),
+                transform 160ms var(--ease-out);
+    min-height: 48px;
+  }
+
+  .btn-hero-primary:active {
+    transform: scale(0.96);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .btn-hero-primary:hover {
+      background-color: var(--color-surface);
+      color: var(--color-text);
+      border-color: var(--color-surface);
+      opacity: 1;
+    }
+    .btn-hero-primary:hover .btn-hero__arrow {
+      transform: translateX(4px);
+    }
+  }
+
+  .btn-hero__arrow {
+    transition: transform 160ms var(--ease-out);
+  }
+
+  .btn-hero-secondary {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: var(--color-white);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    padding: 0.95rem 1.85rem;
+    font-family: var(--font-body);
+    font-size: var(--font-size-caption);
+    font-weight: 500;
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-none);
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color var(--transition-fast),
+                border-color var(--transition-fast),
+                color var(--transition-fast),
+                transform 160ms var(--ease-out);
+    min-height: 48px;
+  }
+
+  .btn-hero-secondary:active {
+    transform: scale(0.96);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .btn-hero-secondary:hover {
+      background-color: rgba(255, 255, 255, 0.18);
+      border-color: rgba(255, 255, 255, 0.6);
+      color: var(--color-white);
+      opacity: 1;
+    }
+  }
+
+  /* ==========================================================================
+     Floating Bottom Category HUD (Desktop & Mobile Adaptive)
+     ========================================================================== */
+  .hero__bottom-bar {
+    position: relative;
+    z-index: 5;
+    width: 100%;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    background: linear-gradient(to top, rgba(18, 18, 18, 0.6) 0%, rgba(18, 18, 18, 0.15) 100%);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    padding-block: 0.85rem;
+    padding-bottom: max(0.85rem, env(safe-area-inset-bottom, 0px));
+    animation: heroFadeInUp 450ms var(--ease-out) 420ms backwards;
+  }
+
+  .hero__bottom-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  .hero__categories-hud {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .hero__hud-label {
+    color: rgba(245, 242, 236, 0.5);
+    margin-right: 0.25rem;
+  }
+
+  .hero__hud-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: rgba(245, 242, 236, 0.85);
+    text-decoration: none;
+    position: relative;
+    font-variant-numeric: tabular-nums;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition: color var(--transition-fast);
+  }
+
+  .hero__hud-link::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -3px;
+    width: 100%;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 200ms var(--ease-out);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .hero__hud-link:hover {
+      color: var(--color-white);
+      opacity: 1;
+    }
+    .hero__hud-link:hover::after {
+      transform: scaleX(1);
+    }
+  }
+
+  .hero__hud-link:active {
+    transform: scale(0.97);
+  }
+
+  .hero__hud-index {
+    opacity: 0.55;
+  }
+
+  .hero__hud-sep {
+    opacity: 0.25;
+    user-select: none;
+  }
+
+  .hero__scroll-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: rgba(245, 242, 236, 0.75);
+    text-decoration: none;
+    user-select: none;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition: color var(--transition-fast);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .hero__scroll-indicator:hover {
+      color: var(--color-white);
+      opacity: 1;
+    }
+  }
+
+  .hero__scroll-indicator:active {
+    transform: scale(0.97);
+  }
+
+  .hero__scroll-arrow {
+    animation: heroBounceDown 2.2s infinite ease-in-out;
+  }
+
+  .hero__meta-stamp {
+    color: rgba(245, 242, 236, 0.55);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ==========================================================================
+     Keyframe Animations & Motion Decisions (Emil Kowalski Standards)
+     ========================================================================== */
+  @keyframes heroFadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes heroPulseDot {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.4;
+      transform: scale(0.85);
+    }
+  }
+
+  @keyframes heroBounceDown {
+    0%, 20%, 50%, 80%, 100% {
+      transform: translateY(0);
+    }
+    40% {
+      transform: translateY(4px);
+    }
+    60% {
+      transform: translateY(2px);
+    }
+  }
+
+  /* ==========================================================================
+     Mobile & Tablet Responsive Optimizations (mobile-native skill)
+     ========================================================================== */
+  @media (max-width: 749px) {
+    .hero__content-wrapper {
+      padding-top: calc(var(--header-height) + var(--space-md));
+      padding-bottom: var(--space-sm);
+    }
+
+    .hero__heading {
+      font-size: clamp(2.25rem, 10.5vw, 3.25rem);
+      line-height: 1.05;
+      max-width: 15ch;
+    }
+
+    .hero__subheading {
+      font-size: 0.9375rem;
+      line-height: 1.5;
+    }
+
+    .hero__actions {
+      flex-direction: column;
+      width: 100%;
+      align-items: stretch;
+      gap: 0.625rem;
+    }
+
+    .btn-hero-primary,
+    .btn-hero-secondary {
+      width: 100%;
+      text-align: center;
+      padding-block: 0.875rem;
+    }
+
+    .hero__bottom-bar {
+      padding-block: 0.65rem;
+      padding-bottom: max(0.65rem, env(safe-area-inset-bottom, 0px));
+    }
+
+    .hero__bottom-container {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+
+    .hero__hud-label,
+    .hero__hud-sep,
+    .hero__scroll-indicator,
+    .hero__meta-stamp {
+      display: none;
+    }
+
+    /* Swipeable category pill rail for mobile */
+    .hero__categories-hud {
+      display: flex;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      width: 100%;
+      gap: 0.5rem;
+      padding-block: 0.125rem;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-x;
+    }
+
+    .hero__categories-hud::-webkit-scrollbar {
+      display: none;
+    }
+
+    .hero__hud-link {
+      padding: 0.4rem 0.85rem;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 9999px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .hero__hud-link::after {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero__badge-wrapper,
+    .hero__heading,
+    .hero__subheading,
+    .hero__actions,
+    .hero__bottom-bar,
+    .hero__badge-dot,
+    .hero__scroll-arrow {
+      animation: none !important;
+      transform: none !important;
+    }
   }
 {% endstylesheet %}
 
@@ -173,38 +776,83 @@
   "class": "section-hero",
   "settings": [
     {
+      "type": "header",
+      "content": "Media & Photography"
+    },
+    {
       "type": "image_picker",
       "id": "image",
-      "label": "Hero Image"
+      "label": "Desktop Hero Image (Landscape)"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_mobile",
+      "label": "Mobile Hero Image (Portrait 4:5 or 9:16)"
     },
     {
       "type": "text",
-      "id": "eyebrow",
-      "label": "Eyebrow Text",
-      "default": "SEASON 01 / NEW ESSENTIALS"
+      "id": "video_url",
+      "label": "Background Video MP4 URL (Optional)",
+      "info": "Paste a direct .mp4 URL from Shopify Files to display a looping video."
+    },
+    {
+      "type": "select",
+      "id": "hero_height",
+      "label": "Hero Height",
+      "options": [
+        {
+          "value": "100svh",
+          "label": "Full Screen (100svh)"
+        },
+        {
+          "value": "85svh",
+          "label": "Large Cinematic (85svh)"
+        },
+        {
+          "value": "75svh",
+          "label": "Standard (75svh)"
+        }
+      ],
+      "default": "100svh"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "min": 0,
+      "max": 90,
+      "step": 5,
+      "unit": "%",
+      "label": "Atmospheric Overlay Opacity",
+      "default": 45
+    },
+    {
+      "type": "header",
+      "content": "Content & Typography"
+    },
+    {
+      "type": "text",
+      "id": "badge_label",
+      "label": "Live Status Badge",
+      "default": "AUTUMN / WINTER 2026"
+    },
+    {
+      "type": "text",
+      "id": "edition_tag",
+      "label": "Edition Index Tag",
+      "default": "EDITION NO. 001"
     },
     {
       "type": "text",
       "id": "heading",
-      "label": "Heading",
-      "default": "The Art of Restraint"
+      "label": "Editorial Heading",
+      "default": "The Art of Restraint",
+      "info": "Use <em>word</em> or <i>word</i> for italic emphasis."
     },
     {
       "type": "textarea",
       "id": "subheading",
-      "label": "Subheading",
+      "label": "Subheading Narrative",
       "default": "Modern menswear tailored for everyday discipline. Heavyweight fleece, poplin shirts, and relaxed pleated trousers."
-    },
-    {
-      "type": "text",
-      "id": "button_label",
-      "label": "Button Label",
-      "default": "Explore Collection"
-    },
-    {
-      "type": "url",
-      "id": "button_link",
-      "label": "Button Link"
     },
     {
       "type": "select",
@@ -213,7 +861,7 @@
       "options": [
         {
           "value": "left",
-          "label": "Left"
+          "label": "Left (Editorial Asymmetry)"
         },
         {
           "value": "center",
@@ -223,10 +871,52 @@
       "default": "left"
     },
     {
+      "type": "header",
+      "content": "Call-to-Action Buttons"
+    },
+    {
+      "type": "text",
+      "id": "primary_button_label",
+      "label": "Primary Button Label",
+      "default": "Explore Collection"
+    },
+    {
+      "type": "url",
+      "id": "primary_button_link",
+      "label": "Primary Button Link"
+    },
+    {
+      "type": "text",
+      "id": "secondary_button_label",
+      "label": "Secondary Button Label",
+      "default": "View Lookbook"
+    },
+    {
+      "type": "url",
+      "id": "secondary_button_link",
+      "label": "Secondary Button Link"
+    },
+    {
+      "type": "header",
+      "content": "Bottom Editorial HUD"
+    },
+    {
       "type": "checkbox",
-      "id": "full_width",
-      "label": "Full Width",
+      "id": "show_category_bar",
+      "label": "Show Category Shortcuts",
       "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_scroll_indicator",
+      "label": "Show Scroll Indicator",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "footer_metadata",
+      "label": "Footer Metadata Tag",
+      "default": "ADOT STUDIO · 100% ORGANIC COTTON"
     }
   ],
   "presets": [

@@ -3,12 +3,18 @@
     "hero": {
       "type": "hero",
       "settings": {
-        "eyebrow": "SEASON 01 / NEW ESSENTIALS",
-        "heading": "The Art of Restraint",
+        "hero_height": "100svh",
+        "overlay_opacity": 45,
+        "badge_label": "AUTUMN / WINTER 2026",
+        "edition_tag": "EDITION NO. 001",
+        "heading": "The Art of <em>Restraint</em>",
         "subheading": "Modern menswear tailored for everyday discipline. Heavyweight fleece, poplin shirts, and relaxed pleated trousers.",
-        "button_label": "Explore Collection",
         "text_alignment": "left",
-        "full_width": true
+        "primary_button_label": "Explore Collection",
+        "secondary_button_label": "View Lookbook",
+        "show_category_bar": true,
+        "show_scroll_indicator": true,
+        "footer_metadata": "ADOT STUDIO · 100% ORGANIC COTTON"
       }
     },
     "category_tiles": {
