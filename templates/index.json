@@ -26,7 +26,6 @@
           "type": "tile",
           "settings": {
             "title": "Hoodies",
-            "subtitle": "450 GSM Loopback Fleece",
             "link": "/collections/hoodies"
           }
         },
@@ -34,7 +33,6 @@
           "type": "tile",
           "settings": {
             "title": "Shirts",
-            "subtitle": "Relaxed Poplin",
             "link": "/collections/shirts"
           }
         },
@@ -42,7 +40,6 @@
           "type": "tile",
           "settings": {
             "title": "Trousers",
-            "subtitle": "Tailored Pleated Chinos",
             "link": "/collections/trousers"
           }
         }
@@ -53,7 +50,6 @@
         "tile_trousers"
       ],
       "settings": {
-        "eyebrow": "COLLECTIONS",
         "heading": "Shop by Category"
       }
     },
