@@ -4,6 +4,12 @@
    Smart Solutions Foundation
    ========================================================================== */
 
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
 body {
   font-family: var(--font-body);
   color: var(--color-text);
