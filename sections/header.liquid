@@ -518,7 +518,8 @@
     top: 0;
     left: 0;
     bottom: 0;
-    width: min(85vw, 400px);
+    width: 100%;
+    max-width: 420px;
     background-color: var(--color-background);
     padding: var(--space-md);
     display: flex;
@@ -529,6 +530,14 @@
     box-shadow: var(--shadow-drawer);
     overflow-y: auto;
     will-change: transform;
+  }
+
+  @media (max-width: 749px) {
+    .header-drawer__panel {
+      max-width: 100%;
+      width: 100%;
+      padding: var(--space-sm) var(--space-md);
+    }
   }
 
   .header-drawer.is-open .header-drawer__panel {
@@ -673,23 +682,52 @@
       this.isOpen = false;
       this.triggerButtons = document.querySelectorAll('[data-drawer-trigger]');
       this.closeButtons = this.querySelectorAll('[data-drawer-close]');
+      this.lastFocusedElement = null;
 
       this.init();
     }
 
     init() {
       this.triggerButtons.forEach((btn) => {
-        btn.addEventListener('click', () => this.open());
+        btn.addEventListener('click', (e) => {
+          this.lastFocusedElement = e.currentTarget;
+          this.open();
+        });
       });
 
       this.closeButtons.forEach((btn) => {
         btn.addEventListener('click', () => this.close());
       });
 
-      // Escape key listener
+      // Escape key listener & Tab focus trap
       document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && this.isOpen) {
+        if (!this.isOpen) return;
+
+        if (e.key === 'Escape') {
           this.close();
+          return;
+        }
+
+        if (e.key === 'Tab') {
+          const focusable = this.querySelectorAll(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          );
+          if (focusable.length === 0) return;
+
+          const first = focusable[0];
+          const last = focusable[focusable.length - 1];
+
+          if (e.shiftKey) {
+            if (document.activeElement === first) {
+              e.preventDefault();
+              last.focus();
+            }
+          } else {
+            if (document.activeElement === last) {
+              e.preventDefault();
+              first.focus();
+            }
+          }
         }
       });
     }
@@ -699,6 +737,12 @@
       this.classList.add('is-open');
       document.body.style.overflow = 'hidden';
       this.triggerButtons.forEach((btn) => btn.setAttribute('aria-expanded', 'true'));
+
+      // Move focus inside
+      const firstFocusable = this.querySelector('button, [href]');
+      if (firstFocusable) {
+        setTimeout(() => firstFocusable.focus(), 60);
+      }
     }
 
     close() {
@@ -706,6 +750,11 @@
       this.classList.remove('is-open');
       document.body.style.overflow = '';
       this.triggerButtons.forEach((btn) => btn.setAttribute('aria-expanded', 'false'));
+
+      // Restore focus to opener
+      if (this.lastFocusedElement) {
+        this.lastFocusedElement.focus();
+      }
     }
   }
 
