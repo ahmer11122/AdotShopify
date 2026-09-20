@@ -53,7 +53,8 @@
   "collections": {
     "title": "Collections",
     "no_matches": "No products found in this collection.",
-    "view_all": "View All"
+    "view_all": "View All",
+    "categories_available": "Core Categories"
   },
   "gift_card": {
     "add_to_apple_wallet": "Add to Apple Wallet",

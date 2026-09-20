@@ -114,3 +114,54 @@
   --page-margin:            var(--space-sm);
   --style-border-radius-inputs: var(--radius-input);
 }
+
+/* ==========================================================================
+   7. Native CSS Cross-Document View Transitions (Smooth Page Navigation)
+   ========================================================================== */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root) {
+  animation: 160ms cubic-bezier(0.4, 0, 1, 1) both vt-fade-out;
+}
+
+::view-transition-new(root) {
+  animation: 220ms cubic-bezier(0.16, 1, 0.3, 1) 40ms both vt-fade-in,
+             220ms cubic-bezier(0.16, 1, 0.3, 1) 40ms both vt-slide-up;
+}
+
+@keyframes vt-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes vt-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes vt-slide-up {
+  from {
+    transform: translateY(6px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
+}
+

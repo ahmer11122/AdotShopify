@@ -50,5 +50,27 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   });
+
+  // Lightweight prefetcher for smooth instantaneous page transitions
+  const prefetchedUrls = new Set();
+  const prefetchUrl = (url) => {
+    if (!url || prefetchedUrls.has(url) || url.startsWith('#') || url.startsWith('javascript:')) return;
+    prefetchedUrls.add(url);
+    const link = document.createElement('link');
+    link.rel = 'prefetch';
+    link.href = url;
+    document.head.appendChild(link);
+  };
+
+  const handleLinkPrefetch = (e) => {
+    const anchor = e.target.closest('a[data-category-link], .category-tile__link, .featured-collection__item a');
+    if (anchor && anchor.href && anchor.origin === window.location.origin) {
+      prefetchUrl(anchor.href);
+    }
+  };
+
+  document.addEventListener('mouseover', handleLinkPrefetch, { passive: true });
+  document.addEventListener('touchstart', handleLinkPrefetch, { passive: true });
 });
+
 
