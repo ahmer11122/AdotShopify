@@ -40,6 +40,11 @@
               srcset="{{ section.settings.image_mobile | image_url: width: 750 }} 750w, {{ section.settings.image_mobile | image_url: width: 1100 }} 1100w"
               sizes="100vw"
             >
+          {% else %}
+            <source
+              media="(max-width: 749px)"
+              srcset="{{ 'hero-mobile.png' | asset_url }}"
+            >
           {% endif %}
           {% if section.settings.image != blank %}
             {{
@@ -66,8 +71,12 @@
           {% endif %}
         </picture>
       {% else %}
-        <!-- Desktop Hero Photography (assets/hero-desktop.png) -->
+        <!-- Responsive Dual Photography (Mobile: hero-mobile.png, Desktop: hero-desktop.png) -->
         <picture class="hero__picture">
+          <source
+            media="(max-width: 749px)"
+            srcset="{{ 'hero-mobile.png' | asset_url }}"
+          >
           <source
             media="(min-width: 750px)"
             srcset="{{ 'hero-desktop.png' | asset_url }}"
@@ -289,7 +298,7 @@
 
   @media (max-width: 749px) {
     .hero__image {
-      object-position: 78% center;
+      object-position: center center;
     }
   }
 
