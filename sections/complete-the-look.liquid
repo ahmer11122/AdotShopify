@@ -1,190 +1,39 @@
 {% comment %}
-  Complete The Look (PDP Editorial Upsell & Cross-Category Recommendations)
-  - Curated styling pairings (Hoodies pair with Trousers + Overshirts, etc.)
-  - Automatically excludes the current product being viewed
-  - Renders 3:4 quiet luxury product cards with quick-add size selector
+  Related Items Section (PDP Cross-Selling)
+  - Shows 4 distinct items excluding the currently viewed product
+  - Single clean heading: "Related Items" (no tags, no subheadings, no explanations)
+  - 4-column desktop / 2-column mobile quiet luxury product cards
+  - Generous bottom padding to clear the mobile pinned quick-add bar
 {% endcomment %}
 
 <section
-  class="complete-the-look container"
+  class="related-items container"
   data-section-id="{{ section.id }}"
-  data-section-type="complete-the-look"
-  aria-label="{{ section.settings.heading | default: 'Complete The Look' }}"
+  data-section-type="related-items"
+  aria-label="{{ section.settings.heading | default: 'Related Items' }}"
 >
-  <div class="complete-the-look__header">
-    {% if section.settings.eyebrow != blank %}
-      <span class="complete-the-look__eyebrow text-micro">{{ section.settings.eyebrow }}</span>
-    {% endif %}
-    {% if section.settings.heading != blank %}
-      <h2 class="complete-the-look__heading">{{ section.settings.heading }}</h2>
-    {% endif %}
-    {% if section.settings.subheading != blank %}
-      <p class="complete-the-look__subheading">{{ section.settings.subheading }}</p>
-    {% endif %}
+  <div class="related-items__header">
+    <h2 class="related-items__heading">{{ section.settings.heading | default: 'Related Items' }}</h2>
   </div>
 
-  <div class="complete-the-look__grid">
+  <div class="related-items__grid">
     {% assign current_handle = product.handle %}
-    {% assign all_prods = collections.all.products %}
-    {% assign p_fallback = all_prods.first %}
-    
-    {% assign hoodie_img = 'category-hoodies.jpg' | asset_url %}
-    {% assign hoodie_png = 'category-hoodies.png' | asset_url %}
-    {% assign shirt_img = 'category-shirts.jpg' | asset_url %}
-    {% assign shirt_png = 'category-shirts.png' | asset_url %}
-    {% assign trouser_img = 'category-trousers.jpg' | asset_url %}
-    {% assign trouser_png = 'category-trousers.png' | asset_url %}
+    {% assign rendered_count = 0 %}
 
-    {% assign p_hoodie = all_prods[7] | default: p_fallback %}
-    {% assign p_overshirt = all_prods[3] | default: p_fallback %}
-    {% assign p_trouser = all_prods[4] | default: p_fallback %}
-    {% assign p_camp_shirt = all_prods[5] | default: p_fallback %}
+    {% for prod_item in collections.all.products %}
+      {% if prod_item.handle == current_handle or prod_item.handle contains 'gift-card' or prod_item.type contains 'Gift' %}
+        {% continue %}
+      {% endif %}
 
-    {% case current_handle %}
-      {% when 'the-complete-snowboard' %}
-        <!-- Currently on Hoodie: Pair with Trousers, Overshirt, and Camp Shirt -->
-        <div class="complete-the-look__item">
-          {% render 'product-card',
-            title: 'Relaxed Straight Trousers',
-            url: p_trouser.url,
-            variant_id: p_trouser.selected_or_first_available_variant.id,
-            price: 449900,
-            compare_at_price: 0,
-            image_src: trouser_img,
-            secondary_image_src: trouser_png,
-            spec: 'Heavy Italian-style Twill · Straight Cut',
-            color_count: 2,
-            available: true,
-            lazy_load: false
-          %}
-        </div>
-        <div class="complete-the-look__item">
-          {% render 'product-card',
-            title: 'Structured Twill Overshirt',
-            url: p_overshirt.url,
-            variant_id: p_overshirt.selected_or_first_available_variant.id,
-            price: 419900,
-            compare_at_price: 0,
-            image_src: shirt_img,
-            secondary_image_src: shirt_png,
-            spec: 'Heavyweight Structured Twill · Boxy Cut',
-            color_count: 2,
-            available: true,
-            lazy_load: false
-          %}
-        </div>
-        <div class="complete-the-look__item">
-          {% render 'product-card',
-            title: 'Relaxed Camp Collar Shirt',
-            url: p_camp_shirt.url,
-            variant_id: p_camp_shirt.selected_or_first_available_variant.id,
-            price: 379900,
-            compare_at_price: 0,
-            image_src: shirt_img,
-            secondary_image_src: shirt_png,
-            spec: 'Soft Washed Poplin · Cuban Collar',
-            color_count: 3,
-            available: true,
-            lazy_load: false
-          %}
-        </div>
+      <div class="related-items__item">
+        {% render 'product-card', product: prod_item, lazy_load: false %}
+      </div>
 
-      {% when 'the-videographer-snowboard' %}
-        <!-- Currently on Trousers: Pair with Hoodie, Overshirt, and Poplin Shirt -->
-        <div class="complete-the-look__item">
-          {% render 'product-card',
-            title: 'Heavyweight Boxy Hoodie',
-            url: p_hoodie.url,
-            variant_id: p_hoodie.selected_or_first_available_variant.id,
-            price: 449900,
-            compare_at_price: 0,
-            image_src: hoodie_img,
-            secondary_image_src: hoodie_png,
-            spec: '450 GSM Loopback Fleece · Relaxed Fit',
-            color_count: 2,
-            available: true,
-            lazy_load: false
-          %}
-        </div>
-        <div class="complete-the-look__item">
-          {% render 'product-card',
-            title: 'Structured Twill Overshirt',
-            url: p_overshirt.url,
-            variant_id: p_overshirt.selected_or_first_available_variant.id,
-            price: 419900,
-            compare_at_price: 0,
-            image_src: shirt_img,
-            secondary_image_src: shirt_png,
-            spec: 'Heavyweight Structured Twill · Boxy Cut',
-            color_count: 2,
-            available: true,
-            lazy_load: false
-          %}
-        </div>
-        <div class="complete-the-look__item">
-          {% render 'product-card',
-            title: 'Relaxed Camp Collar Shirt',
-            url: p_camp_shirt.url,
-            variant_id: p_camp_shirt.selected_or_first_available_variant.id,
-            price: 379900,
-            compare_at_price: 0,
-            image_src: shirt_img,
-            secondary_image_src: shirt_png,
-            spec: 'Soft Washed Poplin · Cuban Collar',
-            color_count: 3,
-            available: true,
-            lazy_load: false
-          %}
-        </div>
-
-      {% else %}
-        <!-- Default: Pair with Hoodie, Trousers, and Overshirt -->
-        <div class="complete-the-look__item">
-          {% render 'product-card',
-            title: 'Heavyweight Boxy Hoodie',
-            url: p_hoodie.url,
-            variant_id: p_hoodie.selected_or_first_available_variant.id,
-            price: 449900,
-            compare_at_price: 0,
-            image_src: hoodie_img,
-            secondary_image_src: hoodie_png,
-            spec: '450 GSM Loopback Fleece · Relaxed Fit',
-            color_count: 2,
-            available: true,
-            lazy_load: false
-          %}
-        </div>
-        <div class="complete-the-look__item">
-          {% render 'product-card',
-            title: 'Relaxed Straight Trousers',
-            url: p_trouser.url,
-            variant_id: p_trouser.selected_or_first_available_variant.id,
-            price: 449900,
-            compare_at_price: 0,
-            image_src: trouser_img,
-            secondary_image_src: trouser_png,
-            spec: 'Heavy Italian-style Twill · Straight Cut',
-            color_count: 2,
-            available: true,
-            lazy_load: false
-          %}
-        </div>
-        <div class="complete-the-look__item">
-          {% render 'product-card',
-            title: 'Structured Twill Overshirt',
-            url: p_overshirt.url,
-            variant_id: p_overshirt.selected_or_first_available_variant.id,
-            price: 419900,
-            compare_at_price: 0,
-            image_src: shirt_img,
-            secondary_image_src: shirt_png,
-            spec: 'Heavyweight Structured Twill · Boxy Cut',
-            color_count: 2,
-            available: true,
-            lazy_load: false
-          %}
-        </div>
-    {% endcase %}
+      {% assign rendered_count = rendered_count | plus: 1 %}
+      {% if rendered_count == 4 %}
+        {% break %}
+      {% endif %}
+    {% endfor %}
   </div>
 </section>
 
@@ -192,95 +41,62 @@
   .section-complete-the-look {
     background-color: var(--color-background, #FFFFFF);
     border-top: 1px solid rgba(0, 0, 0, 0.06);
-    padding-top: clamp(3rem, 5vw, 5rem);
-    padding-bottom: clamp(3.5rem, 6vw, 6rem);
+    padding-top: clamp(2.5rem, 4vw, 4rem);
+    padding-bottom: clamp(5rem, 8vw, 7.5rem); /* Extra bottom room to ensure cards clear mobile sticky bar */
   }
 
-  .complete-the-look {
+  .related-items {
     display: flex;
     flex-direction: column;
-    gap: clamp(1.75rem, 3.5vw, 2.75rem);
+    gap: clamp(1.25rem, 2.5vw, 2rem);
   }
 
-  .complete-the-look__header {
+  .related-items__header {
     display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
+    align-items: center;
+    justify-content: flex-start;
   }
 
-  .complete-the-look__eyebrow {
-    font-size: 0.6875rem;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--color-text-subtle, #737373);
-  }
-
-  .complete-the-look__heading {
+  .related-items__heading {
     font-family: var(--font-display, inherit);
-    font-size: clamp(1.35rem, 2.4vw, 1.85rem);
+    font-size: clamp(1.25rem, 2vw, 1.625rem);
     font-weight: 500;
     letter-spacing: -0.015em;
     color: var(--color-text, #111111);
     margin: 0;
   }
 
-  .complete-the-look__subheading {
-    font-size: 0.8125rem;
-    color: var(--color-text-subtle, #737373);
-    margin: 0;
-  }
-
-  /* 3-Column balanced grid on desktop, 2-column on mobile */
-  .complete-the-look__grid {
+  /* 2-Column mobile grid / 4-Column desktop grid */
+  .related-items__grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: clamp(12px, 3vw, 24px) clamp(10px, 2.5vw, 20px);
+    gap: clamp(12px, 2.5vw, 20px) clamp(10px, 2vw, 16px);
   }
 
-  @media (min-width: 750px) {
-    .complete-the-look__grid {
-      grid-template-columns: repeat(3, 1fr);
-      gap: 2rem;
-    }
-  }
-
-  @media (min-width: 1024px) {
-    .complete-the-look__grid {
-      grid-template-columns: repeat(3, 1fr);
-      gap: 2.5rem;
+  @media (min-width: 990px) {
+    .related-items__grid {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2rem 1.5rem;
     }
   }
 {% endstylesheet %}
 
 {% schema %}
 {
-  "name": "Complete The Look",
+  "name": "Related Items",
   "tag": "section",
   "class": "section-complete-the-look",
   "settings": [
     {
       "type": "text",
-      "id": "eyebrow",
-      "label": "Eyebrow Text",
-      "default": "CURATED PAIRINGS"
-    },
-    {
-      "type": "text",
       "id": "heading",
       "label": "Heading",
-      "default": "Complete The Look"
-    },
-    {
-      "type": "text",
-      "id": "subheading",
-      "label": "Subheading",
-      "default": "Complementary essentials tailored for effortless daily layering."
+      "default": "Related Items"
     }
   ],
   "presets": [
     {
-      "name": "Complete The Look"
+      "name": "Related Items"
     }
   ]
 }

@@ -37,9 +37,7 @@
     "complete_the_look": {
       "type": "complete-the-look",
       "settings": {
-        "eyebrow": "CURATED PAIRINGS",
-        "heading": "Complete The Look",
-        "subheading": "Complementary essentials tailored for effortless daily layering."
+        "heading": "Related Items"
       }
     }
   },
