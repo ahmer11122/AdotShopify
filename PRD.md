@@ -140,12 +140,12 @@ Net effect: `header.liquid` and `main-collection.liquid` get simpler than the ge
 
 With only 3 launch categories, a horizontal carousel/swipe track creates unnecessary UX friction (hidden items, ambiguous gesture affordance, fragile JS on low-end devices). The section uses a vertical **Short Stack** on mobile and a 3-column floating garment showcase on desktop.
 
-- **Mobile Architecture (Short Stack — Zero Swipe, Pure Native Scroll):**
-  1. **Full-width vertical stack:** 3 full-width cards stacked vertically with a strict `12px` gap.
-  2. **Compact shape:** `4:3` aspect ratio (avoids tall 4:5 cards so all 3 categories comfortably fit within ~1 to 1.5 screen scrolls without pushing "Latest Drops" down).
-  3. **Single tap surface:** Entire card is wrapped in a high-priority link with minimum touch target height `≥ 48px`.
-  4. **Bottom-left text overlay:** Real semantic HTML text (not baked into image) positioned bottom-left (`HOODIES`, `SHIRTS`, `TROUSERS` + `Shop All →`).
-  5. **Zero JavaScript:** Pure native CSS layout (`display: flex; flex-direction: column; gap: 12px;`) ensuring 0 runtime breakage on low-cost devices.
+- **Mobile Architecture (Pure Canvas Blend — Zero Swipe, Pure Native Scroll):**
+  1. **Full-width vertical stack:** 3 items stacked vertically in natural reading order (1st Hoodies &rarr; 2nd Shirts &rarr; 3rd Trousers).
+  2. **Pure canvas blend (No boxes):** Zero background boxes or card container fills (`background: transparent;`). Floating cutout garments blend seamlessly into the `#FFFFFF` gallery canvas with soft contact shadows, completely matching desktop.
+  3. **Compact shape:** `4:3` aspect ratio garment stage (keeps all 3 categories comfortably within ~1 to 1.5 screen scrolls without pushing "Latest Drops" too far down).
+  4. **Centered typography below garment:** Category title (`HOODIES`, `SHIRTS`, `TROUSERS`) and `Shop All →` centered directly underneath each floating piece with full-tile tap target.
+  5. **Zero JavaScript:** Pure native CSS layout (`display: flex; flex-direction: column; gap: clamp(2.25rem, 6vw, 3.5rem);`) ensuring 0 runtime breakage or scroll hitching.
   6. **Performance:** `loading="lazy"` on all category images as they sit below the hero fold.
 - **Desktop Architecture:**
   - 3-column grid (`repeat(3, 1fr)`) with floating cutout garments blending seamlessly into the `#FFFFFF` canvas.

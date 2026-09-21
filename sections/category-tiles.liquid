@@ -51,22 +51,9 @@
                 </div>
               {% endif %}
             </div>
-
-            <!-- Mobile Bottom-Left Content Overlay (>= 48px tap target) -->
-            <div class="category-tile__mobile-footer" aria-hidden="true">
-              <div class="category-tile__mobile-content">
-                <span class="category-tile__mobile-title">{{ block.settings.title }}</span>
-                <span class="category-tile__mobile-cta">
-                  <span>Shop All</span>
-                  <svg class="category-tile__arrow" width="14" height="14" viewBox="0 0 14 14" fill="none">
-                    <path d="M1 7H13M13 7L7.5 1.5M13 7L7.5 12.5" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </span>
-              </div>
-            </div>
           </div>
 
-          <!-- Desktop Centered Metadata Block -->
+          <!-- Centered Metadata Block (Unified pure canvas blend on mobile & desktop) -->
           <div class="category-tile__meta">
             <h3 class="category-tile__title">{{ block.settings.title }}</h3>
             <div class="category-tile__action">
@@ -178,18 +165,73 @@
     transition: transform 220ms ease-out;
   }
 
+  /* Shared Centered Editorial Typography Below Garment (Mobile & Desktop) */
+  .category-tile__meta {
+    margin-top: clamp(0.75rem, 2vw, 1.25rem);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.35rem;
+    position: relative;
+  }
+
+  .category-tile__title {
+    font-family: var(--font-display);
+    font-size: clamp(1.125rem, 2.5vw, 1.25rem);
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: 0.04em;
+    margin: 0;
+    color: var(--color-text);
+    text-transform: uppercase;
+  }
+
+  .category-tile__action {
+    margin-top: 0.15rem;
+  }
+
+  .category-tile__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    position: relative;
+    padding-bottom: 2px;
+    min-height: 36px;
+    transition: color var(--transition-fast);
+  }
+
+  .category-tile__cta::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 1px;
+    background-color: var(--color-text);
+    transform: scaleX(0);
+    transform-origin: center;
+    transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
   /* ==========================================================================
      Mobile Layout (max-width: 749px):
-     - 3 stacked full-width cards with 12px gap
-     - 4:3 shape (all 3 fit in 1 to 1.5 screens)
-     - Name and arrow bottom-left of the photo (>= 48px tap area)
+     - Pure canvas blend: NO background boxes, seamless #FFFFFF backdrop
+     - 3 stacked vertical items (1st -> 2nd -> 3rd)
+     - Compact 4:3 garment stage with centered typography below
      - Zero swipe friction, pure native vertical scroll
      ========================================================================== */
   @media (max-width: 749px) {
     .category-tiles__track {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: clamp(2.25rem, 6vw, 3.5rem);
       padding: 0;
       margin: 0;
     }
@@ -205,63 +247,15 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background-color: var(--color-surface);
+      background: transparent;
       padding: var(--space-xs);
       box-sizing: border-box;
-      overflow: hidden;
+      overflow: visible;
     }
 
     .category-tile__image {
-      max-width: 80%;
-      max-height: 80%;
-    }
-
-    .category-tile__mobile-footer {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      padding: 0.875rem 1rem;
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      z-index: 2;
-      pointer-events: none;
-    }
-
-    .category-tile__mobile-content {
-      display: flex;
-      flex-direction: column;
-      gap: 0.2rem;
-      min-height: 48px;
-      justify-content: flex-end;
-    }
-
-    .category-tile__mobile-title {
-      font-family: var(--font-display);
-      font-size: 1.125rem;
-      font-weight: 500;
-      line-height: 1.15;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      color: var(--color-text);
-    }
-
-    .category-tile__mobile-cta {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      font-family: var(--font-body);
-      font-size: 0.75rem;
-      font-weight: 500;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--color-text-muted);
-    }
-
-    /* Hide desktop centered metadata on mobile */
-    .category-tile__meta {
-      display: none;
+      max-width: 82%;
+      max-height: 82%;
     }
   }
 
@@ -277,10 +271,6 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: clamp(2rem, 3.5vw, 4.5rem);
-    }
-
-    .category-tile__mobile-footer {
-      display: none;
     }
 
     .category-tile__stage {
@@ -319,60 +309,6 @@
       .category-tile:hover .category-tile__cta::after {
         transform: scaleX(1);
       }
-    }
-
-    /* Centered Editorial Typography Below Garment */
-    .category-tile__meta {
-      margin-top: var(--space-sm);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      gap: 0.35rem;
-      position: relative;
-    }
-
-    .category-tile__title {
-      font-family: var(--font-display);
-      font-size: 1.125rem;
-      font-weight: 500;
-      line-height: 1.2;
-      letter-spacing: 0.04em;
-      margin: 0;
-      color: var(--color-text);
-      text-transform: uppercase;
-    }
-
-    .category-tile__action {
-      margin-top: 0.15rem;
-    }
-
-    .category-tile__cta {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.45rem;
-      font-family: var(--font-body);
-      font-size: 0.75rem;
-      font-weight: 500;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--color-text-muted);
-      position: relative;
-      padding-bottom: 2px;
-      transition: color var(--transition-fast);
-    }
-
-    .category-tile__cta::after {
-      content: '';
-      position: absolute;
-      left: 0;
-      bottom: 0;
-      width: 100%;
-      height: 1px;
-      background-color: var(--color-text);
-      transform: scaleX(0);
-      transform-origin: center;
-      transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1);
     }
   }
 
