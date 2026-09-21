@@ -8,17 +8,121 @@
   @param {product} product - The product object
 {% enddoc %}
 
-<product-gallery class="product-gallery" data-product-gallery>
-  {% if product.images.size > 0 %}
-    <!-- Mobile Counter / Badge -->
-    {% if product.images.size > 1 %}
-      <div class="product-gallery__counter text-micro" aria-hidden="true">
-        <span data-gallery-current>1</span> / <span>{{ product.images.size }}</span>
-      </div>
-    {% endif %}
+{% liquid
+  assign is_snowboard = false
+  if product.type contains 'snowboard' or product.title contains 'Snowboard' or product.handle contains 'snowboard' or product.handle contains 'ski-wax'
+    assign is_snowboard = true
+  endif
 
-    <!-- Gallery View (Mobile Scroll-Snap & Desktop Vertical Stack) -->
-    <div class="product-gallery__track" data-gallery-track>
+  if is_snowboard
+    assign hoodie_img = 'category-hoodies.jpg' | asset_url
+    assign hoodie_png = 'category-hoodies.png' | asset_url
+    assign shirt_img = 'category-shirts.jpg' | asset_url
+    assign shirt_png = 'category-shirts.png' | asset_url
+    assign trouser_img = 'category-trousers.jpg' | asset_url
+    assign trouser_png = 'category-trousers.png' | asset_url
+
+    case product.handle
+      when 'the-complete-snowboard'
+        assign adot_title = 'Heavyweight Boxy Hoodie'
+        assign adot_image = hoodie_img
+        assign adot_secondary_image = hoodie_png
+      when 'the-collection-snowboard-hydrogen'
+        assign adot_title = 'Relaxed Poplin Shirt'
+        assign adot_image = shirt_img
+        assign adot_secondary_image = shirt_png
+      when 'the-collection-snowboard-liquid'
+        assign adot_title = 'Tailored Pleated Trousers'
+        assign adot_image = trouser_img
+        assign adot_secondary_image = trouser_png
+      when 'the-collection-snowboard-oxygen'
+        assign adot_title = 'Heavyweight Zip Hoodie'
+        assign adot_image = hoodie_img
+        assign adot_secondary_image = hoodie_png
+      when 'the-compare-at-price-snowboard'
+        assign adot_title = 'Oversized Oxford Button-Down'
+        assign adot_image = shirt_img
+        assign adot_secondary_image = shirt_png
+      when 'selling-plans-ski-wax'
+        assign adot_title = 'Wide-Leg Minimalist Chino'
+        assign adot_image = trouser_img
+        assign adot_secondary_image = trouser_png
+      when 'the-inventory-not-tracked-snowboard'
+        assign adot_title = 'Heavyweight Loopback Crewneck'
+        assign adot_image = hoodie_img
+        assign adot_secondary_image = hoodie_png
+      when 'the-3p-fulfilled-snowboard'
+        assign adot_title = 'Double-Pleat Cotton Chino'
+        assign adot_image = trouser_img
+        assign adot_secondary_image = trouser_png
+      when 'the-multi-location-snowboard'
+        assign adot_title = 'Oversized Fleece Pullover'
+        assign adot_image = hoodie_img
+        assign adot_secondary_image = hoodie_png
+      when 'the-multi-managed-snowboard'
+        assign adot_title = 'Structured Twill Overshirt'
+        assign adot_image = shirt_img
+        assign adot_secondary_image = shirt_png
+      when 'the-videographer-snowboard'
+        assign adot_title = 'Relaxed Straight Trousers'
+        assign adot_image = trouser_img
+        assign adot_secondary_image = trouser_png
+      when 'the-out-of-stock-snowboard'
+        assign adot_title = 'Relaxed Camp Collar Shirt'
+        assign adot_image = shirt_img
+        assign adot_secondary_image = shirt_png
+      else
+        assign adot_title = 'Heavyweight Boxy Hoodie'
+        assign adot_image = hoodie_img
+        assign adot_secondary_image = hoodie_png
+    endcase
+  endif
+%}
+
+<product-gallery class="product-gallery" data-product-gallery>
+  {% assign total_slides = product.images.size %}
+  {% if is_snowboard %}
+    {% assign total_slides = 2 %}
+  {% endif %}
+
+  <!-- Mobile Counter / Badge -->
+  {% if total_slides > 1 %}
+    <div class="product-gallery__counter text-micro" aria-hidden="true">
+      <span data-gallery-current>1</span> / <span>{{ total_slides }}</span>
+    </div>
+  {% endif %}
+
+  <!-- Gallery View (Mobile Scroll-Snap & Desktop Vertical Stack) -->
+  <div class="product-gallery__track" data-gallery-track>
+    {% if is_snowboard and adot_image != blank %}
+      <div class="product-gallery__item" data-index="1">
+        <div class="product-gallery__media aspect-3-4">
+          <img
+            src="{{ adot_image }}"
+            alt="{{ adot_title | escape }}"
+            class="product-gallery__image"
+            loading="eager"
+            fetchpriority="high"
+            width="900"
+            height="1200"
+          >
+        </div>
+      </div>
+      {% if adot_secondary_image != blank %}
+        <div class="product-gallery__item" data-index="2">
+          <div class="product-gallery__media aspect-3-4">
+            <img
+              src="{{ adot_secondary_image }}"
+              alt="{{ adot_title | escape }}"
+              class="product-gallery__image"
+              loading="lazy"
+              width="900"
+              height="1200"
+            >
+          </div>
+        </div>
+      {% endif %}
+    {% elsif product.images.size > 0 %}
       {% for image in product.images %}
         {% assign loading_val = 'lazy' %}
         {% assign priority_val = 'auto' %}
@@ -46,28 +150,27 @@
           </div>
         </div>
       {% endfor %}
-    </div>
-
-    <!-- Mobile Scroll Dots (Visual indicator for small screens) -->
-    {% if product.images.size > 1 %}
-      <div class="product-gallery__dots" aria-hidden="true">
-        {% for image in product.images %}
-          <button
-            type="button"
-            class="product-gallery__dot {% if forloop.first %}is-active{% endif %}"
-            data-dot-index="{{ forloop.index }}"
-            aria-label="Go to slide {{ forloop.index }}"
-          ></button>
-        {% endfor %}
+    {% else %}
+      <!-- Fallback Placeholder -->
+      <div class="product-gallery__item product-gallery__item--placeholder">
+        <div class="product-gallery__media aspect-3-4 product-gallery__placeholder">
+          {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+        </div>
       </div>
     {% endif %}
+  </div>
 
-  {% else %}
-    <!-- Fallback Placeholder -->
-    <div class="product-gallery__item product-gallery__item--placeholder">
-      <div class="product-gallery__media aspect-3-4 product-gallery__placeholder">
-        {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
-      </div>
+  <!-- Mobile Scroll Dots (Visual indicator for small screens) -->
+  {% if total_slides > 1 %}
+    <div class="product-gallery__dots" aria-hidden="true">
+      {% for i in (1..total_slides) %}
+        <button
+          type="button"
+          class="product-gallery__dot {% if forloop.first %}is-active{% endif %}"
+          data-dot-index="{{ forloop.index }}"
+          aria-label="Go to slide {{ forloop.index }}"
+        ></button>
+      {% endfor %}
     </div>
   {% endif %}
 </product-gallery>

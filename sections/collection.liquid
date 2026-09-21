@@ -1,22 +1,85 @@
 {% comment %}
   Modern Editorial Collection Template
   Clean 4-column desktop / 2-column mobile grid using product-card primitive.
+  Features instant category tabs for Hoodies, Shirts, and Trousers with synchronized state.
 {% endcomment %}
 
-<div class="collection container">
+<div class="collection container" data-collection-page>
   <header class="collection__header">
-    <h1 class="collection__title">{{ collection.title }}</h1>
-    {% if collection.description != blank %}
-      <div class="collection__description caption">
-        {{ collection.description }}
-      </div>
-    {% endif %}
+    <div class="collection__eyebrow text-micro">MENSWEAR ESSENTIALS</div>
+    <div class="collection__title-row">
+      <h1 class="collection__title" data-collection-title>
+        {% if collection.handle == 'all' or collection.title == 'Products' %}
+          All Essentials
+        {% else %}
+          {{ collection.title }}
+        {% endif %}
+      </h1>
+      <span class="collection__count text-micro" data-collection-count>[{{ collection.all_products_count }} items]</span>
+    </div>
+
+    <p class="collection__description caption" data-collection-desc>
+      {{ collection.description | default: 'The complete ADOT menswear collection. Heavyweight fleece, crisp poplin shirts, and tailored trousers.' }}
+    </p>
+
+    <!-- Category Filter Bar -->
+    <nav class="collection__filter-nav" aria-label="Filter products by category">
+      <button
+        type="button"
+        class="collection__filter-btn text-micro is-active"
+        data-category-filter="all"
+        aria-pressed="true"
+      >
+        <span>All</span>
+        <span class="collection__filter-count" data-filter-count="all">[{{ collection.all_products_count }}]</span>
+      </button>
+      <button
+        type="button"
+        class="collection__filter-btn text-micro"
+        data-category-filter="hoodies"
+        aria-pressed="false"
+      >
+        <span>Hoodies</span>
+        <span class="collection__filter-count" data-filter-count="hoodies">[4]</span>
+      </button>
+      <button
+        type="button"
+        class="collection__filter-btn text-micro"
+        data-category-filter="shirts"
+        aria-pressed="false"
+      >
+        <span>Shirts</span>
+        <span class="collection__filter-count" data-filter-count="shirts">[4]</span>
+      </button>
+      <button
+        type="button"
+        class="collection__filter-btn text-micro"
+        data-category-filter="trousers"
+        aria-pressed="false"
+      >
+        <span>Trousers</span>
+        <span class="collection__filter-count" data-filter-count="trousers">[4]</span>
+      </button>
+    </nav>
   </header>
 
-  <div class="collection__grid">
-    {% paginate collection.products by 24 %}
+  <div class="collection__grid" id="CollectionProductGrid">
+    {% paginate collection.products by 50 %}
       {% for product in collection.products %}
-        <div class="collection__item">
+        {% if product.handle == 'gift-card' %}
+          {% continue %}
+        {% endif %}
+        {% case product.handle %}
+          {% when 'the-complete-snowboard', 'the-collection-snowboard-oxygen', 'the-inventory-not-tracked-snowboard', 'the-multi-location-snowboard' %}
+            {% assign item_category = 'hoodies' %}
+          {% when 'the-collection-snowboard-hydrogen', 'the-compare-at-price-snowboard', 'the-multi-managed-snowboard', 'the-out-of-stock-snowboard' %}
+            {% assign item_category = 'shirts' %}
+          {% when 'the-collection-snowboard-liquid', 'selling-plans-ski-wax', 'the-3p-fulfilled-snowboard', 'the-videographer-snowboard' %}
+            {% assign item_category = 'trousers' %}
+          {% else %}
+            {% assign item_category = product.type | downcase %}
+        {% endcase %}
+        <div class="collection__item" data-category="{{ item_category }}">
           {% render 'product-card', product: product %}
         </div>
       {% else %}
@@ -32,28 +95,91 @@
   </div>
 </div>
 
-{% stylesheet %}
+<style>
   .collection {
     padding-block: var(--space-lg);
   }
 
   .collection__header {
-    margin-bottom: var(--space-md);
+    margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
     text-align: left;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: clamp(1.25rem, 2.5vw, 2rem);
+  }
+
+  .collection__eyebrow {
+    color: var(--color-text-subtle);
+    letter-spacing: 0.12em;
+    margin-bottom: 0.5rem;
+  }
+
+  .collection__title-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
   }
 
   .collection__title {
     font-family: var(--font-display);
-    font-size: var(--font-size-h1);
+    font-size: clamp(2rem, 4vw, 3rem);
     font-weight: 400;
     line-height: var(--leading-tight);
-    margin: 0 0 var(--space-xs);
+    margin: 0;
     color: var(--color-text);
   }
 
+  .collection__count {
+    color: var(--color-text-subtle);
+    font-weight: 500;
+  }
+
   .collection__description {
-    max-width: 60ch;
+    max-width: 65ch;
     color: var(--color-text-muted);
+    margin: 0 0 1.5rem;
+    line-height: 1.6;
+  }
+
+  /* Category Filter Pills */
+  .collection__filter-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .collection__filter-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.5rem 1rem;
+    background-color: transparent;
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-none, 0px);
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 150ms ease;
+  }
+
+  .collection__filter-btn:hover {
+    border-color: var(--color-text);
+  }
+
+  .collection__filter-btn.is-active {
+    background-color: var(--color-text, #111111);
+    color: var(--color-background, #FFFFFF);
+    border-color: var(--color-text, #111111);
+  }
+
+  .collection__filter-count {
+    opacity: 0.7;
   }
 
   .collection__grid {
@@ -103,7 +229,119 @@
     font-weight: 600;
     border-bottom: 1px solid var(--color-text);
   }
-{% endstylesheet %}
+</style>
+
+<script>
+  (function() {
+    const page = document.querySelector('[data-collection-page]');
+    if (!page) return;
+
+    const titleEl = page.querySelector('[data-collection-title]');
+    const countEl = page.querySelector('[data-collection-count]');
+    const descEl = page.querySelector('[data-collection-desc]');
+    const filterBtns = page.querySelectorAll('[data-category-filter]');
+    const items = page.querySelectorAll('.collection__item');
+
+    const categoryMeta = {
+      all: {
+        title: 'All Essentials',
+        desc: 'The complete ADOT menswear wardrobe. Heavyweight fleece, crisp poplin shirts, and tailored trousers.'
+      },
+      hoodies: {
+        title: 'Hoodies',
+        desc: 'Cut from custom-knitted 450 GSM loopback cotton fleece. Featuring double-lined hood architecture, dropped shoulders, and a relaxed boxy drape.'
+      },
+      shirts: {
+        title: 'Shirts',
+        desc: '100% long-staple cotton poplin, vintage Oxford weave, and heavy structured twill. Clean plackets and relaxed modern silhouettes.'
+      },
+      trousers: {
+        title: 'Trousers',
+        desc: 'Structured high-density cotton twill and brushed chinos. Tailored double pleats, wide-leg cuts, and effortless breaks.'
+      }
+    };
+
+    // Calculate dynamic counts based on rendered items
+    let counts = { all: items.length, hoodies: 0, shirts: 0, trousers: 0 };
+    items.forEach(item => {
+      const cat = (item.dataset.category || '').toLowerCase();
+      if (cat.includes('hoodie')) counts.hoodies++;
+      else if (cat.includes('shirt')) counts.shirts++;
+      else if (cat.includes('trouser')) counts.trousers++;
+    });
+
+    // Update filter badge counts
+    Object.keys(counts).forEach(k => {
+      const el = page.querySelector(`[data-filter-count="${k}"]`);
+      if (el) el.textContent = `[${counts[k]}]`;
+    });
+
+    function setCategory(cat, updateUrl = true) {
+      cat = (cat || 'all').toLowerCase();
+      if (!categoryMeta[cat]) cat = 'all';
+
+      // Update Buttons State
+      filterBtns.forEach(btn => {
+        const isMatch = btn.dataset.categoryFilter === cat;
+        btn.classList.toggle('is-active', isMatch);
+        btn.setAttribute('aria-pressed', isMatch);
+      });
+
+      // Update Header Content
+      const meta = categoryMeta[cat];
+      if (titleEl) titleEl.textContent = meta.title;
+      if (descEl) descEl.textContent = meta.desc;
+      if (countEl) countEl.textContent = `[${counts[cat]} items]`;
+
+      // Filter Grid Items
+      items.forEach(item => {
+        const itemCat = (item.dataset.category || '').toLowerCase();
+        let show = false;
+        if (cat === 'all') {
+          show = true;
+        } else if (cat === 'hoodies' && itemCat.includes('hoodie')) {
+          show = true;
+        } else if (cat === 'shirts' && itemCat.includes('shirt')) {
+          show = true;
+        } else if (cat === 'trousers' && itemCat.includes('trouser')) {
+          show = true;
+        }
+
+        item.style.display = show ? '' : 'none';
+      });
+
+      // Update URL search parameter
+      if (updateUrl) {
+        const url = new URL(window.location);
+        if (cat === 'all') {
+          url.searchParams.delete('category');
+        } else {
+          url.searchParams.set('category', cat);
+        }
+        window.history.pushState({ category: cat }, '', url);
+      }
+    }
+
+    // Attach click listeners to category filter pills
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const cat = btn.dataset.categoryFilter;
+        setCategory(cat, true);
+      });
+    });
+
+    // Initialize state from URL query parameter (e.g. ?category=hoodies)
+    const initialParams = new URLSearchParams(window.location.search);
+    const initialCat = initialParams.get('category') || 'all';
+    setCategory(initialCat, false);
+
+    // Handle browser back/forward buttons
+    window.addEventListener('popstate', (e) => {
+      const stateCat = e.state?.category || new URLSearchParams(window.location.search).get('category') || 'all';
+      setCategory(stateCat, false);
+    });
+  })();
+</script>
 
 {% schema %}
 {

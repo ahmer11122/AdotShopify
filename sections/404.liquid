@@ -5,6 +5,19 @@
   https://shopify.dev/docs/storefronts/themes/architecture/templates/404
 {% endcomment %}
 
+<script>
+  (function() {
+    const path = window.location.pathname.toLowerCase();
+    if (path.includes('/hoodies')) {
+      window.location.replace('/collections/all?category=hoodies');
+    } else if (path.includes('/shirts')) {
+      window.location.replace('/collections/all?category=shirts');
+    } else if (path.includes('/trousers')) {
+      window.location.replace('/collections/all?category=trousers');
+    }
+  })();
+</script>
+
 <h1>{{ '404.title' | t }}</h1>
 
 <p>

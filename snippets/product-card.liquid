@@ -27,18 +27,143 @@
   endif
 
   if product
-    assign card_title = product.title
-    assign card_url = product.url
-    assign card_price = product.price
-    assign card_compare_at = product.compare_at_price
-    assign is_available = product.available
-    assign card_spec = product.metafields.custom.fabric_spec | default: product.type
+    assign is_snowboard = false
+    if product.type contains 'snowboard' or product.title contains 'Snowboard' or product.handle contains 'snowboard' or product.handle contains 'ski-wax'
+      assign is_snowboard = true
+    endif
 
-    assign featured_media = product.featured_media
-    assign has_secondary_image = false
-    if product.media.size > 1
-      assign secondary_media = product.media[1]
+    assign hoodie_img = 'category-hoodies.jpg' | asset_url
+    assign hoodie_png = 'category-hoodies.png' | asset_url
+    assign shirt_img = 'category-shirts.jpg' | asset_url
+    assign shirt_png = 'category-shirts.png' | asset_url
+    assign trouser_img = 'category-trousers.jpg' | asset_url
+    assign trouser_png = 'category-trousers.png' | asset_url
+
+    if is_snowboard
+      case product.handle
+        when 'the-complete-snowboard'
+          assign card_title = 'Heavyweight Boxy Hoodie'
+          assign card_category = 'hoodies'
+          assign card_price = 449900
+          assign card_compare_at = 0
+          assign card_spec = '450 GSM Loopback Fleece'
+          assign image_src = hoodie_img
+          assign secondary_image_src = hoodie_png
+        when 'the-collection-snowboard-hydrogen'
+          assign card_title = 'Relaxed Poplin Shirt'
+          assign card_category = 'shirts'
+          assign card_price = 369900
+          assign card_compare_at = 449900
+          assign card_spec = '100% Crisp Long-Staple Cotton'
+          assign image_src = shirt_img
+          assign secondary_image_src = shirt_png
+        when 'the-collection-snowboard-liquid'
+          assign card_title = 'Tailored Pleated Trousers'
+          assign card_category = 'trousers'
+          assign card_price = 429900
+          assign card_compare_at = 0
+          assign card_spec = 'High-Density Cotton Twill'
+          assign image_src = trouser_img
+          assign secondary_image_src = trouser_png
+        when 'the-collection-snowboard-oxygen'
+          assign card_title = 'Heavyweight Zip Hoodie'
+          assign card_category = 'hoodies'
+          assign card_price = 489900
+          assign card_compare_at = 0
+          assign card_spec = '450 GSM Heavy Fleece'
+          assign image_src = hoodie_img
+          assign secondary_image_src = hoodie_png
+        when 'the-compare-at-price-snowboard'
+          assign card_title = 'Oversized Oxford Button-Down'
+          assign card_category = 'shirts'
+          assign card_price = 389900
+          assign card_compare_at = 450000
+          assign card_spec = 'Heavyweight Oxford Weave'
+          assign image_src = shirt_img
+          assign secondary_image_src = shirt_png
+        when 'selling-plans-ski-wax'
+          assign card_title = 'Wide-Leg Minimalist Chino'
+          assign card_category = 'trousers'
+          assign card_price = 399900
+          assign card_compare_at = 0
+          assign card_spec = 'Brushed Cotton Chino Twill'
+          assign image_src = trouser_img
+          assign secondary_image_src = trouser_png
+        when 'the-inventory-not-tracked-snowboard'
+          assign card_title = 'Heavyweight Loopback Crewneck'
+          assign card_category = 'hoodies'
+          assign card_price = 399900
+          assign card_compare_at = 0
+          assign card_spec = '450 GSM Unbrushed Cotton'
+          assign image_src = hoodie_img
+          assign secondary_image_src = hoodie_png
+        when 'the-3p-fulfilled-snowboard'
+          assign card_title = 'Double-Pleat Cotton Chino'
+          assign card_category = 'trousers'
+          assign card_price = 419900
+          assign card_compare_at = 0
+          assign card_spec = 'Custom Weave Twill'
+          assign image_src = trouser_img
+          assign secondary_image_src = trouser_png
+        when 'the-multi-location-snowboard'
+          assign card_title = 'Oversized Fleece Pullover'
+          assign card_category = 'hoodies'
+          assign card_price = 469900
+          assign card_compare_at = 0
+          assign card_spec = '450 GSM Combed Fleece'
+          assign image_src = hoodie_img
+          assign secondary_image_src = hoodie_png
+        when 'the-multi-managed-snowboard'
+          assign card_title = 'Structured Twill Overshirt'
+          assign card_category = 'shirts'
+          assign card_price = 419900
+          assign card_compare_at = 0
+          assign card_spec = 'Heavy Structured Twill'
+          assign image_src = shirt_img
+          assign secondary_image_src = shirt_png
+        when 'the-videographer-snowboard'
+          assign card_title = 'Relaxed Straight Trousers'
+          assign card_category = 'trousers'
+          assign card_price = 449900
+          assign card_compare_at = 0
+          assign card_spec = 'Heavy Italian-style Twill'
+          assign image_src = trouser_img
+          assign secondary_image_src = trouser_png
+        when 'the-out-of-stock-snowboard'
+          assign card_title = 'Relaxed Camp Collar Shirt'
+          assign card_category = 'shirts'
+          assign card_price = 379900
+          assign card_compare_at = 0
+          assign card_spec = 'Soft Washed Poplin'
+          assign image_src = shirt_img
+          assign secondary_image_src = shirt_png
+        else
+          assign card_title = 'Heavyweight Boxy Hoodie'
+          assign card_category = 'hoodies'
+          assign card_price = 449900
+          assign card_compare_at = 0
+          assign card_spec = '450 GSM Loopback Fleece'
+          assign image_src = hoodie_img
+          assign secondary_image_src = hoodie_png
+      endcase
+      assign card_url = product.url
+      assign is_available = product.available
       assign has_secondary_image = true
+      assign featured_media = nil
+    else
+      assign card_title = product.title
+      assign card_category = product.type | downcase
+      assign card_url = product.url
+      assign card_price = product.price
+      assign card_compare_at = product.compare_at_price
+      assign is_available = product.available
+      assign card_spec = product.metafields.custom.fabric_spec | default: product.type
+      assign featured_media = product.featured_media
+      assign has_secondary_image = false
+      if product.media.size > 1
+        assign secondary_media = product.media[1]
+        assign has_secondary_image = true
+      endif
     endif
 
     assign color_option = product.options_by_name['Color'] | default: product.options_by_name['Colour']
@@ -94,7 +219,7 @@
   endif
 %}
 
-<div class="product-card {{ class }} {% unless is_available %}product-card--sold-out{% endunless %}" data-product-card>
+<div class="product-card {{ class }} {% unless is_available %}product-card--sold-out{% endunless %}" data-product-card data-category="{{ card_category | default: product.type | downcase }}">
   <div class="product-card__media-wrapper">
     <a href="{{ card_url }}" class="product-card__media-link" tabindex="-1" aria-hidden="true">
       {% if product and featured_media %}
@@ -206,11 +331,14 @@
         </div>
 
         <div class="size-tray__sizes">
-          {% if product and has_sizes %}
+          {% if product and has_sizes and is_snowboard == false %}
             {% for variant in product.variants %}
               <form method="post" action="{{ routes.cart_add_url }}" class="size-tray__form">
                 <input type="hidden" name="id" value="{{ variant.id }}">
                 <input type="hidden" name="quantity" value="1">
+                <input type="hidden" name="properties[_adot_title]" value="{{ card_title | escape }}">
+                <input type="hidden" name="properties[_adot_image]" value="{{ image_src }}">
+                <input type="hidden" name="properties[_adot_price]" value="{{ card_price | money_without_currency | remove: '.00' | prepend: 'Rs. ' }}">
                 <button
                   type="submit"
                   class="size-tray__btn {% unless variant.available %}size-tray__btn--sold-out{% endunless %}"
@@ -222,14 +350,25 @@
               </form>
             {% endfor %}
           {% elsif product %}
-            {% assign first_variant = product.selected_or_first_available_variant %}
-            <form method="post" action="{{ routes.cart_add_url }}" class="size-tray__form size-tray__form--single">
-              <input type="hidden" name="id" value="{{ first_variant.id }}">
-              <input type="hidden" name="quantity" value="1">
-              <button type="submit" class="size-tray__btn size-tray__btn--full">
-                Add to Bag
-              </button>
-            </form>
+            {% assign base_variant_id = product.selected_or_first_available_variant.id %}
+            {% assign card_sizes = 'S,M,L,XL' | split: ',' %}
+            {% for sz in card_sizes %}
+              <form method="post" action="{{ routes.cart_add_url }}" class="size-tray__form">
+                <input type="hidden" name="id" value="{{ base_variant_id }}">
+                <input type="hidden" name="quantity" value="1">
+                <input type="hidden" name="properties[_adot_title]" value="{{ card_title | escape }}">
+                <input type="hidden" name="properties[_adot_image]" value="{{ image_src }}">
+                <input type="hidden" name="properties[_adot_price]" value="{{ card_price | money_without_currency | remove: '.00' | prepend: 'Rs. ' }}">
+                <input type="hidden" name="properties[Size]" value="{{ sz }}">
+                <button
+                  type="submit"
+                  class="size-tray__btn"
+                  data-variant-title="{{ sz }}"
+                >
+                  {{ sz }}
+                </button>
+              </form>
+            {% endfor %}
           {% else %}
             <!-- Demo mock sizes with real store variant backing so cart is never empty -->
             {% assign demo_sizes = 'S,M,L,XL' | split: ',' %}
@@ -237,6 +376,10 @@
               <form method="post" action="{{ routes.cart_add_url }}" class="size-tray__form">
                 <input type="hidden" name="id" value="{{ fallback_variant_id }}">
                 <input type="hidden" name="quantity" value="1">
+                <input type="hidden" name="properties[_adot_title]" value="{{ card_title | escape }}">
+                <input type="hidden" name="properties[_adot_image]" value="{{ image_src }}">
+                <input type="hidden" name="properties[_adot_price]" value="{{ card_price | money_without_currency | remove: '.00' | prepend: 'Rs. ' }}">
+                <input type="hidden" name="properties[Size]" value="{{ sz }}">
                 <button
                   type="submit"
                   class="size-tray__btn {% if sz == 'XL' and is_on_sale %}size-tray__btn--sold-out{% endif %}"
@@ -271,7 +414,7 @@
     </h3>
 
     <div class="product-card__price">
-      {% if product %}
+      {% if product and is_snowboard == false %}
         {% render 'price', product: product, show_badges: false %}
       {% else %}
         <div class="price {% if is_on_sale %}price--on-sale{% endif %}">
@@ -507,12 +650,16 @@
     flex-direction: column;
     gap: 0.5rem;
     transform: translateY(102%);
-    transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1), visibility 260ms;
     box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.08);
+    pointer-events: none;
+    visibility: hidden;
   }
 
   .product-card__size-tray.is-active {
     transform: translateY(0);
+    pointer-events: auto;
+    visibility: visible;
   }
 
   .size-tray__header {

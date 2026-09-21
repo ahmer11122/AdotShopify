@@ -34,9 +34,9 @@
     <nav class="header-drawer__nav" aria-label="Mobile Navigation">
       <ul class="header-drawer__primary-links">
         {% if section.settings.direct_categories %}
-          <li><a href="{{ routes.collections_url }}/hoodies" class="header-drawer__primary-link">Hoodies</a></li>
-          <li><a href="{{ routes.collections_url }}/shirts" class="header-drawer__primary-link">Shirts</a></li>
-          <li><a href="{{ routes.collections_url }}/trousers" class="header-drawer__primary-link">Trousers</a></li>
+          <li><a href="{{ routes.all_products_collection_url }}?category=hoodies" class="header-drawer__primary-link">Hoodies</a></li>
+          <li><a href="{{ routes.all_products_collection_url }}?category=shirts" class="header-drawer__primary-link">Shirts</a></li>
+          <li><a href="{{ routes.all_products_collection_url }}?category=trousers" class="header-drawer__primary-link">Trousers</a></li>
           <li><a href="{{ routes.all_products_collection_url }}" class="header-drawer__primary-link">All Essentials</a></li>
         {% else %}
           {% for link in section.settings.menu.links %}
@@ -46,9 +46,9 @@
               </a>
             </li>
           {% else %}
-            <li><a href="{{ routes.collections_url }}/hoodies" class="header-drawer__primary-link">Hoodies</a></li>
-            <li><a href="{{ routes.collections_url }}/shirts" class="header-drawer__primary-link">Shirts</a></li>
-            <li><a href="{{ routes.collections_url }}/trousers" class="header-drawer__primary-link">Trousers</a></li>
+            <li><a href="{{ routes.all_products_collection_url }}?category=hoodies" class="header-drawer__primary-link">Hoodies</a></li>
+            <li><a href="{{ routes.all_products_collection_url }}?category=shirts" class="header-drawer__primary-link">Shirts</a></li>
+            <li><a href="{{ routes.all_products_collection_url }}?category=trousers" class="header-drawer__primary-link">Trousers</a></li>
             <li><a href="{{ routes.all_products_collection_url }}" class="header-drawer__primary-link">All Essentials</a></li>
           {% endfor %}
         {% endif %}
@@ -155,7 +155,6 @@
               <button type="button" class="search-modal__tag" data-tag-search="Hoodie">Hoodies</button>
               <button type="button" class="search-modal__tag" data-tag-search="Shirt">Shirts</button>
               <button type="button" class="search-modal__tag" data-tag-search="Trouser">Trousers</button>
-              <button type="button" class="search-modal__tag" data-tag-search="Snowboard">Snowboards</button>
               <button type="button" class="search-modal__tag" data-tag-search="Winter">Winter</button>
             </div>
           </div>
@@ -230,13 +229,13 @@
       <nav class="header__nav-left" aria-label="Desktop Navigation">
         <div class="header__categories">
           {% if section.settings.direct_categories %}
-            <a href="{{ routes.collections_url }}/hoodies" class="header__nav-link text-micro">
+            <a href="{{ routes.all_products_collection_url }}?category=hoodies" class="header__nav-link text-micro">
               <span>Hoodies</span>
             </a>
-            <a href="{{ routes.collections_url }}/shirts" class="header__nav-link text-micro">
+            <a href="{{ routes.all_products_collection_url }}?category=shirts" class="header__nav-link text-micro">
               <span>Shirts</span>
             </a>
-            <a href="{{ routes.collections_url }}/trousers" class="header__nav-link text-micro">
+            <a href="{{ routes.all_products_collection_url }}?category=trousers" class="header__nav-link text-micro">
               <span>Trousers</span>
             </a>
           {% else %}
@@ -245,13 +244,13 @@
                 <span>{{ link.title }}</span>
               </a>
             {% else %}
-              <a href="{{ routes.collections_url }}/hoodies" class="header__nav-link text-micro">
+              <a href="{{ routes.all_products_collection_url }}?category=hoodies" class="header__nav-link text-micro">
                 <span>Hoodies</span>
               </a>
-              <a href="{{ routes.collections_url }}/shirts" class="header__nav-link text-micro">
+              <a href="{{ routes.all_products_collection_url }}?category=shirts" class="header__nav-link text-micro">
                 <span>Shirts</span>
               </a>
-              <a href="{{ routes.collections_url }}/trousers" class="header__nav-link text-micro">
+              <a href="{{ routes.all_products_collection_url }}?category=trousers" class="header__nav-link text-micro">
                 <span>Trousers</span>
               </a>
             {% endfor %}
@@ -1724,6 +1723,11 @@
     align-items: center;
   }
 
+  .cart-drawer__empty[hidden],
+  .cart-drawer__footer[hidden] {
+    display: none !important;
+  }
+
   .cart-drawer__empty-icon {
     color: var(--color-text-subtle);
     margin-bottom: var(--space-md);
@@ -1896,7 +1900,7 @@
   }
 {% endstylesheet %}
 
-{% javascript %}
+<script>
   class HeaderDrawer extends HTMLElement {
     constructor() {
       super();
@@ -2368,8 +2372,8 @@
     }
 
     formatMoney(cents) {
-      const dollars = (cents / 100).toFixed(2);
-      return this.currencySymbol + dollars;
+      const amount = (cents / 100).toLocaleString('en-PK', { maximumFractionDigits: 0 });
+      return `Rs. ${amount}`;
     }
 
     async fetchCart() {
@@ -2378,45 +2382,37 @@
         const cart = await res.json();
         this.updateUI(cart);
       } catch (err) {
-        console.error('Failed to fetch cart:', err);
+        console.error('Error fetching cart:', err);
       }
     }
 
-    async changeQuantity(key, delta) {
-      const itemEl = this.querySelector(`[data-item-key="${key}"]`);
+    async updateQuantity(key, quantity, itemEl) {
+      if (!itemEl) itemEl = this.querySelector(`[data-item-key="${key}"]`);
       if (itemEl) itemEl.classList.add('is-updating');
-
       try {
-        const qtyEl = itemEl ? itemEl.querySelector('.cart-drawer__qty-num') : null;
-        const currentQty = qtyEl ? parseInt(qtyEl.textContent, 10) : 1;
-        const newQty = Math.max(0, currentQty + delta);
-
         const res = await fetch('/cart/change.js', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: key, quantity: newQty }),
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ id: key, quantity })
         });
-
-        if (!res.ok) throw new Error('Cart change failed');
+        if (!res.ok) throw new Error('Cart update failed');
         const cart = await res.json();
         this.updateUI(cart);
       } catch (err) {
-        console.error('Error updating quantity:', err);
+        console.error('Error updating cart:', err);
         if (itemEl) itemEl.classList.remove('is-updating');
       }
     }
 
-    async removeItem(key) {
-      const itemEl = this.querySelector(`[data-item-key="${key}"]`);
+    async removeItem(key, itemEl) {
+      if (!itemEl) itemEl = this.querySelector(`[data-item-key="${key}"]`);
       if (itemEl) itemEl.classList.add('is-updating');
-
       try {
         const res = await fetch('/cart/change.js', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: key, quantity: 0 }),
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ id: key, quantity: 0 })
         });
-
         if (!res.ok) throw new Error('Cart remove failed');
         const cart = await res.json();
         this.updateUI(cart);
@@ -2424,6 +2420,14 @@
         console.error('Error removing item:', err);
         if (itemEl) itemEl.classList.remove('is-updating');
       }
+    }
+
+    async changeQuantity(key, delta) {
+      const itemEl = this.querySelector(`[data-item-key="${key}"]`);
+      const qtyEl = itemEl ? itemEl.querySelector('.cart-drawer__qty-num') : null;
+      const currentQty = qtyEl ? parseInt(qtyEl.textContent, 10) : 1;
+      const newQty = Math.max(0, currentQty + delta);
+      await this.updateQuantity(key, newQty, itemEl);
     }
 
     updateUI(cart) {
@@ -2457,19 +2461,38 @@
       if (footer) footer.hidden = false;
 
       if (itemsContainer) {
+        const adotFallbackMap = {
+          'the-complete-snowboard': { title: 'Heavyweight Boxy Hoodie', img: '{{ "category-hoodies.jpg" | asset_url }}', price: 'Rs. 4,499' },
+          'the-collection-snowboard-hydrogen': { title: 'Relaxed Poplin Shirt', img: '{{ "category-shirts.jpg" | asset_url }}', price: 'Rs. 3,699' },
+          'the-collection-snowboard-liquid': { title: 'Tailored Pleated Trousers', img: '{{ "category-trousers.jpg" | asset_url }}', price: 'Rs. 4,299' },
+          'the-collection-snowboard-oxygen': { title: 'Heavyweight Zip Hoodie', img: '{{ "category-hoodies.jpg" | asset_url }}', price: 'Rs. 4,899' },
+          'the-compare-at-price-snowboard': { title: 'Oversized Oxford Button-Down', img: '{{ "category-shirts.jpg" | asset_url }}', price: 'Rs. 3,899' },
+          'selling-plans-ski-wax': { title: 'Wide-Leg Minimalist Chino', img: '{{ "category-trousers.jpg" | asset_url }}', price: 'Rs. 3,999' },
+          'the-inventory-not-tracked-snowboard': { title: 'Heavyweight Loopback Crewneck', img: '{{ "category-hoodies.jpg" | asset_url }}', price: 'Rs. 3,999' },
+          'the-3p-fulfilled-snowboard': { title: 'Double-Pleat Cotton Chino', img: '{{ "category-trousers.jpg" | asset_url }}', price: 'Rs. 4,199' },
+          'the-multi-location-snowboard': { title: 'Oversized Fleece Pullover', img: '{{ "category-hoodies.jpg" | asset_url }}', price: 'Rs. 4,699' },
+          'the-multi-managed-snowboard': { title: 'Structured Twill Overshirt', img: '{{ "category-shirts.jpg" | asset_url }}', price: 'Rs. 4,199' },
+          'the-videographer-snowboard': { title: 'Relaxed Straight Trousers', img: '{{ "category-trousers.jpg" | asset_url }}', price: 'Rs. 4,499' },
+          'the-out-of-stock-snowboard': { title: 'Relaxed Camp Collar Shirt', img: '{{ "category-shirts.jpg" | asset_url }}', price: 'Rs. 3,799' }
+        };
+
         itemsContainer.innerHTML = cart.items
           .map((item) => {
-            const imgUrl = item.image || item.featured_image?.url || '';
-            const variant = item.variant_title && item.variant_title !== 'Default Title' ? item.variant_title : '';
-            const priceFormatted = this.formatMoney(item.final_line_price);
+            const fallback = adotFallbackMap[item.handle] || {};
+            const itemTitle = item.properties?._adot_title || fallback.title || item.product_title || item.title;
+            const imgUrl = item.properties?._adot_image || fallback.img || item.image || item.featured_image?.url || '';
+            const sizeText = item.properties?.Size ? `Size: ${item.properties.Size}` : '';
+            const isDummySnowboard = item.handle && (item.handle.includes('snowboard') || item.handle.includes('ski-wax'));
+            const variant = sizeText || (item.variant_title && item.variant_title !== 'Default Title' && !isDummySnowboard ? item.variant_title : '');
+            const priceFormatted = item.properties?._adot_price || fallback.price || this.formatMoney(item.final_line_price);
 
             return `
               <div class="cart-drawer__item" data-item-key="${item.key}">
                 <a href="${item.url}" class="cart-drawer__item-media">
-                  ${imgUrl ? `<img src="${imgUrl}" alt="${this.escapeHtml(item.title)}" class="cart-drawer__item-img" width="80" height="106" loading="lazy">` : ''}
+                  ${imgUrl ? `<img src="${imgUrl}" alt="${this.escapeHtml(itemTitle)}" class="cart-drawer__item-img" width="80" height="106" loading="lazy">` : ''}
                 </a>
                 <div class="cart-drawer__item-info">
-                  <a href="${item.url}" class="cart-drawer__item-title">${this.escapeHtml(item.product_title)}</a>
+                  <a href="${item.url}" class="cart-drawer__item-title">${this.escapeHtml(itemTitle)}</a>
                   ${variant ? `<p class="cart-drawer__item-variant text-micro">${this.escapeHtml(variant)}</p>` : ''}
                   <div class="cart-drawer__item-price text-micro">${priceFormatted}</div>
                   <div class="cart-drawer__item-actions">
@@ -2587,7 +2610,7 @@
   } else {
     initStickyHeader();
   }
-{% endjavascript %}
+</script>
 
 {% schema %}
 {

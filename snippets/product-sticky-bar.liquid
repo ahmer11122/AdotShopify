@@ -9,13 +9,108 @@
   @param {section} section - The parent section
 {% enddoc %}
 
+{% liquid
+  assign is_snowboard = false
+  if product.type contains 'snowboard' or product.title contains 'Snowboard' or product.handle contains 'snowboard' or product.handle contains 'ski-wax'
+    assign is_snowboard = true
+  endif
+
+  assign hoodie_img = 'category-hoodies.jpg' | asset_url
+  assign shirt_img = 'category-shirts.jpg' | asset_url
+  assign trouser_img = 'category-trousers.jpg' | asset_url
+
+  assign adot_title = product.title
+  assign adot_price = product.price
+  assign adot_price_formatted = adot_price | money_without_currency | remove: '.00' | prepend: 'Rs. '
+  assign adot_image = product.featured_image | image_url: width: 1200
+
+  if is_snowboard
+    case product.handle
+      when 'the-complete-snowboard'
+        assign adot_title = 'Heavyweight Boxy Hoodie'
+        assign adot_price = 449900
+        assign adot_price_formatted = 'Rs. 4,499'
+        assign adot_image = hoodie_img
+      when 'the-collection-snowboard-hydrogen'
+        assign adot_title = 'Relaxed Poplin Shirt'
+        assign adot_price = 369900
+        assign adot_price_formatted = 'Rs. 3,699'
+        assign adot_image = shirt_img
+      when 'the-collection-snowboard-liquid'
+        assign adot_title = 'Tailored Pleated Trousers'
+        assign adot_price = 429900
+        assign adot_price_formatted = 'Rs. 4,299'
+        assign adot_image = trouser_img
+      when 'the-collection-snowboard-oxygen'
+        assign adot_title = 'Heavyweight Zip Hoodie'
+        assign adot_price = 489900
+        assign adot_price_formatted = 'Rs. 4,899'
+        assign adot_image = hoodie_img
+      when 'the-compare-at-price-snowboard'
+        assign adot_title = 'Oversized Oxford Button-Down'
+        assign adot_price = 389900
+        assign adot_price_formatted = 'Rs. 3,899'
+        assign adot_image = shirt_img
+      when 'selling-plans-ski-wax'
+        assign adot_title = 'Wide-Leg Minimalist Chino'
+        assign adot_price = 399900
+        assign adot_price_formatted = 'Rs. 3,999'
+        assign adot_image = trouser_img
+      when 'the-inventory-not-tracked-snowboard'
+        assign adot_title = 'Heavyweight Loopback Crewneck'
+        assign adot_price = 399900
+        assign adot_price_formatted = 'Rs. 3,999'
+        assign adot_image = hoodie_img
+      when 'the-3p-fulfilled-snowboard'
+        assign adot_title = 'Double-Pleat Cotton Chino'
+        assign adot_price = 419900
+        assign adot_price_formatted = 'Rs. 4,199'
+        assign adot_image = trouser_img
+      when 'the-multi-location-snowboard'
+        assign adot_title = 'Oversized Fleece Pullover'
+        assign adot_price = 469900
+        assign adot_price_formatted = 'Rs. 4,699'
+        assign adot_image = hoodie_img
+      when 'the-multi-managed-snowboard'
+        assign adot_title = 'Structured Twill Overshirt'
+        assign adot_price = 419900
+        assign adot_price_formatted = 'Rs. 4,199'
+        assign adot_image = shirt_img
+      when 'the-videographer-snowboard'
+        assign adot_title = 'Relaxed Straight Trousers'
+        assign adot_price = 449900
+        assign adot_price_formatted = 'Rs. 4,499'
+        assign adot_image = trouser_img
+      when 'the-out-of-stock-snowboard'
+        assign adot_title = 'Relaxed Camp Collar Shirt'
+        assign adot_price = 379900
+        assign adot_price_formatted = 'Rs. 3,799'
+        assign adot_image = shirt_img
+      else
+        assign adot_title = 'Heavyweight Boxy Hoodie'
+        assign adot_price = 449900
+        assign adot_price_formatted = 'Rs. 4,499'
+        assign adot_image = hoodie_img
+    endcase
+  endif
+%}
+
 <div class="product-sticky-bar" id="ProductStickyBar-{{ section.id }}" data-sticky-bar aria-label="Quick add navigation">
   <div class="product-sticky-bar__container">
     <!-- Thumbnail & Info -->
     <div class="product-sticky-bar__product">
-      {% if product.featured_image %}
-        {% assign featured_alt = product.title | escape %}
-        <div class="product-sticky-bar__media">
+      <div class="product-sticky-bar__media">
+        {% if adot_image != blank %}
+          <img
+            src="{{ adot_image }}"
+            alt="{{ adot_title | default: product.title | escape }}"
+            width="48"
+            height="64"
+            loading="lazy"
+            class="product-sticky-bar__img"
+          >
+        {% elsif product.featured_image %}
+          {% assign featured_alt = product.title | escape %}
           {{
             product.featured_image
             | image_url: width: 120
@@ -26,13 +121,14 @@
               width: 48,
               height: 64
           }}
-        </div>
-      {% endif %}
+        {% endif %}
+      </div>
 
+      {% assign default_sticky_price = product.price | money %}
       <div class="product-sticky-bar__meta">
-        <span class="product-sticky-bar__title text-micro">{{ product.title }}</span>
+        <span class="product-sticky-bar__title text-micro">{{ adot_title | default: product.title }}</span>
         <div class="product-sticky-bar__price-row text-micro">
-          <span class="product-sticky-bar__price" data-sticky-price>{{ product.price | money }}</span>
+          <span class="product-sticky-bar__price" data-sticky-price>{{ adot_price_formatted | default: default_sticky_price }}</span>
           <span class="product-sticky-bar__size-label" data-sticky-size-label>• Select Size</span>
         </div>
       </div>
@@ -186,7 +282,7 @@
     const stickyPrice = stickyBar.querySelector('[data-sticky-price]');
     const stickySizeLabel = stickyBar.querySelector('[data-sticky-size-label]');
 
-    let hasSelectedSize = {% if product.has_only_default_variant %}true{% else %}false{% endif %};
+    let hasSelectedSize = {% if product.has_only_default_variant or product.variants.size == 1 %}true{% else %}false{% endif %};
 
     if (hasSelectedSize && stickyBtnText) {
       stickyBtnText.textContent = 'Add to Bag';
@@ -205,8 +301,13 @@
       }
 
       if (stickyPrice) {
-        const amount = (variant.price / 100).toLocaleString('en-PK', { maximumFractionDigits: 0 });
-        stickyPrice.textContent = `Rs. ${amount}`;
+        const adotPrice = '{{ adot_price_formatted }}';
+        if (adotPrice) {
+          stickyPrice.textContent = adotPrice;
+        } else {
+          const amount = (variant.price / 100).toLocaleString('en-PK', { maximumFractionDigits: 0 });
+          stickyPrice.textContent = `Rs. ${amount}`;
+        }
       }
 
       if (stickyBtnText) {

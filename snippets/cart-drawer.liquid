@@ -42,12 +42,86 @@
       <!-- Items Container -->
       <div class="cart-drawer__items" data-cart-items>
         {% for item in cart.items %}
+          {% assign item_handle = item.product.handle %}
+          {% assign hoodie_img = 'category-hoodies.jpg' | asset_url %}
+          {% assign shirt_img = 'category-shirts.jpg' | asset_url %}
+          {% assign trouser_img = 'category-trousers.jpg' | asset_url %}
+
+          {% assign fallback_title = item.product.title %}
+          {% assign fallback_img = item.image | image_url: width: 240 %}
+          {% assign fallback_price = item.final_line_price | money %}
+
+          {% case item_handle %}
+            {% when 'the-complete-snowboard' %}
+              {% assign fallback_title = 'Heavyweight Boxy Hoodie' %}
+              {% assign fallback_img = hoodie_img %}
+              {% assign fallback_price = 'Rs. 4,499' %}
+            {% when 'the-collection-snowboard-hydrogen' %}
+              {% assign fallback_title = 'Relaxed Poplin Shirt' %}
+              {% assign fallback_img = shirt_img %}
+              {% assign fallback_price = 'Rs. 3,699' %}
+            {% when 'the-collection-snowboard-liquid' %}
+              {% assign fallback_title = 'Tailored Pleated Trousers' %}
+              {% assign fallback_img = trouser_img %}
+              {% assign fallback_price = 'Rs. 4,299' %}
+            {% when 'the-collection-snowboard-oxygen' %}
+              {% assign fallback_title = 'Heavyweight Zip Hoodie' %}
+              {% assign fallback_img = hoodie_img %}
+              {% assign fallback_price = 'Rs. 4,899' %}
+            {% when 'the-compare-at-price-snowboard' %}
+              {% assign fallback_title = 'Oversized Oxford Button-Down' %}
+              {% assign fallback_img = shirt_img %}
+              {% assign fallback_price = 'Rs. 3,899' %}
+            {% when 'selling-plans-ski-wax' %}
+              {% assign fallback_title = 'Wide-Leg Minimalist Chino' %}
+              {% assign fallback_img = trouser_img %}
+              {% assign fallback_price = 'Rs. 3,999' %}
+            {% when 'the-inventory-not-tracked-snowboard' %}
+              {% assign fallback_title = 'Heavyweight Loopback Crewneck' %}
+              {% assign fallback_img = hoodie_img %}
+              {% assign fallback_price = 'Rs. 3,999' %}
+            {% when 'the-3p-fulfilled-snowboard' %}
+              {% assign fallback_title = 'Double-Pleat Cotton Chino' %}
+              {% assign fallback_img = trouser_img %}
+              {% assign fallback_price = 'Rs. 4,199' %}
+            {% when 'the-multi-location-snowboard' %}
+              {% assign fallback_title = 'Oversized Fleece Pullover' %}
+              {% assign fallback_img = hoodie_img %}
+              {% assign fallback_price = 'Rs. 4,699' %}
+            {% when 'the-multi-managed-snowboard' %}
+              {% assign fallback_title = 'Structured Twill Overshirt' %}
+              {% assign fallback_img = shirt_img %}
+              {% assign fallback_price = 'Rs. 4,199' %}
+            {% when 'the-videographer-snowboard' %}
+              {% assign fallback_title = 'Relaxed Straight Trousers' %}
+              {% assign fallback_img = trouser_img %}
+              {% assign fallback_price = 'Rs. 4,499' %}
+            {% when 'the-out-of-stock-snowboard' %}
+              {% assign fallback_title = 'Relaxed Camp Collar Shirt' %}
+              {% assign fallback_img = shirt_img %}
+              {% assign fallback_price = 'Rs. 3,799' %}
+          {% endcase %}
+
+          {% assign item_title = item.properties._adot_title | default: fallback_title %}
+          {% assign item_image = item.properties._adot_image | default: fallback_img %}
+          {% assign item_price = item.properties._adot_price | default: fallback_price %}
+          {% assign item_size = item.properties.Size %}
+
           <div class="cart-drawer__item" data-item-key="{{ item.key }}">
             <a href="{{ item.url }}" class="cart-drawer__item-media" tabindex="-1">
-              {% if item.image %}
+              {% if item_image != blank %}
+                <img
+                  src="{{ item_image }}"
+                  alt="{{ item_title | escape }}"
+                  class="cart-drawer__item-img"
+                  width="80"
+                  height="106"
+                  loading="lazy"
+                >
+              {% elsif item.image %}
                 <img
                   src="{{ item.image | image_url: width: 240 }}"
-                  alt="{{ item.title | escape }}"
+                  alt="{{ item_title | escape }}"
                   class="cart-drawer__item-img"
                   width="80"
                   height="106"
@@ -57,11 +131,14 @@
             </a>
 
             <div class="cart-drawer__item-info">
-              <a href="{{ item.url }}" class="cart-drawer__item-title">{{ item.product.title }}</a>
-              {% unless item.product.has_only_default_variant %}
-                <p class="cart-drawer__item-variant text-micro">{{ item.variant.title }}</p>
-              {% endunless %}
-              <div class="cart-drawer__item-price text-micro">{{ item.final_line_price | money }}</div>
+              {% if item_size != blank %}
+                <p class="cart-drawer__item-variant text-micro">Size: {{ item_size }}</p>
+              {% elsif item.product.has_only_default_variant == false %}
+                {% unless item_handle contains 'snowboard' or item_handle contains 'ski' %}
+                  <p class="cart-drawer__item-variant text-micro">{{ item.variant.title }}</p>
+                {% endunless %}
+              {% endif %}
+              <div class="cart-drawer__item-price text-micro">{{ item_price }}</div>
 
               <div class="cart-drawer__item-actions">
                 <div class="cart-drawer__qty">
@@ -88,9 +165,9 @@
         <p class="cart-drawer__empty-subtitle text-micro">Explore our latest seasonal collections and luxury essentials.</p>
 
         <div class="cart-drawer__empty-links">
-          <a href="{{ routes.collections_url }}/hoodies" class="cart-drawer__empty-link text-micro" data-cart-close>Hoodies Collection</a>
-          <a href="{{ routes.collections_url }}/shirts" class="cart-drawer__empty-link text-micro" data-cart-close>Shirts Collection</a>
-          <a href="{{ routes.collections_url }}/trousers" class="cart-drawer__empty-link text-micro" data-cart-close>Trousers Collection</a>
+          <a href="{{ routes.all_products_collection_url }}?category=hoodies" class="cart-drawer__empty-link text-micro" data-cart-close>Hoodies Collection</a>
+          <a href="{{ routes.all_products_collection_url }}?category=shirts" class="cart-drawer__empty-link text-micro" data-cart-close>Shirts Collection</a>
+          <a href="{{ routes.all_products_collection_url }}?category=trousers" class="cart-drawer__empty-link text-micro" data-cart-close>Trousers Collection</a>
           <a href="{{ routes.all_products_collection_url }}" class="cart-drawer__empty-link cart-drawer__empty-link--primary text-micro" data-cart-close>All Essentials →</a>
         </div>
       </div>

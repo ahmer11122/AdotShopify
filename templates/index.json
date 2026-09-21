@@ -12,7 +12,7 @@
         "subheading": "Soft cotton polos and clean trousers. Easy to wear every day.",
         "text_alignment": "left",
         "primary_button_label": "Shop Polos",
-        "primary_button_link": "/collections/shirts",
+        "primary_button_link": "/collections/all?category=shirts",
         "secondary_button_label": "",
         "show_category_bar": false,
         "show_scroll_indicator": false,
@@ -36,21 +36,21 @@
           "type": "tile",
           "settings": {
             "title": "Hoodies",
-            "link": "/collections/hoodies"
+            "link": "/collections/all?category=hoodies"
           }
         },
         "tile_shirts": {
           "type": "tile",
           "settings": {
             "title": "Shirts",
-            "link": "/collections/shirts"
+            "link": "/collections/all?category=shirts"
           }
         },
         "tile_trousers": {
           "type": "tile",
           "settings": {
             "title": "Trousers",
-            "link": "/collections/trousers"
+            "link": "/collections/all?category=trousers"
           }
         }
       },
