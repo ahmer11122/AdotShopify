@@ -88,7 +88,7 @@
 </header-drawer>
 
 <!-- Accessible Modern Search Overlay & Live Predictive Search -->
-<search-modal class="search-modal" id="SearchModal" role="dialog" aria-modal="true" aria-label="Search Store" data-currency="{{ cart.currency.symbol | default: '$' }}">
+<search-modal class="search-modal" id="SearchModal" role="dialog" aria-modal="false" aria-hidden="true" inert aria-label="Search Store">
   <div class="search-modal__backdrop" data-search-close></div>
   <div class="search-modal__content">
     
@@ -136,6 +136,11 @@
               autocapitalize="none"
               spellcheck="false"
               enterkeyhint="search"
+              role="combobox"
+              aria-autocomplete="list"
+              aria-expanded="false"
+              aria-controls="SearchResults"
+              aria-haspopup="listbox"
               data-search-input
             >
             <button type="button" class="search-modal__clear" data-search-clear aria-label="Clear search text" hidden>
@@ -195,7 +200,8 @@
         </div>
 
         <!-- Live Predictive Results -->
-        <div class="search-modal__results" data-search-results hidden></div>
+        <div class="search-modal__results" id="SearchResults" role="listbox" data-search-results hidden></div>
+        <div class="visually-hidden" data-search-status role="status" aria-live="polite"></div>
 
       </div>
     </div>
@@ -203,7 +209,7 @@
 </search-modal>
 
 <!-- Accessible Slide-Out Luxury Cart Drawer -->
-{% render 'cart-drawer' %}
+{% render 'cart-drawer', section_id: section.id %}
 
 <!-- Main Header Bar -->
 <header class="header {% if section.settings.sticky %}header--sticky{% endif %} header--overlay full-width" data-section-id="{{ section.id }}">
@@ -1321,6 +1327,17 @@
     transform: scale(0.97);
   }
 
+  .search-modal__card[aria-selected='true'] {
+    outline: 1px solid var(--color-text);
+    outline-offset: 2px;
+  }
+
+  .search-modal__mark {
+    background: transparent;
+    color: inherit;
+    font-weight: 650;
+  }
+
   .search-modal__card-media {
     position: relative;
     width: 100%;
@@ -1684,6 +1701,20 @@
     transform: scale(0.88);
   }
 
+  .cart-drawer__qty-btn.is-at-max,
+  .cart-drawer__qty-btn[aria-disabled='true'] {
+    opacity: 0.35;
+  }
+
+  .cart-drawer__qty-btn.is-at-max:active {
+    transform: none;
+  }
+
+  .cart-qty-note {
+    margin: 0.35rem 0 0;
+    color: var(--color-sale, #991b1b);
+  }
+
   .cart-drawer__qty-num {
     min-width: 28px;
     text-align: center;
@@ -2023,10 +2054,11 @@
       this.suggestions = this.querySelector('[data-search-suggestions]');
       this.resultsContainer = this.querySelector('[data-search-results]');
       this.form = this.querySelector('form');
-      this.currencySymbol = this.dataset.currency || '$';
       this.lastFocusedElement = null;
       this.debounceTimeout = null;
       this.activeAbortController = null;
+      this.cachedResults = {};
+      this.activeOption = -1;
 
       this.init();
     }
@@ -2075,7 +2107,7 @@
           clearTimeout(this.debounceTimeout);
           this.debounceTimeout = setTimeout(() => {
             this.fetchResults(query);
-          }, 220);
+          }, 300);
         });
       }
 
@@ -2098,6 +2130,27 @@
 
         if (e.key === 'Escape') {
           this.close();
+          return;
+        }
+
+        if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && this.input && document.activeElement === this.input) {
+          const options = [...this.querySelectorAll('[data-search-option]')];
+          if (!options.length) return;
+          e.preventDefault();
+          const current = options.findIndex((el) => el.getAttribute('aria-selected') === 'true');
+          let next = e.key === 'ArrowDown' ? current + 1 : current - 1;
+          if (next < 0) next = options.length - 1;
+          if (next >= options.length) next = 0;
+          this.selectOption(options, next);
+          return;
+        }
+
+        if (e.key === 'Enter' && this.input && document.activeElement === this.input) {
+          const selected = this.querySelector('[data-search-option][aria-selected="true"]');
+          if (selected) {
+            e.preventDefault();
+            selected.click();
+          }
           return;
         }
 
@@ -2129,6 +2182,10 @@
     open() {
       this.isOpen = true;
       this.classList.add('is-open');
+      this.removeAttribute('aria-hidden');
+      this.removeAttribute('inert');
+      this.setAttribute('aria-modal', 'true');
+      if (this.input) this.input.setAttribute('aria-expanded', 'true');
       document.body.style.overflow = 'hidden';
 
       setTimeout(() => {
@@ -2141,11 +2198,37 @@
     close() {
       this.isOpen = false;
       this.classList.remove('is-open');
+      this.setAttribute('aria-hidden', 'true');
+      this.setAttribute('inert', '');
+      this.setAttribute('aria-modal', 'false');
+      if (this.input) {
+        this.input.setAttribute('aria-expanded', 'false');
+        this.input.removeAttribute('aria-activedescendant');
+      }
+      this.clearOption();
       document.body.style.overflow = '';
 
       if (this.lastFocusedElement) {
         this.lastFocusedElement.focus();
       }
+    }
+
+    selectOption(options, index) {
+      options.forEach((el) => el.setAttribute('aria-selected', 'false'));
+      const active = options[index];
+      if (!active) return;
+      if (!active.id) active.id = `SearchOption-${index}`;
+      active.setAttribute('aria-selected', 'true');
+      this.activeOption = index;
+      if (this.input) this.input.setAttribute('aria-activedescendant', active.id);
+      active.scrollIntoView({ block: 'nearest' });
+    }
+
+    clearOption() {
+      this.activeOption = -1;
+      this.querySelectorAll('[data-search-option][aria-selected="true"]').forEach((el) => {
+        el.setAttribute('aria-selected', 'false');
+      });
     }
 
     resetResults() {
@@ -2159,10 +2242,23 @@
     }
 
     formatPrice(amount) {
-      if (!amount) return '';
-      const num = parseFloat(amount);
-      if (isNaN(num)) return amount;
-      return this.currencySymbol + num.toFixed(2);
+      if (amount == null || amount === '') return '';
+      const numeric = String(amount).replace(/rs\.?/ig, '').replace(/[$€£]/g, '').replace(/,/g, '').trim();
+      const num = parseFloat(numeric);
+      if (!Number.isFinite(num)) return '';
+      const cents = Math.round(Math.abs(num) * 100);
+      const whole = Math.floor(cents / 100).toLocaleString('en-PK');
+      const frac = cents % 100;
+      const amountText = frac === 0 ? whole : `${whole}.${String(frac).padStart(2, '0')}`;
+      return `Rs. ${amountText}`;
+    }
+
+    highlight(text, query) {
+      const safe = this.escapeHtml(text);
+      const term = String(query || '').trim();
+      if (!term) return safe;
+      const pattern = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      return safe.replace(new RegExp(`(${pattern})`, 'ig'), '<mark class="search-modal__mark">$1</mark>');
     }
 
     escapeHtml(str) {
@@ -2176,10 +2272,18 @@
     }
 
     async fetchResults(query) {
+      const queryKey = query.toLowerCase();
+      if (this.cachedResults[queryKey]) {
+        this.renderProducts(this.cachedResults[queryKey], query);
+        return;
+      }
+
       if (this.activeAbortController) {
         this.activeAbortController.abort();
       }
       this.activeAbortController = new AbortController();
+      const status = this.querySelector('[data-search-status]');
+      if (status) status.textContent = 'Searching';
 
       if (this.suggestions) {
         this.suggestions.hidden = true;
@@ -2203,8 +2307,14 @@
 
         const data = await response.json();
         const products = data.resources?.results?.products || [];
+        this.cachedResults[queryKey] = products;
 
         this.renderProducts(products, query);
+        if (status) {
+          status.textContent = products.length === 0
+            ? `No products found for ${query}`
+            : `${products.length} products found for ${query}`;
+        }
       } catch (err) {
         if (err.name === 'AbortError') return;
         if (this.resultsContainer) {
@@ -2219,6 +2329,7 @@
 
     renderProducts(products, query) {
       if (!this.resultsContainer) return;
+      this.clearOption();
 
       if (products.length === 0) {
         this.resultsContainer.innerHTML = `
@@ -2230,16 +2341,17 @@
       }
 
       const productsHtml = products
-        .map((product) => {
+        .map((product, index) => {
           const imgUrl = product.image || product.featured_image?.url || '';
-          const title = this.escapeHtml(product.title);
+          const title = this.highlight(product.title, query);
+          const alt = this.escapeHtml(product.title);
           const url = this.escapeHtml(product.url);
           const price = this.formatPrice(product.price);
 
           return `
-            <a href="${url}" class="search-modal__card">
+            <a href="${url}" class="search-modal__card" id="SearchOption-${index}" data-search-option role="option" aria-selected="false">
               <div class="search-modal__card-media">
-                ${imgUrl ? `<img src="${imgUrl}" alt="${title}" class="search-modal__card-img" width="300" height="300" loading="lazy">` : ''}
+                ${imgUrl ? `<img src="${imgUrl}" alt="${alt}" class="search-modal__card-img" width="300" height="300" loading="lazy">` : ''}
               </div>
               <div class="search-modal__card-info">
                 <span class="search-modal__card-title">${title}</span>
@@ -2301,6 +2413,9 @@
 
       this.addEventListener('click', (e) => {
         const qtyBtn = e.target.closest('[data-qty-change]');
+        const removeBtn = e.target.closest('[data-remove-item]');
+        if ((qtyBtn || removeBtn) && window.AdotCart) return;
+
         if (qtyBtn) {
           const delta = parseInt(qtyBtn.getAttribute('data-qty-change'), 10);
           const key = qtyBtn.getAttribute('data-key');
@@ -2308,13 +2423,20 @@
           return;
         }
 
-        const removeBtn = e.target.closest('[data-remove-item]');
         if (removeBtn) {
           const key = removeBtn.getAttribute('data-key');
           this.removeItem(key);
           return;
         }
       });
+
+      const bindQty = () => {
+        if (!window.AdotCart) return;
+        window.AdotCart.bind(this, {});
+        window.AdotCart.syncButtons(this);
+      };
+      if (window.AdotCart) bindQty();
+      else window.addEventListener('adot:cart-ready', bindQty, { once: true });
 
       document.addEventListener('keydown', (e) => {
         if (!this.isOpen) return;
@@ -2349,6 +2471,9 @@
     open() {
       this.isOpen = true;
       this.classList.add('is-open');
+      this.removeAttribute('aria-hidden');
+      this.removeAttribute('inert');
+      this.setAttribute('aria-modal', 'true');
       document.body.style.overflow = 'hidden';
 
       const searchModal = document.querySelector('search-modal');
@@ -2364,6 +2489,9 @@
     close() {
       this.isOpen = false;
       this.classList.remove('is-open');
+      this.setAttribute('aria-hidden', 'true');
+      this.setAttribute('inert', '');
+      this.setAttribute('aria-modal', 'false');
       document.body.style.overflow = '';
 
       if (this.lastFocusedElement) {
@@ -2372,11 +2500,73 @@
     }
 
     formatMoney(cents) {
-      const amount = (cents / 100).toLocaleString('en-PK', { maximumFractionDigits: 0 });
-      return `Rs. ${amount}`;
+      const value = Math.round(Number(cents));
+      const negative = value < 0;
+      const abs = Math.abs(value);
+      const whole = Math.floor(abs / 100).toLocaleString('en-PK');
+      const frac = abs % 100;
+      const amount = frac === 0 ? whole : `${whole}.${String(frac).padStart(2, '0')}`;
+      return `${negative ? '-' : ''}Rs. ${amount}`;
     }
 
     async fetchCart() {
+      if (window.AdotCart && window.AdotCart.hasPending()) {
+        this.dataset.refreshQueued = 'true';
+        return;
+      }
+      delete this.dataset.refreshQueued;
+
+      const sectionId = this.dataset.sectionId;
+      if (sectionId) {
+        try {
+          const url = new URL(window.location.href);
+          url.searchParams.set('section_id', sectionId);
+          url.hash = '';
+          const res = await fetch(url.toString());
+          if (!res.ok) throw new Error('Section render failed');
+          const html = await res.text();
+          const doc = new DOMParser().parseFromString(html, 'text/html');
+          const next = doc.querySelector('cart-drawer');
+          if (!next) throw new Error('Cart drawer missing from section');
+
+          const items = this.querySelector('[data-cart-items]');
+          const nextItems = next.querySelector('[data-cart-items]');
+          if (items && nextItems) items.innerHTML = nextItems.innerHTML;
+
+          const empty = this.querySelector('[data-cart-empty]');
+          const nextEmpty = next.querySelector('[data-cart-empty]');
+          if (empty && nextEmpty) empty.hidden = nextEmpty.hidden;
+
+          const footer = this.querySelector('.cart-drawer__footer');
+          const nextFooter = next.querySelector('.cart-drawer__footer');
+          if (footer && nextFooter) {
+            footer.hidden = nextFooter.hidden;
+            const subtotal = footer.querySelector('[data-cart-subtotal]');
+            const nextSubtotal = nextFooter.querySelector('[data-cart-subtotal]');
+            if (subtotal && nextSubtotal) subtotal.textContent = nextSubtotal.textContent;
+          }
+
+          const count = this.querySelector('[data-drawer-count]');
+          const nextCount = next.querySelector('[data-drawer-count]');
+          if (count && nextCount) count.textContent = nextCount.textContent;
+
+          if (next.dataset.cartTotal) this.dataset.cartTotal = next.dataset.cartTotal;
+          if (next.dataset.cartCountValue) this.dataset.cartCountValue = next.dataset.cartCountValue;
+
+          doc.querySelectorAll('[data-cart-count]').forEach((source) => {
+            document.querySelectorAll('[data-cart-count]').forEach((el) => {
+              el.textContent = source.textContent;
+              el.setAttribute('data-cart-count', source.getAttribute('data-cart-count') || source.textContent.replace(/\D/g, ''));
+            });
+          });
+
+          if (window.AdotCart) window.AdotCart.syncButtons(this);
+          return;
+        } catch (err) {
+          console.error('Error rendering cart section:', err);
+        }
+      }
+
       try {
         const res = await fetch('/cart.js');
         const cart = await res.json();
@@ -2445,8 +2635,14 @@
       if (subtotalEl) {
         subtotalEl.textContent = this.formatMoney(cart.total_price);
       }
+      this.dataset.cartTotal = String(cart.total_price);
+      this.dataset.cartCountValue = String(cart.item_count);
 
       const itemsContainer = this.querySelector('[data-cart-items]');
+      const maxByVariant = {};
+      this.querySelectorAll('[data-variant-id]').forEach((row) => {
+        if (row.dataset.qtyMax) maxByVariant[row.dataset.variantId] = row.dataset.qtyMax;
+      });
       const emptyContainer = this.querySelector('[data-cart-empty]');
       const footer = this.querySelector('.cart-drawer__footer');
 
@@ -2485,9 +2681,11 @@
             const isDummySnowboard = item.handle && (item.handle.includes('snowboard') || item.handle.includes('ski-wax'));
             const variant = sizeText || (item.variant_title && item.variant_title !== 'Default Title' && !isDummySnowboard ? item.variant_title : '');
             const priceFormatted = item.properties?._adot_price || fallback.price || this.formatMoney(item.final_line_price);
+            const qtyMax = maxByVariant[String(item.variant_id)] || '';
+            const atMax = qtyMax !== '' && item.quantity >= Number(qtyMax);
 
             return `
-              <div class="cart-drawer__item" data-item-key="${item.key}">
+              <div class="cart-drawer__item" data-item-key="${item.key}" data-variant-id="${item.variant_id}" data-unit-price="${item.final_price}" data-shown-qty="${item.quantity}"${qtyMax !== '' ? ` data-qty-max="${qtyMax}"` : ''}>
                 <a href="${item.url}" class="cart-drawer__item-media">
                   ${imgUrl ? `<img src="${imgUrl}" alt="${this.escapeHtml(itemTitle)}" class="cart-drawer__item-img" width="80" height="106" loading="lazy">` : ''}
                 </a>
@@ -2497,17 +2695,19 @@
                   <div class="cart-drawer__item-price text-micro">${priceFormatted}</div>
                   <div class="cart-drawer__item-actions">
                     <div class="cart-drawer__qty">
-                      <button type="button" class="cart-drawer__qty-btn" data-qty-change="-1" data-key="${item.key}" aria-label="Decrease quantity">−</button>
-                      <span class="cart-drawer__qty-num text-micro">${item.quantity}</span>
-                      <button type="button" class="cart-drawer__qty-btn" data-qty-change="1" data-key="${item.key}" aria-label="Increase quantity">+</button>
+                      <button type="button" class="cart-drawer__qty-btn" data-qty-change="-1" data-qty-minus data-key="${item.key}" aria-label="Decrease quantity">−</button>
+                      <span class="cart-drawer__qty-num text-micro" data-qty-value>${item.quantity}</span>
+                      <button type="button" class="cart-drawer__qty-btn${atMax ? ' is-at-max' : ''}" data-qty-change="1" data-qty-plus data-key="${item.key}" aria-label="Increase quantity"${atMax ? ' aria-disabled="true"' : ''}>+</button>
                     </div>
                     <button type="button" class="cart-drawer__remove text-micro" data-remove-item data-key="${item.key}">Remove</button>
                   </div>
+                  <p class="cart-qty-note text-micro" data-qty-note role="status" hidden></p>
                 </div>
               </div>
             `;
           })
           .join('');
+        if (window.AdotCart) window.AdotCart.syncButtons(this);
       }
     }
 

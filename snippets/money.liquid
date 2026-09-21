@@ -1,0 +1,17 @@
+{% doc %}
+  Formats a price in cents as rupees.
+
+  Uses the shop money format when the store is already PKR. Otherwise prints the same amount as Rs.
+  so a USD development store does not show a dollar sign.
+
+  @param {number} price - Amount in cents
+{% enddoc %}
+
+{% liquid
+  if shop.currency == 'PKR' or shop.money_format contains 'Rs' or shop.money_format contains 'PKR'
+    assign formatted_price = price | money_without_trailing_zeros
+  else
+    assign formatted_price = price | money_without_currency | remove: '.00' | prepend: 'Rs. '
+  endif
+%}
+{{- formatted_price -}}

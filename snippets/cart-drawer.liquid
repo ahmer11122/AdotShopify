@@ -6,7 +6,19 @@
   - Fluid spring entrance/exit motion
 {% endcomment %}
 
-<cart-drawer class="cart-drawer" id="CartDrawer" role="dialog" aria-modal="true" aria-label="Shopping Bag" data-currency="{{ cart.currency.symbol | default: '$' }}">
+<cart-drawer
+  class="cart-drawer"
+  id="CartDrawer"
+  role="dialog"
+  aria-modal="false"
+  aria-hidden="true"
+  inert
+  aria-label="Shopping Bag"
+  data-qty-root
+  data-section-id="{{ section_id }}"
+  data-cart-total="{{ cart.total_price }}"
+  data-cart-count-value="{{ cart.item_count }}"
+>
   <div class="cart-drawer__backdrop" data-cart-close></div>
 
   <div class="cart-drawer__panel">
@@ -49,7 +61,8 @@
 
           {% assign fallback_title = item.product.title %}
           {% assign fallback_img = item.image | image_url: width: 240 %}
-          {% assign fallback_price = item.final_line_price | money %}
+          {% capture money_line %}{% render 'money', price: item.final_line_price %}{% endcapture %}
+          {% assign fallback_price = money_line | strip %}
 
           {% case item_handle %}
             {% when 'the-complete-snowboard' %}
@@ -106,8 +119,21 @@
           {% assign item_image = item.properties._adot_image | default: fallback_img %}
           {% assign item_price = item.properties._adot_price | default: fallback_price %}
           {% assign item_size = item.properties.Size %}
+          {% assign price_is_override = false %}
+          {% if item.properties._adot_price != blank or item_handle contains 'snowboard' or item_handle contains 'ski' %}
+            {% assign price_is_override = true %}
+          {% endif %}
 
-          <div class="cart-drawer__item" data-item-key="{{ item.key }}">
+          {% capture qty_cap %}{% render 'cart-qty-cap', variant: item.variant %}{% endcapture %}
+          {% assign qty_cap = qty_cap | strip %}
+          <div
+            class="cart-drawer__item"
+            data-item-key="{{ item.key }}"
+            data-variant-id="{{ item.variant.id }}"
+            data-unit-price="{{ item.final_price }}"
+            data-shown-qty="{{ item.quantity }}"
+            {% if qty_cap != blank %}data-qty-max="{{ qty_cap }}"{% endif %}
+          >
             <a href="{{ item.url }}" class="cart-drawer__item-media" tabindex="-1">
               {% if item_image != blank %}
                 <img
@@ -131,6 +157,7 @@
             </a>
 
             <div class="cart-drawer__item-info">
+              <a href="{{ item.url }}" class="cart-drawer__item-title">{{ item_title | escape }}</a>
               {% if item_size != blank %}
                 <p class="cart-drawer__item-variant text-micro">Size: {{ item_size }}</p>
               {% elsif item.product.has_only_default_variant == false %}
@@ -138,16 +165,17 @@
                   <p class="cart-drawer__item-variant text-micro">{{ item.variant.title }}</p>
                 {% endunless %}
               {% endif %}
-              <div class="cart-drawer__item-price text-micro">{{ item_price }}</div>
+              <div class="cart-drawer__item-price text-micro"{% unless price_is_override %} data-line-price{% endunless %}>{{ item_price }}</div>
 
               <div class="cart-drawer__item-actions">
                 <div class="cart-drawer__qty">
-                  <button type="button" class="cart-drawer__qty-btn" data-qty-change="-1" data-key="{{ item.key }}" aria-label="Decrease quantity">−</button>
-                  <span class="cart-drawer__qty-num text-micro">{{ item.quantity }}</span>
-                  <button type="button" class="cart-drawer__qty-btn" data-qty-change="1" data-key="{{ item.key }}" aria-label="Increase quantity">+</button>
+                  <button type="button" class="cart-drawer__qty-btn" data-qty-change="-1" data-qty-minus data-key="{{ item.key }}" aria-label="Decrease quantity">−</button>
+                  <span class="cart-drawer__qty-num text-micro" data-qty-value>{{ item.quantity }}</span>
+                  <button type="button" class="cart-drawer__qty-btn{% if qty_cap != blank and item.quantity >= qty_cap %} is-at-max{% endif %}" data-qty-change="1" data-qty-plus data-key="{{ item.key }}" aria-label="Increase quantity" {% if qty_cap != blank and item.quantity >= qty_cap %}aria-disabled="true"{% endif %}>+</button>
                 </div>
                 <button type="button" class="cart-drawer__remove text-micro" data-remove-item data-key="{{ item.key }}">Remove</button>
               </div>
+              <p class="cart-qty-note text-micro" data-qty-note role="status" hidden></p>
             </div>
           </div>
         {% endfor %}
@@ -177,7 +205,7 @@
     <div class="cart-drawer__footer" {% if cart.item_count == 0 %}hidden{% endif %}>
       <div class="cart-drawer__subtotal-row">
         <span class="cart-drawer__subtotal-label text-micro">SUBTOTAL</span>
-        <span class="cart-drawer__subtotal-val" data-cart-subtotal>{{ cart.total_price | money }}</span>
+        <span class="cart-drawer__subtotal-val" data-cart-subtotal>{% render 'money', price: cart.total_price %}</span>
       </div>
       <p class="cart-drawer__taxes text-micro">Taxes and shipping calculated at checkout.</p>
 

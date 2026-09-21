@@ -290,17 +290,24 @@
           <!-- Authentic ADOT Apparel Sizes -->
           <div class="product-buy-box__option-values" role="radiogroup" aria-label="Size">
             {% assign apparel_sizes = 'S,M,L,XL' | split: ',' %}
-            {% assign base_variant = product.selected_or_first_available_variant | default: product.variants.first %}
             {% for sz in apparel_sizes %}
-              {% assign variant_for_sz = product.variants[forloop.index0] | default: base_variant %}
+              {% assign variant_for_sz = product.variants[forloop.index0] %}
+              {% assign sz_available = false %}
+              {% if variant_for_sz and variant_for_sz.available %}
+                {% assign sz_available = true %}
+              {% endif %}
               <button
                 type="button"
-                class="product-buy-box__pill text-micro"
+                class="product-buy-box__pill text-micro{% unless sz_available %} is-sold-out{% endunless %}"
                 data-option-name="Size"
                 data-option-value="{{ sz }}"
-                data-variant-id="{{ variant_for_sz.id }}"
+                {% if variant_for_sz %}data-variant-id="{{ variant_for_sz.id }}"{% endif %}
+                {% unless sz_available %}aria-disabled="true"{% endunless %}
               >
                 <span>{{ sz }}</span>
+                {% unless sz_available %}
+                  <span class="product-buy-box__sold-out-slash" aria-hidden="true"></span>
+                {% endunless %}
               </button>
             {% endfor %}
           </div>
@@ -1130,26 +1137,16 @@
         // If pill has explicit data-variant-id (apparel override mode)
         const explicitVariantId = pill.dataset.variantId;
         if (explicitVariantId) {
-          variantInput.value = explicitVariantId;
-          const url = new URL(window.location);
-          url.searchParams.set('variant', explicitVariantId);
-          window.history.replaceState({}, '', url);
-
-          window.dispatchEvent(new CustomEvent('variant:change', {
-            detail: {
-              variant: { id: explicitVariantId, available: true },
-              size: val
-            }
-          }));
-
-          addToCartBtn.disabled = false;
-          addToCartBtn.removeAttribute('aria-disabled');
-          if (btnLabel) {
-            const adotPrice = '{{ adot_price_formatted }}';
-            btnLabel.textContent = `ADD TO BAG — ${adotPrice || '{{ product.price | money }}'}`;
+          const matched = variants.find((variant) => String(variant.id) === String(explicitVariantId));
+          if (!matched || matched.available === false) {
+            onVariantUnavailable();
+            return;
           }
+          onVariantSelected(matched);
           return;
         }
+
+        refreshAvailability();
 
         // Check if all options are selected
         const totalOptions = buyBox.querySelectorAll('.product-buy-box__option-group').length;
@@ -1211,6 +1208,29 @@
         addToCartBtn.setAttribute('aria-disabled', 'true');
         if (btnLabel) btnLabel.textContent = 'SOLD OUT';
       }
+    }
+
+    function refreshAvailability() {
+      const groups = [...buyBox.querySelectorAll('.product-buy-box__option-group')];
+      if (groups.length < 2) return;
+
+      groups.forEach((group) => {
+        const optionIndex = parseInt(group.dataset.optionIndex, 10);
+        group.querySelectorAll('.product-buy-box__pill').forEach((optionPill) => {
+          if (optionPill.dataset.variantId) return;
+          const value = optionPill.dataset.optionValue;
+          const possible = variants.some((variant) => {
+            if (!variant.available || variant.options[optionIndex] !== value) return false;
+            return Object.entries(selectedOptions).every(([index, selectedValue]) => {
+              if (parseInt(index, 10) === optionIndex) return true;
+              return variant.options[parseInt(index, 10)] === selectedValue;
+            });
+          });
+          optionPill.classList.toggle('is-sold-out', !possible);
+          if (possible) optionPill.removeAttribute('aria-disabled');
+          else optionPill.setAttribute('aria-disabled', 'true');
+        });
+      });
     }
 
     function onVariantUnavailable() {
@@ -1315,6 +1335,24 @@
 
         window.open(waUrl, '_blank');
       });
+    }
+
+    const variantParam = new URLSearchParams(window.location.search).get('variant');
+    if (variantParam) {
+      const linkedPill = buyBox.querySelector(`[data-variant-id="${variantParam}"]`);
+      if (linkedPill && !linkedPill.classList.contains('is-sold-out')) {
+        linkedPill.click();
+      } else {
+        const linkedVariant = variants.find((variant) => String(variant.id) === variantParam && variant.available);
+        if (linkedVariant) {
+          linkedVariant.options.forEach((optionValue, index) => {
+            const group = buyBox.querySelector(`[data-option-index="${index}"]`);
+            if (!group) return;
+            const match = [...group.querySelectorAll('.product-buy-box__pill')].find((optionPill) => optionPill.dataset.optionValue === optionValue);
+            if (match && !match.classList.contains('is-sold-out')) match.click();
+          });
+        }
+      }
     }
 
     // Listen for sticky-bar add triggers

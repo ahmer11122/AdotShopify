@@ -7,14 +7,21 @@
 {% endcomment %}
 
 
-<div class="cart-page section" data-section-id="{{ section.id }}">
+<div
+  class="cart-page section"
+  data-section-id="{{ section.id }}"
+  data-cart-page
+  data-qty-root
+  data-cart-total="{{ cart.total_price }}"
+  data-cart-count-value="{{ cart.item_count }}"
+>
   <div class="container cart-page__container">
 
     <!-- Page Header -->
     <header class="cart-page__header">
       <div class="cart-page__header-title-wrap">
         <h1 class="cart-page__title">{{ 'cart.title' | t | default: 'Shopping Bag' }}</h1>
-        <span class="cart-page__count text-micro">[{{ cart.item_count }}]</span>
+        <span class="cart-page__count text-micro" data-cart-count-local>[{{ cart.item_count }}]</span>
       </div>
       <a href="{{ routes.all_products_collection_url }}" class="cart-page__continue text-micro">Continue Shopping →</a>
     </header>
@@ -32,7 +39,16 @@
 
             <div class="cart-page__items-list">
               {% for item in cart.items %}
-                <div class="cart-page__item" data-item-key="{{ item.key }}">
+                {% capture qty_cap %}{% render 'cart-qty-cap', variant: item.variant %}{% endcapture %}
+                {% assign qty_cap = qty_cap | strip %}
+                <div
+                  class="cart-page__item"
+                  data-item-key="{{ item.key }}"
+                  data-variant-id="{{ item.variant.id }}"
+                  data-unit-price="{{ item.final_price }}"
+                  data-shown-qty="{{ item.quantity }}"
+                  {% if qty_cap != blank %}data-qty-max="{{ qty_cap }}"{% endif %}
+                >
                   <!-- Media Thumbnail -->
                   <a href="{{ item.url }}" class="cart-page__item-media" tabindex="-1">
                     {% if item.image %}
@@ -51,7 +67,7 @@
                   <div class="cart-page__item-details">
                     <div class="cart-page__item-header">
                       <a href="{{ item.url }}" class="cart-page__item-title">{{ item.product.title }}</a>
-                      <div class="cart-page__item-price-mobile text-micro">{{ item.final_line_price | money }}</div>
+                      <div class="cart-page__item-price-mobile text-micro" data-line-price>{% render 'money', price: item.final_line_price %}</div>
                     </div>
 
                     {% unless item.product.has_only_default_variant %}
@@ -59,45 +75,54 @@
                     {% endunless %}
 
                     <div class="cart-page__item-unit-price text-micro">
-                      {{ item.final_price | money }} each
+                      {% render 'money', price: item.final_price %} each
                     </div>
 
                     <!-- Quantity & Remove Controls -->
                     <div class="cart-page__item-controls">
                       <div class="cart-page__qty">
-                        <a
-                          href="{{ routes.cart_change_url }}?id={{ item.key }}&quantity={{ item.quantity | minus: 1 }}"
+                        <button
+                          type="button"
                           class="cart-page__qty-btn"
+                          data-qty-change="-1"
+                          data-qty-minus
                           aria-label="Decrease quantity"
-                        >−</a>
+                        >−</button>
                         <input
                           type="number"
                           name="updates[]"
                           value="{{ item.quantity }}"
                           min="0"
+                          {% if qty_cap != blank %}max="{{ qty_cap }}"{% endif %}
                           class="cart-page__qty-input text-micro"
+                          data-qty-input
                           aria-label="Item quantity"
                         >
-                        <a
-                          href="{{ routes.cart_change_url }}?id={{ item.key }}&quantity={{ item.quantity | plus: 1 }}"
-                          class="cart-page__qty-btn"
+                        <button
+                          type="button"
+                          class="cart-page__qty-btn{% if qty_cap != blank and item.quantity >= qty_cap %} is-at-max{% endif %}"
+                          data-qty-change="1"
+                          data-qty-plus
                           aria-label="Increase quantity"
-                        >+</a>
+                          {% if qty_cap != blank and item.quantity >= qty_cap %}aria-disabled="true"{% endif %}
+                        >+</button>
                       </div>
 
-                      <a
-                        href="{{ item.url_to_remove }}"
+                      <button
+                        type="button"
                         class="cart-page__remove text-micro"
+                        data-remove-item
                         aria-label="Remove {{ item.title | escape }}"
                       >
                         Remove
-                      </a>
+                      </button>
                     </div>
+                    <p class="cart-qty-note text-micro" data-qty-note role="status" hidden></p>
                   </div>
 
                   <!-- Line Total (Desktop) -->
                   <div class="cart-page__item-total">
-                    <span class="cart-page__item-total-price">{{ item.final_line_price | money }}</span>
+                    <span class="cart-page__item-total-price" data-line-price>{% render 'money', price: item.final_line_price %}</span>
                   </div>
                 </div>
               {% endfor %}
@@ -118,7 +143,7 @@
             <div class="cart-page__summary-rows">
               <div class="cart-page__summary-row">
                 <span class="text-micro cart-page__summary-label">SUBTOTAL</span>
-                <span class="cart-page__summary-val">{{ cart.total_price | money }}</span>
+                <span class="cart-page__summary-val" data-cart-subtotal>{% render 'money', price: cart.total_price %}</span>
               </div>
               <div class="cart-page__summary-row cart-page__summary-row--muted">
                 <span class="text-micro">SHIPPING</span>
@@ -135,7 +160,7 @@
             <!-- Total -->
             <div class="cart-page__total-row">
               <span class="cart-page__total-label">ESTIMATED TOTAL</span>
-              <span class="cart-page__total-val">{{ cart.total_price | money }}</span>
+              <span class="cart-page__total-val" data-cart-total>{% render 'money', price: cart.total_price %}</span>
             </div>
 
             <!-- Checkout Action Form -->
@@ -399,15 +424,27 @@
     justify-content: center;
     width: 32px;
     height: 32px;
+    padding: 0;
+    border: none;
+    background: transparent;
     text-decoration: none;
     color: var(--color-text);
+    font: inherit;
     font-size: 1rem;
     font-weight: 500;
-    transition: background-color 150ms ease;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color 150ms ease, opacity 150ms ease;
   }
 
   .cart-page__qty-btn:hover {
     background-color: var(--color-border);
+  }
+
+  .cart-page__qty-btn.is-at-max,
+  .cart-page__qty-btn[aria-disabled='true'] {
+    opacity: 0.35;
   }
 
   .cart-page__qty-input {
@@ -429,12 +466,23 @@
   }
 
   .cart-page__remove {
+    padding: 0;
+    border: none;
+    background: transparent;
+    font: inherit;
     color: var(--color-text-muted);
     text-decoration: underline;
     text-underline-offset: 3px;
     letter-spacing: var(--tracking-micro);
     text-transform: uppercase;
+    cursor: pointer;
+    touch-action: manipulation;
     transition: color 150ms ease;
+  }
+
+  .cart-qty-note {
+    margin: 0.35rem 0 0;
+    color: var(--color-sale, #991b1b);
   }
 
   .cart-page__remove:hover {
@@ -655,6 +703,22 @@
     border-color: #333333;
   }
 {% endstylesheet %}
+
+<script>
+  (function () {
+    const root = document.querySelector('[data-cart-page]');
+    if (!root) return;
+
+    const boot = () => {
+      if (!window.AdotCart) return;
+      window.AdotCart.bind(root, {});
+      window.AdotCart.syncButtons(root);
+    };
+
+    if (window.AdotCart) boot();
+    else window.addEventListener('adot:cart-ready', boot, { once: true });
+  })();
+</script>
 
 {% schema %}
 {

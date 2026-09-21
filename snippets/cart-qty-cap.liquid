@@ -1,0 +1,24 @@
+{% doc %}
+  Maximum units of a variant that can sit in the cart.
+
+  Empty when inventory is not tracked or the variant keeps selling when out of stock.
+  Dawn reads this same cap from quantity rules, then the server rejects anything above stock.
+
+  @param {variant} variant - Line item variant
+{% enddoc %}
+
+{% liquid
+  assign cap = ''
+  if variant.inventory_management != blank and variant.inventory_policy == 'deny'
+    assign cap = variant.inventory_quantity | default: 0
+    if cap < 0
+      assign cap = 0
+    endif
+  endif
+  if variant.quantity_rule.max != null
+    if cap == '' or variant.quantity_rule.max < cap
+      assign cap = variant.quantity_rule.max
+    endif
+  endif
+%}
+{{- cap -}}
