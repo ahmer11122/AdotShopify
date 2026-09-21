@@ -1,8 +1,8 @@
 {% comment %}
-  Modern Editorial Floating Category Showcase — Smart Solutions
-  Pure canvas blend: zero boxy containers, borderless floating garments,
-  natural contact drop shadows, tactile hover levitation, mobile touch-snap runway,
-  and native smooth cross-document page transitions.
+  Modern Editorial Category Showcase — Smart Solutions
+  Desktop: 3-column floating garment showcase with pure canvas blend.
+  Mobile: 3 stacked full-width 4:3 cards with 12px gap, 100% tap target,
+  name & arrow placed bottom-left, zero swipe friction, pure native scroll.
 {% endcomment %}
 
 <section class="category-tiles container" data-section-id="{{ section.id }}">
@@ -31,8 +31,8 @@
                   | image_tag:
                     loading: 'lazy',
                     widths: '400, 600, 800, 1200',
-                    sizes: '(min-width: 990px) 33vw, 82vw',
-                    class: 'category-tile__image',
+                    sizes: '(min-width: 750px) 33vw, 100vw',
+                    class: 'category-tile__image category-tile__image--transparent',
                     alt: block.settings.image.alt | default: block.settings.title | escape
                 }}
               {% else %}
@@ -51,8 +51,22 @@
                 </div>
               {% endif %}
             </div>
+
+            <!-- Mobile Bottom-Left Content Overlay (>= 48px tap target) -->
+            <div class="category-tile__mobile-footer" aria-hidden="true">
+              <div class="category-tile__mobile-content">
+                <span class="category-tile__mobile-title">{{ block.settings.title }}</span>
+                <span class="category-tile__mobile-cta">
+                  <span>Shop All</span>
+                  <svg class="category-tile__arrow" width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M1 7H13M13 7L7.5 1.5M13 7L7.5 12.5" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </span>
+              </div>
+            </div>
           </div>
 
+          <!-- Desktop Centered Metadata Block -->
           <div class="category-tile__meta">
             <h3 class="category-tile__title">{{ block.settings.title }}</h3>
             <div class="category-tile__action">
@@ -67,10 +81,6 @@
         </a>
       </div>
     {% endfor %}
-  </div>
-
-  <div class="category-tiles__mobile-indicator" aria-hidden="true">
-    <div class="category-tiles__mobile-bar"></div>
   </div>
 </section>
 
@@ -92,32 +102,18 @@
 
   /* Editorial Header */
   .category-tiles__header {
-    margin-bottom: clamp(2rem, 3.5vw, 3.5rem);
+    margin-bottom: clamp(1.75rem, 3.5vw, 3rem);
     text-align: left;
   }
 
   .category-tiles__heading {
     font-family: var(--font-display);
-    font-size: clamp(2rem, 3.5vw, 2.75rem);
+    font-size: clamp(1.75rem, 3.5vw, 2.75rem);
     font-weight: 400;
     line-height: 1.12;
     letter-spacing: -0.025em;
     margin: 0;
     color: var(--color-text);
-  }
-
-  /* Desktop Grid & Mobile Track */
-  .category-tiles__track {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: var(--space-md);
-  }
-
-  @media (min-width: 750px) {
-    .category-tiles__track {
-      grid-template-columns: repeat(3, 1fr);
-      gap: clamp(2rem, 3.5vw, 4.5rem);
-    }
   }
 
   /* Zero-Border Tile Pedestal */
@@ -128,32 +124,18 @@
   }
 
   .category-tile__link {
-    display: flex;
-    flex-direction: column;
+    display: block;
     text-decoration: none;
     position: relative;
     width: 100%;
     height: 100%;
     color: inherit;
     transition: transform var(--transition-fast);
+    -webkit-tap-highlight-color: transparent;
   }
 
   .category-tile__link:active {
     transform: scale(0.985);
-  }
-
-  /* Floating Stage */
-  .category-tile__stage {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 3 / 4;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-    padding: var(--space-xs) var(--space-sm);
-    box-sizing: border-box;
-    overflow: visible;
   }
 
   .category-tile__media-box {
@@ -163,41 +145,18 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    /* Soft physical contact drop-shadow under the floating garment */
-    filter: drop-shadow(0 16px 26px rgba(17, 17, 17, 0.08));
+    filter: drop-shadow(0 16px 26px rgba(17, 17, 17, 0.07));
     transition: transform 380ms cubic-bezier(0.23, 1, 0.32, 1), filter 380ms cubic-bezier(0.23, 1, 0.32, 1);
     will-change: transform, filter;
   }
 
   .category-tile__image {
-    max-width: 92%;
-    max-height: 92%;
     width: auto;
     height: auto;
     object-fit: contain;
     display: block;
     margin: auto;
     background: transparent;
-  }
-
-  /* Levitation micro-interaction on hover */
-  @media (hover: hover) and (pointer: fine) {
-    .category-tile:hover .category-tile__media-box {
-      transform: translateY(-8px) scale(1.035);
-      filter: drop-shadow(0 28px 40px rgba(17, 17, 17, 0.13));
-    }
-
-    .category-tile:hover .category-tile__arrow {
-      transform: translateX(4px);
-    }
-
-    .category-tile:hover .category-tile__cta {
-      color: var(--color-text);
-    }
-
-    .category-tile:hover .category-tile__cta::after {
-      transform: scaleX(1);
-    }
   }
 
   .category-tile__placeholder {
@@ -215,124 +174,205 @@
     opacity: 0.3;
   }
 
-  /* Centered Editorial Typography Below Garment */
-  .category-tile__meta {
-    margin-top: var(--space-sm);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 0.35rem;
-    position: relative;
-  }
-
-  .category-tile__title {
-    font-family: var(--font-display);
-    font-size: 1.125rem;
-    font-weight: 500;
-    line-height: 1.2;
-    letter-spacing: 0.04em;
-    margin: 0;
-    color: var(--color-text);
-    text-transform: uppercase;
-  }
-
-  .category-tile__action {
-    margin-top: 0.15rem;
-  }
-
-  .category-tile__cta {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    font-family: var(--font-body);
-    font-size: 0.75rem;
-    font-weight: 500;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--color-text-muted);
-    position: relative;
-    padding-bottom: 2px;
-    transition: color var(--transition-fast);
-  }
-
-  .category-tile__cta::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    height: 1px;
-    background-color: var(--color-text);
-    transform: scaleX(0);
-    transform-origin: center;
-    transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
   .category-tile__arrow {
     transition: transform 220ms ease-out;
   }
 
-  /* Mobile Horizontal Snap Runway */
+  /* ==========================================================================
+     Mobile Layout (max-width: 749px):
+     - 3 stacked full-width cards with 12px gap
+     - 4:3 shape (all 3 fit in 1 to 1.5 screens)
+     - Name and arrow bottom-left of the photo (>= 48px tap area)
+     - Zero swipe friction, pure native vertical scroll
+     ========================================================================== */
   @media (max-width: 749px) {
     .category-tiles__track {
       display: flex;
-      overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
-      gap: var(--space-sm);
-      padding: 0 var(--page-margin) var(--space-sm);
-      margin: 0 calc(-1 * var(--page-margin));
-      overscroll-behavior-x: contain;
-    }
-
-    .category-tiles__track::-webkit-scrollbar {
-      display: none;
+      flex-direction: column;
+      gap: 12px;
+      padding: 0;
+      margin: 0;
     }
 
     .category-tile {
-      flex: 0 0 78vw;
-      max-width: 320px;
-      scroll-snap-align: center;
-      scroll-snap-stop: normal;
+      width: 100%;
     }
 
     .category-tile__stage {
-      aspect-ratio: 3 / 4;
-      padding: var(--space-xs);
-    }
-
-    .category-tiles__mobile-indicator {
-      display: flex;
-      justify-content: center;
-      margin-top: var(--space-xs);
-    }
-
-    .category-tiles__mobile-bar {
-      width: 48px;
-      height: 2px;
-      background: var(--color-border);
-      border-radius: 1px;
       position: relative;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--color-surface);
+      padding: var(--space-xs);
+      box-sizing: border-box;
       overflow: hidden;
     }
 
-    .category-tiles__mobile-bar::after {
-      content: '';
+    .category-tile__image {
+      max-width: 80%;
+      max-height: 80%;
+    }
+
+    .category-tile__mobile-footer {
       position: absolute;
-      left: 0;
-      top: 0;
       bottom: 0;
-      width: 33.333%;
-      background: var(--color-text);
-      transition: transform 250ms ease;
+      left: 0;
+      right: 0;
+      padding: 0.875rem 1rem;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .category-tile__mobile-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      min-height: 48px;
+      justify-content: flex-end;
+    }
+
+    .category-tile__mobile-title {
+      font-family: var(--font-display);
+      font-size: 1.125rem;
+      font-weight: 500;
+      line-height: 1.15;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--color-text);
+    }
+
+    .category-tile__mobile-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-family: var(--font-body);
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+    }
+
+    /* Hide desktop centered metadata on mobile */
+    .category-tile__meta {
+      display: none;
     }
   }
 
+  /* ==========================================================================
+     Desktop Layout (min-width: 750px):
+     - 3-column floating showcase
+     - 3:4 pedestal with pure canvas blend
+     - Centered title and Shop All link underneath
+     - Tactile levitation micro-interaction
+     ========================================================================== */
   @media (min-width: 750px) {
-    .category-tiles__mobile-indicator {
+    .category-tiles__track {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: clamp(2rem, 3.5vw, 4.5rem);
+    }
+
+    .category-tile__mobile-footer {
       display: none;
+    }
+
+    .category-tile__stage {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 3 / 4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      padding: var(--space-xs) var(--space-sm);
+      box-sizing: border-box;
+      overflow: visible;
+    }
+
+    .category-tile__image {
+      max-width: 92%;
+      max-height: 92%;
+    }
+
+    /* Levitation micro-interaction on hover */
+    @media (hover: hover) and (pointer: fine) {
+      .category-tile:hover .category-tile__media-box {
+        transform: translateY(-8px) scale(1.035);
+        filter: drop-shadow(0 28px 40px rgba(17, 17, 17, 0.12));
+      }
+
+      .category-tile:hover .category-tile__arrow {
+        transform: translateX(4px);
+      }
+
+      .category-tile:hover .category-tile__cta {
+        color: var(--color-text);
+      }
+
+      .category-tile:hover .category-tile__cta::after {
+        transform: scaleX(1);
+      }
+    }
+
+    /* Centered Editorial Typography Below Garment */
+    .category-tile__meta {
+      margin-top: var(--space-sm);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 0.35rem;
+      position: relative;
+    }
+
+    .category-tile__title {
+      font-family: var(--font-display);
+      font-size: 1.125rem;
+      font-weight: 500;
+      line-height: 1.2;
+      letter-spacing: 0.04em;
+      margin: 0;
+      color: var(--color-text);
+      text-transform: uppercase;
+    }
+
+    .category-tile__action {
+      margin-top: 0.15rem;
+    }
+
+    .category-tile__cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-family: var(--font-body);
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--color-text-muted);
+      position: relative;
+      padding-bottom: 2px;
+      transition: color var(--transition-fast);
+    }
+
+    .category-tile__cta::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      height: 1px;
+      background-color: var(--color-text);
+      transform: scaleX(0);
+      transform-origin: center;
+      transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1);
     }
   }
 

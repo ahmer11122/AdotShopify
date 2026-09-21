@@ -136,6 +136,26 @@ At this catalog size, several things a "full" fashion theme would ship are activ
 
 Net effect: `header.liquid` and `main-collection.liquid` get simpler than the general premium-theme baseline in `.agent/rules/09-premium-feature-parity.md` — that file's mega-menu and collection-side-nav rows are superseded by this table for as long as the catalog stays at 3 flat categories.
 
+### 2.1.1 Category Showcase (`category-tiles.liquid`) Specification — Solution 2 (Short Stack)
+
+With only 3 launch categories, a horizontal carousel/swipe track creates unnecessary UX friction (hidden items, ambiguous gesture affordance, fragile JS on low-end devices). The section uses a vertical **Short Stack** on mobile and a 3-column floating garment showcase on desktop.
+
+- **Mobile Architecture (Short Stack — Zero Swipe, Pure Native Scroll):**
+  1. **Full-width vertical stack:** 3 full-width cards stacked vertically with a strict `12px` gap.
+  2. **Compact shape:** `4:3` aspect ratio (avoids tall 4:5 cards so all 3 categories comfortably fit within ~1 to 1.5 screen scrolls without pushing "Latest Drops" down).
+  3. **Single tap surface:** Entire card is wrapped in a high-priority link with minimum touch target height `≥ 48px`.
+  4. **Bottom-left text overlay:** Real semantic HTML text (not baked into image) positioned bottom-left (`HOODIES`, `SHIRTS`, `TROUSERS` + `Shop All →`).
+  5. **Zero JavaScript:** Pure native CSS layout (`display: flex; flex-direction: column; gap: 12px;`) ensuring 0 runtime breakage on low-cost devices.
+  6. **Performance:** `loading="lazy"` on all category images as they sit below the hero fold.
+- **Desktop Architecture:**
+  - 3-column grid (`repeat(3, 1fr)`) with floating cutout garments blending seamlessly into the `#FFFFFF` canvas.
+  - Centered category typography and subtle hover levitation micro-interaction.
+- **Catalog Escalation Trigger:**
+  - If the catalog scales beyond ~6 categories, transition from the vertical stack to an overflow swipe row featuring a visible card peek (the peek naturally conveys horizontal movement without needing nudges or duplicate navigation pills).
+- **Measurement:**
+  - Track thumb scroll-depth and tap distribution via Microsoft Clarity post-launch.
+
+
 ---
 
 ## 3. CSS strategy — the actual answer, not a vibe
