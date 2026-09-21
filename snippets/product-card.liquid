@@ -494,9 +494,7 @@
                 <span class="price__item price__item--sale">
                   <span class="price__currency">Rs.</span><span class="price__amount">{{ price_num }}</span>
                 </span>
-                <s class="price__item price__item--regular">
-                  <span class="price__currency">Rs.</span><span class="price__amount">{{ compare_num }}</span>
-                </s>
+                <s class="price__item price__item--regular">Rs. {{ compare_num }}</s>
               {% else %}
                 <span class="price__item price__item--regular">
                   <span class="price__currency">Rs.</span><span class="price__amount">{{ price_num }}</span>
@@ -1009,11 +1007,8 @@
     font-weight: 400;
     font-size: 0.8125rem;
     text-decoration: line-through;
-  }
-
-  .product-card__price s.price__item--regular .price__currency {
-    opacity: 0.6;
-    font-weight: 400;
+    text-decoration-thickness: 1px;
+    white-space: nowrap;
   }
 
   /* Color variant indicator pill */
