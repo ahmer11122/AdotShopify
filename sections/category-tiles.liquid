@@ -75,9 +75,19 @@
 </section>
 
 {% stylesheet %}
-  .category-tiles {
-    margin-bottom: var(--space-xl);
+  .section-category-tiles {
     position: relative;
+    z-index: 1;
+    background-color: var(--color-background);
+    box-shadow: 0 -20px 40px -10px rgba(0, 0, 0, 0.06);
+    border-top: 1px solid var(--color-border-subtle);
+    padding-top: clamp(3rem, 5vw, 4.5rem);
+  }
+
+  .category-tiles {
+    position: relative;
+    padding-bottom: var(--space-xl);
+    margin-bottom: 0;
   }
 
   /* Editorial Header */

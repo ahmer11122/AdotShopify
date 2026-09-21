@@ -6,7 +6,7 @@
 
 html,
 body {
-  overflow-x: hidden;
+  overflow-x: clip;
   max-width: 100%;
 }
 
@@ -242,4 +242,46 @@ a:hover {
     scroll-behavior: auto !important;
   }
 }
+
+/* ==========================================================================
+   The Shopify-Way Continuous Curtain Overlap (Zero Bleed, Seamless Surface)
+   ========================================================================== */
+#MainContent {
+  position: relative;
+}
+
+/* Hero section wrapper: pinned as backdrop */
+.shopify-section:has(.hero),
+.shopify-section.section-hero {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  z-index: 0;
+  width: 100%;
+}
+
+/* Everything after the hero: continuous white curtain */
+.shopify-section:has(.hero) ~ .shopify-section,
+.shopify-section.section-hero ~ .shopify-section {
+  position: relative;
+  z-index: 1;
+  background-color: var(--color-background);
+}
+
+/* Footer outside main */
+.shopify-section-group-footer-group,
+footer,
+.footer {
+  position: relative;
+  z-index: 1;
+  background-color: var(--color-background);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shopify-section:has(.hero),
+  .shopify-section.section-hero {
+    position: relative;
+  }
+}
+
 

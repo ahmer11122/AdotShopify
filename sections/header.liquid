@@ -2508,6 +2508,56 @@
     const header = document.querySelector('.header');
     if (!header) return;
 
+    const hero = document.querySelector('.hero');
+    const curtain = document.querySelector('.shopify-section:has(.hero) ~ .shopify-section, .section-category-tiles');
+
+    // On pages with the sticky hero curtain reveal
+    if (hero && curtain && 'IntersectionObserver' in window) {
+      const getHeaderHeight = () => header.offsetHeight || 80;
+
+      const updateCurtainState = () => {
+        const headerHeight = getHeaderHeight();
+        const curtainRect = curtain.getBoundingClientRect();
+        if (curtainRect.top <= headerHeight) {
+          header.classList.add('header--scrolled');
+        } else {
+          header.classList.remove('header--scrolled');
+        }
+        hero.inert = curtainRect.top <= 0;
+      };
+
+      const observer = new IntersectionObserver(
+        () => {
+          updateCurtainState();
+        },
+        {
+          threshold: [0, 0.05, 0.1, 0.25, 0.5, 0.75, 1.0],
+        }
+      );
+
+      observer.observe(curtain);
+
+      // Lightweight passive scroll listener as fallback for rapid velocity scrolling
+      let ticking = false;
+      window.addEventListener(
+        'scroll',
+        () => {
+          if (!ticking) {
+            window.requestAnimationFrame(() => {
+              updateCurtainState();
+              ticking = false;
+            });
+            ticking = true;
+          }
+        },
+        { passive: true }
+      );
+
+      updateCurtainState();
+      return;
+    }
+
+    // Default fallback for pages without hero curtain
     let ticking = false;
     const updateHeaderState = () => {
       if (window.scrollY > 20) {

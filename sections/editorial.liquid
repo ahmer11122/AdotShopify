@@ -55,8 +55,15 @@
 </section>
 
 {% stylesheet %}
+  .section-editorial {
+    position: relative;
+    z-index: 1;
+    background-color: var(--color-background);
+  }
+
   .editorial-section {
-    margin-bottom: var(--space-xl);
+    padding-bottom: var(--space-xl);
+    margin-bottom: 0;
   }
 
   .editorial-section__inner {

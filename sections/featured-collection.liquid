@@ -56,8 +56,15 @@
 </section>
 
 {% stylesheet %}
+  .section-featured-collection {
+    position: relative;
+    z-index: 1;
+    background-color: var(--color-background);
+  }
+
   .featured-collection {
-    margin-bottom: var(--space-xl);
+    padding-bottom: var(--space-xl);
+    margin-bottom: 0;
   }
 
   .featured-collection__header {
