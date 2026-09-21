@@ -22,15 +22,15 @@
       </button>
     </div>
 
-    <!-- Integrated Controls Bar: Category Tabs on Left + Apple Segmented Unit Toggle on Right -->
+    <!-- Integrated Controls Bar: Category Rail on Left + Segmented Unit Rail on Right -->
     <div class="size-guide-dialog__toolbar">
-      <div class="size-guide-dialog__tabs" role="tablist">
+      <div class="size-guide-category-rail size-guide-dialog__tabs" role="tablist">
         <button type="button" role="tab" aria-selected="true" class="size-guide-tab is-active" data-tab="hoodies">Hoodies</button>
         <button type="button" role="tab" aria-selected="false" class="size-guide-tab" data-tab="shirts">Shirts</button>
         <button type="button" role="tab" aria-selected="false" class="size-guide-tab" data-tab="trousers">Trousers</button>
       </div>
 
-      <div class="size-guide-unit-pill" role="radiogroup" aria-label="Measurement Units">
+      <div class="size-guide-unit-rail size-guide-unit-pill" role="radiogroup" aria-label="Measurement Units">
         <button type="button" class="unit-toggle__btn unit-toggle__btn--active" data-unit="cm">CM</button>
         <button type="button" class="unit-toggle__btn" data-unit="in">INCHES</button>
       </div>
@@ -281,81 +281,99 @@
     transform: scale(0.92);
   }
 
-  /* Toolbar: Category Tabs + Apple Segmented Unit Toggle in 1 Unified Row */
+  /* Toolbar: Category Rail on Left + Unit Rail on Right */
   .size-guide-dialog__toolbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 0.75rem;
+    padding-bottom: 0.25rem;
   }
 
-  .size-guide-dialog__tabs {
-    display: flex;
-    gap: 0.35rem;
+  /* Segmented Category Rail (Consistent with Collection Header & App Design) */
+  .size-guide-dialog__tabs,
+  .size-guide-category-rail {
+    display: inline-flex;
+    align-items: center;
+    background: #F4F4F4;
+    padding: 3px;
+    border-radius: 6px;
+    gap: 2px;
   }
 
   .size-guide-tab {
-    background: transparent;
     border: none;
-    padding: 6px 12px;
+    background: transparent;
+    color: #666666;
     font-family: var(--font-body);
     font-size: 0.75rem;
     font-weight: 500;
     letter-spacing: 0.04em;
-    color: #666666;
+    text-transform: uppercase;
+    padding: 0.42rem 0.85rem;
+    border-radius: 4px;
     cursor: pointer;
-    border-radius: 9999px;
-    transition: all 150ms ease;
+    white-space: nowrap;
+    transition: color 150ms ease, background-color 150ms ease, box-shadow 150ms ease, transform 100ms ease;
     -webkit-tap-highlight-color: transparent;
   }
 
   .size-guide-tab:hover:not(.is-active) {
     color: #111111;
-    background-color: #F8F8F8;
+  }
+
+  .size-guide-tab:active {
+    transform: scale(0.96);
   }
 
   .size-guide-tab.is-active {
+    background: #FFFFFF;
     color: #111111;
     font-weight: 600;
-    background-color: #F0F0F0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   }
 
-  /* Apple Segmented Unit Pill Toggle */
-  .size-guide-unit-pill {
+  /* Segmented Unit Rail (Consistent Architectural Radius, Zero 9999px Circular Pills) */
+  .size-guide-unit-pill,
+  .size-guide-unit-rail {
     display: inline-flex;
     align-items: center;
-    background-color: #EFEFEF;
+    background-color: #F4F4F4;
     padding: 3px;
-    border-radius: 9999px;
-    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 6px;
+    gap: 2px;
     user-select: none;
   }
 
   .unit-toggle__btn {
     border: none;
     background: transparent;
-    padding: 5px 13px;
+    padding: 0.42rem 0.75rem;
     font-family: var(--font-body);
     font-size: 0.6875rem;
     font-weight: 500;
     letter-spacing: 0.06em;
     color: #666666;
     cursor: pointer;
-    border-radius: 9999px;
-    transition: all 180ms cubic-bezier(0.23, 1, 0.32, 1);
+    border-radius: 4px;
+    transition: color 150ms ease, background-color 150ms ease, box-shadow 150ms ease, transform 100ms ease;
     -webkit-tap-highlight-color: transparent;
+  }
+
+  .unit-toggle__btn:hover:not(.unit-toggle__btn--active) {
+    color: #111111;
+  }
+
+  .unit-toggle__btn:active {
+    transform: scale(0.96);
   }
 
   .unit-toggle__btn--active {
     background-color: #FFFFFF;
     color: #111111;
     font-weight: 600;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1), 0 0 1px rgba(0, 0, 0, 0.06);
-  }
-
-  .unit-toggle__btn:active {
-    transform: scale(0.96);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   }
 
   /* Table Panels */
