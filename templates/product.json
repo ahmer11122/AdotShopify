@@ -3,41 +3,24 @@
     "main": {
       "type": "product",
       "blocks": {
-        "fabric": {
+        "details": {
           "type": "accordion",
           "settings": {
-            "title": "Fabric & Materials",
-            "content": "Crafted from premium heavyweight combed cotton. Breathable, durable, and pre-shrunk for zero post-wash distortion.",
-            "metafield_key": "custom.fabric"
+            "title": "Details & Care",
+            "content": "Crafted from custom heavyweight combed cotton loopback fleece. Pre-shrunk construction for enduring shape. Machine wash cold inside-out, hang dry recommended."
           }
         },
-        "fit": {
+        "shipping": {
           "type": "accordion",
           "settings": {
-            "title": "Fit & Sizing",
-            "content": "Designed with a contemporary relaxed drape and dropped shoulders. Take your regular size for the intended silhouette, or size down for a closer fit."
-          }
-        },
-        "delivery": {
-          "type": "accordion",
-          "settings": {
-            "title": "Nationwide Delivery & Exchanges",
-            "content": "Delivered across Pakistan in 2–4 working days via express courier. Cash on Delivery supported. Easy 7-day exchange window if the fit isn't right."
-          }
-        },
-        "care": {
-          "type": "accordion",
-          "settings": {
-            "title": "Garment Care",
-            "content": "Machine wash cold at 30°C. Wash inside-out with like colors. Do not bleach or tumble dry. Warm iron on reverse if necessary."
+            "title": "Shipping & Returns",
+            "content": "Nationwide delivery across Pakistan in 2–4 working days. Cash on Delivery available. Easy 7-day hassle-free exchange window."
           }
         }
       },
       "block_order": [
-        "fabric",
-        "fit",
-        "delivery",
-        "care"
+        "details",
+        "shipping"
       ],
       "settings": {
         "show_whatsapp_button": true,
