@@ -252,20 +252,25 @@
       scroll-snap-stop: always;
     }
 
-    /* Counter Badge */
+    /* Counter Badge: Apple Frosted Glass */
     .product-gallery__counter {
       position: absolute;
       top: 1rem;
       right: 1rem;
       z-index: 5;
-      background: rgba(17, 17, 17, 0.75);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      color: var(--color-white, #FFFFFF);
-      padding: 0.35rem 0.75rem;
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      color: #111111;
+      padding: 0.25rem 0.65rem;
       font-family: var(--font-body);
-      font-weight: 500;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
       letter-spacing: 0.08em;
+      border-radius: 9999px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
       pointer-events: none;
     }
 

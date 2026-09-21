@@ -184,71 +184,68 @@
         assign adot_description = 'Engineered from custom-knitted 450 GSM combed cotton loopback fleece.'
     endcase
   endif
+
+  assign is_on_sale = false
+  assign discount_pct = 0
+  if adot_compare_at > adot_price
+    assign is_on_sale = true
+    assign discount_diff = adot_compare_at | minus: adot_price
+    assign discount_pct = discount_diff | times: 100.0 | divided_by: adot_compare_at | round
+  endif
+
+  assign price_clean = adot_price | money_without_currency | remove: '.00'
+  assign compare_clean = adot_compare_at | money_without_currency | remove: '.00'
 %}
 
 <div class="product-buy-box" id="ProductBuyBox-{{ section.id }}" data-product-buy-box>
-  <!-- Breadcrumbs -->
-  <nav class="product-breadcrumbs text-micro" aria-label="Breadcrumb">
-    <ol class="product-breadcrumbs__list">
-      <li class="product-breadcrumbs__item">
-        <a href="{{ routes.root_url }}">Home</a>
-      </li>
-      <li class="product-breadcrumbs__sep" aria-hidden="true">/</li>
-      {% if collection %}
-        <li class="product-breadcrumbs__item">
-          <a href="{{ collection.url }}">{{ collection.title }}</a>
-        </li>
-        <li class="product-breadcrumbs__sep" aria-hidden="true">/</li>
-      {% elsif adot_category != blank or product.type != blank %}
-        <li class="product-breadcrumbs__item">
-          <a href="{{ routes.all_products_collection_url }}?category={{ adot_category | downcase }}">{{ adot_category | default: product.type }}</a>
-        </li>
-        <li class="product-breadcrumbs__sep" aria-hidden="true">/</li>
-      {% endif %}
-      <li class="product-breadcrumbs__item product-breadcrumbs__item--active" aria-current="page">
-        {{ adot_title | default: product.title }}
-      </li>
-    </ol>
-  </nav>
-
-  <!-- Product Category Eyebrow & Specs -->
+  <!-- Category & Material Specs Eyebrow -->
   {% assign spec_fabric = product.metafields.custom.fabric | default: adot_fabric %}
   {% assign spec_gsm = product.metafields.custom.gsm %}
-  {% assign spec_fit = product.metafields.custom.fit | default: adot_fit %}
+  <div class="product-buy-box__eyebrow text-micro">
+    <span>{{ adot_category | default: product.type | default: 'Essentials' | upcase }}</span>
+    {% if spec_fabric != blank %}
+      <span class="product-buy-box__eyebrow-sep" aria-hidden="true">&middot;</span>
+      <span>{{ spec_fabric }}</span>
+    {% endif %}
+    {% if spec_gsm != blank %}
+      <span class="product-buy-box__eyebrow-sep" aria-hidden="true">&middot;</span>
+      <span>{{ spec_gsm }} GSM</span>
+    {% endif %}
+  </div>
 
-  {% if spec_fabric != blank or spec_fit != blank or spec_gsm != blank %}
-    <div class="product-buy-box__specs text-micro">
-      {% if spec_fabric != blank %}
-        <span class="product-buy-box__spec-item">{{ spec_fabric }}</span>
-      {% endif %}
-      {% if spec_gsm != blank %}
-        <span class="product-buy-box__spec-dot" aria-hidden="true">•</span>
-        <span class="product-buy-box__spec-item">{{ spec_gsm }} GSM</span>
-      {% endif %}
-      {% if spec_fit != blank %}
-        <span class="product-buy-box__spec-dot" aria-hidden="true">•</span>
-        <span class="product-buy-box__spec-item">{{ spec_fit }}</span>
-      {% endif %}
-    </div>
-  {% endif %}
-
-  {% assign default_product_price = product.price | money %}
-
-  <!-- Title & Price -->
+  <!-- Product Title -->
   <h1 class="product-buy-box__title">{{ adot_title | default: product.title }}</h1>
 
-  <div class="product-buy-box__price" id="ProductPrice-{{ section.id }}">
-    <div class="price">
-      <div class="price__container">
-        <span class="price__item price__item--regular">{{ adot_price_formatted | default: default_product_price }}</span>
-        {% if adot_compare_at > 0 %}
-          <s class="price__item price__item--regular" style="color: var(--color-text-subtle); text-decoration: line-through; margin-left: 0.5rem; font-size: 0.875rem;">
-            {{ adot_compare_at | money_without_currency | remove: '.00' | prepend: 'Rs. ' }}
-          </s>
-        {% endif %}
+  <!-- Price Row with Frosted Glass Status Badge -->
+  <div class="product-buy-box__price-row" id="ProductPrice-{{ section.id }}">
+    <div class="product-buy-box__price-container">
+      <div class="price {% if is_on_sale %}price--on-sale{% endif %}">
+        <div class="price__container">
+          {% if is_on_sale %}
+            <span class="price__item price__item--sale">
+              <span class="price__currency">Rs.</span><span class="price__amount">{{ price_clean }}</span>
+            </span>
+            <s class="price__item price__item--regular">Rs. {{ compare_clean }}</s>
+          {% else %}
+            <span class="price__item price__item--regular">
+              <span class="price__currency">Rs.</span><span class="price__amount">{{ price_clean }}</span>
+            </span>
+          {% endif %}
+        </div>
       </div>
+
+      {% if is_on_sale %}
+        <span class="product-buy-box__badge product-buy-box__badge--sale" aria-label="{{ discount_pct }}% discount">
+          <span class="product-buy-box__badge-dot product-buy-box__badge-dot--sale"></span>
+          <span>Sale</span>
+          {% if discount_pct > 0 %}
+            <span class="product-buy-box__badge-divider" aria-hidden="true">&middot;</span>
+            <span class="product-buy-box__badge-pct">-{{ discount_pct }}%</span>
+          {% endif %}
+        </span>
+      {% endif %}
     </div>
-    <span class="product-buy-box__tax-note text-micro">Taxes included. Cash on Delivery available nationwide.</span>
+    <span class="product-buy-box__tax-note text-micro">Taxes included &middot; Free nationwide shipping &middot; Cash on Delivery</span>
   </div>
 
   <!-- Determine Size Guide Category Tab based on Product context -->
@@ -323,6 +320,9 @@
       <div class="product-buy-box__options" id="ProductOptions-{{ section.id }}">
         {% for option in product.options_with_values %}
           {% assign option_name_lower = option.name | downcase %}
+          {% if option_name_lower contains 'color' or option_name_lower contains 'colour' %}
+            {% continue %}
+          {% endif %}
           {% assign is_size_option = false %}
           {% if option_name_lower contains 'size' %}
             {% assign is_size_option = true %}
@@ -444,44 +444,35 @@
     </div>
   </form>
 
-  <!-- Reassurance Strip (Configured in Theme Editor) -->
+  <!-- Reassurance Strip (Clean 1-Line Luxury Treatment) -->
   {% if section.settings.show_trust_strip %}
-    <div class="product-buy-box__trust-strip">
+    <div class="product-buy-box__trust-strip" aria-label="Order guarantees">
       <div class="product-buy-box__trust-item">
-        <svg class="product-buy-box__trust-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+        <svg class="product-buy-box__trust-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <rect x="2" y="4" width="20" height="16" rx="0"></rect>
           <line x1="2" y1="10" x2="22" y2="10"></line>
         </svg>
-        <div class="product-buy-box__trust-text">
-          <strong>{{ section.settings.trust_badge_1_title | default: 'Cash on Delivery' }}</strong>
-          <span>{{ section.settings.trust_badge_1_subtitle | default: 'Pay at your doorstep' }}</span>
-        </div>
+        <span class="product-buy-box__trust-text">{{ section.settings.trust_badge_1_title | default: 'Cash on Delivery' }}</span>
       </div>
 
       <div class="product-buy-box__trust-item">
-        <svg class="product-buy-box__trust-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+        <svg class="product-buy-box__trust-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
           <path d="M21 3v5h-5"></path>
           <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
           <path d="M3 21v-5h5"></path>
         </svg>
-        <div class="product-buy-box__trust-text">
-          <strong>{{ section.settings.trust_badge_2_title | default: '7-Day Easy Exchange' }}</strong>
-          <span>{{ section.settings.trust_badge_2_subtitle | default: 'Hassle-free size replacement' }}</span>
-        </div>
+        <span class="product-buy-box__trust-text">{{ section.settings.trust_badge_2_title | default: '7-Day Exchange' }}</span>
       </div>
 
       <div class="product-buy-box__trust-item">
-        <svg class="product-buy-box__trust-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+        <svg class="product-buy-box__trust-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <rect x="1" y="3" width="15" height="13"></rect>
-          <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+          <polygon points="16 8 20 8 23 11 23 16 16 16 8"></polygon>
           <circle cx="5.5" cy="18.5" r="2.5"></circle>
           <circle cx="18.5" cy="18.5" r="2.5"></circle>
         </svg>
-        <div class="product-buy-box__trust-text">
-          <strong>{{ section.settings.trust_badge_3_title | default: '2–4 Day Delivery' }}</strong>
-          <span>{{ section.settings.trust_badge_3_subtitle | default: 'Fast dispatch across Pakistan' }}</span>
-        </div>
+        <span class="product-buy-box__trust-text">{{ section.settings.trust_badge_3_title | default: '2–4 Day Dispatch' }}</span>
       </div>
     </div>
   {% endif %}
@@ -543,77 +534,146 @@
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1.35rem;
   }
 
-  /* Breadcrumbs */
-  .product-breadcrumbs {
-    color: var(--color-text-subtle);
-  }
-
-  .product-breadcrumbs__list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.35rem;
-  }
-
-  .product-breadcrumbs__item a {
-    color: var(--color-text-subtle);
-    text-decoration: none;
-    transition: color 150ms ease;
-  }
-
-  .product-breadcrumbs__item a:hover {
-    color: var(--color-text);
-  }
-
-  .product-breadcrumbs__item--active {
-    color: var(--color-text);
-  }
-
-  .product-breadcrumbs__sep {
-    color: var(--color-border-strong);
-    opacity: 0.5;
-  }
-
-  /* Specs Eyebrow */
-  .product-buy-box__specs {
+  /* Category & Fabric Specs Eyebrow */
+  .product-buy-box__eyebrow {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    color: var(--color-text-subtle);
-    letter-spacing: 0.08em;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
+    color: var(--color-text-subtle, #737373);
   }
 
-  .product-buy-box__spec-dot {
-    opacity: 0.5;
+  .product-buy-box__eyebrow-sep {
+    color: var(--color-border-strong, #A3A3A3);
+    opacity: 0.4;
   }
 
-  /* Title & Price */
+  /* Product Title */
   .product-buy-box__title {
-    font-family: var(--font-display);
-    font-size: clamp(1.75rem, 3vw, 2.5rem);
+    font-family: var(--font-display, inherit);
+    font-size: clamp(1.75rem, 3.2vw, 2.375rem);
     font-weight: 500;
     line-height: 1.15;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
     margin: 0;
-    color: var(--color-text);
+    color: var(--color-text, #111111);
   }
 
-  .product-buy-box__price {
+  /* Price Area */
+  .product-buy-box__price-row {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
-    border-bottom: 1px solid var(--color-border);
+    gap: 0.4rem;
+    border-bottom: 1px solid var(--color-border, #E5E5E5);
     padding-bottom: 1.25rem;
   }
 
+  .product-buy-box__price-container {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .product-buy-box__price-row .price {
+    display: inline-flex;
+    align-items: baseline;
+  }
+
+  .product-buy-box__price-row .price__container {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.625rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .product-buy-box__price-row .price__item--sale,
+  .product-buy-box__price-row .price__item--regular {
+    display: inline-flex;
+    align-items: baseline;
+    font-size: clamp(1.35rem, 2.2vw, 1.625rem);
+    font-weight: 600;
+    color: var(--color-text, #111111);
+    letter-spacing: -0.01em;
+  }
+
+  .product-buy-box__price-row .price__currency {
+    font-size: 0.72em;
+    font-weight: 500;
+    margin-right: 2px;
+    color: var(--color-text, #111111);
+    opacity: 0.85;
+  }
+
+  /* Single continuous strikethrough for compare price */
+  .product-buy-box__price-row s.price__item--regular {
+    font-size: 0.95em;
+    font-weight: 400;
+    color: var(--color-text-subtle, #8A8A8A);
+    text-decoration: line-through;
+    text-decoration-color: var(--color-text-subtle, #8A8A8A);
+    text-decoration-thickness: 1px;
+    display: inline;
+  }
+
+  /* Apple-Style Translucent Frosted Glass Badge */
+  .product-buy-box__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 24px;
+    padding: 0 9px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border-radius: 9999px;
+    white-space: nowrap;
+    user-select: none;
+  }
+
+  .product-buy-box__badge--sale {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    color: var(--color-text, #111111);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  }
+
+  .product-buy-box__badge-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .product-buy-box__badge-dot--sale {
+    background-color: #B91C1C;
+  }
+
+  .product-buy-box__badge-divider {
+    opacity: 0.35;
+  }
+
+  .product-buy-box__badge-pct {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    color: #B91C1C;
+  }
+
   .product-buy-box__tax-note {
-    color: var(--color-text-subtle);
+    color: var(--color-text-subtle, #767676);
+    font-size: 0.6875rem;
+    letter-spacing: 0.02em;
   }
 
   /* Variant Selection Options */
@@ -640,15 +700,17 @@
 
   .product-buy-box__option-label {
     margin: 0;
-    font-weight: 500;
+    font-size: 0.6875rem;
+    font-weight: 600;
     letter-spacing: 0.08em;
-    color: var(--color-text);
+    color: var(--color-text, #111111);
     display: inline-flex;
     gap: 0.35rem;
   }
 
   .product-buy-box__option-selected {
-    color: var(--color-text-muted);
+    font-weight: 400;
+    color: var(--color-text-muted, #666666);
   }
 
   .product-buy-box__size-guide-trigger {
@@ -658,16 +720,18 @@
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
-    color: var(--color-text-muted);
+    color: var(--color-text-muted, #555555);
     cursor: pointer;
+    font-size: 0.6875rem;
+    font-weight: 500;
     text-decoration: underline;
     text-underline-offset: 3px;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.03em;
     transition: color 150ms ease;
   }
 
   .product-buy-box__size-guide-trigger:hover {
-    color: var(--color-text);
+    color: var(--color-text, #111111);
   }
 
   .product-buy-box__option-values {
@@ -679,36 +743,49 @@
   /* Size & Variant Pills */
   .product-buy-box__pill {
     position: relative;
-    border: 1px solid var(--color-border);
-    background-color: var(--color-background);
-    color: var(--color-text);
-    padding: 0.625rem 1.125rem;
+    border: 1px solid rgba(0, 0, 0, 0.14);
+    background-color: var(--color-background, #FFFFFF);
+    color: var(--color-text, #111111);
+    height: 46px;
+    min-width: 54px;
+    padding: 0 1.15rem;
     font-family: var(--font-body);
-    font-weight: 500;
-    letter-spacing: 0.04em;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
     cursor: pointer;
-    transition: all 180ms ease;
-    min-width: 48px;
-    text-align: center;
-    border-radius: var(--radius-none, 0px);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 2px;
+    transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, transform 100ms cubic-bezier(0.23, 1, 0.32, 1), box-shadow 150ms ease;
     -webkit-tap-highlight-color: transparent;
   }
 
-  .product-buy-box__pill:hover:not(.is-sold-out) {
-    border-color: var(--color-text);
+  @media (hover: hover) and (pointer: fine) {
+    .product-buy-box__pill:hover:not(.is-sold-out):not(.is-selected) {
+      border-color: var(--color-text, #111111);
+      background-color: #F8F8F8;
+    }
+  }
+
+  .product-buy-box__pill:active:not(.is-sold-out) {
+    transform: scale(0.94);
+    transition-duration: 70ms;
   }
 
   .product-buy-box__pill.is-selected {
-    background-color: var(--color-btn-bg, #111111);
+    background-color: var(--color-btn-bg, #0A0A0A);
     color: var(--color-btn-text, #FFFFFF);
-    border-color: var(--color-btn-bg, #111111);
+    border-color: var(--color-btn-bg, #0A0A0A);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.14);
   }
 
   .product-buy-box__pill.is-sold-out {
-    opacity: 0.4;
+    opacity: 0.38;
     cursor: not-allowed;
-    background-color: var(--color-surface);
-    border-color: var(--color-border);
+    background-color: var(--color-surface, #F5F5F5);
+    border-color: rgba(0, 0, 0, 0.07);
   }
 
   .product-buy-box__sold-out-slash {
@@ -724,7 +801,7 @@
     left: 0;
     right: 0;
     height: 1px;
-    background-color: var(--color-text-muted);
+    background-color: var(--color-text-muted, #666666);
     transform: rotate(-25deg);
   }
 
@@ -736,7 +813,7 @@
   }
 
   .product-buy-box__option-group.has-error .product-buy-box__pill {
-    border-color: var(--color-sale, #991B1B);
+    border-color: var(--color-sale, #B91C1C);
     animation: shake-pulse 300ms ease;
   }
 
@@ -745,8 +822,9 @@
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    color: var(--color-sale, #991B1B);
+    color: var(--color-sale, #B91C1C);
     font-weight: 500;
+    font-size: 0.75rem;
     letter-spacing: 0.04em;
   }
 
@@ -754,7 +832,7 @@
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background-color: var(--color-sale, #991B1B);
+    background-color: var(--color-sale, #B91C1C);
     animation: pulse 1.5s infinite;
   }
 
@@ -766,10 +844,11 @@
 
   /* Inline Error */
   .product-buy-box__error {
-    color: var(--color-sale, #991B1B);
-    background-color: rgba(153, 27, 27, 0.06);
+    color: var(--color-sale, #B91C1C);
+    background-color: rgba(185, 28, 28, 0.06);
     padding: 0.625rem 0.875rem;
-    border-left: 2px solid var(--color-sale, #991B1B);
+    border-left: 2px solid var(--color-sale, #B91C1C);
+    font-size: 0.75rem;
   }
 
   /* Action Buttons */
@@ -782,12 +861,12 @@
 
   .product-buy-box__submit-btn {
     width: 100%;
-    padding: 1rem 1.5rem;
-    background-color: var(--color-btn-bg, #111111);
+    height: 52px;
+    background-color: var(--color-btn-bg, #0A0A0A);
     color: var(--color-btn-text, #FFFFFF);
     border: none;
     font-family: var(--font-body);
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     font-weight: 600;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -795,30 +874,38 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background-color 180ms ease, opacity 180ms ease;
-    border-radius: var(--radius-none, 0px);
-    min-height: 52px;
+    border-radius: 2px;
+    transition: background-color 150ms ease, opacity 150ms ease, transform 100ms cubic-bezier(0.23, 1, 0.32, 1);
+    -webkit-tap-highlight-color: transparent;
   }
 
-  .product-buy-box__submit-btn:hover:not(:disabled) {
-    background-color: var(--color-btn-hover-bg, #333333);
+  @media (hover: hover) and (pointer: fine) {
+    .product-buy-box__submit-btn:hover:not(:disabled) {
+      background-color: #262626;
+    }
+  }
+
+  .product-buy-box__submit-btn:active:not(:disabled) {
+    transform: scale(0.985);
+    transition-duration: 70ms;
   }
 
   .product-buy-box__submit-btn:disabled {
-    background-color: var(--color-btn-disabled-bg, #F5F5F5);
-    color: var(--color-btn-disabled-text, #A3A3A3);
+    background-color: #EDEDED;
+    color: #A0A0A0;
     cursor: not-allowed;
   }
 
   /* WhatsApp Order Button */
   .product-buy-box__whatsapp-btn {
     width: 100%;
-    padding: 0.875rem 1.25rem;
-    background-color: transparent;
+    height: 46px;
+    background-color: var(--color-background, #FFFFFF);
     color: var(--color-text, #111111);
-    border: 1px solid var(--color-border-strong, #8A8A8A);
+    border: 1px solid rgba(0, 0, 0, 0.15);
     font-family: var(--font-body);
-    font-weight: 600;
+    font-size: 0.75rem;
+    font-weight: 500;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     cursor: pointer;
@@ -826,62 +913,69 @@
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    transition: all 180ms ease;
-    border-radius: var(--radius-none, 0px);
-    min-height: 48px;
+    border-radius: 2px;
+    transition: all 150ms cubic-bezier(0.23, 1, 0.32, 1);
+    -webkit-tap-highlight-color: transparent;
   }
 
-  .product-buy-box__whatsapp-btn:hover {
-    border-color: var(--color-text);
-    background-color: var(--color-surface);
+  @media (hover: hover) and (pointer: fine) {
+    .product-buy-box__whatsapp-btn:hover {
+      border-color: var(--color-text, #111111);
+      background-color: #F8F8F8;
+    }
   }
 
-  /* Trust Strip */
+  .product-buy-box__whatsapp-btn:active {
+    transform: scale(0.985);
+    background-color: #F3F3F3;
+  }
+
+  /* Reassurance Strip: Quiet Luxury 1-Line Treatment */
   .product-buy-box__trust-strip {
     display: grid;
-    grid-template-columns: 1fr;
-    gap: 0.875rem;
-    border-top: 1px solid var(--color-border);
-    border-bottom: 1px solid var(--color-border);
-    padding: 1.25rem 0;
-  }
-
-  @media (min-width: 480px) {
-    .product-buy-box__trust-strip {
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0.75rem;
-    }
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    padding: 0.875rem 0;
+    margin-top: 0.5rem;
   }
 
   .product-buy-box__trust-item {
     display: flex;
-    align-items: flex-start;
-    gap: 0.625rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    text-align: center;
   }
 
   .product-buy-box__trust-icon {
     flex-shrink: 0;
-    color: var(--color-text);
-    margin-top: 2px;
+    width: 14px;
+    height: 14px;
+    color: var(--color-text, #111111);
+    opacity: 0.8;
   }
 
   .product-buy-box__trust-text {
-    display: flex;
-    flex-direction: column;
     font-family: var(--font-body);
-  }
-
-  .product-buy-box__trust-text strong {
-    font-size: 0.75rem;
-    letter-spacing: 0.04em;
-    color: var(--color-text);
-  }
-
-  .product-buy-box__trust-text span {
     font-size: 0.6875rem;
-    color: var(--color-text-subtle);
-    line-height: 1.3;
-    margin-top: 1px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-text, #111111);
+    white-space: nowrap;
+  }
+
+  @media (max-width: 440px) {
+    .product-buy-box__trust-text {
+      font-size: 0.625rem;
+      letter-spacing: 0.03em;
+    }
+    .product-buy-box__trust-icon {
+      width: 12px;
+      height: 12px;
+    }
   }
 
   /* Native <details> Accordions (Zero JS) */
@@ -891,7 +985,7 @@
   }
 
   .product-accordion {
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   }
 
   .product-accordion__summary {
@@ -902,9 +996,11 @@
     align-items: center;
     list-style: none;
     font-family: var(--font-body);
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    color: var(--color-text);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-text, #111111);
     user-select: none;
   }
 
@@ -913,10 +1009,10 @@
   }
 
   .product-accordion__icon {
-    font-size: 1.25rem;
+    font-size: 1.125rem;
     line-height: 1;
     font-weight: 300;
-    transition: transform 200ms ease;
+    transition: transform 200ms cubic-bezier(0.23, 1, 0.32, 1);
   }
 
   .product-accordion[open] .product-accordion__icon {
@@ -925,9 +1021,9 @@
 
   .product-accordion__content {
     padding-bottom: 1.25rem;
-    color: var(--color-text-muted);
+    color: #4A4A4A;
     font-size: 0.875rem;
-    line-height: 1.6;
+    line-height: 1.65;
   }
 
   .product-accordion__content p {
@@ -936,8 +1032,8 @@
 
   .product-description-rte {
     font-size: 0.875rem;
-    line-height: 1.6;
-    color: var(--color-text-muted);
+    line-height: 1.65;
+    color: #4A4A4A;
   }
 </style>
 
@@ -1035,9 +1131,11 @@
         const selectedCount = Object.keys(selectedOptions).length;
 
         if (selectedCount === totalOptions) {
-          // Find matching variant
+          // Find matching variant (checks all rendered options, ignoring omitted ones like color)
           const matchedVariant = variants.find(variant => {
-            return variant.options.every((optVal, idx) => selectedOptions[idx.toString()] === optVal);
+            return Object.entries(selectedOptions).every(([idx, optVal]) => {
+              return variant.options[parseInt(idx, 10)] === optVal;
+            });
           });
 
           if (matchedVariant) {
