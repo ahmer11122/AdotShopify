@@ -237,11 +237,6 @@
     </div>
   </div>
 
-  <!-- Editorial Product Summary (Concise & Calm) -->
-  {% assign clean_desc = adot_description | default: product.description | strip_html | truncatewords: 24 %}
-  {% if clean_desc != blank %}
-    <p class="product-buy-box__summary">{{ clean_desc }}</p>
-  {% endif %}
 
   <!-- Determine Size Guide Category Tab based on Product context -->
   {% assign size_guide_cat = adot_category | downcase | default: 'hoodies' %}
@@ -438,6 +433,12 @@
       {% endif %}
     </div>
   </form>
+
+  <!-- Editorial Product Summary (Calm & Positioned Below Primary CTA) -->
+  {% assign clean_desc = adot_description | default: product.description | strip_html | truncatewords: 28 %}
+  {% if clean_desc != blank %}
+    <p class="product-buy-box__summary">{{ clean_desc }}</p>
+  {% endif %}
 
   <!-- Reassurance Strip (Clean 1-Line Luxury Treatment) -->
   {% if section.settings.show_trust_strip %}
@@ -992,6 +993,44 @@
     margin: 0;
   }
 
+  /* Desktop Luxury Breathing Space & Vertical Rhythm */
+  @media (min-width: 990px) {
+    .product-buy-box {
+      gap: 1.75rem;
+    }
+
+    .product-buy-box__title {
+      font-size: clamp(2rem, 3.2vw, 2.5rem);
+      margin-bottom: 0.15rem;
+    }
+
+    .product-buy-box__options {
+      gap: 1.15rem;
+      padding-top: 0.5rem;
+    }
+
+    .product-buy-box__actions {
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+    }
+
+    .product-buy-box__summary {
+      font-size: 0.875rem;
+      line-height: 1.65;
+      color: #444444;
+      padding: 0.25rem 0;
+    }
+
+    .product-buy-box__trust-strip {
+      padding: 1rem 0;
+      margin-top: 0.25rem;
+    }
+
+    .product-accordion__summary {
+      padding: 1rem 0;
+      font-size: 0.75rem;
+    }
+  }
 </style>
 
 <script>
