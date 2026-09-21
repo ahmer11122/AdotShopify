@@ -1,208 +1,225 @@
 {% doc %}
-  Renders a native accessible <dialog> Size Guide Modal with Inches/Centimeters toggle
-  and exact measurements for Hoodies, Shirts, and Trousers.
+  Renders a native accessible <dialog> Size Guide Modal with Apple Segmented Units Toggle
+  and zero-horizontal-overflow responsive measurement tables for Hoodies, Shirts, and Trousers.
 {% enddoc %}
 
 <dialog id="SizeGuideDialog" class="size-guide-dialog" aria-labelledby="SizeGuideTitle">
   <div class="size-guide-dialog__content">
+    <!-- Mobile Drag Handle -->
+    <div class="size-guide-dialog__drag-handle" aria-hidden="true"></div>
+
+    <!-- Header Row -->
     <div class="size-guide-dialog__header">
       <div class="size-guide-dialog__title-wrap">
-        <h2 id="SizeGuideTitle" class="size-guide-dialog__title">Size Guide</h2>
-        <span class="size-guide-dialog__subtitle text-micro">Garment Measurements</span>
+        <h2 id="SizeGuideTitle" class="size-guide-dialog__title">SIZE GUIDE</h2>
+        <span class="size-guide-dialog__subtitle text-micro">Garment Measurements in Relaxed State</span>
       </div>
       <button type="button" class="size-guide-dialog__close" data-close-size-guide aria-label="Close size guide">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-          <line x1="1" y1="1" x2="17" y2="17"></line>
-          <line x1="17" y1="1" x2="1" y2="17"></line>
+        <svg width="15" height="15" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <line x1="2" y1="2" x2="16" y2="16"></line>
+          <line x1="16" y1="2" x2="2" y2="16"></line>
         </svg>
       </button>
     </div>
 
-    <!-- Unit Switcher -->
-    <div class="size-guide-dialog__controls">
-      <div class="size-guide-dialog__unit-toggle" role="group" aria-label="Measurement Units">
-        <button type="button" class="unit-toggle__btn unit-toggle__btn--active" data-unit="cm">Centimeters (cm)</button>
-        <button type="button" class="unit-toggle__btn" data-unit="in">Inches (in)</button>
+    <!-- Integrated Controls Bar: Category Tabs on Left + Apple Segmented Unit Toggle on Right -->
+    <div class="size-guide-dialog__toolbar">
+      <div class="size-guide-dialog__tabs" role="tablist">
+        <button type="button" role="tab" aria-selected="true" class="size-guide-tab is-active" data-tab="hoodies">Hoodies</button>
+        <button type="button" role="tab" aria-selected="false" class="size-guide-tab" data-tab="shirts">Shirts</button>
+        <button type="button" role="tab" aria-selected="false" class="size-guide-tab" data-tab="trousers">Trousers</button>
       </div>
-      <p class="size-guide-dialog__tip text-micro">
-        Tip: Measure a favorite garment that fits you well and compare against the table below.
-      </p>
+
+      <div class="size-guide-unit-pill" role="radiogroup" aria-label="Measurement Units">
+        <button type="button" class="unit-toggle__btn unit-toggle__btn--active" data-unit="cm">CM</button>
+        <button type="button" class="unit-toggle__btn" data-unit="in">INCHES</button>
+      </div>
     </div>
 
-    <!-- Category Tabs -->
-    <div class="size-guide-dialog__tabs" role="tablist">
-      <button type="button" role="tab" aria-selected="true" class="size-guide-tab size-guide-tab--active" data-tab="hoodies">Hoodies</button>
-      <button type="button" role="tab" aria-selected="false" class="size-guide-tab" data-tab="shirts">Shirts</button>
-      <button type="button" role="tab" aria-selected="false" class="size-guide-tab" data-tab="trousers">Trousers</button>
-    </div>
-
-    <!-- Table 1: Hoodies -->
-    <div class="size-guide-panel size-guide-panel--active" data-panel="hoodies" role="tabpanel">
-      <div class="size-guide-table-wrap">
-        <table class="size-guide-table">
-          <thead>
-            <tr>
-              <th>Size</th>
-              <th>Chest</th>
-              <th>Length</th>
-              <th>Shoulder</th>
-              <th>Sleeve</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>S</strong></td>
-              <td data-cm="116" data-in="45.7">116 cm</td>
-              <td data-cm="68" data-in="26.8">68 cm</td>
-              <td data-cm="54" data-in="21.3">54 cm</td>
-              <td data-cm="61" data-in="24.0">61 cm</td>
-            </tr>
-            <tr>
-              <td><strong>M</strong></td>
-              <td data-cm="122" data-in="48.0">122 cm</td>
-              <td data-cm="70" data-in="27.6">70 cm</td>
-              <td data-cm="56" data-in="22.0">56 cm</td>
-              <td data-cm="62" data-in="24.4">62 cm</td>
-            </tr>
-            <tr>
-              <td><strong>L</strong></td>
-              <td data-cm="128" data-in="50.4">128 cm</td>
-              <td data-cm="72" data-in="28.3">72 cm</td>
-              <td data-cm="58" data-in="22.8">58 cm</td>
-              <td data-cm="63" data-in="24.8">63 cm</td>
-            </tr>
-            <tr>
-              <td><strong>XL</strong></td>
-              <td data-cm="134" data-in="52.8">134 cm</td>
-              <td data-cm="74" data-in="29.1">74 cm</td>
-              <td data-cm="60" data-in="23.6">60 cm</td>
-              <td data-cm="64" data-in="25.2">64 cm</td>
-            </tr>
-          </tbody>
-        </table>
+    <!-- Tables Container (Zero Horizontal Scroll on Mobile) -->
+    <div class="size-guide-dialog__panels">
+      <!-- Table 1: Hoodies -->
+      <div class="size-guide-panel size-guide-panel--active" data-panel="hoodies" role="tabpanel">
+        <div class="size-guide-table-wrap">
+          <table class="size-guide-table">
+            <thead>
+              <tr>
+                <th class="col-size">SIZE</th>
+                <th>CHEST</th>
+                <th>LENGTH</th>
+                <th>SHOULDER</th>
+                <th>SLEEVE</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="col-size"><strong>S</strong></td>
+                <td data-cm="116" data-in="45.7"><span class="size-val">116</span><span class="size-unit">cm</span></td>
+                <td data-cm="68" data-in="26.8"><span class="size-val">68</span><span class="size-unit">cm</span></td>
+                <td data-cm="54" data-in="21.3"><span class="size-val">54</span><span class="size-unit">cm</span></td>
+                <td data-cm="61" data-in="24.0"><span class="size-val">61</span><span class="size-unit">cm</span></td>
+              </tr>
+              <tr>
+                <td class="col-size"><strong>M</strong></td>
+                <td data-cm="122" data-in="48.0"><span class="size-val">122</span><span class="size-unit">cm</span></td>
+                <td data-cm="70" data-in="27.6"><span class="size-val">70</span><span class="size-unit">cm</span></td>
+                <td data-cm="56" data-in="22.0"><span class="size-val">56</span><span class="size-unit">cm</span></td>
+                <td data-cm="62" data-in="24.4"><span class="size-val">62</span><span class="size-unit">cm</span></td>
+              </tr>
+              <tr>
+                <td class="col-size"><strong>L</strong></td>
+                <td data-cm="128" data-in="50.4"><span class="size-val">128</span><span class="size-unit">cm</span></td>
+                <td data-cm="72" data-in="28.3"><span class="size-val">72</span><span class="size-unit">cm</span></td>
+                <td data-cm="58" data-in="22.8"><span class="size-val">58</span><span class="size-unit">cm</span></td>
+                <td data-cm="63" data-in="24.8"><span class="size-val">63</span><span class="size-unit">cm</span></td>
+              </tr>
+              <tr>
+                <td class="col-size"><strong>XL</strong></td>
+                <td data-cm="134" data-in="52.8"><span class="size-val">134</span><span class="size-unit">cm</span></td>
+                <td data-cm="74" data-in="29.1"><span class="size-val">74</span><span class="size-unit">cm</span></td>
+                <td data-cm="60" data-in="23.6"><span class="size-val">60</span><span class="size-unit">cm</span></td>
+                <td data-cm="64" data-in="25.2"><span class="size-val">64</span><span class="size-unit">cm</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="size-guide-footer">
+          <span class="size-guide-footer__dot"></span>
+          <p class="size-guide-footer__text text-micro">Boxy, relaxed drape. Fits true to size — select your regular size for an oversized silhouette.</p>
+        </div>
       </div>
-      <p class="size-guide-note text-micro">Boxy, relaxed drape. Take your regular size for an oversized silhouette.</p>
-    </div>
 
-    <!-- Table 2: Shirts -->
-    <div class="size-guide-panel" data-panel="shirts" role="tabpanel" hidden>
-      <div class="size-guide-table-wrap">
-        <table class="size-guide-table">
-          <thead>
-            <tr>
-              <th>Size</th>
-              <th>Chest</th>
-              <th>Length</th>
-              <th>Shoulder</th>
-              <th>Neck</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>S</strong></td>
-              <td data-cm="108" data-in="42.5">108 cm</td>
-              <td data-cm="74" data-in="29.1">74 cm</td>
-              <td data-cm="48" data-in="18.9">48 cm</td>
-              <td data-cm="39" data-in="15.4">39 cm</td>
-            </tr>
-            <tr>
-              <td><strong>M</strong></td>
-              <td data-cm="114" data-in="44.9">114 cm</td>
-              <td data-cm="76" data-in="29.9">76 cm</td>
-              <td data-cm="50" data-in="19.7">50 cm</td>
-              <td data-cm="41" data-in="16.1">41 cm</td>
-            </tr>
-            <tr>
-              <td><strong>L</strong></td>
-              <td data-cm="120" data-in="47.2">120 cm</td>
-              <td data-cm="78" data-in="30.7">78 cm</td>
-              <td data-cm="52" data-in="20.5">52 cm</td>
-              <td data-cm="43" data-in="16.9">43 cm</td>
-            </tr>
-            <tr>
-              <td><strong>XL</strong></td>
-              <td data-cm="126" data-in="49.6">126 cm</td>
-              <td data-cm="80" data-in="31.5">80 cm</td>
-              <td data-cm="54" data-in="21.3">54 cm</td>
-              <td data-cm="45" data-in="17.7">45 cm</td>
-            </tr>
-          </tbody>
-        </table>
+      <!-- Table 2: Shirts -->
+      <div class="size-guide-panel" data-panel="shirts" role="tabpanel" hidden>
+        <div class="size-guide-table-wrap">
+          <table class="size-guide-table">
+            <thead>
+              <tr>
+                <th class="col-size">SIZE</th>
+                <th>CHEST</th>
+                <th>LENGTH</th>
+                <th>SHOULDER</th>
+                <th>NECK</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="col-size"><strong>S</strong></td>
+                <td data-cm="108" data-in="42.5"><span class="size-val">108</span><span class="size-unit">cm</span></td>
+                <td data-cm="74" data-in="29.1"><span class="size-val">74</span><span class="size-unit">cm</span></td>
+                <td data-cm="48" data-in="18.9"><span class="size-val">48</span><span class="size-unit">cm</span></td>
+                <td data-cm="39" data-in="15.4"><span class="size-val">39</span><span class="size-unit">cm</span></td>
+              </tr>
+              <tr>
+                <td class="col-size"><strong>M</strong></td>
+                <td data-cm="114" data-in="44.9"><span class="size-val">114</span><span class="size-unit">cm</span></td>
+                <td data-cm="76" data-in="29.9"><span class="size-val">76</span><span class="size-unit">cm</span></td>
+                <td data-cm="50" data-in="19.7"><span class="size-val">50</span><span class="size-unit">cm</span></td>
+                <td data-cm="41" data-in="16.1"><span class="size-val">41</span><span class="size-unit">cm</span></td>
+              </tr>
+              <tr>
+                <td class="col-size"><strong>L</strong></td>
+                <td data-cm="120" data-in="47.2"><span class="size-val">120</span><span class="size-unit">cm</span></td>
+                <td data-cm="78" data-in="30.7"><span class="size-val">78</span><span class="size-unit">cm</span></td>
+                <td data-cm="52" data-in="20.5"><span class="size-val">52</span><span class="size-unit">cm</span></td>
+                <td data-cm="43" data-in="16.9"><span class="size-val">43</span><span class="size-unit">cm</span></td>
+              </tr>
+              <tr>
+                <td class="col-size"><strong>XL</strong></td>
+                <td data-cm="126" data-in="49.6"><span class="size-val">126</span><span class="size-unit">cm</span></td>
+                <td data-cm="80" data-in="31.5"><span class="size-val">80</span><span class="size-unit">cm</span></td>
+                <td data-cm="54" data-in="21.3"><span class="size-val">54</span><span class="size-unit">cm</span></td>
+                <td data-cm="45" data-in="17.7"><span class="size-val">45</span><span class="size-unit">cm</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="size-guide-footer">
+          <span class="size-guide-footer__dot"></span>
+          <p class="size-guide-footer__text text-micro">Tailored casual drape with clean shoulder line and comfortable room through the chest.</p>
+        </div>
       </div>
-      <p class="size-guide-note text-micro">Tailored casual fit with room through the chest and back.</p>
-    </div>
 
-    <!-- Table 3: Trousers -->
-    <div class="size-guide-panel" data-panel="trousers" role="tabpanel" hidden>
-      <div class="size-guide-table-wrap">
-        <table class="size-guide-table">
-          <thead>
-            <tr>
-              <th>Size</th>
-              <th>Waist</th>
-              <th>Inseam</th>
-              <th>Rise</th>
-              <th>Leg Opening</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>30 (S)</strong></td>
-              <td data-cm="78" data-in="30.7">78 cm</td>
-              <td data-cm="76" data-in="29.9">76 cm</td>
-              <td data-cm="30" data-in="11.8">30 cm</td>
-              <td data-cm="22" data-in="8.7">22 cm</td>
-            </tr>
-            <tr>
-              <td><strong>32 (M)</strong></td>
-              <td data-cm="83" data-in="32.7">83 cm</td>
-              <td data-cm="77" data-in="30.3">77 cm</td>
-              <td data-cm="31" data-in="12.2">31 cm</td>
-              <td data-cm="23" data-in="9.1">23 cm</td>
-            </tr>
-            <tr>
-              <td><strong>34 (L)</strong></td>
-              <td data-cm="88" data-in="34.6">88 cm</td>
-              <td data-cm="78" data-in="30.7">78 cm</td>
-              <td data-cm="32" data-in="12.6">32 cm</td>
-              <td data-cm="24" data-in="9.4">24 cm</td>
-            </tr>
-            <tr>
-              <td><strong>36 (XL)</strong></td>
-              <td data-cm="93" data-in="36.6">93 cm</td>
-              <td data-cm="79" data-in="31.1">79 cm</td>
-              <td data-cm="33" data-in="13.0">33 cm</td>
-              <td data-cm="25" data-in="9.8">25 cm</td>
-            </tr>
-          </tbody>
-        </table>
+      <!-- Table 3: Trousers -->
+      <div class="size-guide-panel" data-panel="trousers" role="tabpanel" hidden>
+        <div class="size-guide-table-wrap">
+          <table class="size-guide-table">
+            <thead>
+              <tr>
+                <th class="col-size">SIZE</th>
+                <th>WAIST</th>
+                <th>INSEAM</th>
+                <th>RISE</th>
+                <th>OPENING</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="col-size"><strong>30 (S)</strong></td>
+                <td data-cm="78" data-in="30.7"><span class="size-val">78</span><span class="size-unit">cm</span></td>
+                <td data-cm="76" data-in="29.9"><span class="size-val">76</span><span class="size-unit">cm</span></td>
+                <td data-cm="30" data-in="11.8"><span class="size-val">30</span><span class="size-unit">cm</span></td>
+                <td data-cm="22" data-in="8.7"><span class="size-val">22</span><span class="size-unit">cm</span></td>
+              </tr>
+              <tr>
+                <td class="col-size"><strong>32 (M)</strong></td>
+                <td data-cm="83" data-in="32.7"><span class="size-val">83</span><span class="size-unit">cm</span></td>
+                <td data-cm="77" data-in="30.3"><span class="size-val">77</span><span class="size-unit">cm</span></td>
+                <td data-cm="31" data-in="12.2"><span class="size-val">31</span><span class="size-unit">cm</span></td>
+                <td data-cm="23" data-in="9.1"><span class="size-val">23</span><span class="size-unit">cm</span></td>
+              </tr>
+              <tr>
+                <td class="col-size"><strong>34 (L)</strong></td>
+                <td data-cm="88" data-in="34.6"><span class="size-val">88</span><span class="size-unit">cm</span></td>
+                <td data-cm="78" data-in="30.7"><span class="size-val">78</span><span class="size-unit">cm</span></td>
+                <td data-cm="32" data-in="12.6"><span class="size-val">32</span><span class="size-unit">cm</span></td>
+                <td data-cm="24" data-in="9.4"><span class="size-val">24</span><span class="size-unit">cm</span></td>
+              </tr>
+              <tr>
+                <td class="col-size"><strong>36 (XL)</strong></td>
+                <td data-cm="93" data-in="36.6"><span class="size-val">93</span><span class="size-unit">cm</span></td>
+                <td data-cm="79" data-in="31.1"><span class="size-val">79</span><span class="size-unit">cm</span></td>
+                <td data-cm="33" data-in="13.0"><span class="size-val">33</span><span class="size-unit">cm</span></td>
+                <td data-cm="25" data-in="9.8"><span class="size-val">25</span><span class="size-unit">cm</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="size-guide-footer">
+          <span class="size-guide-footer__dot"></span>
+          <p class="size-guide-footer__text text-micro">Relaxed straight leg with tailored waistband. Order true to your standard waist size.</p>
+        </div>
       </div>
-      <p class="size-guide-note text-micro">Relaxed straight leg with tailored waist. Choose based on your true waist size.</p>
     </div>
   </div>
 </dialog>
 
 <style>
-  /* Native <dialog> Modal Styles */
+  /* Native <dialog> Modal Architecture */
   .size-guide-dialog {
     position: fixed;
     inset: 0;
     margin: auto;
-    width: min(92vw, 580px);
-    max-height: 85vh;
+    width: min(92vw, 620px);
+    max-height: 86vh;
     padding: 0;
-    border: none;
-    background-color: var(--color-background, #FFFFFF);
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 8px;
+    background-color: #FFFFFF;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.22);
     z-index: 9999;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
   }
 
   .size-guide-dialog::backdrop {
-    background: rgba(17, 17, 17, 0.6);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
+    background: rgba(0, 0, 0, 0.52);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .size-guide-dialog__drag-handle {
+    display: none;
   }
 
   .size-guide-dialog__content {
@@ -212,27 +229,30 @@
     gap: 1.25rem;
   }
 
+  /* Header */
   .size-guide-dialog__header {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    border-bottom: 1px solid var(--color-border);
-    padding-bottom: 0.875rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+    padding-bottom: 1rem;
   }
 
   .size-guide-dialog__title {
-    font-family: var(--font-display);
-    font-size: 1.75rem;
-    font-weight: 500;
-    line-height: 1.1;
+    font-family: var(--font-display, inherit);
+    font-size: 1.35rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 1.15;
     margin: 0;
-    color: var(--color-text);
+    color: #111111;
   }
 
   .size-guide-dialog__subtitle {
-    color: var(--color-text-subtle);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-size: 0.6875rem;
+    color: #767676;
+    letter-spacing: 0.05em;
     margin-top: 0.25rem;
     display: block;
   }
@@ -240,134 +260,265 @@
   .size-guide-dialog__close {
     background: transparent;
     border: none;
-    color: var(--color-text);
+    color: #111111;
     cursor: pointer;
     padding: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
-    min-width: 32px;
-    min-height: 32px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
-    transition: background-color 150ms ease;
+    transition: background-color 150ms ease, transform 100ms ease;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .size-guide-dialog__close:hover {
-    background-color: var(--color-surface);
+    background-color: #F3F3F3;
   }
 
-  .size-guide-dialog__controls {
+  .size-guide-dialog__close:active {
+    transform: scale(0.92);
+  }
+
+  /* Toolbar: Category Tabs + Apple Segmented Unit Toggle in 1 Unified Row */
+  .size-guide-dialog__toolbar {
     display: flex;
-    flex-direction: column;
-    gap: 0.625rem;
-  }
-
-  .size-guide-dialog__unit-toggle {
-    display: inline-flex;
-    background-color: var(--color-surface);
-    padding: 3px;
-    align-self: flex-start;
-    border: 1px solid var(--color-border);
-  }
-
-  .unit-toggle__btn {
-    border: none;
-    background: transparent;
-    padding: 6px 14px;
-    font-family: var(--font-body);
-    font-size: 0.75rem;
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    color: var(--color-text-muted);
-    cursor: pointer;
-    transition: background-color 150ms ease, color 150ms ease;
-  }
-
-  .unit-toggle__btn--active {
-    background-color: var(--color-text);
-    color: var(--color-white);
-  }
-
-  .size-guide-dialog__tip {
-    margin: 0;
-    color: var(--color-text-muted);
-    font-style: italic;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
   }
 
   .size-guide-dialog__tabs {
     display: flex;
-    gap: 0.5rem;
-    border-bottom: 1px solid var(--color-border);
+    gap: 0.35rem;
   }
 
   .size-guide-tab {
     background: transparent;
     border: none;
-    padding: 8px 14px;
+    padding: 6px 12px;
     font-family: var(--font-body);
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
     font-weight: 500;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--color-text-muted);
+    letter-spacing: 0.04em;
+    color: #666666;
     cursor: pointer;
-    position: relative;
-    transition: color 150ms ease;
+    border-radius: 9999px;
+    transition: all 150ms ease;
+    -webkit-tap-highlight-color: transparent;
   }
 
-  .size-guide-tab--active {
-    color: var(--color-text);
+  .size-guide-tab:hover:not(.is-active) {
+    color: #111111;
+    background-color: #F8F8F8;
   }
 
-  .size-guide-tab--active::after {
-    content: '';
-    position: absolute;
-    bottom: -1px;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background-color: var(--color-text);
+  .size-guide-tab.is-active {
+    color: #111111;
+    font-weight: 600;
+    background-color: #F0F0F0;
   }
 
+  /* Apple Segmented Unit Pill Toggle */
+  .size-guide-unit-pill {
+    display: inline-flex;
+    align-items: center;
+    background-color: #EFEFEF;
+    padding: 3px;
+    border-radius: 9999px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    user-select: none;
+  }
+
+  .unit-toggle__btn {
+    border: none;
+    background: transparent;
+    padding: 5px 13px;
+    font-family: var(--font-body);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    color: #666666;
+    cursor: pointer;
+    border-radius: 9999px;
+    transition: all 180ms cubic-bezier(0.23, 1, 0.32, 1);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .unit-toggle__btn--active {
+    background-color: #FFFFFF;
+    color: #111111;
+    font-weight: 600;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1), 0 0 1px rgba(0, 0, 0, 0.06);
+  }
+
+  .unit-toggle__btn:active {
+    transform: scale(0.96);
+  }
+
+  /* Table Panels */
   .size-guide-panel {
     display: none;
   }
 
   .size-guide-panel--active {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
   }
 
   .size-guide-table-wrap {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    overflow-x: hidden; /* No horizontal scroll */
+    border: 1px solid rgba(0, 0, 0, 0.07);
+    border-radius: 6px;
+    background-color: #FFFFFF;
   }
 
   .size-guide-table {
     width: 100%;
+    table-layout: fixed;
     border-collapse: collapse;
     font-family: var(--font-body);
-    font-size: 0.875rem;
-    text-align: left;
-  }
-
-  .size-guide-table th,
-  .size-guide-table td {
-    padding: 10px 14px;
-    border-bottom: 1px solid var(--color-border);
+    text-align: center;
   }
 
   .size-guide-table th {
+    padding: 11px 6px;
+    font-size: 0.6875rem;
     font-weight: 600;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    font-size: 0.75rem;
-    color: var(--color-text-subtle);
-    background-color: var(--color-surface);
+    color: #111111;
+    background-color: #F8F8F8;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.07);
   }
 
-  .size-guide-note {
-    margin-top: 0.75rem;
-    color: var(--color-text-muted);
+  .size-guide-table td {
+    padding: 12px 6px;
+    font-size: 0.8125rem;
+    color: #111111;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .size-guide-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .size-guide-table .col-size {
+    width: 20%;
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.015);
+  }
+
+  .size-guide-table .col-size strong {
+    font-weight: 600;
+    color: #111111;
+  }
+
+  .size-val {
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+  }
+
+  .size-unit {
+    font-size: 0.625rem;
+    color: #767676;
+    margin-left: 2px;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .size-guide-table tbody tr:hover {
+      background-color: #FAFAFA;
+    }
+  }
+
+  /* Footer Note */
+  .size-guide-footer {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+
+  .size-guide-footer__dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background-color: #767676;
+    flex-shrink: 0;
+  }
+
+  .size-guide-footer__text {
+    margin: 0;
+    color: #666666;
+    font-size: 0.6875rem;
+    line-height: 1.4;
+  }
+
+  /* Mobile Native Bottom-Sheet Presentation (< 640px) */
+  @media (max-width: 639px) {
+    .size-guide-dialog {
+      width: 100vw;
+      max-width: 100vw;
+      margin: auto auto 0 auto;
+      border-radius: 16px 16px 0 0;
+      border-bottom: none;
+      border-left: none;
+      border-right: none;
+      max-height: 88vh;
+      animation: size-guide-sheet-up 240ms cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    @keyframes size-guide-sheet-up {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    .size-guide-dialog__drag-handle {
+      display: block;
+      width: 36px;
+      height: 4px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 9999px;
+      margin: 0 auto 0.5rem auto;
+    }
+
+    .size-guide-dialog__content {
+      padding: 1rem 1rem 1.75rem 1rem;
+      gap: 1rem;
+    }
+
+    .size-guide-dialog__toolbar {
+      gap: 0.5rem;
+    }
+
+    .size-guide-tab {
+      padding: 5px 9px;
+      font-size: 0.6875rem;
+    }
+
+    .unit-toggle__btn {
+      padding: 4px 10px;
+      font-size: 0.625rem;
+    }
+
+    .size-guide-table th {
+      padding: 9px 3px;
+      font-size: 0.625rem;
+      letter-spacing: 0.04em;
+    }
+
+    .size-guide-table td {
+      padding: 10px 3px;
+      font-size: 0.75rem;
+    }
+
+    /* Hide redundant unit letters on tiny screens to guarantee 0 horizontal scroll */
+    .size-unit {
+      display: none;
+    }
   }
 </style>
 
@@ -376,7 +527,7 @@
     const dialog = document.getElementById('SizeGuideDialog');
     if (!dialog) return;
 
-    // Unit toggle logic (CM / IN)
+    // Unit toggle logic (CM / IN) with Apple Segmented Control
     const unitBtns = dialog.querySelectorAll('.unit-toggle__btn');
     unitBtns.forEach(btn => {
       btn.addEventListener('click', () => {
@@ -385,9 +536,9 @@
         const unit = btn.dataset.unit;
         dialog.querySelectorAll('[data-cm]').forEach(td => {
           if (unit === 'in') {
-            td.textContent = td.dataset.in + ' in';
+            td.innerHTML = `<span class="size-val">${td.dataset.in}</span><span class="size-unit">"</span>`;
           } else {
-            td.textContent = td.dataset.cm + ' cm';
+            td.innerHTML = `<span class="size-val">${td.dataset.cm}</span><span class="size-unit">cm</span>`;
           }
         });
       });
@@ -399,7 +550,7 @@
     tabBtns.forEach(tab => {
       tab.addEventListener('click', () => {
         tabBtns.forEach(t => {
-          t.classList.remove('size-guide-tab--active');
+          t.classList.remove('is-active');
           t.setAttribute('aria-selected', 'false');
         });
         panels.forEach(p => {
@@ -407,7 +558,7 @@
           p.hidden = true;
         });
 
-        tab.classList.add('size-guide-tab--active');
+        tab.classList.add('is-active');
         tab.setAttribute('aria-selected', 'true');
         const panel = dialog.querySelector(`[data-panel="${tab.dataset.tab}"]`);
         if (panel) {
