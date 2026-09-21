@@ -33,9 +33,18 @@
         "trust_badge_3_title": "2–4 Day Delivery",
         "trust_badge_3_subtitle": "Express courier dispatch"
       }
+    },
+    "complete_the_look": {
+      "type": "complete-the-look",
+      "settings": {
+        "eyebrow": "CURATED PAIRINGS",
+        "heading": "Complete The Look",
+        "subheading": "Complementary essentials tailored for effortless daily layering."
+      }
     }
   },
   "order": [
-    "main"
+    "main",
+    "complete_the_look"
   ]
 }
