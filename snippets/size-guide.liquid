@@ -1,0 +1,445 @@
+{% doc %}
+  Renders a native accessible <dialog> Size Guide Modal with Inches/Centimeters toggle
+  and exact measurements for Hoodies, Shirts, and Trousers.
+{% enddoc %}
+
+<dialog id="SizeGuideDialog" class="size-guide-dialog" aria-labelledby="SizeGuideTitle">
+  <div class="size-guide-dialog__content">
+    <div class="size-guide-dialog__header">
+      <div class="size-guide-dialog__title-wrap">
+        <h2 id="SizeGuideTitle" class="size-guide-dialog__title">Size Guide</h2>
+        <span class="size-guide-dialog__subtitle text-micro">Garment Measurements</span>
+      </div>
+      <button type="button" class="size-guide-dialog__close" data-close-size-guide aria-label="Close size guide">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <line x1="1" y1="1" x2="17" y2="17"></line>
+          <line x1="17" y1="1" x2="1" y2="17"></line>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Unit Switcher -->
+    <div class="size-guide-dialog__controls">
+      <div class="size-guide-dialog__unit-toggle" role="group" aria-label="Measurement Units">
+        <button type="button" class="unit-toggle__btn unit-toggle__btn--active" data-unit="cm">Centimeters (cm)</button>
+        <button type="button" class="unit-toggle__btn" data-unit="in">Inches (in)</button>
+      </div>
+      <p class="size-guide-dialog__tip text-micro">
+        Tip: Measure a favorite garment that fits you well and compare against the table below.
+      </p>
+    </div>
+
+    <!-- Category Tabs -->
+    <div class="size-guide-dialog__tabs" role="tablist">
+      <button type="button" role="tab" aria-selected="true" class="size-guide-tab size-guide-tab--active" data-tab="hoodies">Hoodies</button>
+      <button type="button" role="tab" aria-selected="false" class="size-guide-tab" data-tab="shirts">Shirts</button>
+      <button type="button" role="tab" aria-selected="false" class="size-guide-tab" data-tab="trousers">Trousers</button>
+    </div>
+
+    <!-- Table 1: Hoodies -->
+    <div class="size-guide-panel size-guide-panel--active" data-panel="hoodies" role="tabpanel">
+      <div class="size-guide-table-wrap">
+        <table class="size-guide-table">
+          <thead>
+            <tr>
+              <th>Size</th>
+              <th>Chest</th>
+              <th>Length</th>
+              <th>Shoulder</th>
+              <th>Sleeve</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>S</strong></td>
+              <td data-cm="116" data-in="45.7">116 cm</td>
+              <td data-cm="68" data-in="26.8">68 cm</td>
+              <td data-cm="54" data-in="21.3">54 cm</td>
+              <td data-cm="61" data-in="24.0">61 cm</td>
+            </tr>
+            <tr>
+              <td><strong>M</strong></td>
+              <td data-cm="122" data-in="48.0">122 cm</td>
+              <td data-cm="70" data-in="27.6">70 cm</td>
+              <td data-cm="56" data-in="22.0">56 cm</td>
+              <td data-cm="62" data-in="24.4">62 cm</td>
+            </tr>
+            <tr>
+              <td><strong>L</strong></td>
+              <td data-cm="128" data-in="50.4">128 cm</td>
+              <td data-cm="72" data-in="28.3">72 cm</td>
+              <td data-cm="58" data-in="22.8">58 cm</td>
+              <td data-cm="63" data-in="24.8">63 cm</td>
+            </tr>
+            <tr>
+              <td><strong>XL</strong></td>
+              <td data-cm="134" data-in="52.8">134 cm</td>
+              <td data-cm="74" data-in="29.1">74 cm</td>
+              <td data-cm="60" data-in="23.6">60 cm</td>
+              <td data-cm="64" data-in="25.2">64 cm</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="size-guide-note text-micro">Boxy, relaxed drape. Take your regular size for an oversized silhouette.</p>
+    </div>
+
+    <!-- Table 2: Shirts -->
+    <div class="size-guide-panel" data-panel="shirts" role="tabpanel" hidden>
+      <div class="size-guide-table-wrap">
+        <table class="size-guide-table">
+          <thead>
+            <tr>
+              <th>Size</th>
+              <th>Chest</th>
+              <th>Length</th>
+              <th>Shoulder</th>
+              <th>Neck</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>S</strong></td>
+              <td data-cm="108" data-in="42.5">108 cm</td>
+              <td data-cm="74" data-in="29.1">74 cm</td>
+              <td data-cm="48" data-in="18.9">48 cm</td>
+              <td data-cm="39" data-in="15.4">39 cm</td>
+            </tr>
+            <tr>
+              <td><strong>M</strong></td>
+              <td data-cm="114" data-in="44.9">114 cm</td>
+              <td data-cm="76" data-in="29.9">76 cm</td>
+              <td data-cm="50" data-in="19.7">50 cm</td>
+              <td data-cm="41" data-in="16.1">41 cm</td>
+            </tr>
+            <tr>
+              <td><strong>L</strong></td>
+              <td data-cm="120" data-in="47.2">120 cm</td>
+              <td data-cm="78" data-in="30.7">78 cm</td>
+              <td data-cm="52" data-in="20.5">52 cm</td>
+              <td data-cm="43" data-in="16.9">43 cm</td>
+            </tr>
+            <tr>
+              <td><strong>XL</strong></td>
+              <td data-cm="126" data-in="49.6">126 cm</td>
+              <td data-cm="80" data-in="31.5">80 cm</td>
+              <td data-cm="54" data-in="21.3">54 cm</td>
+              <td data-cm="45" data-in="17.7">45 cm</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="size-guide-note text-micro">Tailored casual fit with room through the chest and back.</p>
+    </div>
+
+    <!-- Table 3: Trousers -->
+    <div class="size-guide-panel" data-panel="trousers" role="tabpanel" hidden>
+      <div class="size-guide-table-wrap">
+        <table class="size-guide-table">
+          <thead>
+            <tr>
+              <th>Size</th>
+              <th>Waist</th>
+              <th>Inseam</th>
+              <th>Rise</th>
+              <th>Leg Opening</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>30 (S)</strong></td>
+              <td data-cm="78" data-in="30.7">78 cm</td>
+              <td data-cm="76" data-in="29.9">76 cm</td>
+              <td data-cm="30" data-in="11.8">30 cm</td>
+              <td data-cm="22" data-in="8.7">22 cm</td>
+            </tr>
+            <tr>
+              <td><strong>32 (M)</strong></td>
+              <td data-cm="83" data-in="32.7">83 cm</td>
+              <td data-cm="77" data-in="30.3">77 cm</td>
+              <td data-cm="31" data-in="12.2">31 cm</td>
+              <td data-cm="23" data-in="9.1">23 cm</td>
+            </tr>
+            <tr>
+              <td><strong>34 (L)</strong></td>
+              <td data-cm="88" data-in="34.6">88 cm</td>
+              <td data-cm="78" data-in="30.7">78 cm</td>
+              <td data-cm="32" data-in="12.6">32 cm</td>
+              <td data-cm="24" data-in="9.4">24 cm</td>
+            </tr>
+            <tr>
+              <td><strong>36 (XL)</strong></td>
+              <td data-cm="93" data-in="36.6">93 cm</td>
+              <td data-cm="79" data-in="31.1">79 cm</td>
+              <td data-cm="33" data-in="13.0">33 cm</td>
+              <td data-cm="25" data-in="9.8">25 cm</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="size-guide-note text-micro">Relaxed straight leg with tailored waist. Choose based on your true waist size.</p>
+    </div>
+  </div>
+</dialog>
+
+<style>
+  /* Native <dialog> Modal Styles */
+  .size-guide-dialog {
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    width: min(92vw, 580px);
+    max-height: 85vh;
+    padding: 0;
+    border: none;
+    background-color: var(--color-background, #FFFFFF);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+    z-index: 9999;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .size-guide-dialog::backdrop {
+    background: rgba(17, 17, 17, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
+  .size-guide-dialog__content {
+    padding: clamp(1.25rem, 3.5vw, 2rem);
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .size-guide-dialog__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 0.875rem;
+  }
+
+  .size-guide-dialog__title {
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    font-weight: 500;
+    line-height: 1.1;
+    margin: 0;
+    color: var(--color-text);
+  }
+
+  .size-guide-dialog__subtitle {
+    color: var(--color-text-subtle);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-top: 0.25rem;
+    display: block;
+  }
+
+  .size-guide-dialog__close {
+    background: transparent;
+    border: none;
+    color: var(--color-text);
+    cursor: pointer;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    min-height: 32px;
+    border-radius: 50%;
+    transition: background-color 150ms ease;
+  }
+
+  .size-guide-dialog__close:hover {
+    background-color: var(--color-surface);
+  }
+
+  .size-guide-dialog__controls {
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+  }
+
+  .size-guide-dialog__unit-toggle {
+    display: inline-flex;
+    background-color: var(--color-surface);
+    padding: 3px;
+    align-self: flex-start;
+    border: 1px solid var(--color-border);
+  }
+
+  .unit-toggle__btn {
+    border: none;
+    background: transparent;
+    padding: 6px 14px;
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: background-color 150ms ease, color 150ms ease;
+  }
+
+  .unit-toggle__btn--active {
+    background-color: var(--color-text);
+    color: var(--color-white);
+  }
+
+  .size-guide-dialog__tip {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+
+  .size-guide-dialog__tabs {
+    display: flex;
+    gap: 0.5rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .size-guide-tab {
+    background: transparent;
+    border: none;
+    padding: 8px 14px;
+    font-family: var(--font-body);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    position: relative;
+    transition: color 150ms ease;
+  }
+
+  .size-guide-tab--active {
+    color: var(--color-text);
+  }
+
+  .size-guide-tab--active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: var(--color-text);
+  }
+
+  .size-guide-panel {
+    display: none;
+  }
+
+  .size-guide-panel--active {
+    display: block;
+  }
+
+  .size-guide-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .size-guide-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    text-align: left;
+  }
+
+  .size-guide-table th,
+  .size-guide-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .size-guide-table th {
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    color: var(--color-text-subtle);
+    background-color: var(--color-surface);
+  }
+
+  .size-guide-note {
+    margin-top: 0.75rem;
+    color: var(--color-text-muted);
+  }
+</style>
+
+<script>
+  (function() {
+    const dialog = document.getElementById('SizeGuideDialog');
+    if (!dialog) return;
+
+    // Unit toggle logic (CM / IN)
+    const unitBtns = dialog.querySelectorAll('.unit-toggle__btn');
+    unitBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        unitBtns.forEach(b => b.classList.remove('unit-toggle__btn--active'));
+        btn.classList.add('unit-toggle__btn--active');
+        const unit = btn.dataset.unit;
+        dialog.querySelectorAll('[data-cm]').forEach(td => {
+          if (unit === 'in') {
+            td.textContent = td.dataset.in + ' in';
+          } else {
+            td.textContent = td.dataset.cm + ' cm';
+          }
+        });
+      });
+    });
+
+    // Tab switcher (Hoodies / Shirts / Trousers)
+    const tabBtns = dialog.querySelectorAll('.size-guide-tab');
+    const panels = dialog.querySelectorAll('.size-guide-panel');
+    tabBtns.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabBtns.forEach(t => {
+          t.classList.remove('size-guide-tab--active');
+          t.setAttribute('aria-selected', 'false');
+        });
+        panels.forEach(p => {
+          p.classList.remove('size-guide-panel--active');
+          p.hidden = true;
+        });
+
+        tab.classList.add('size-guide-tab--active');
+        tab.setAttribute('aria-selected', 'true');
+        const panel = dialog.querySelector(`[data-panel="${tab.dataset.tab}"]`);
+        if (panel) {
+          panel.classList.add('size-guide-panel--active');
+          panel.hidden = false;
+        }
+      });
+    });
+
+    // Close on backdrop click
+    dialog.addEventListener('click', (e) => {
+      if (e.target === dialog) dialog.close();
+    });
+
+    // Close button
+    dialog.querySelectorAll('[data-close-size-guide]').forEach(b => {
+      b.addEventListener('click', () => dialog.close());
+    });
+
+    // Global trigger listener
+    document.addEventListener('click', (e) => {
+      const trigger = e.target.closest('[data-open-size-guide], [data-open-size-modal]');
+      if (trigger) {
+        e.preventDefault();
+        // If trigger specifies a tab, activate it
+        const preferredTab = trigger.dataset.sizeCategory;
+        if (preferredTab) {
+          const tabBtn = dialog.querySelector(`[data-tab="${preferredTab}"]`);
+          if (tabBtn) tabBtn.click();
+        }
+        dialog.showModal();
+      }
+    });
+  })();
+</script>

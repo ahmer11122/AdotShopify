@@ -1,0 +1,243 @@
+{% doc %}
+  Product Sticky Mobile Bar
+  - Pinned to bottom of viewport on mobile (< 990px)
+  - Safe area inset padding for modern iOS/Android gesture bars
+  - Synchronized with real variant selector
+  - Auto-hides when Size Guide <dialog> or <cart-drawer> is open
+
+  @param {product} product - The product object
+  @param {section} section - The parent section
+{% enddoc %}
+
+<div class="product-sticky-bar" id="ProductStickyBar-{{ section.id }}" data-sticky-bar aria-label="Quick add navigation">
+  <div class="product-sticky-bar__container">
+    <!-- Thumbnail & Info -->
+    <div class="product-sticky-bar__product">
+      {% if product.featured_image %}
+        {% assign featured_alt = product.title | escape %}
+        <div class="product-sticky-bar__media">
+          {{
+            product.featured_image
+            | image_url: width: 120
+            | image_tag:
+              loading: 'lazy',
+              alt: featured_alt,
+              class: 'product-sticky-bar__img',
+              width: 48,
+              height: 64
+          }}
+        </div>
+      {% endif %}
+
+      <div class="product-sticky-bar__meta">
+        <span class="product-sticky-bar__title text-micro">{{ product.title }}</span>
+        <div class="product-sticky-bar__price-row text-micro">
+          <span class="product-sticky-bar__price" data-sticky-price>{{ product.price | money }}</span>
+          <span class="product-sticky-bar__size-label" data-sticky-size-label>• Select Size</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sticky CTA Button -->
+    <button
+      type="button"
+      class="product-sticky-bar__cta"
+      id="ProductStickyCta-{{ section.id }}"
+      data-sticky-cta
+    >
+      <span data-sticky-btn-text>Select Size</span>
+    </button>
+  </div>
+</div>
+
+<style>
+  /* Fixed Mobile Bar Layout */
+  .product-sticky-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 85;
+    background-color: var(--color-background, #FFFFFF);
+    border-top: 1px solid var(--color-border, #E5E5E5);
+    padding: 0.75rem var(--page-margin, 1rem) max(0.75rem, env(safe-area-inset-bottom)) var(--page-margin, 1rem);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
+    transform: translateY(0);
+    transition: transform var(--transition-base, 250ms ease), opacity 200ms ease;
+  }
+
+  /* Hidden on Desktop (>= 990px) */
+  @media (min-width: 990px) {
+    .product-sticky-bar {
+      display: none !important;
+    }
+  }
+
+  /* Automatically hide when native dialog or cart drawer is open */
+  body:has(dialog[open]) .product-sticky-bar,
+  body:has(cart-drawer.is-open) .product-sticky-bar,
+  .product-sticky-bar.is-hidden {
+    transform: translateY(105%);
+    pointer-events: none;
+  }
+
+  .product-sticky-bar__container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    max-width: var(--container-max, 1440px);
+    margin: 0 auto;
+  }
+
+  .product-sticky-bar__product {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    overflow: hidden;
+  }
+
+  .product-sticky-bar__media {
+    width: 42px;
+    height: 56px;
+    flex-shrink: 0;
+    background-color: var(--color-surface, #F5F5F5);
+    overflow: hidden;
+  }
+
+  .product-sticky-bar__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .product-sticky-bar__meta {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .product-sticky-bar__title {
+    font-weight: 500;
+    color: var(--color-text, #111111);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .product-sticky-bar__price-row {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: 2px;
+    color: var(--color-text-muted, #555555);
+  }
+
+  .product-sticky-bar__price {
+    font-weight: 600;
+    color: var(--color-text, #111111);
+  }
+
+  .product-sticky-bar__size-label {
+    color: var(--color-text-subtle, #6B6B6B);
+  }
+
+  /* CTA Button */
+  .product-sticky-bar__cta {
+    flex-shrink: 0;
+    padding: 0.75rem 1.25rem;
+    background-color: var(--color-btn-bg, #111111);
+    color: var(--color-btn-text, #FFFFFF);
+    border: none;
+    font-family: var(--font-body);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: var(--radius-none, 0px);
+    transition: background-color 150ms ease, transform 100ms ease;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .product-sticky-bar__cta:active {
+    transform: scale(0.96);
+  }
+
+  /* Page compensation spacing so sticky bar does not cover footer */
+  @media (max-width: 989px) {
+    .section-product {
+      padding-bottom: 85px !important;
+    }
+  }
+</style>
+
+<script>
+  (function() {
+    const stickyBar = document.getElementById('ProductStickyBar-{{ section.id }}');
+    if (!stickyBar) return;
+
+    const stickyCta = document.getElementById('ProductStickyCta-{{ section.id }}');
+    const stickyBtnText = stickyBar.querySelector('[data-sticky-btn-text]');
+    const stickyPrice = stickyBar.querySelector('[data-sticky-price]');
+    const stickySizeLabel = stickyBar.querySelector('[data-sticky-size-label]');
+
+    let hasSelectedSize = {% if product.has_only_default_variant %}true{% else %}false{% endif %};
+
+    if (hasSelectedSize && stickyBtnText) {
+      stickyBtnText.textContent = 'Add to Bag';
+      if (stickySizeLabel) stickySizeLabel.textContent = '';
+    }
+
+    // Listen for variant selections dispatched from buy box
+    window.addEventListener('variant:change', (e) => {
+      const variant = e.detail?.variant;
+      if (!variant) return;
+
+      hasSelectedSize = true;
+
+      if (stickySizeLabel) {
+        stickySizeLabel.textContent = `• Size: ${variant.title}`;
+      }
+
+      if (stickyPrice) {
+        const amount = (variant.price / 100).toLocaleString('en-PK', { maximumFractionDigits: 0 });
+        stickyPrice.textContent = `Rs. ${amount}`;
+      }
+
+      if (stickyBtnText) {
+        if (variant.available) {
+          stickyBtnText.textContent = 'Add to Bag';
+        } else {
+          stickyBtnText.textContent = 'Sold Out';
+        }
+      }
+    });
+
+    // Sticky CTA Click Handler
+    if (stickyCta) {
+      stickyCta.addEventListener('click', () => {
+        if (!hasSelectedSize) {
+          // Smooth scroll to size selector in the buy box
+          const sizeSelector = document.querySelector('.product-buy-box__option-group') || document.getElementById('ProductBuyBox-{{ section.id }}');
+          if (sizeSelector) {
+            sizeSelector.classList.add('has-error');
+            sizeSelector.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+          const alert = document.getElementById('ProductAlert-{{ section.id }}');
+          if (alert) {
+            alert.textContent = 'Please select a size to continue.';
+            alert.hidden = false;
+          }
+        } else {
+          // Size is selected, dispatch event to buy box form submit
+          window.dispatchEvent(new CustomEvent('pdp:sticky-add'));
+        }
+      });
+    }
+  })();
+</script>

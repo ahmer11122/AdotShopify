@@ -1,52 +1,224 @@
 {% comment %}
-  This section is used in the product template to render product page with
-  media, content, and add-to-cart form.
-
-  https://shopify.dev/docs/storefronts/themes/architecture/templates/product
+  Product Section (PDP Master Orchestrator)
+  - Split snippet architecture: product-gallery, product-buy-box, product-sticky-bar, size-guide
+  - JSON-LD Structured Data for Google Rich Results
+  - Sticky right column with offset for header
+  - Full schema support for WhatsApp ordering, Trust badges, and Custom Accordions
 {% endcomment %}
 
-<div class="product-images">
-  {% for image in product.images %}
-    {% render 'image', class: 'product-image', image: image %}
-  {% endfor %}
-</div>
+<!-- Google Structured Data (JSON-LD) -->
+<script type="application/ld+json">
+  {{ product | structured_data }}
+</script>
 
-<div class="product-info">
-  <h1>{{ product.title }}</h1>
-  <p>{{ product.price | money }}</p>
-  <p>{{ product.description }}</p>
-</div>
+<section
+  class="section-product section-product--{{ section.id }}"
+  data-section-id="{{ section.id }}"
+  data-section-type="product"
+>
+  <div class="section-product__inner">
+    <!-- Left Column: Visual Media Gallery -->
+    <div class="section-product__gallery">
+      {% render 'product-gallery', product: product %}
+    </div>
 
-<div class="product-form">
-  {% form 'product', product %}
-    {% assign current_variant = product.selected_or_first_available_variant %}
+    <!-- Right Column: Sticky Buy Box -->
+    <div class="section-product__buy-box">
+      {% render 'product-buy-box', product: product, section: section %}
+    </div>
+  </div>
 
-    <select name="id">
-      {% for variant in product.variants %}
-        <option
-          value="{{ variant.id }}"
-          {% if variant == current_variant %}
-            selected="selected"
-          {% endif %}
-        >
-          {{ variant.title }} - {{ variant.price | money }}
-        </option>
-      {% endfor %}
-    </select>
+  <!-- Mobile Pinned Quick Add Bar -->
+  {% render 'product-sticky-bar', product: product, section: section %}
 
-    <input type="text" name="quantity" min="1" value="1">
+  <!-- Native <dialog> Size Guide Modal -->
+  {% render 'size-guide' %}
+</section>
 
-    <input type="submit" value="Add to cart">
-    {{ form | payment_button }}
-  {% endform %}
-</div>
+<style>
+  .section-product {
+    position: relative;
+    padding-top: clamp(1rem, 2.5vw, 2.5rem);
+    padding-bottom: clamp(3rem, 5vw, 5rem);
+    background-color: var(--color-background, #FFFFFF);
+  }
+
+  .section-product__inner {
+    max-width: var(--container-max, 1440px);
+    margin: 0 auto;
+    padding-left: var(--page-margin, 1rem);
+    padding-right: var(--page-margin, 1rem);
+  }
+
+  /* Desktop Two-Column Layout */
+  @media (min-width: 990px) {
+    .section-product__inner {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+      gap: clamp(2.5rem, 5vw, 5rem);
+      align-items: start;
+    }
+
+    .section-product__buy-box {
+      position: sticky;
+      top: calc(var(--header-height, 80px) + 1.5rem);
+      max-height: calc(100vh - var(--header-height, 80px) - 2rem);
+      overflow-y: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 2rem;
+    }
+
+    .section-product__buy-box::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  /* Mobile Stacked Layout */
+  @media (max-width: 989px) {
+    .section-product__inner {
+      display: flex;
+      flex-direction: column;
+      gap: 1.75rem;
+    }
+
+    .section-product__buy-box {
+      width: 100%;
+    }
+  }
+</style>
 
 {% schema %}
 {
-  "name": "t:general.product",
-  "settings": [],
-  "disabled_on": {
-    "groups": ["header", "footer"]
-  }
+  "name": "Product Page",
+  "tag": "section",
+  "class": "section-product-wrapper",
+  "settings": [
+    {
+      "type": "header",
+      "content": "WhatsApp Direct Ordering"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_whatsapp_button",
+      "label": "Enable WhatsApp Order Button",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "whatsapp_number",
+      "label": "WhatsApp Phone Number",
+      "default": "923131707080",
+      "info": "Format: 923XXXXXXXXX without '+' or leading zero"
+    },
+    {
+      "type": "header",
+      "content": "Reassurance Trust Badges"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_trust_strip",
+      "label": "Show Reassurance Strip",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "trust_badge_1_title",
+      "label": "Badge 1 Title",
+      "default": "Cash on Delivery"
+    },
+    {
+      "type": "text",
+      "id": "trust_badge_1_subtitle",
+      "label": "Badge 1 Subtitle",
+      "default": "Pay upon arrival nationwide"
+    },
+    {
+      "type": "text",
+      "id": "trust_badge_2_title",
+      "label": "Badge 2 Title",
+      "default": "7-Day Easy Exchange"
+    },
+    {
+      "type": "text",
+      "id": "trust_badge_2_subtitle",
+      "label": "Badge 2 Subtitle",
+      "default": "Hassle-free size replacement"
+    },
+    {
+      "type": "text",
+      "id": "trust_badge_3_title",
+      "label": "Badge 3 Title",
+      "default": "2–4 Day Delivery"
+    },
+    {
+      "type": "text",
+      "id": "trust_badge_3_subtitle",
+      "label": "Badge 3 Subtitle",
+      "default": "Express courier dispatch"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "accordion",
+      "name": "Accordion Item",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Accordion Title",
+          "default": "Fabric & Material"
+        },
+        {
+          "type": "textarea",
+          "id": "content",
+          "label": "Content",
+          "default": "Heavyweight combed cotton with reinforced stitching. Pre-shrunk for maximum durability."
+        },
+        {
+          "type": "text",
+          "id": "metafield_key",
+          "label": "Product Metafield Key (Optional)",
+          "info": "e.g. custom.fabric. If populated, overrides the default text above."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product Page",
+      "blocks": [
+        {
+          "type": "accordion",
+          "settings": {
+            "title": "Fabric & Materials",
+            "content": "Crafted from premium heavyweight combed cotton. Breathable, durable, and pre-shrunk for zero post-wash distortion.",
+            "metafield_key": "custom.fabric"
+          }
+        },
+        {
+          "type": "accordion",
+          "settings": {
+            "title": "Fit & Sizing",
+            "content": "Designed with a contemporary relaxed drape and dropped shoulders. Take your regular size for the intended silhouette, or size down for a closer fit."
+          }
+        },
+        {
+          "type": "accordion",
+          "settings": {
+            "title": "Nationwide Delivery & Exchanges",
+            "content": "Delivered across Pakistan in 2–4 working days via express courier. Cash on Delivery supported. Easy 7-day exchange window if the fit isn't right."
+          }
+        },
+        {
+          "type": "accordion",
+          "settings": {
+            "title": "Garment Care",
+            "content": "Machine wash cold at 30°C. Wash inside-out with like colors. Do not bleach or tumble dry. Warm iron on reverse if necessary."
+          }
+        }
+      ]
+    }
+  ]
 }
 {% endschema %}

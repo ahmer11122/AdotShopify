@@ -1,17 +1,55 @@
-/*
- * ------------------------------------------------------------
- * IMPORTANT: The contents of this file are auto-generated.
- *
- * This file may be updated by the Shopify admin theme editor
- * or related systems. Please exercise caution as any changes
- * made to this file may be overwritten.
- * ------------------------------------------------------------
- */
 {
   "sections": {
     "main": {
       "type": "product",
-      "settings": {}
+      "blocks": {
+        "fabric": {
+          "type": "accordion",
+          "settings": {
+            "title": "Fabric & Materials",
+            "content": "Crafted from premium heavyweight combed cotton. Breathable, durable, and pre-shrunk for zero post-wash distortion.",
+            "metafield_key": "custom.fabric"
+          }
+        },
+        "fit": {
+          "type": "accordion",
+          "settings": {
+            "title": "Fit & Sizing",
+            "content": "Designed with a contemporary relaxed drape and dropped shoulders. Take your regular size for the intended silhouette, or size down for a closer fit."
+          }
+        },
+        "delivery": {
+          "type": "accordion",
+          "settings": {
+            "title": "Nationwide Delivery & Exchanges",
+            "content": "Delivered across Pakistan in 2–4 working days via express courier. Cash on Delivery supported. Easy 7-day exchange window if the fit isn't right."
+          }
+        },
+        "care": {
+          "type": "accordion",
+          "settings": {
+            "title": "Garment Care",
+            "content": "Machine wash cold at 30°C. Wash inside-out with like colors. Do not bleach or tumble dry. Warm iron on reverse if necessary."
+          }
+        }
+      },
+      "block_order": [
+        "fabric",
+        "fit",
+        "delivery",
+        "care"
+      ],
+      "settings": {
+        "show_whatsapp_button": true,
+        "whatsapp_number": "923131707080",
+        "show_trust_strip": true,
+        "trust_badge_1_title": "Cash on Delivery",
+        "trust_badge_1_subtitle": "Pay upon arrival nationwide",
+        "trust_badge_2_title": "7-Day Easy Exchange",
+        "trust_badge_2_subtitle": "Hassle-free size replacement",
+        "trust_badge_3_title": "2–4 Day Delivery",
+        "trust_badge_3_subtitle": "Express courier dispatch"
+      }
     }
   },
   "order": [
