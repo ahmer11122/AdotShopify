@@ -78,19 +78,27 @@
     gap: var(--space-xs);
   }
 
+  .price {
+    font-variant-numeric: tabular-nums;
+  }
+
   .price__item--sale {
     color: var(--color-sale);
-    font-weight: 500;
+    font-weight: 600;
+    letter-spacing: -0.015em;
   }
 
   .price__item--regular {
     color: var(--color-text);
+    font-weight: 600;
+    letter-spacing: -0.015em;
   }
 
   .price--on-sale s.price__item--regular {
     color: var(--color-text-subtle);
     text-decoration: line-through;
     font-size: var(--font-size-caption);
+    font-weight: 400;
   }
 
   .badge {
