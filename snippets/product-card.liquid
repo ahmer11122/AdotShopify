@@ -1,78 +1,146 @@
 {% doc %}
-  Renders an editorial product card with responsive media, hover image reveal, and price.
+  Renders an editorial product card with fixed 3:4 aspect ratio, mobile corner quick-add +,
+  desktop hover reveal, size picker tray, clean Rs. pricing, and zero-CLS performance.
 
-  @param {product} product - The product to be displayed
-  @param {string} [aspect_ratio] - Media aspect ratio, default '3 / 4'
-  @param {boolean} [show_secondary_image] - Whether to show the secondary image on hover (default: true)
-  @param {boolean} [show_vendor] - Whether to display the vendor/category eyebrow
+  @param {product} [product] - The product object
+  @param {string} [title] - Fallback title if product is nil
+  @param {number} [price] - Fallback price in cents if product is nil
+  @param {number} [compare_at_price] - Fallback compare at price in cents
+  @param {string} [image_src] - Fallback primary image asset url
+  @param {string} [secondary_image_src] - Fallback secondary image asset url
+  @param {string} [spec] - Technical fabric / fit fact (e.g. '450 GSM · Relaxed Fit')
+  @param {number} [color_count] - Number of colors (only shown if > 1)
+  @param {boolean} [available] - Fallback availability
   @param {boolean} [lazy_load] - Whether to lazy load images (default: true)
+  @param {boolean} [show_vendor] - Whether to show category or vendor
   @param {string} [class] - Optional additional CSS classes
 {% enddoc %}
 
 {% liquid
-  assign aspect_ratio = aspect_ratio | default: '3 / 4'
-  if show_secondary_image == nil
-    assign show_secondary_image = true
+  if show_vendor == nil
+    assign show_vendor = true
   endif
   if lazy_load == nil
     assign lazy_load = true
   endif
 
-  assign featured_media = product.featured_media
-  assign has_secondary_image = false
-  if show_secondary_image and product.media.size > 1
-    assign secondary_media = product.media[1]
-    assign has_secondary_image = true
-  endif
+  if product
+    assign card_title = product.title
+    assign card_url = product.url
+    assign card_price = product.price
+    assign card_compare_at = product.compare_at_price
+    assign is_available = product.available
+    assign card_spec = product.metafields.custom.fabric_spec | default: product.type
 
-  assign is_sold_out = false
-  if product.available == false
-    assign is_sold_out = true
+    assign featured_media = product.featured_media
+    assign has_secondary_image = false
+    if product.media.size > 1
+      assign secondary_media = product.media[1]
+      assign has_secondary_image = true
+    endif
+
+    assign color_option = product.options_by_name['Color'] | default: product.options_by_name['Colour']
+    assign has_colors = false
+    if color_option and color_option.values.size > 1
+      assign has_colors = true
+      assign color_num = color_option.values.size
+    endif
+
+    # Detect size option
+    assign size_option = product.options_by_name['Size']
+    assign has_sizes = false
+    if size_option and size_option.values.size > 0
+      assign has_sizes = true
+    endif
+  else
+    assign card_title = title | default: 'Heavyweight Boxy Hoodie'
+    assign card_url = '#product-preview'
+    assign card_price = price | default: 449900
+    assign card_compare_at = compare_at_price | default: 0
+    if available == nil
+      assign is_available = true
+    else
+      assign is_available = available
+    endif
+    assign card_spec = spec | default: '450 GSM · Relaxed Fit'
+    assign has_secondary_image = false
+    if secondary_image_src != blank
+      assign has_secondary_image = true
+    endif
+    if color_count and color_count > 1
+      assign has_colors = true
+      assign color_num = color_count
+    else
+      assign has_colors = false
+    endif
+    assign has_sizes = true
   endif
 
   assign is_on_sale = false
-  if product.compare_at_price > product.price
+  if card_compare_at > card_price
     assign is_on_sale = true
   endif
 
   if lazy_load
     assign image_loading = 'lazy'
+    assign image_fetch = 'auto'
   else
     assign image_loading = 'eager'
-  endif
-
-  assign primary_alt = featured_media.alt | default: product.title | escape
-  if has_secondary_image
-    assign secondary_alt = secondary_media.alt | default: product.title | escape
+    assign image_fetch = 'high'
   endif
 %}
 
-<div class="product-card {{ class }}" data-product-id="{{ product.id }}">
-  <div class="product-card__media-wrapper" style="--card-aspect-ratio: {{ aspect_ratio }};">
-    <a href="{{ product.url }}" class="product-card__media-link" tabindex="-1" aria-hidden="true">
-      {% if featured_media %}
+<div class="product-card {{ class }} {% unless is_available %}product-card--sold-out{% endunless %}" data-product-card>
+  <div class="product-card__media-wrapper">
+    <a href="{{ card_url }}" class="product-card__media-link" tabindex="-1" aria-hidden="true">
+      {% if product and featured_media %}
         {{
           featured_media
-          | image_url: width: 1000
+          | image_url: width: 750
           | image_tag:
             loading: image_loading,
-            widths: '350, 500, 750, 1000',
+            fetchpriority: image_fetch,
+            width: 750,
+            height: 1000,
+            widths: '350, 500, 750',
             sizes: '(min-width: 990px) 25vw, (min-width: 750px) 33vw, 50vw',
             class: 'product-card__image product-card__image--primary',
-            alt: primary_alt
+            alt: featured_media.alt | default: card_title | escape
         }}
 
         {% if has_secondary_image %}
           {{
             secondary_media
-            | image_url: width: 1000
+            | image_url: width: 750
             | image_tag:
               loading: 'lazy',
-              widths: '350, 500, 750, 1000',
+              width: 750,
+              height: 1000,
+              widths: '350, 500, 750',
               sizes: '(min-width: 990px) 25vw, (min-width: 750px) 33vw, 50vw',
               class: 'product-card__image product-card__image--secondary',
-              alt: secondary_alt
+              alt: secondary_media.alt | default: card_title | escape
           }}
+        {% endif %}
+      {% elsif image_src != blank %}
+        <img
+          src="{{ image_src }}"
+          alt="{{ card_title | escape }}"
+          width="750"
+          height="1000"
+          loading="{{ image_loading }}"
+          fetchpriority="{{ image_fetch }}"
+          class="product-card__image product-card__image--primary"
+        >
+        {% if has_secondary_image %}
+          <img
+            src="{{ secondary_image_src }}"
+            alt="{{ card_title | escape }}"
+            width="750"
+            height="1000"
+            loading="lazy"
+            class="product-card__image product-card__image--secondary"
+          >
         {% endif %}
       {% else %}
         <div class="product-card__placeholder">
@@ -81,38 +149,146 @@
       {% endif %}
     </a>
 
-    {% if is_sold_out %}
-      <span class="product-card__badge product-card__badge--sold-out text-micro">
-        {{ 'products.product.sold_out' | t }}
-      </span>
-    {% elsif is_on_sale %}
-      <span class="product-card__badge product-card__badge--sale text-micro">
-        {{ 'products.product.on_sale' | t }}
-      </span>
+    <!-- Status Badges -->
+    <div class="product-card__badges" aria-hidden="true">
+      {% unless is_available %}
+        <span class="product-card__badge product-card__badge--sold-out text-micro">
+          Sold Out
+        </span>
+      {% else %}
+        {% if is_on_sale %}
+          <span class="product-card__badge product-card__badge--sale text-micro">
+            Sale
+          </span>
+        {% endif %}
+      {% endunless %}
+    </div>
+
+    <!-- Mobile Persistent Corner Quick Add (+) Button -->
+    {% if is_available %}
+      <button
+        type="button"
+        class="product-card__mobile-quick-btn"
+        data-quick-add-trigger
+        aria-label="Select size for {{ card_title | escape }}"
+        title="Select size"
+      >
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <path d="M7 1V13M1 7H13" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+        </svg>
+      </button>
+
+      <!-- Desktop Slide-Up Quick Add Trigger Bar -->
+      <button
+        type="button"
+        class="product-card__desktop-quick-btn"
+        data-quick-add-trigger
+        aria-label="Select size for {{ card_title | escape }}"
+      >
+        <span>+ Quick Add</span>
+      </button>
+    {% endif %}
+
+    <!-- Slide-Up Quick Size Picker Tray -->
+    {% if is_available %}
+      <div class="product-card__size-tray" data-size-tray aria-hidden="true">
+        <div class="size-tray__header">
+          <span class="size-tray__title text-micro">Select Size</span>
+          <button type="button" class="size-tray__close" data-size-close aria-label="Close size picker">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M1 1L11 11M1 11L11 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="size-tray__sizes">
+          {% if product and has_sizes %}
+            {% for variant in product.variants %}
+              <form method="post" action="{{ routes.cart_add_url }}" class="size-tray__form">
+                <input type="hidden" name="id" value="{{ variant.id }}">
+                <input type="hidden" name="quantity" value="1">
+                <button
+                  type="submit"
+                  class="size-tray__btn {% unless variant.available %}size-tray__btn--sold-out{% endunless %}"
+                  {% unless variant.available %}disabled aria-disabled="true"{% endunless %}
+                  data-variant-title="{{ variant.title }}"
+                >
+                  {{ variant.title }}
+                </button>
+              </form>
+            {% endfor %}
+          {% elsif product %}
+            {% assign first_variant = product.selected_or_first_available_variant %}
+            <form method="post" action="{{ routes.cart_add_url }}" class="size-tray__form size-tray__form--single">
+              <input type="hidden" name="id" value="{{ first_variant.id }}">
+              <input type="hidden" name="quantity" value="1">
+              <button type="submit" class="size-tray__btn size-tray__btn--full">
+                Add to Bag
+              </button>
+            </form>
+          {% else %}
+            <!-- Demo mock sizes -->
+            {% assign demo_sizes = 'S,M,L,XL' | split: ',' %}
+            {% for sz in demo_sizes %}
+              <button
+                type="button"
+                class="size-tray__btn {% if sz == 'XL' and is_on_sale %}size-tray__btn--sold-out{% endif %}"
+                {% if sz == 'XL' and is_on_sale %}disabled aria-disabled="true"{% endif %}
+                data-demo-add="{{ sz }}"
+              >
+                {{ sz }}
+              </button>
+            {% endfor %}
+          {% endif %}
+        </div>
+
+        <div class="size-tray__footer">
+          <button type="button" class="size-tray__guide-link text-micro" data-open-size-modal>
+            Size Guide &rarr;
+          </button>
+        </div>
+      </div>
     {% endif %}
   </div>
 
   <div class="product-card__content">
-    {% if show_vendor and product.vendor != blank %}
-      <div class="product-card__vendor text-micro">{{ product.vendor }}</div>
-    {% elsif product.type != blank %}
-      <div class="product-card__vendor text-micro">{{ product.type }}</div>
+    {% if show_vendor and card_spec != blank %}
+      <div class="product-card__spec text-micro">{{ card_spec }}</div>
     {% endif %}
 
     <h3 class="product-card__title">
-      <a href="{{ product.url }}" class="product-card__link">
-        {{ product.title }}
+      <a href="{{ card_url }}" class="product-card__link">
+        {{ card_title }}
       </a>
     </h3>
 
     <div class="product-card__price">
-      {% render 'price', product: product, show_badges: false %}
+      {% if product %}
+        {% render 'price', product: product, show_badges: false %}
+      {% else %}
+        <div class="price {% if is_on_sale %}price--on-sale{% endif %}">
+          <div class="price__container">
+            {% if is_on_sale %}
+              <span class="price__item price__item--sale">
+                {{ card_price | money_without_currency | remove: '.00' | prepend: 'Rs. ' }}
+              </span>
+              <s class="price__item price__item--regular">
+                {{ card_compare_at | money_without_currency | remove: '.00' | prepend: 'Rs. ' }}
+              </s>
+            {% else %}
+              <span class="price__item price__item--regular">
+                {{ card_price | money_without_currency | remove: '.00' | prepend: 'Rs. ' }}
+              </span>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
     </div>
 
-    {% if product.variants.size > 1 %}
-      <div class="product-card__variants-hint text-micro">
-        {{ product.options_with_values[0].values.size }}
-        {{ product.options_with_values[0].name | downcase }}s
+    {% if has_colors %}
+      <div class="product-card__colors text-micro" aria-label="{{ color_num }} colors available">
+        <span class="product-card__color-dot" aria-hidden="true"></span>
+        <span>{{ color_num }} Colors</span>
       </div>
     {% endif %}
   </div>
@@ -127,18 +303,27 @@
     background-color: transparent;
   }
 
+  .product-card--sold-out .product-card__image {
+    opacity: 0.65;
+    filter: grayscale(25%);
+  }
+
+  /* Fixed 3:4 ratio container — zero layout shift */
   .product-card__media-wrapper {
     position: relative;
     width: 100%;
-    aspect-ratio: var(--card-aspect-ratio, 3 / 4);
+    aspect-ratio: 3 / 4;
     overflow: hidden;
-    background-color: var(--color-surface);
+    background-color: var(--color-surface, #F5F5F5);
+    box-sizing: border-box;
   }
 
   .product-card__media-link {
     display: block;
     width: 100%;
     height: 100%;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .product-card__image {
@@ -146,7 +331,7 @@
     height: 100%;
     object-fit: cover;
     display: block;
-    transition: transform var(--transition-base), opacity var(--transition-base);
+    transition: transform 380ms cubic-bezier(0.23, 1, 0.32, 1), opacity 300ms ease;
   }
 
   .product-card__image--primary {
@@ -162,15 +347,15 @@
     z-index: 2;
   }
 
-  /* Desktop hover reveal */
-  @media (hover: hover) {
+  /* Desktop hover reveal (only when secondary image exists) */
+  @media (hover: hover) and (min-width: 750px) {
     .product-card:hover .product-card__image--primary {
-      transform: scale(1.03);
+      transform: scale(1.025);
     }
 
     .product-card:hover .product-card__image--secondary {
       opacity: 1;
-      transform: scale(1.03);
+      transform: scale(1.025);
     }
   }
 
@@ -184,65 +369,366 @@
   }
 
   .product-card__placeholder svg {
-    width: 50%;
-    height: 50%;
+    width: 44%;
+    height: 44%;
     fill: var(--color-text-subtle);
+    opacity: 0.35;
   }
 
-  .product-card__badge {
+  /* Status Badges */
+  .product-card__badges {
     position: absolute;
     top: var(--space-xs);
     left: var(--space-xs);
-    z-index: 3;
+    z-index: 4;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    pointer-events: none;
+  }
+
+  .product-card__badge {
     display: inline-flex;
     align-items: center;
-    padding: 0.2rem 0.5rem;
-    border-radius: var(--radius-none);
+    padding: 0.25rem 0.5rem;
     line-height: 1;
     font-family: var(--font-body);
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
   }
 
   .product-card__badge--sale {
-    background-color: var(--color-sale);
-    color: var(--color-white);
+    background-color: var(--color-sale, #991B1B);
+    color: var(--color-white, #FFFFFF);
   }
 
   .product-card__badge--sold-out {
-    background-color: var(--color-surface);
-    color: var(--color-text-muted);
-    border: 1px solid var(--color-border);
+    background-color: var(--color-surface-dark, #111111);
+    color: var(--color-white, #FFFFFF);
+    opacity: 0.85;
   }
 
+  /* ==========================================================================
+     Mobile Quick-Add Corner (+) Button
+     - Fixed in bottom-right corner of photo
+     - Guaranteed 44x44px touch target
+     - Clean high-contrast circle
+     ========================================================================== */
+  .product-card__mobile-quick-btn {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    z-index: 5;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background-color: var(--color-text, #111111);
+    color: var(--color-white, #FFFFFF);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+    transition: transform 180ms ease, background-color 180ms ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .product-card__mobile-quick-btn:active {
+    transform: scale(0.92);
+  }
+
+  /* Desktop Quick Add Bar */
+  .product-card__desktop-quick-btn {
+    display: none;
+  }
+
+  @media (min-width: 750px) {
+    .product-card__mobile-quick-btn {
+      display: none;
+    }
+
+    .product-card__desktop-quick-btn {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 5;
+      height: 44px;
+      background-color: var(--color-text, #111111);
+      color: var(--color-white, #FFFFFF);
+      border: none;
+      font-family: var(--font-body);
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transform: translateY(100%);
+      transition: transform 240ms cubic-bezier(0.23, 1, 0.32, 1), background-color 160ms ease;
+    }
+
+    .product-card__desktop-quick-btn:hover {
+      background-color: #262626;
+    }
+
+    .product-card:hover .product-card__desktop-quick-btn {
+      transform: translateY(0);
+    }
+  }
+
+  /* ==========================================================================
+     Slide-Up Quick Size Picker Tray
+     - Appears directly over the bottom of the card media
+     - Accessible single-tap size buttons
+     - Struck-through sold-out sizes
+     ========================================================================== */
+  .product-card__size-tray {
+    position: absolute;
+    inset: auto 0 0 0;
+    z-index: 10;
+    background-color: var(--color-background, #FFFFFF);
+    border-top: 1px solid var(--color-border, #E5E5E5);
+    padding: 0.75rem;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    transform: translateY(102%);
+    transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.08);
+  }
+
+  .product-card__size-tray.is-active {
+    transform: translateY(0);
+  }
+
+  .size-tray__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .size-tray__title {
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-text);
+  }
+
+  .size-tray__close {
+    background: transparent;
+    border: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    min-height: 24px;
+  }
+
+  .size-tray__close:hover {
+    color: var(--color-text);
+  }
+
+  .size-tray__sizes {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+
+  .size-tray__form {
+    margin: 0;
+    padding: 0;
+  }
+
+  .size-tray__form--single {
+    grid-column: 1 / -1;
+  }
+
+  .size-tray__btn {
+    width: 100%;
+    min-height: 38px;
+    background-color: var(--color-surface, #F5F5F5);
+    border: 1px solid var(--color-border, #E5E5E5);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .size-tray__btn:hover:not(:disabled) {
+    background-color: var(--color-text, #111111);
+    color: var(--color-white, #FFFFFF);
+    border-color: var(--color-text, #111111);
+  }
+
+  .size-tray__btn:active:not(:disabled) {
+    transform: scale(0.96);
+  }
+
+  .size-tray__btn--sold-out,
+  .size-tray__btn:disabled {
+    opacity: 0.35;
+    text-decoration: line-through;
+    cursor: not-allowed;
+    background-color: transparent;
+  }
+
+  .size-tray__btn--full {
+    grid-column: 1 / -1;
+    background-color: var(--color-text, #111111);
+    color: var(--color-white, #FFFFFF);
+  }
+
+  .size-tray__footer {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 2px;
+  }
+
+  .size-tray__guide-link {
+    background: transparent;
+    border: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    padding: 2px 0;
+  }
+
+  .size-tray__guide-link:hover {
+    color: var(--color-text);
+  }
+
+  /* Card Content Below Media */
   .product-card__content {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
     padding-top: var(--space-xs);
+    text-align: left;
   }
 
-  .product-card__vendor {
-    color: var(--color-text-subtle);
+  .product-card__spec {
+    color: var(--color-text-subtle, #6B6B6B);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
   }
 
   .product-card__title {
     font-family: var(--font-body);
-    font-size: var(--font-size-body);
-    font-weight: 400;
+    font-size: 0.9375rem;
+    font-weight: 500;
     line-height: var(--leading-snug);
     margin: 0;
+    letter-spacing: -0.01em;
   }
 
   .product-card__link {
     color: var(--color-text);
     text-decoration: none;
+    transition: color var(--transition-fast);
   }
 
   .product-card__link:hover {
     color: var(--color-text-muted);
   }
 
-  .product-card__variants-hint {
-    color: var(--color-text-subtle);
+  .product-card__price {
     margin-top: 0.125rem;
   }
+
+  /* Color dots */
+  .product-card__colors {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: var(--color-text-subtle);
+    margin-top: 0.15rem;
+  }
+
+  .product-card__color-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: var(--color-text);
+    display: inline-block;
+  }
 {% endstylesheet %}
+
+<script>
+  // Delegated handler for Quick-Add size picker tray toggles
+  if (!window._productCardScriptInitialized) {
+    window._productCardScriptInitialized = true;
+
+    document.addEventListener('click', (e) => {
+      const trigger = e.target.closest('[data-quick-add-trigger]');
+      if (trigger) {
+        e.preventDefault();
+        e.stopPropagation();
+        const card = trigger.closest('[data-product-card]');
+        if (!card) return;
+        const tray = card.querySelector('[data-size-tray]');
+        if (tray) {
+          // Close other open trays first
+          document.querySelectorAll('[data-size-tray].is-active').forEach(t => {
+            if (t !== tray) t.classList.remove('is-active');
+          });
+          tray.classList.toggle('is-active');
+          tray.setAttribute('aria-hidden', !tray.classList.contains('is-active'));
+        }
+        return;
+      }
+
+      const closeBtn = e.target.closest('[data-size-close]');
+      if (closeBtn) {
+        e.preventDefault();
+        const tray = closeBtn.closest('[data-size-tray]');
+        if (tray) {
+          tray.classList.remove('is-active');
+          tray.setAttribute('aria-hidden', 'true');
+        }
+        return;
+      }
+
+      // Demo add click simulator
+      const demoBtn = e.target.closest('[data-demo-add]');
+      if (demoBtn) {
+        e.preventDefault();
+        const originalText = demoBtn.textContent;
+        demoBtn.textContent = '✓';
+        setTimeout(() => {
+          demoBtn.textContent = originalText;
+          const tray = demoBtn.closest('[data-size-tray]');
+          if (tray) tray.classList.remove('is-active');
+          window.dispatchEvent(new CustomEvent('cart:open'));
+        }, 350);
+        return;
+      }
+
+      // Click outside closes trays
+      if (!e.target.closest('[data-size-tray]')) {
+        document.querySelectorAll('[data-size-tray].is-active').forEach(t => {
+          t.classList.remove('is-active');
+          t.setAttribute('aria-hidden', 'true');
+        });
+      }
+    });
+  }
+</script>

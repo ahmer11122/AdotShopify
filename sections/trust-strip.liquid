@@ -1,0 +1,223 @@
+{% comment %}
+  Modern Editorial Trust Strip
+  Localized e-commerce assurance for Pakistani shoppers:
+  Cash on Delivery, 7-Day Exchange, Nationwide Delivery, and WhatsApp ordering.
+{% endcomment %}
+
+<section class="trust-strip container" data-section-id="{{ section.id }}">
+  <div class="trust-strip__inner">
+    <!-- Pillar 1: Cash on Delivery -->
+    <div class="trust-strip__item">
+      <div class="trust-strip__icon-box" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="6" width="20" height="12" rx="0"/>
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M6 12h.01M18 12h.01"/>
+        </svg>
+      </div>
+      <div class="trust-strip__content">
+        <h3 class="trust-strip__title text-micro">{{ section.settings.pillar_1_title | default: 'Cash on Delivery' }}</h3>
+        <p class="trust-strip__desc">{{ section.settings.pillar_1_desc | default: 'Pay with cash at your doorstep nationwide' }}</p>
+      </div>
+    </div>
+
+    <!-- Pillar 2: Easy Exchange -->
+    <div class="trust-strip__item">
+      <div class="trust-strip__icon-box" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M7 16V4M7 4L3 8M7 4L11 8M17 8V20M17 20L21 16M17 20L13 16"/>
+        </svg>
+      </div>
+      <div class="trust-strip__content">
+        <h3 class="trust-strip__title text-micro">{{ section.settings.pillar_2_title | default: 'Easy 7-Day Exchange' }}</h3>
+        <p class="trust-strip__desc">{{ section.settings.pillar_2_desc | default: 'Hassle-free size or fit replacements' }}</p>
+      </div>
+    </div>
+
+    <!-- Pillar 3: Fast Nationwide Delivery -->
+    <div class="trust-strip__item">
+      <div class="trust-strip__icon-box" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="1" y="3" width="15" height="13"/>
+          <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+          <circle cx="5.5" cy="18.5" r="2.5"/>
+          <circle cx="18.5" cy="18.5" r="2.5"/>
+        </svg>
+      </div>
+      <div class="trust-strip__content">
+        <h3 class="trust-strip__title text-micro">{{ section.settings.pillar_3_title | default: 'Fast Delivery' }}</h3>
+        <p class="trust-strip__desc">{{ section.settings.pillar_3_desc | default: 'Delivered in 2 to 4 working days' }}</p>
+      </div>
+    </div>
+
+    <!-- Pillar 4: Order on WhatsApp -->
+    <div class="trust-strip__item">
+      <div class="trust-strip__icon-box" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+        </svg>
+      </div>
+      <div class="trust-strip__content">
+        <h3 class="trust-strip__title text-micro">{{ section.settings.pillar_4_title | default: 'Order on WhatsApp' }}</h3>
+        {% if section.settings.whatsapp_number != blank %}
+          <a
+            href="https://wa.me/{{ section.settings.whatsapp_number | remove: '+' | remove: ' ' | remove: '-' }}?text={{ 'Hello ADOT, I would like to place an order.' | url_encode }}"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="trust-strip__link"
+          >
+            {{ section.settings.pillar_4_desc | default: 'Click here to chat & order directly' }} &rarr;
+          </a>
+        {% else %}
+          <p class="trust-strip__desc">{{ section.settings.pillar_4_desc | default: 'Direct personal styling & order support' }}</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+  .section-trust-strip {
+    position: relative;
+    z-index: 1;
+    background-color: var(--color-background, #FFFFFF);
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .trust-strip {
+    padding-block: clamp(2rem, 4vw, 3rem);
+  }
+
+  .trust-strip__inner {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: clamp(1.5rem, 3.5vw, 2.5rem);
+  }
+
+  @media (min-width: 990px) {
+    .trust-strip__inner {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2rem;
+    }
+  }
+
+  .trust-strip__item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.875rem;
+  }
+
+  .trust-strip__icon-box {
+    flex-shrink: 0;
+    color: var(--color-text);
+    padding-top: 2px;
+  }
+
+  .trust-strip__content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .trust-strip__title {
+    margin: 0;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-text);
+    line-height: 1.25;
+  }
+
+  .trust-strip__desc {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    color: var(--color-text-muted);
+  }
+
+  .trust-strip__link {
+    font-family: var(--font-body);
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    color: var(--color-text);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    font-weight: 500;
+    transition: opacity var(--transition-fast);
+  }
+
+  .trust-strip__link:hover {
+    opacity: 0.7;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Trust Strip",
+  "tag": "section",
+  "class": "section-trust-strip",
+  "settings": [
+    {
+      "type": "text",
+      "id": "pillar_1_title",
+      "label": "Pillar 1 Title",
+      "default": "Cash on Delivery"
+    },
+    {
+      "type": "text",
+      "id": "pillar_1_desc",
+      "label": "Pillar 1 Description",
+      "default": "Pay with cash at your doorstep nationwide"
+    },
+    {
+      "type": "text",
+      "id": "pillar_2_title",
+      "label": "Pillar 2 Title",
+      "default": "Easy 7-Day Exchange"
+    },
+    {
+      "type": "text",
+      "id": "pillar_2_desc",
+      "label": "Pillar 2 Description",
+      "default": "Hassle-free size or fit replacements"
+    },
+    {
+      "type": "text",
+      "id": "pillar_3_title",
+      "label": "Pillar 3 Title",
+      "default": "Fast Delivery"
+    },
+    {
+      "type": "text",
+      "id": "pillar_3_desc",
+      "label": "Pillar 3 Description",
+      "default": "Delivered in 2 to 4 working days"
+    },
+    {
+      "type": "text",
+      "id": "pillar_4_title",
+      "label": "Pillar 4 Title",
+      "default": "Order on WhatsApp"
+    },
+    {
+      "type": "text",
+      "id": "pillar_4_desc",
+      "label": "Pillar 4 Description",
+      "default": "Click here to chat & order directly"
+    },
+    {
+      "type": "text",
+      "id": "whatsapp_number",
+      "label": "WhatsApp Phone Number (e.g. +923001234567)",
+      "default": "+923001234567"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Trust Strip"
+    }
+  ]
+}
+{% endschema %}

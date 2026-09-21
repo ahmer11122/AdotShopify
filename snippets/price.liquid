@@ -24,7 +24,13 @@
     assign available = true
   endif
 
-  assign money_price = price | money
+  if shop.currency == 'PKR' or shop.money_format contains 'Rs' or shop.money_format contains 'PKR'
+    assign money_price = price | money_without_trailing_zeros
+    assign compare_price = compare_at_price | money_without_trailing_zeros
+  else
+    assign money_price = price | money_without_currency | remove: '.00' | prepend: 'Rs. '
+    assign compare_price = compare_at_price | money_without_currency | remove: '.00' | prepend: 'Rs. '
+  endif
 
   if target == product and product.price_varies
     assign money_price = 'general.from' | t: price: money_price | default: money_price
@@ -37,7 +43,7 @@
       <span class="visually-hidden">{{ 'products.product.price.sale_price' | t | default: 'Sale price' }}</span>
       <span class="price__item price__item--sale">{{ money_price }}</span>
       <span class="visually-hidden">{{ 'products.product.price.regular_price' | t | default: 'Regular price' }}</span>
-      <s class="price__item price__item--regular">{{ compare_at_price | money }}</s>
+      <s class="price__item price__item--regular">{{ compare_price }}</s>
     {% else %}
       <span class="visually-hidden">{{ 'products.product.price.regular_price' | t | default: 'Regular price' }}</span>
       <span class="price__item price__item--regular">{{ money_price }}</span>

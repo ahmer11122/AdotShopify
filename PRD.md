@@ -152,11 +152,42 @@ With only 3 launch categories, a horizontal carousel/swipe track creates unneces
   - Centered category typography and subtle hover levitation micro-interaction.
 - **Catalog Escalation Trigger:**
   - If the catalog scales beyond ~6 categories, transition from the vertical stack to an overflow swipe row featuring a visible card peek (the peek naturally conveys horizontal movement without needing nudges or duplicate navigation pills).
-- **Measurement:**
-  - Track thumb scroll-depth and tap distribution via Microsoft Clarity post-launch.
+### 2.1.2 New Arrivals & Product Card Specification (`snippets/product-card.liquid` / `sections/featured-collection.liquid`)
 
+Placed immediately following the Hero, New Arrivals acts as the primary commercial engine of the storefront:
+- **Homepage Sequence**:
+  `Hero (100svh Sticky Curtain)` &rarr; `New Arrivals (8-Product Grid)` &rarr; `Shop by Category (Pure Canvas Stack)` &rarr; `Trust Strip` &rarr; `Editorial Statement` &rarr; `Footer`.
+- **Card Geometry & Media (Zero CLS)**:
+  - Fixed `3:4` aspect ratio with explicit `width="750"` and `height="1000"` markup.
+  - Image loading: First row rendered eager/high-priority; subsequent rows use native `loading="lazy"`.
+  - Secondary image hover swap: Enabled on desktop (`@media (hover: hover)`) **strictly when a second photo exists**.
+- **Pricing & Currency (Pakistani Rupee Localized)**:
+  - Formatted as `Rs. 3,499`.
+  - On sale: Struck-through original price (`s.price__item--regular`) with active price styled in `--color-sale` (`#991B1B`).
+  - Out of stock: High-contrast `SOLD OUT` badge; card image softened to 65% opacity.
+- **Mobile Quick-Add Corner (+) Button**:
+  - Always-visible `44x44px` circular tap target positioned in the bottom-right corner of each product photo.
+  - Replaces fragile hover states on touch devices.
+- **Quick-Add Size Picker Tray**:
+  - Tapping the mobile `+` or desktop `+ Quick Add` slides up a size selection tray directly over the bottom of the card media.
+  - Displays sizes (`XS`, `S`, `M`, `L`, `XL`, `XXL`).
+  - Available sizes are single-tap AJAX add-to-cart buttons that trigger `<cart-drawer>` without leaving the page.
+  - Sold-out sizes are visibly struck through and disabled (`aria-disabled="true"`).
+  - Includes a direct "Size Guide" link to prevent incorrect size orders and costly COD returns.
+- **Color Dots Rule**:
+  - Color dots/swatches are rendered **only** when a product has 2 or more color variants.
+- **Copy Integrity Rule**:
+  - Product specs must contain only verifiable facts (e.g. `450 GSM Loopback Fleece · Relaxed Fit`, `100% Cotton Poplin`) — no unsubstantiated marketing claims.
 
----
+### 2.1.3 Localized Trust Strip Specification (`sections/trust-strip.liquid`)
+
+Positioned directly below the commercial grid/categories to provide high-conversion reassurance for Pakistani e-commerce:
+1. **Cash on Delivery**: Clear reassurance of doorstep cash payment across Pakistan.
+2. **Easy 7-Day Exchange**: Friction-free size and fit replacement guarantee.
+3. **Fast Delivery**: 2 to 4 working days nationwide transit window.
+4. **Order on WhatsApp**: Direct `wa.me` chat trigger for personalized styling, size queries, and manual order placement.
+- **Technical Footprint**: Pure SVG inline micro-icons; zero external icon fonts or render-blocking scripts.
+
 
 ## 3. CSS strategy — the actual answer, not a vibe
 

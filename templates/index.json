@@ -19,6 +19,16 @@
         "footer_metadata": "Cash on Delivery · Easy Exchange"
       }
     },
+    "featured_collection": {
+      "type": "featured-collection",
+      "settings": {
+        "eyebrow": "AUTUMN / WINTER 2026",
+        "heading": "New Arrivals",
+        "products_to_show": 8,
+        "show_vendor": true,
+        "show_view_all": true
+      }
+    },
     "category_tiles": {
       "type": "category-tiles",
       "blocks": {
@@ -53,14 +63,18 @@
         "heading": "Shop by Category"
       }
     },
-    "featured_collection": {
-      "type": "featured-collection",
+    "trust_strip": {
+      "type": "trust-strip",
       "settings": {
-        "eyebrow": "NEW ARRIVALS",
-        "heading": "Latest Drops",
-        "products_to_show": 8,
-        "show_vendor": true,
-        "show_view_all": true
+        "pillar_1_title": "Cash on Delivery",
+        "pillar_1_desc": "Pay with cash at your doorstep nationwide",
+        "pillar_2_title": "Easy 7-Day Exchange",
+        "pillar_2_desc": "Hassle-free size or fit replacements",
+        "pillar_3_title": "Fast Delivery",
+        "pillar_3_desc": "Delivered in 2 to 4 working days",
+        "pillar_4_title": "Order on WhatsApp",
+        "pillar_4_desc": "Click here to chat & order directly",
+        "whatsapp_number": "+923001234567"
       }
     },
     "editorial": {
@@ -69,7 +83,7 @@
         "image_position": "left",
         "eyebrow": "OUR APPROACH",
         "quote": "Durable fabrics and relaxed silhouettes, made for daily wear.",
-        "body_text": "We make timeless wardrobe staples instead of chasing seasonal trends. Every piece is cut from heavyweight organic cotton and dense twill, designed for an easy, relaxed fit that lasts.",
+        "body_text": "We make timeless wardrobe staples instead of chasing seasonal trends. Every piece is cut from heavyweight cotton and dense twill, designed for an easy, relaxed fit that lasts.",
         "author": "ADOT STUDIO",
         "button_label": "Our Story"
       }
@@ -79,6 +93,7 @@
     "hero",
     "category_tiles",
     "featured_collection",
+    "trust_strip",
     "editorial"
   ]
 }
