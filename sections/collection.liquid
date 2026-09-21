@@ -6,61 +6,56 @@
 
 <div class="collection container" data-collection-page>
   <header class="collection__header">
-    <div class="collection__eyebrow text-micro">MENSWEAR ESSENTIALS</div>
-    <div class="collection__title-row">
-      <h1 class="collection__title" data-collection-title>
-        {% if collection.handle == 'all' or collection.title == 'Products' %}
-          All Essentials
-        {% else %}
-          {{ collection.title }}
-        {% endif %}
-      </h1>
-      <span class="collection__count text-micro" data-collection-count>[{{ collection.all_products_count }} items]</span>
+    <div class="collection__header-main">
+      <div class="collection__title-group">
+        <h1 class="collection__title" data-collection-title>
+          {% if collection.handle == 'all' or collection.title == 'Products' %}
+            Collection
+          {% else %}
+            {{ collection.title }}
+          {% endif %}
+        </h1>
+        <span class="collection__count" data-collection-count>{{ collection.all_products_count }} items</span>
+      </div>
+
+      <!-- Segmented Category Pill Track (Quiet Luxury Apple-Grade) -->
+      <nav class="collection__filter-nav" aria-label="Filter products by category">
+        <div class="collection__filter-rail">
+          <button
+            type="button"
+            class="collection__filter-btn is-active"
+            data-category-filter="all"
+            aria-pressed="true"
+          >
+            All
+          </button>
+          <button
+            type="button"
+            class="collection__filter-btn"
+            data-category-filter="hoodies"
+            aria-pressed="false"
+          >
+            Hoodies
+          </button>
+          <button
+            type="button"
+            class="collection__filter-btn"
+            data-category-filter="shirts"
+            aria-pressed="false"
+          >
+            Shirts
+          </button>
+          <button
+            type="button"
+            class="collection__filter-btn"
+            data-category-filter="trousers"
+            aria-pressed="false"
+          >
+            Trousers
+          </button>
+        </div>
+      </nav>
     </div>
-
-    <p class="collection__description caption" data-collection-desc>
-      {{ collection.description | default: 'The complete ADOT menswear collection. Heavyweight fleece, crisp poplin shirts, and tailored trousers.' }}
-    </p>
-
-    <!-- Category Filter Bar -->
-    <nav class="collection__filter-nav" aria-label="Filter products by category">
-      <button
-        type="button"
-        class="collection__filter-btn text-micro is-active"
-        data-category-filter="all"
-        aria-pressed="true"
-      >
-        <span>All</span>
-        <span class="collection__filter-count" data-filter-count="all">[{{ collection.all_products_count }}]</span>
-      </button>
-      <button
-        type="button"
-        class="collection__filter-btn text-micro"
-        data-category-filter="hoodies"
-        aria-pressed="false"
-      >
-        <span>Hoodies</span>
-        <span class="collection__filter-count" data-filter-count="hoodies">[4]</span>
-      </button>
-      <button
-        type="button"
-        class="collection__filter-btn text-micro"
-        data-category-filter="shirts"
-        aria-pressed="false"
-      >
-        <span>Shirts</span>
-        <span class="collection__filter-count" data-filter-count="shirts">[4]</span>
-      </button>
-      <button
-        type="button"
-        class="collection__filter-btn text-micro"
-        data-category-filter="trousers"
-        aria-pressed="false"
-      >
-        <span>Trousers</span>
-        <span class="collection__filter-count" data-filter-count="trousers">[4]</span>
-      </button>
-    </nav>
   </header>
 
   <div class="collection__grid" id="CollectionProductGrid">
@@ -97,89 +92,107 @@
 
 <style>
   .collection {
-    padding-block: var(--space-lg);
+    padding-top: clamp(1.25rem, 2.5vw, 2.25rem);
+    padding-bottom: clamp(3rem, 6vw, 6rem);
   }
 
   .collection__header {
-    margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
-    text-align: left;
-    border-bottom: 1px solid var(--color-border);
-    padding-bottom: clamp(1.25rem, 2.5vw, 2rem);
+    margin-bottom: clamp(1.5rem, 3vw, 2.25rem);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+    padding-bottom: clamp(1rem, 2vw, 1.5rem);
   }
 
-  .collection__eyebrow {
-    color: var(--color-text-subtle);
-    letter-spacing: 0.12em;
-    margin-bottom: 0.5rem;
+  .collection__header-main {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
   }
 
-  .collection__title-row {
+  @media (min-width: 750px) {
+    .collection__header-main {
+      flex-direction: row;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 2rem;
+    }
+  }
+
+  .collection__title-group {
     display: flex;
     align-items: baseline;
     gap: 0.75rem;
-    flex-wrap: wrap;
-    margin-bottom: 0.5rem;
   }
 
   .collection__title {
-    font-family: var(--font-display);
-    font-size: clamp(2rem, 4vw, 3rem);
-    font-weight: 400;
-    line-height: var(--leading-tight);
+    font-family: var(--font-display, inherit);
+    font-size: clamp(1.75rem, 3vw, 2.35rem);
+    font-weight: 500;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
     margin: 0;
-    color: var(--color-text);
+    color: var(--color-text, #111111);
   }
 
   .collection__count {
-    color: var(--color-text-subtle);
+    font-size: 0.8125rem;
     font-weight: 500;
+    color: var(--color-text-subtle, #737373);
+    letter-spacing: 0.02em;
+    font-variant-numeric: tabular-nums;
   }
 
-  .collection__description {
-    max-width: 65ch;
-    color: var(--color-text-muted);
-    margin: 0 0 1.5rem;
-    line-height: 1.6;
-  }
-
-  /* Category Filter Pills */
+  /* Segmented Category Pill Track (Apple-Grade) */
   .collection__filter-nav {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    flex-wrap: wrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .collection__filter-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .collection__filter-rail {
+    display: inline-flex;
+    align-items: center;
+    background: #F4F4F4;
+    padding: 3px;
+    border-radius: 6px;
+    gap: 2px;
   }
 
   .collection__filter-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0.5rem 1rem;
-    background-color: transparent;
-    color: var(--color-text);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-none, 0px);
+    border: none;
+    background: transparent;
+    color: #666666;
     font-family: var(--font-body);
     font-size: 0.75rem;
     font-weight: 500;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
+    padding: 0.42rem 0.9rem;
+    border-radius: 4px;
     cursor: pointer;
-    transition: all 150ms ease;
+    white-space: nowrap;
+    transition: color 150ms ease, background-color 150ms ease, box-shadow 150ms ease, transform 100ms ease;
+    -webkit-tap-highlight-color: transparent;
   }
 
-  .collection__filter-btn:hover {
-    border-color: var(--color-text);
+  .collection__filter-btn:hover:not(.is-active) {
+    color: #111111;
+  }
+
+  .collection__filter-btn:active {
+    transform: scale(0.96);
   }
 
   .collection__filter-btn.is-active {
-    background-color: var(--color-text, #111111);
-    color: var(--color-background, #FFFFFF);
-    border-color: var(--color-text, #111111);
-  }
-
-  .collection__filter-count {
-    opacity: 0.7;
+    background: #FFFFFF;
+    color: #111111;
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   }
 
   .collection__grid {
@@ -238,26 +251,21 @@
 
     const titleEl = page.querySelector('[data-collection-title]');
     const countEl = page.querySelector('[data-collection-count]');
-    const descEl = page.querySelector('[data-collection-desc]');
     const filterBtns = page.querySelectorAll('[data-category-filter]');
     const items = page.querySelectorAll('.collection__item');
 
     const categoryMeta = {
       all: {
-        title: 'All Essentials',
-        desc: 'The complete ADOT menswear wardrobe. Heavyweight fleece, crisp poplin shirts, and tailored trousers.'
+        title: 'Collection'
       },
       hoodies: {
-        title: 'Hoodies',
-        desc: 'Cut from custom-knitted 450 GSM loopback cotton fleece. Featuring double-lined hood architecture, dropped shoulders, and a relaxed boxy drape.'
+        title: 'Hoodies'
       },
       shirts: {
-        title: 'Shirts',
-        desc: '100% long-staple cotton poplin, vintage Oxford weave, and heavy structured twill. Clean plackets and relaxed modern silhouettes.'
+        title: 'Shirts'
       },
       trousers: {
-        title: 'Trousers',
-        desc: 'Structured high-density cotton twill and brushed chinos. Tailored double pleats, wide-leg cuts, and effortless breaks.'
+        title: 'Trousers'
       }
     };
 
@@ -268,12 +276,6 @@
       if (cat.includes('hoodie')) counts.hoodies++;
       else if (cat.includes('shirt')) counts.shirts++;
       else if (cat.includes('trouser')) counts.trousers++;
-    });
-
-    // Update filter badge counts
-    Object.keys(counts).forEach(k => {
-      const el = page.querySelector(`[data-filter-count="${k}"]`);
-      if (el) el.textContent = `[${counts[k]}]`;
     });
 
     function setCategory(cat, updateUrl = true) {
@@ -290,8 +292,7 @@
       // Update Header Content
       const meta = categoryMeta[cat];
       if (titleEl) titleEl.textContent = meta.title;
-      if (descEl) descEl.textContent = meta.desc;
-      if (countEl) countEl.textContent = `[${counts[cat]} items]`;
+      if (countEl) countEl.textContent = `${counts[cat]} items`;
 
       // Filter Grid Items
       items.forEach(item => {
