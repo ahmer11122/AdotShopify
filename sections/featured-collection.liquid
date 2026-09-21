@@ -35,7 +35,18 @@
         </div>
       {% endfor %}
     {% else %}
-      <!-- Curated Apparel Demo Showcase with real fabric facts and Rs. pricing -->
+      <!-- Curated Apparel Demo Showcase with real product URLs and variant IDs -->
+      {% assign all_prods = collections.all.products %}
+      {% assign p_fallback = all_prods.first %}
+      {% assign p1 = all_prods[7] | default: p_fallback %}
+      {% assign p2 = all_prods[3] | default: p_fallback %}
+      {% assign p3 = all_prods[4] | default: p_fallback %}
+      {% assign p4 = all_prods[5] | default: p_fallback %}
+      {% assign p5 = all_prods[6] | default: p_fallback %}
+      {% assign p6 = all_prods[1] | default: p_fallback %}
+      {% assign p7 = all_prods[8] | default: p_fallback %}
+      {% assign p8 = all_prods[11] | default: p_fallback %}
+
       {% assign hoodie_img = 'category-hoodies.jpg' | asset_url %}
       {% assign hoodie_png = 'category-hoodies.png' | asset_url %}
       {% assign shirt_img = 'category-shirts.jpg' | asset_url %}
@@ -46,6 +57,8 @@
       <div class="featured-collection__item">
         {% render 'product-card',
           title: 'Heavyweight Boxy Hoodie',
+          url: p1.url,
+          variant_id: p1.selected_or_first_available_variant.id,
           price: 449900,
           compare_at_price: 0,
           image_src: hoodie_img,
@@ -60,6 +73,8 @@
       <div class="featured-collection__item">
         {% render 'product-card',
           title: 'Relaxed Poplin Shirt',
+          url: p2.url,
+          variant_id: p2.selected_or_first_available_variant.id,
           price: 369900,
           compare_at_price: 449900,
           image_src: shirt_img,
@@ -74,6 +89,8 @@
       <div class="featured-collection__item">
         {% render 'product-card',
           title: 'Tailored Pleated Trousers',
+          url: p3.url,
+          variant_id: p3.selected_or_first_available_variant.id,
           price: 429900,
           compare_at_price: 0,
           image_src: trouser_img,
@@ -88,6 +105,8 @@
       <div class="featured-collection__item">
         {% render 'product-card',
           title: 'Heavyweight Zip Hoodie',
+          url: p4.url,
+          variant_id: p4.selected_or_first_available_variant.id,
           price: 489900,
           compare_at_price: 0,
           image_src: hoodie_img,
@@ -102,6 +121,8 @@
       <div class="featured-collection__item">
         {% render 'product-card',
           title: 'Oversized Oxford Button-Down',
+          url: p5.url,
+          variant_id: p5.selected_or_first_available_variant.id,
           price: 389900,
           compare_at_price: 450000,
           image_src: shirt_img,
@@ -116,6 +137,8 @@
       <div class="featured-collection__item">
         {% render 'product-card',
           title: 'Wide-Leg Minimalist Chino',
+          url: p6.url,
+          variant_id: p6.selected_or_first_available_variant.id,
           price: 399900,
           compare_at_price: 0,
           image_src: trouser_img,
@@ -130,6 +153,8 @@
       <div class="featured-collection__item">
         {% render 'product-card',
           title: 'Heavyweight Loopback Crewneck',
+          url: p7.url,
+          variant_id: p7.selected_or_first_available_variant.id,
           price: 399900,
           compare_at_price: 0,
           image_src: hoodie_img,
@@ -144,6 +169,8 @@
       <div class="featured-collection__item">
         {% render 'product-card',
           title: 'Relaxed Camp Collar Shirt',
+          url: p8.url,
+          variant_id: p8.selected_or_first_available_variant.id,
           price: 349900,
           compare_at_price: 420000,
           image_src: shirt_img,

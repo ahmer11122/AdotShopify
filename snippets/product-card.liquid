@@ -4,6 +4,8 @@
 
   @param {product} [product] - The product object
   @param {string} [title] - Fallback title if product is nil
+  @param {string} [url] - Fallback URL if product is nil
+  @param {number} [variant_id] - Fallback variant ID for quick add
   @param {number} [price] - Fallback price in cents if product is nil
   @param {number} [compare_at_price] - Fallback compare at price in cents
   @param {string} [image_src] - Fallback primary image asset url
@@ -53,8 +55,9 @@
       assign has_sizes = true
     endif
   else
+    assign fallback_product = collections.all.products.first
     assign card_title = title | default: 'Heavyweight Boxy Hoodie'
-    assign card_url = '#product-preview'
+    assign card_url = url | default: fallback_product.url | default: '/products/the-complete-snowboard'
     assign card_price = price | default: 449900
     assign card_compare_at = compare_at_price | default: 0
     if available == nil
@@ -74,6 +77,7 @@
       assign has_colors = false
     endif
     assign has_sizes = true
+    assign fallback_variant_id = variant_id | default: fallback_product.selected_or_first_available_variant.id
   endif
 
   assign is_on_sale = false
@@ -227,17 +231,21 @@
               </button>
             </form>
           {% else %}
-            <!-- Demo mock sizes -->
+            <!-- Demo mock sizes with real store variant backing so cart is never empty -->
             {% assign demo_sizes = 'S,M,L,XL' | split: ',' %}
             {% for sz in demo_sizes %}
-              <button
-                type="button"
-                class="size-tray__btn {% if sz == 'XL' and is_on_sale %}size-tray__btn--sold-out{% endif %}"
-                {% if sz == 'XL' and is_on_sale %}disabled aria-disabled="true"{% endif %}
-                data-demo-add="{{ sz }}"
-              >
-                {{ sz }}
-              </button>
+              <form method="post" action="{{ routes.cart_add_url }}" class="size-tray__form">
+                <input type="hidden" name="id" value="{{ fallback_variant_id }}">
+                <input type="hidden" name="quantity" value="1">
+                <button
+                  type="submit"
+                  class="size-tray__btn {% if sz == 'XL' and is_on_sale %}size-tray__btn--sold-out{% endif %}"
+                  {% if sz == 'XL' and is_on_sale %}disabled aria-disabled="true"{% endif %}
+                  data-variant-title="{{ sz }}"
+                >
+                  {{ sz }}
+                </button>
+              </form>
             {% endfor %}
           {% endif %}
         </div>
@@ -646,6 +654,13 @@
     transition: color var(--transition-fast);
   }
 
+  .product-card__link::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+  }
+
   .product-card__link:hover {
     color: var(--color-text-muted);
   }
@@ -673,7 +688,7 @@
 {% endstylesheet %}
 
 <script>
-  // Delegated handler for Quick-Add size picker tray toggles
+  // Delegated handler for Quick-Add size picker tray toggles & AJAX Cart Submission
   if (!window._productCardScriptInitialized) {
     window._productCardScriptInitialized = true;
 
@@ -707,21 +722,6 @@
         return;
       }
 
-      // Demo add click simulator
-      const demoBtn = e.target.closest('[data-demo-add]');
-      if (demoBtn) {
-        e.preventDefault();
-        const originalText = demoBtn.textContent;
-        demoBtn.textContent = '✓';
-        setTimeout(() => {
-          demoBtn.textContent = originalText;
-          const tray = demoBtn.closest('[data-size-tray]');
-          if (tray) tray.classList.remove('is-active');
-          window.dispatchEvent(new CustomEvent('cart:open'));
-        }, 350);
-        return;
-      }
-
       // Click outside closes trays
       if (!e.target.closest('[data-size-tray]')) {
         document.querySelectorAll('[data-size-tray].is-active').forEach(t => {
@@ -729,6 +729,55 @@
           t.setAttribute('aria-hidden', 'true');
         });
       }
+    });
+
+    // Real AJAX Add-to-Cart Submission for Quick-Add Size Buttons
+    document.addEventListener('submit', (e) => {
+      const form = e.target.closest('.size-tray__form');
+      if (!form) return;
+
+      e.preventDefault();
+      const btn = form.querySelector('.size-tray__btn');
+      if (!btn || btn.disabled) return;
+
+      const originalText = btn.textContent;
+      btn.textContent = '...';
+      btn.disabled = true;
+
+      const formData = new FormData(form);
+
+      fetch('{{ routes.cart_add_url }}.js', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json'
+        },
+        body: formData
+      })
+      .then(res => {
+        if (!res.ok) throw new Error('Add to cart failed');
+        return res.json();
+      })
+      .then(item => {
+        btn.textContent = '✓';
+        setTimeout(() => {
+          btn.textContent = originalText;
+          btn.disabled = false;
+          const tray = form.closest('[data-size-tray]');
+          if (tray) {
+            tray.classList.remove('is-active');
+            tray.setAttribute('aria-hidden', 'true');
+          }
+          // Refresh and open the Cart Drawer with the newly added item!
+          window.dispatchEvent(new CustomEvent('cart:refresh'));
+          window.dispatchEvent(new CustomEvent('cart:open'));
+        }, 300);
+      })
+      .catch(err => {
+        console.error('Quick add error:', err);
+        btn.textContent = originalText;
+        btn.disabled = false;
+        form.submit();
+      });
     });
   }
 </script>
