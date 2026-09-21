@@ -1,6 +1,10 @@
 {% doc %}
-  Renders an editorial product card with fixed 3:4 aspect ratio, mobile corner quick-add +,
-  desktop hover reveal, size picker tray, clean Rs. pricing, and zero-CLS performance.
+  Modern Editorial Luxury Product Card Primitive
+  Crafted with:
+  - better-typography: Tabular prices, balanced line wrapping, restrained type scale.
+  - emil-design-eng: Custom cubic-bezier easing, snappy <220ms durations, :active press scale(0.96), scoped hover transitions.
+  - find-animation-opportunities: High-leverage motion (smooth image crossfade, tactile button depression, floating glass quick-add).
+  - apple-design: Translucent frosted glassmorphism (backdrop-filter: blur(16px)), direct manipulation, zero clutter, 44px touch targets.
 
   @param {product} [product] - The product object
   @param {string} [title] - Fallback title if product is nil
@@ -10,7 +14,7 @@
   @param {number} [compare_at_price] - Fallback compare at price in cents
   @param {string} [image_src] - Fallback primary image asset url
   @param {string} [secondary_image_src] - Fallback secondary image asset url
-  @param {string} [spec] - Technical fabric / fit fact (e.g. '450 GSM · Relaxed Fit')
+  @param {string} [spec] - Technical fabric / fit fact (optional)
   @param {number} [color_count] - Number of colors (only shown if > 1)
   @param {boolean} [available] - Fallback availability
   @param {boolean} [lazy_load] - Whether to lazy load images (default: true)
@@ -20,7 +24,7 @@
 
 {% liquid
   if show_vendor == nil
-    assign show_vendor = true
+    assign show_vendor = false
   endif
   if lazy_load == nil
     assign lazy_load = true
@@ -173,7 +177,6 @@
       assign color_num = color_option.values.size
     endif
 
-    # Detect size option
     assign size_option = product.options_by_name['Size']
     assign has_sizes = false
     if size_option and size_option.values.size > 0
@@ -219,9 +222,14 @@
   endif
 %}
 
-<div class="product-card {{ class }} {% unless is_available %}product-card--sold-out{% endunless %}" data-product-card data-category="{{ card_category | default: product.type | downcase }}">
+<div
+  class="product-card {{ class }} {% unless is_available %}product-card--sold-out{% endunless %}"
+  data-product-card
+  data-category="{{ card_category | default: product.type | downcase }}"
+>
+  <!-- Media Frame with Fixed 3:4 Aspect Ratio (Zero-CLS) -->
   <div class="product-card__media-wrapper">
-    <a href="{{ card_url }}" class="product-card__media-link" tabindex="-1" aria-hidden="true">
+    <a href="{{ card_url }}" class="product-card__media-link" aria-label="{{ card_title | escape }}">
       {% if product and featured_media %}
         {{
           featured_media
@@ -278,62 +286,40 @@
       {% endif %}
     </a>
 
-    <!-- Status Badges -->
+    <!-- Apple-Grade Frosted Glass Badges (Floating Top-Left) -->
     <div class="product-card__badges" aria-hidden="true">
       {% unless is_available %}
-        <span class="product-card__badge product-card__badge--sold-out text-micro">
+        <span class="product-card__badge product-card__badge--sold-out">
           Sold Out
         </span>
       {% else %}
         {% if is_on_sale %}
-          <span class="product-card__badge product-card__badge--sale text-micro">
+          <span class="product-card__badge product-card__badge--sale">
             Sale
           </span>
         {% endif %}
       {% endunless %}
     </div>
 
-    <!-- Mobile Persistent Corner Quick Add (+) Button -->
     {% if is_available %}
+      <!-- Mobile Frosted Glass Quick Add Button (44px Touch Target) -->
       <button
         type="button"
         class="product-card__mobile-quick-btn"
-        data-quick-add-trigger
-        aria-label="Select size for {{ card_title | escape }}"
-        title="Select size"
+        data-mobile-quick-trigger
+        aria-label="Quick add {{ card_title | escape }}"
       >
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-          <path d="M7 1V13M1 7H13" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+          <path d="M7 1V13M1 7H13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
         </svg>
       </button>
 
-      <!-- Desktop Slide-Up Quick Add Trigger Bar -->
-      <button
-        type="button"
-        class="product-card__desktop-quick-btn"
-        data-quick-add-trigger
-        aria-label="Select size for {{ card_title | escape }}"
-      >
-        <span>+ Quick Add</span>
-      </button>
-    {% endif %}
-
-    <!-- Slide-Up Quick Size Picker Tray -->
-    {% if is_available %}
-      <div class="product-card__size-tray" data-size-tray aria-hidden="true">
-        <div class="size-tray__header">
-          <span class="size-tray__title text-micro">Select Size</span>
-          <button type="button" class="size-tray__close" data-size-close aria-label="Close size picker">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <path d="M1 1L11 11M1 11L11 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
-          </button>
-        </div>
-
-        <div class="size-tray__sizes">
+      <!-- Desktop Floating Frosted Glass Quick-Add Size Rail (Reveals on Hover) -->
+      <div class="product-card__desktop-action-bar" aria-label="Quick add sizes">
+        <div class="product-card__quick-size-pills">
           {% if product and has_sizes and is_snowboard == false %}
             {% for variant in product.variants %}
-              <form method="post" action="{{ routes.cart_add_url }}" class="size-tray__form">
+              <form method="post" action="{{ routes.cart_add_url }}" class="product-card__quick-form">
                 <input type="hidden" name="id" value="{{ variant.id }}">
                 <input type="hidden" name="quantity" value="1">
                 <input type="hidden" name="properties[_adot_title]" value="{{ card_title | escape }}">
@@ -341,7 +327,83 @@
                 <input type="hidden" name="properties[_adot_price]" value="{{ card_price | money_without_currency | remove: '.00' | prepend: 'Rs. ' }}">
                 <button
                   type="submit"
-                  class="size-tray__btn {% unless variant.available %}size-tray__btn--sold-out{% endunless %}"
+                  class="product-card__size-pill {% unless variant.available %}product-card__size-pill--sold-out{% endunless %}"
+                  {% unless variant.available %}disabled aria-disabled="true"{% endunless %}
+                  data-variant-title="{{ variant.title }}"
+                  title="Add size {{ variant.title }}"
+                >
+                  {{ variant.title }}
+                </button>
+              </form>
+            {% endfor %}
+          {% elsif product %}
+            {% assign base_variant_id = product.selected_or_first_available_variant.id %}
+            {% assign card_sizes = 'S,M,L,XL' | split: ',' %}
+            {% for sz in card_sizes %}
+              <form method="post" action="{{ routes.cart_add_url }}" class="product-card__quick-form">
+                <input type="hidden" name="id" value="{{ base_variant_id }}">
+                <input type="hidden" name="quantity" value="1">
+                <input type="hidden" name="properties[_adot_title]" value="{{ card_title | escape }}">
+                <input type="hidden" name="properties[_adot_image]" value="{{ image_src }}">
+                <input type="hidden" name="properties[_adot_price]" value="{{ card_price | money_without_currency | remove: '.00' | prepend: 'Rs. ' }}">
+                <input type="hidden" name="properties[Size]" value="{{ sz }}">
+                <button
+                  type="submit"
+                  class="product-card__size-pill"
+                  data-variant-title="{{ sz }}"
+                  title="Add size {{ sz }}"
+                >
+                  {{ sz }}
+                </button>
+              </form>
+            {% endfor %}
+          {% else %}
+            {% assign demo_sizes = 'S,M,L,XL' | split: ',' %}
+            {% for sz in demo_sizes %}
+              <form method="post" action="{{ routes.cart_add_url }}" class="product-card__quick-form">
+                <input type="hidden" name="id" value="{{ fallback_variant_id }}">
+                <input type="hidden" name="quantity" value="1">
+                <input type="hidden" name="properties[_adot_title]" value="{{ card_title | escape }}">
+                <input type="hidden" name="properties[_adot_image]" value="{{ image_src }}">
+                <input type="hidden" name="properties[_adot_price]" value="{{ card_price | money_without_currency | remove: '.00' | prepend: 'Rs. ' }}">
+                <input type="hidden" name="properties[Size]" value="{{ sz }}">
+                <button
+                  type="submit"
+                  class="product-card__size-pill {% if sz == 'XL' and is_on_sale %}product-card__size-pill--sold-out{% endif %}"
+                  {% if sz == 'XL' and is_on_sale %}disabled aria-disabled="true"{% endif %}
+                  data-variant-title="{{ sz }}"
+                  title="Add size {{ sz }}"
+                >
+                  {{ sz }}
+                </button>
+              </form>
+            {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Mobile Slide-Up Size Selector Sheet -->
+      <div class="product-card__mobile-sheet" data-mobile-sheet aria-hidden="true">
+        <div class="mobile-sheet__header">
+          <span class="mobile-sheet__title text-micro">Select Size</span>
+          <button type="button" class="mobile-sheet__close" data-sheet-close aria-label="Close size sheet">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <path d="M1 1L11 11M1 11L11 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+        <div class="mobile-sheet__sizes">
+          {% if product and has_sizes and is_snowboard == false %}
+            {% for variant in product.variants %}
+              <form method="post" action="{{ routes.cart_add_url }}" class="mobile-sheet__form">
+                <input type="hidden" name="id" value="{{ variant.id }}">
+                <input type="hidden" name="quantity" value="1">
+                <input type="hidden" name="properties[_adot_title]" value="{{ card_title | escape }}">
+                <input type="hidden" name="properties[_adot_image]" value="{{ image_src }}">
+                <input type="hidden" name="properties[_adot_price]" value="{{ card_price | money_without_currency | remove: '.00' | prepend: 'Rs. ' }}">
+                <button
+                  type="submit"
+                  class="mobile-sheet__btn {% unless variant.available %}mobile-sheet__btn--sold-out{% endunless %}"
                   {% unless variant.available %}disabled aria-disabled="true"{% endunless %}
                   data-variant-title="{{ variant.title }}"
                 >
@@ -353,7 +415,7 @@
             {% assign base_variant_id = product.selected_or_first_available_variant.id %}
             {% assign card_sizes = 'S,M,L,XL' | split: ',' %}
             {% for sz in card_sizes %}
-              <form method="post" action="{{ routes.cart_add_url }}" class="size-tray__form">
+              <form method="post" action="{{ routes.cart_add_url }}" class="mobile-sheet__form">
                 <input type="hidden" name="id" value="{{ base_variant_id }}">
                 <input type="hidden" name="quantity" value="1">
                 <input type="hidden" name="properties[_adot_title]" value="{{ card_title | escape }}">
@@ -362,7 +424,7 @@
                 <input type="hidden" name="properties[Size]" value="{{ sz }}">
                 <button
                   type="submit"
-                  class="size-tray__btn"
+                  class="mobile-sheet__btn"
                   data-variant-title="{{ sz }}"
                 >
                   {{ sz }}
@@ -370,10 +432,9 @@
               </form>
             {% endfor %}
           {% else %}
-            <!-- Demo mock sizes with real store variant backing so cart is never empty -->
             {% assign demo_sizes = 'S,M,L,XL' | split: ',' %}
             {% for sz in demo_sizes %}
-              <form method="post" action="{{ routes.cart_add_url }}" class="size-tray__form">
+              <form method="post" action="{{ routes.cart_add_url }}" class="mobile-sheet__form">
                 <input type="hidden" name="id" value="{{ fallback_variant_id }}">
                 <input type="hidden" name="quantity" value="1">
                 <input type="hidden" name="properties[_adot_title]" value="{{ card_title | escape }}">
@@ -382,7 +443,7 @@
                 <input type="hidden" name="properties[Size]" value="{{ sz }}">
                 <button
                   type="submit"
-                  class="size-tray__btn {% if sz == 'XL' and is_on_sale %}size-tray__btn--sold-out{% endif %}"
+                  class="mobile-sheet__btn {% if sz == 'XL' and is_on_sale %}mobile-sheet__btn--sold-out{% endif %}"
                   {% if sz == 'XL' and is_on_sale %}disabled aria-disabled="true"{% endif %}
                   data-variant-title="{{ sz }}"
                 >
@@ -392,60 +453,62 @@
             {% endfor %}
           {% endif %}
         </div>
-
-        <div class="size-tray__footer">
-          <button type="button" class="size-tray__guide-link text-micro" data-open-size-modal>
-            Size Guide &rarr;
-          </button>
-        </div>
       </div>
     {% endif %}
   </div>
 
+  <!-- Editorial Card Content Below Photography -->
   <div class="product-card__content">
     {% if show_vendor and card_spec != blank %}
       <div class="product-card__spec text-micro">{{ card_spec }}</div>
     {% endif %}
 
+    <!-- Product Title (Restrained Inter 500, Balanced Line Wrapping) -->
     <h3 class="product-card__title">
-      <a href="{{ card_url }}" class="product-card__link">
+      <a href="{{ card_url }}" class="product-card__title-link">
         {{ card_title }}
       </a>
     </h3>
 
-    <div class="product-card__price">
-      {% if product and is_snowboard == false %}
-        {% render 'price', product: product, show_badges: false %}
-      {% else %}
-        <div class="price {% if is_on_sale %}price--on-sale{% endif %}">
-          <div class="price__container">
-            {% if is_on_sale %}
-              <span class="price__item price__item--sale">
-                {{ card_price | money_without_currency | remove: '.00' | prepend: 'Rs. ' }}
-              </span>
-              <s class="price__item price__item--regular">
-                {{ card_compare_at | money_without_currency | remove: '.00' | prepend: 'Rs. ' }}
-              </s>
-            {% else %}
-              <span class="price__item price__item--regular">
-                {{ card_price | money_without_currency | remove: '.00' | prepend: 'Rs. ' }}
-              </span>
-            {% endif %}
+    <!-- Meta Row: Tabular Price + Optional Subtle Color Pill -->
+    <div class="product-card__meta-row">
+      <div class="product-card__price">
+        {% if product and is_snowboard == false %}
+          {% render 'price', product: product, show_badges: false %}
+        {% else %}
+          <div class="price {% if is_on_sale %}price--on-sale{% endif %}">
+            <div class="price__container">
+              {% if is_on_sale %}
+                <span class="price__item price__item--sale">
+                  {{ card_price | money_without_currency | remove: '.00' | prepend: 'Rs. ' }}
+                </span>
+                <s class="price__item price__item--regular">
+                  {{ card_compare_at | money_without_currency | remove: '.00' | prepend: 'Rs. ' }}
+                </s>
+              {% else %}
+                <span class="price__item price__item--regular">
+                  {{ card_price | money_without_currency | remove: '.00' | prepend: 'Rs. ' }}
+                </span>
+              {% endif %}
+            </div>
           </div>
+        {% endif %}
+      </div>
+
+      {% if has_colors %}
+        <div class="product-card__colors text-micro" aria-label="{{ color_num }} colors available">
+          <span class="product-card__color-dot" aria-hidden="true"></span>
+          <span>{{ color_num }} col</span>
         </div>
       {% endif %}
     </div>
-
-    {% if has_colors %}
-      <div class="product-card__colors text-micro" aria-label="{{ color_num }} colors available">
-        <span class="product-card__color-dot" aria-hidden="true"></span>
-        <span>{{ color_num }} Colors</span>
-      </div>
-    {% endif %}
   </div>
 </div>
 
 {% stylesheet %}
+  /* ==========================================================================
+     Product Card Primitive — Quiet Luxury Architecture
+     ========================================================================== */
   .product-card {
     display: flex;
     flex-direction: column;
@@ -456,10 +519,10 @@
 
   .product-card--sold-out .product-card__image {
     opacity: 0.65;
-    filter: grayscale(25%);
+    filter: grayscale(30%);
   }
 
-  /* Fixed 3:4 ratio container — zero layout shift */
+  /* Fixed 3:4 Aspect Ratio Container (Zero Layout Shift) */
   .product-card__media-wrapper {
     position: relative;
     width: 100%;
@@ -467,6 +530,7 @@
     overflow: hidden;
     background-color: var(--color-surface, #F5F5F5);
     box-sizing: border-box;
+    border-radius: var(--radius-none, 0px);
   }
 
   .product-card__media-link {
@@ -482,7 +546,8 @@
     height: 100%;
     object-fit: cover;
     display: block;
-    transition: transform 380ms cubic-bezier(0.23, 1, 0.32, 1), opacity 300ms ease;
+    will-change: transform, opacity;
+    transition: transform 260ms cubic-bezier(0.23, 1, 0.32, 1), opacity 200ms ease;
   }
 
   .product-card__image--primary {
@@ -492,21 +557,20 @@
 
   .product-card__image--secondary {
     position: absolute;
-    top: 0;
-    left: 0;
+    inset: 0;
     opacity: 0;
     z-index: 2;
   }
 
-  /* Desktop hover reveal (only when secondary image exists) */
-  @media (hover: hover) and (min-width: 750px) {
+  /* Desktop Hover Reveal (Gated per emil-design-eng) */
+  @media (hover: hover) and (pointer: fine) {
     .product-card:hover .product-card__image--primary {
-      transform: scale(1.025);
+      transform: scale(1.02);
     }
 
     .product-card:hover .product-card__image--secondary {
       opacity: 1;
-      transform: scale(1.025);
+      transform: scale(1.02);
     }
   }
 
@@ -516,203 +580,274 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: var(--color-surface);
+    background-color: var(--color-surface, #F5F5F5);
   }
 
   .product-card__placeholder svg {
-    width: 44%;
-    height: 44%;
+    width: 40%;
+    height: 40%;
     fill: var(--color-text-subtle);
-    opacity: 0.35;
+    opacity: 0.3;
   }
 
-  /* Status Badges */
+  /* ==========================================================================
+     Apple-Grade Frosted Glass Status Badges (Top-Left)
+     ========================================================================== */
   .product-card__badges {
     position: absolute;
-    top: var(--space-xs);
-    left: var(--space-xs);
+    top: 8px;
+    left: 8px;
     z-index: 4;
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: 4px;
     pointer-events: none;
   }
 
   .product-card__badge {
     display: inline-flex;
     align-items: center;
-    padding: 0.25rem 0.5rem;
-    line-height: 1;
+    padding: 3px 8px;
     font-family: var(--font-body);
+    font-size: 0.6875rem;
     font-weight: 500;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+    line-height: 1;
+    border-radius: 9999px;
   }
 
   .product-card__badge--sale {
-    background-color: var(--color-sale, #991B1B);
-    color: var(--color-white, #FFFFFF);
+    background-color: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    color: var(--color-sale, #991B1B);
+    border: 1px solid rgba(153, 27, 27, 0.22);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   }
 
   .product-card__badge--sold-out {
-    background-color: var(--color-surface-dark, #111111);
-    color: var(--color-white, #FFFFFF);
-    opacity: 0.85;
+    background-color: rgba(17, 17, 17, 0.78);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    color: #FFFFFF;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
   }
 
   /* ==========================================================================
-     Mobile Quick-Add Corner (+) Button
-     - Fixed in bottom-right corner of photo
-     - Guaranteed 44x44px touch target
-     - Clean high-contrast circle
+     Desktop Floating Frosted Glass Quick-Add Size Rail
+     - Glides up gracefully on card hover
+     - Exposes direct 1-click size pills
+     - Zero visual clutter when resting
+     ========================================================================== */
+  .product-card__desktop-action-bar {
+    display: none;
+  }
+
+  @media (hover: hover) and (min-width: 750px) {
+    .product-card__desktop-action-bar {
+      display: flex;
+      position: absolute;
+      inset: auto 8px 8px 8px;
+      z-index: 6;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      padding: 4px;
+      box-sizing: border-box;
+      opacity: 0;
+      transform: translateY(6px);
+      pointer-events: none;
+      transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1),
+                  opacity 180ms ease;
+    }
+
+    .product-card:hover .product-card__desktop-action-bar {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .product-card__quick-size-pills {
+      display: flex;
+      width: 100%;
+      gap: 4px;
+    }
+
+    .product-card__quick-form {
+      flex: 1;
+      margin: 0;
+      padding: 0;
+    }
+
+    .product-card__size-pill {
+      width: 100%;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--color-text, #111111);
+      font-family: var(--font-body);
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      cursor: pointer;
+      border-radius: var(--radius-none, 0px);
+      transition: background-color 140ms ease, color 140ms ease, transform 120ms ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .product-card__size-pill:hover:not(:disabled) {
+      background-color: var(--color-text, #111111);
+      color: #FFFFFF;
+    }
+
+    .product-card__size-pill:active:not(:disabled) {
+      transform: scale(0.94);
+    }
+
+    .product-card__size-pill--sold-out,
+    .product-card__size-pill:disabled {
+      opacity: 0.3;
+      text-decoration: line-through;
+      cursor: not-allowed;
+    }
+  }
+
+  /* ==========================================================================
+     Mobile Refined Frosted Glass Quick-Add Action Button
+     - Guaranteed 44px hit target, sleek 34px visual circle
+     - Doesn't obscure garment photo like bulky black button
      ========================================================================== */
   .product-card__mobile-quick-btn {
     position: absolute;
-    right: 8px;
-    bottom: 8px;
+    right: 6px;
+    bottom: 6px;
     z-index: 5;
     width: 44px;
     height: 44px;
-    border-radius: 50%;
-    background-color: var(--color-text, #111111);
-    color: var(--color-white, #FFFFFF);
+    padding: 0;
+    margin: 0;
+    background: transparent;
     border: none;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
-    transition: transform 180ms ease, background-color 180ms ease;
     -webkit-tap-highlight-color: transparent;
   }
 
-  .product-card__mobile-quick-btn:active {
-    transform: scale(0.92);
+  .product-card__mobile-quick-btn::before {
+    content: '';
+    position: absolute;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 140ms cubic-bezier(0.23, 1, 0.32, 1), background-color 140ms ease;
   }
 
-  /* Desktop Quick Add Bar */
-  .product-card__desktop-quick-btn {
-    display: none;
+  .product-card__mobile-quick-btn svg {
+    position: relative;
+    z-index: 1;
+    color: var(--color-text, #111111);
+  }
+
+  .product-card__mobile-quick-btn:active::before {
+    transform: scale(0.92);
+    background-color: #FFFFFF;
   }
 
   @media (min-width: 750px) {
     .product-card__mobile-quick-btn {
       display: none;
     }
-
-    .product-card__desktop-quick-btn {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      z-index: 5;
-      height: 44px;
-      background-color: var(--color-text, #111111);
-      color: var(--color-white, #FFFFFF);
-      border: none;
-      font-family: var(--font-body);
-      font-size: 0.75rem;
-      font-weight: 500;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transform: translateY(100%);
-      transition: transform 240ms cubic-bezier(0.23, 1, 0.32, 1), background-color 160ms ease;
-    }
-
-    .product-card__desktop-quick-btn:hover {
-      background-color: #262626;
-    }
-
-    .product-card:hover .product-card__desktop-quick-btn {
-      transform: translateY(0);
-    }
   }
 
   /* ==========================================================================
-     Slide-Up Quick Size Picker Tray
-     - Appears directly over the bottom of the card media
-     - Accessible single-tap size buttons
-     - Struck-through sold-out sizes
+     Mobile Slide-Up Mini Size Sheet
+     - Spring-like entrance with Apple-grade frosted glass
      ========================================================================== */
-  .product-card__size-tray {
+  .product-card__mobile-sheet {
     position: absolute;
     inset: auto 0 0 0;
     z-index: 10;
-    background-color: var(--color-background, #FFFFFF);
-    border-top: 1px solid var(--color-border, #E5E5E5);
-    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+    padding: 8px 10px 10px;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 6px;
     transform: translateY(102%);
-    transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1), visibility 260ms;
-    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.08);
+    transition: transform 220ms cubic-bezier(0.23, 1, 0.32, 1), visibility 220ms;
     pointer-events: none;
     visibility: hidden;
   }
 
-  .product-card__size-tray.is-active {
+  .product-card__mobile-sheet.is-active {
     transform: translateY(0);
     pointer-events: auto;
     visibility: visible;
   }
 
-  .size-tray__header {
+  .mobile-sheet__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
   }
 
-  .size-tray__title {
+  .mobile-sheet__title {
+    font-size: 0.6875rem;
     font-weight: 600;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--color-text);
+    color: var(--color-text, #111111);
   }
 
-  .size-tray__close {
+  .mobile-sheet__close {
     background: transparent;
     border: none;
-    color: var(--color-text-muted);
+    color: var(--color-text-muted, #555555);
     cursor: pointer;
-    padding: 4px;
+    padding: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
-    min-width: 24px;
-    min-height: 24px;
+    min-width: 32px;
+    min-height: 32px;
   }
 
-  .size-tray__close:hover {
-    color: var(--color-text);
-  }
-
-  .size-tray__sizes {
+  .mobile-sheet__sizes {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 6px;
   }
 
-  .size-tray__form {
+  .mobile-sheet__form {
     margin: 0;
     padding: 0;
   }
 
-  .size-tray__form--single {
-    grid-column: 1 / -1;
-  }
-
-  .size-tray__btn {
+  .mobile-sheet__btn {
     width: 100%;
-    min-height: 38px;
+    min-height: 36px;
     background-color: var(--color-surface, #F5F5F5);
     border: 1px solid var(--color-border, #E5E5E5);
-    color: var(--color-text);
+    color: var(--color-text, #111111);
     font-family: var(--font-body);
     font-size: 0.75rem;
     font-weight: 500;
@@ -720,171 +855,185 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
+    transition: background-color 140ms ease, color 140ms ease, transform 120ms ease;
     -webkit-tap-highlight-color: transparent;
   }
 
-  .size-tray__btn:hover:not(:disabled) {
+  .mobile-sheet__btn:active:not(:disabled) {
+    transform: scale(0.95);
     background-color: var(--color-text, #111111);
-    color: var(--color-white, #FFFFFF);
-    border-color: var(--color-text, #111111);
+    color: #FFFFFF;
   }
 
-  .size-tray__btn:active:not(:disabled) {
-    transform: scale(0.96);
-  }
-
-  .size-tray__btn--sold-out,
-  .size-tray__btn:disabled {
-    opacity: 0.35;
+  .mobile-sheet__btn--sold-out,
+  .mobile-sheet__btn:disabled {
+    opacity: 0.3;
     text-decoration: line-through;
     cursor: not-allowed;
     background-color: transparent;
   }
 
-  .size-tray__btn--full {
-    grid-column: 1 / -1;
-    background-color: var(--color-text, #111111);
-    color: var(--color-white, #FFFFFF);
-  }
-
-  .size-tray__footer {
-    display: flex;
-    justify-content: flex-end;
-    padding-top: 2px;
-  }
-
-  .size-tray__guide-link {
-    background: transparent;
-    border: none;
-    color: var(--color-text-muted);
-    cursor: pointer;
-    font-family: var(--font-body);
-    font-size: 0.6875rem;
-    letter-spacing: 0.06em;
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    padding: 2px 0;
-  }
-
-  .size-tray__guide-link:hover {
-    color: var(--color-text);
-  }
-
-  /* Card Content Below Media */
+  /* ==========================================================================
+     Card Content Below Photography (Strict Visual Hierarchy)
+     ========================================================================== */
   .product-card__content {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
-    padding-top: var(--space-xs);
+    padding-top: 0.625rem;
     text-align: left;
   }
 
   .product-card__spec {
     color: var(--color-text-subtle, #6B6B6B);
     letter-spacing: 0.08em;
+    font-size: 0.6875rem;
     text-transform: uppercase;
+    margin-bottom: 0.25rem;
   }
 
   .product-card__title {
     font-family: var(--font-body);
-    font-size: 0.9375rem;
+    font-size: clamp(0.875rem, 1.1vw, 0.9375rem);
     font-weight: 500;
-    line-height: var(--leading-snug);
-    margin: 0;
+    line-height: 1.25;
+    margin: 0 0 0.35rem 0;
     letter-spacing: -0.01em;
+    text-wrap: balance;
   }
 
-  .product-card__link {
-    color: var(--color-text);
+  .product-card__title-link {
+    color: var(--color-text, #111111);
     text-decoration: none;
-    transition: color var(--transition-fast);
+    transition: opacity var(--transition-fast, 150ms ease);
   }
 
-  .product-card__link::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: 2;
+  @media (hover: hover) and (pointer: fine) {
+    .product-card__title-link:hover {
+      opacity: 0.7;
+    }
   }
 
-  .product-card__link:hover {
-    color: var(--color-text-muted);
+  .product-card__meta-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+    flex-wrap: wrap;
   }
 
   .product-card__price {
-    margin-top: 0.125rem;
+    font-variant-numeric: tabular-nums;
   }
 
-  /* Color dots */
+  .product-card__price .price {
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  .product-card__price .price__item--sale {
+    color: var(--color-sale, #991B1B);
+    font-weight: 600;
+  }
+
+  .product-card__price .price__item--regular {
+    color: var(--color-text-subtle, #888888);
+    font-weight: 400;
+    font-size: 0.8125rem;
+  }
+
+  /* Color variant indicator */
   .product-card__colors {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
-    color: var(--color-text-subtle);
-    margin-top: 0.15rem;
+    gap: 0.3rem;
+    color: var(--color-text-subtle, #6B6B6B);
+    font-size: 0.75rem;
+    line-height: 1;
   }
 
   .product-card__color-dot {
-    width: 6px;
-    height: 6px;
+    width: 5px;
+    height: 5px;
     border-radius: 50%;
-    background-color: var(--color-text);
+    background-color: var(--color-border-strong, #8A8A8A);
     display: inline-block;
+  }
+
+  /* Reduced Motion Support */
+  @media (prefers-reduced-motion: reduce) {
+    .product-card__image,
+    .product-card__desktop-action-bar,
+    .product-card__mobile-sheet,
+    .product-card__mobile-quick-btn::before,
+    .product-card__size-pill,
+    .mobile-sheet__btn {
+      transition: opacity 120ms ease !important;
+      transform: none !important;
+    }
   }
 {% endstylesheet %}
 
 <script>
-  // Delegated handler for Quick-Add size picker tray toggles & AJAX Cart Submission
+  // Delegated handler for Mobile Size Sheet & Desktop AJAX Quick-Add
   if (!window._productCardScriptInitialized) {
     window._productCardScriptInitialized = true;
 
+    // Open/Close Mobile Size Sheet
     document.addEventListener('click', (e) => {
-      const trigger = e.target.closest('[data-quick-add-trigger]');
-      if (trigger) {
+      const mobileTrigger = e.target.closest('[data-mobile-quick-trigger]');
+      if (mobileTrigger) {
         e.preventDefault();
         e.stopPropagation();
-        const card = trigger.closest('[data-product-card]');
+        const card = mobileTrigger.closest('[data-product-card]');
         if (!card) return;
-        const tray = card.querySelector('[data-size-tray]');
-        if (tray) {
-          // Close other open trays first
-          document.querySelectorAll('[data-size-tray].is-active').forEach(t => {
-            if (t !== tray) t.classList.remove('is-active');
+        const sheet = card.querySelector('[data-mobile-sheet]');
+        if (sheet) {
+          document.querySelectorAll('[data-mobile-sheet].is-active').forEach(s => {
+            if (s !== sheet) s.classList.remove('is-active');
           });
-          tray.classList.toggle('is-active');
-          tray.setAttribute('aria-hidden', !tray.classList.contains('is-active'));
+          sheet.classList.toggle('is-active');
+          sheet.setAttribute('aria-hidden', !sheet.classList.contains('is-active'));
         }
         return;
       }
 
-      const closeBtn = e.target.closest('[data-size-close]');
+      const closeBtn = e.target.closest('[data-sheet-close]');
       if (closeBtn) {
         e.preventDefault();
-        const tray = closeBtn.closest('[data-size-tray]');
-        if (tray) {
-          tray.classList.remove('is-active');
-          tray.setAttribute('aria-hidden', 'true');
+        const sheet = closeBtn.closest('[data-mobile-sheet]');
+        if (sheet) {
+          sheet.classList.remove('is-active');
+          sheet.setAttribute('aria-hidden', 'true');
         }
         return;
       }
 
-      // Click outside closes trays
-      if (!e.target.closest('[data-size-tray]')) {
-        document.querySelectorAll('[data-size-tray].is-active').forEach(t => {
-          t.classList.remove('is-active');
-          t.setAttribute('aria-hidden', 'true');
+      // Outside click closes any open mobile sheet
+      if (!e.target.closest('[data-mobile-sheet]')) {
+        document.querySelectorAll('[data-mobile-sheet].is-active').forEach(s => {
+          s.classList.remove('is-active');
+          s.setAttribute('aria-hidden', 'true');
         });
       }
     });
 
-    // Real AJAX Add-to-Cart Submission for Quick-Add Size Buttons
+    // Close on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('[data-mobile-sheet].is-active').forEach(s => {
+          s.classList.remove('is-active');
+          s.setAttribute('aria-hidden', 'true');
+        });
+      }
+    });
+
+    // Instant AJAX Add to Cart Submission with tactile feedback
     document.addEventListener('submit', (e) => {
-      const form = e.target.closest('.size-tray__form');
+      const form = e.target.closest('.product-card__quick-form, .mobile-sheet__form');
       if (!form) return;
 
       e.preventDefault();
-      const btn = form.querySelector('.size-tray__btn');
+      const btn = form.querySelector('button[type="submit"]');
       if (!btn || btn.disabled) return;
 
       const originalText = btn.textContent;
@@ -906,24 +1055,32 @@
       })
       .then(item => {
         btn.textContent = '✓';
+        btn.style.backgroundColor = 'var(--color-text, #111111)';
+        btn.style.color = '#FFFFFF';
+
         setTimeout(() => {
           btn.textContent = originalText;
           btn.disabled = false;
-          const tray = form.closest('[data-size-tray]');
-          if (tray) {
-            tray.classList.remove('is-active');
-            tray.setAttribute('aria-hidden', 'true');
+          btn.style.backgroundColor = '';
+          btn.style.color = '';
+
+          // Close mobile sheet if open
+          const sheet = form.closest('[data-mobile-sheet]');
+          if (sheet) {
+            sheet.classList.remove('is-active');
+            sheet.setAttribute('aria-hidden', 'true');
           }
-          // Refresh and open the Cart Drawer with the newly added item!
+
+          // Trigger Cart Drawer update & slide-out
           window.dispatchEvent(new CustomEvent('cart:refresh'));
           window.dispatchEvent(new CustomEvent('cart:open'));
-        }, 300);
+        }, 320);
       })
       .catch(err => {
-        console.error('Quick add error:', err);
+        console.error('Quick add failed:', err);
         btn.textContent = originalText;
         btn.disabled = false;
-        form.submit();
+        form.submit(); // fallback to standard submission
       });
     });
   }
