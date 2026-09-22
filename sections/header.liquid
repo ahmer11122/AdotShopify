@@ -1598,6 +1598,11 @@
     gap: var(--space-md);
   }
 
+  .cart-drawer__items[hidden],
+  .cart-drawer__item[hidden] {
+    display: none !important;
+  }
+
   .cart-drawer__item {
     display: grid;
     grid-template-columns: 80px 1fr;
@@ -2482,6 +2487,12 @@
       const headerDrawer = document.querySelector('header-drawer');
       if (headerDrawer && headerDrawer.isOpen) headerDrawer.close();
 
+      const items = this.querySelector('[data-cart-items]');
+      const rows = this.querySelectorAll('[data-item-key]').length;
+      const shownCount = Number(String(this.querySelector('[data-drawer-count]')?.textContent || '').replace(/\D/g, '')) || 0;
+      if (items && rows > 0) items.hidden = false;
+      if (shownCount > 0 && rows === 0) this.fetchCart();
+
       const closeBtn = this.querySelector('.cart-drawer__close');
       if (closeBtn) closeBtn.focus();
     }
@@ -2522,7 +2533,7 @@
           const url = new URL(window.location.href);
           url.searchParams.set('section_id', sectionId);
           url.hash = '';
-          const res = await fetch(url.toString());
+          const res = await fetch(url.toString(), { cache: 'no-store' });
           if (!res.ok) throw new Error('Section render failed');
           const html = await res.text();
           const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -2531,7 +2542,13 @@
 
           const items = this.querySelector('[data-cart-items]');
           const nextItems = next.querySelector('[data-cart-items]');
-          if (items && nextItems) items.innerHTML = nextItems.innerHTML;
+          const nextHasLines = Boolean(nextItems && nextItems.querySelector('[data-item-key]'));
+          const renderedCount = Number(next.dataset.cartCountValue || 0);
+          if (!nextHasLines && renderedCount > 0) throw new Error('Section cart omitted line items');
+          if (items && nextItems) {
+            items.innerHTML = nextItems.innerHTML;
+            items.hidden = false;
+          }
 
           const empty = this.querySelector('[data-cart-empty]');
           const nextEmpty = next.querySelector('[data-cart-empty]');
@@ -2655,6 +2672,7 @@
 
       if (emptyContainer) emptyContainer.hidden = true;
       if (footer) footer.hidden = false;
+      if (itemsContainer) itemsContainer.hidden = false;
 
       if (itemsContainer) {
         const adotFallbackMap = {

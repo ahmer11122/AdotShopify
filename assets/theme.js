@@ -5,6 +5,13 @@
 (function () {
   const QTY_DEBOUNCE_MS = 300;
   const queues = new Map();
+  let chain = Promise.resolve();
+
+  function enqueue(task) {
+    const run = chain.then(task, task);
+    chain = run.then(() => {}, () => {});
+    return run;
+  }
 
   function formatMoney(cents) {
     const value = Math.round(Number(cents));
@@ -63,7 +70,41 @@
         el.textContent = formatMoney(unit * qty);
       });
     }
-    row.hidden = qty <= 0;
+  }
+
+  function visibleRows(root) {
+    return [...root.querySelectorAll('[data-item-key]')];
+  }
+
+  function syncEmpty(root) {
+    const isEmpty = visibleRows(root).length === 0;
+    const empty = root.querySelector('[data-cart-empty]');
+    const footer = root.querySelector('.cart-drawer__footer');
+    const items = root.querySelector('[data-cart-items]');
+    if (empty) empty.hidden = !isEmpty;
+    if (footer) footer.hidden = isEmpty;
+    if (items) items.hidden = false;
+    if (!isEmpty) return;
+    root.dataset.cartTotal = '0';
+    root.dataset.cartCountValue = '0';
+    root.querySelectorAll('[data-cart-subtotal], [data-cart-total]').forEach((el) => {
+      el.textContent = formatMoney(0);
+    });
+    const anyLeft = [...document.querySelectorAll('[data-qty-root]')].some((other) => visibleRows(other).length > 0);
+    if (!anyLeft) paintTotals(root, 0, 0);
+  }
+
+  function dropLine(key) {
+    document.querySelectorAll('[data-qty-root]').forEach((root) => {
+      const row = findRow(root, key);
+      if (row) {
+        const prev = lineQty(row);
+        const unit = Number(row.dataset.unitPrice) || 0;
+        if (prev > 0) adjustTotals(root, -prev, unit);
+        row.remove();
+      }
+      syncEmpty(root);
+    });
   }
 
   function showNote(row, message) {
@@ -230,7 +271,14 @@
     state.desired = quantity;
     state.hooks = hooks;
     clearTimeout(state.timer);
-    state.timer = setTimeout(() => flush(key), QTY_DEBOUNCE_MS);
+    state.timer = setTimeout(() => flush(key), quantity === 0 ? 0 : QTY_DEBOUNCE_MS);
+  }
+
+  function resyncFromServer() {
+    document.querySelectorAll('cart-drawer').forEach((drawer) => {
+      if (typeof drawer.fetchCart === 'function') drawer.fetchCart();
+    });
+    if (document.querySelector('[data-cart-page]')) window.location.reload();
   }
 
   async function flush(key) {
@@ -241,63 +289,71 @@
       return;
     }
 
-    const quantity = state.desired;
     state.inflight = true;
     state.dirty = false;
     clearTimeout(state.timer);
     state.timer = 0;
 
-    try {
-      const res = await fetch('/cart/change.js', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({ id: key, quantity }),
-      });
+    enqueue(async () => {
+      const live = queues.get(key);
+      if (!live) return;
+      const quantity = live.desired;
 
-      if (!res.ok) {
-        let message = 'That quantity is not available.';
-        try {
-          const err = await res.json();
-          message = err.description || err.message || message;
-        } catch (parseErr) {
-          /* keep the fallback message */
-        }
-        const cart = await fetch('/cart.js').then((response) => response.json());
-        const line = cart.items.find((item) => item.key === key);
-        const allowed = line ? line.quantity : 0;
-        const parsed = readCap(message);
-        capLine(key, parsed !== null ? parsed : allowed);
-        state.desired = allowed;
-        state.dirty = false;
-        state.inflight = false;
-        applySettled(cart);
-        document.querySelectorAll('[data-qty-root]').forEach((root) => {
-          const row = findRow(root, key);
-          if (row) showNote(row, stockMessage(parsed !== null ? parsed : allowed));
+      try {
+        const res = await fetch('/cart/change.js', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({ id: key, quantity }),
         });
-        return;
-      }
 
-      const cart = await res.json();
-      if (state.dirty && state.desired !== quantity) {
-        state.inflight = false;
-        flush(key);
-        return;
-      }
-      state.inflight = false;
-      applySettled(cart);
-      if (!hasPending()) {
+        if (!res.ok) {
+          let message = 'That quantity is not available.';
+          try {
+            const err = await res.json();
+            message = err.description || err.message || message;
+          } catch (parseErr) {
+            /* keep the fallback message */
+          }
+          const cart = await fetch('/cart.js').then((response) => response.json());
+          const line = cart.items.find((item) => item.key === key);
+          const allowed = line ? line.quantity : 0;
+          const parsed = readCap(message);
+          capLine(key, parsed !== null ? parsed : allowed);
+          live.desired = allowed;
+          live.dirty = false;
+          live.inflight = false;
+          live.timer = 0;
+          applySettled(cart);
+          document.querySelectorAll('[data-qty-root]').forEach((root) => {
+            const row = findRow(root, key);
+            if (row) showNote(row, stockMessage(parsed !== null ? parsed : allowed));
+          });
+          return;
+        }
+
+        const cart = await res.json();
+        live.inflight = false;
+        if (live.dirty || live.desired !== quantity) {
+          live.dirty = false;
+          flush(key);
+          return;
+        }
+        live.timer = 0;
+        // An older response must not paint a total for items that are already gone.
+        if (hasPending()) return;
+        applySettled(cart);
         document.querySelectorAll('cart-drawer').forEach((drawer) => {
           if (drawer.dataset.refreshQueued === 'true' && typeof drawer.fetchCart === 'function') {
             drawer.fetchCart();
           }
         });
+      } catch (err) {
+        console.error('Error updating cart:', err);
+        live.inflight = false;
+        live.timer = 0;
+        resyncFromServer();
       }
-    } catch (err) {
-      console.error('Error updating cart:', err);
-      state.inflight = false;
-      if (state.hooks && state.hooks.onError) state.hooks.onError(err);
-    }
+    });
   }
 
   function commit(root, row, next, hooks) {
@@ -315,12 +371,18 @@
       syncButtons(root);
       return;
     }
+    const key = row.dataset.itemKey;
+    if (quantity === 0) {
+      dropLine(key);
+      schedule(key, 0, hooks);
+      return;
+    }
     const unit = Number(row.dataset.unitPrice) || 0;
     paintQty(row, quantity);
     adjustTotals(root, quantity - prev, unit);
     syncButtons(root);
-    mirror(root, row.dataset.itemKey, quantity);
-    schedule(row.dataset.itemKey, quantity, hooks);
+    mirror(root, key, quantity);
+    schedule(key, quantity, hooks);
   }
 
   function bind(root, hooks) {
