@@ -1079,14 +1079,8 @@ export function cn(...inputs: ClassValue[]) {
 
 
 
-## Preview behavior
-
-Move over the image to reveal its detail. The effect stays inside its container and respects reduced motion preferences.
-
-
-
-//
-
+## 
+////////////////////////////////////////////////////////////////
 
 no 3 like this one 
 

@@ -1,0 +1,944 @@
+{% comment %}
+  Lookbook Flow
+  Page-scroll interpretation of a three-column flow scroll.
+  Each row rests in the focal plane, then gathers toward center as the next row steps forward.
+  Scroll drives transform and opacity only. Copy stays in the theme editor, never in the image.
+{% endcomment %}
+
+{% liquid
+  assign card_count = section.blocks.size
+  if card_count == 0
+    assign card_count = 6
+  endif
+  assign flow_rows = card_count | plus: 2 | divided_by: 3
+  assign row_label = flow_rows
+  if flow_rows < 10
+    assign row_label = flow_rows | prepend: '0'
+  endif
+%}
+
+<section
+  class="flow-look"
+  data-section-id="{{ section.id }}"
+  data-flow-rows="{{ flow_rows }}"
+  style="--flow-bg: {{ section.settings.background_color }}; --flow-ink: {{ section.settings.text_color }}; --flow-rows: {{ flow_rows }};"
+  aria-labelledby="FlowLookHeading-{{ section.id }}"
+>
+  <lookbook-flow class="flow-look__pin" data-rows="{{ flow_rows }}">
+    <div class="flow-look__stage">
+      <header class="flow-look__mast">
+        <div class="flow-look__kicker">
+          {% if section.settings.eyebrow != blank %}
+            <p class="text-micro flow-look__eyebrow">{{ section.settings.eyebrow }}</p>
+          {% endif %}
+          <p class="text-micro flow-look__count" aria-hidden="true">
+            <span data-flow-now>01</span>
+            <span class="flow-look__count-rule"></span>
+            <span>{{ row_label }}</span>
+          </p>
+        </div>
+
+        {% if section.settings.heading != blank %}
+          <h2 id="FlowLookHeading-{{ section.id }}" class="flow-look__heading">{{ section.settings.heading }}</h2>
+        {% endif %}
+
+        {% if section.settings.caption != blank %}
+          <p class="flow-look__caption">{{ section.settings.caption }}</p>
+        {% endif %}
+      </header>
+
+      <div class="flow-look__viewport" data-flow-viewport>
+        <div class="flow-look__grid" data-flow-grid>
+          {% if section.blocks.size > 0 %}
+            {% for block in section.blocks %}
+              {% liquid
+                assign card_img = block.settings.image
+                assign card_title = block.settings.title | default: 'Look'
+                assign card_subtitle = block.settings.subtitle
+                assign card_link = block.settings.link | default: routes.all_products_collection_url
+                assign card_alt = card_title
+                if card_subtitle != blank
+                  assign card_alt = card_title | append: ', ' | append: card_subtitle
+                endif
+                assign col = forloop.index0 | modulo: 3
+                assign row = forloop.index0 | divided_by: 3
+              %}
+              <a
+                href="{{ card_link }}"
+                class="flow-card"
+                data-index="{{ forloop.index0 }}"
+                data-row="{{ row }}"
+                data-col="{{ col }}"
+                {{ block.shopify_attributes }}
+              >
+                <span class="flow-card__frame">
+                  {% if card_img != blank %}
+                    {{
+                      card_img
+                      | image_url: width: 1400
+                      | image_tag:
+                        loading: 'lazy',
+                        widths: '240, 360, 480, 720, 960, 1200, 1400',
+                        sizes: '(min-width: 990px) 22vw, 42vw',
+                        class: 'flow-card__img',
+                        alt: card_alt
+                    }}
+                  {% else %}
+                    {% assign fallback_slot = forloop.index0 | modulo: 3 %}
+                    {% if fallback_slot == 0 %}
+                      <img class="flow-card__img" src="{{ 'category-hoodies.jpg' | asset_url }}" alt="{{ card_alt | escape }}" width="800" height="1000" loading="lazy">
+                    {% elsif fallback_slot == 1 %}
+                      <img class="flow-card__img" src="{{ 'category-shirts.jpg' | asset_url }}" alt="{{ card_alt | escape }}" width="800" height="1000" loading="lazy">
+                    {% else %}
+                      <img class="flow-card__img" src="{{ 'category-trousers.jpg' | asset_url }}" alt="{{ card_alt | escape }}" width="800" height="1000" loading="lazy">
+                    {% endif %}
+                  {% endif %}
+                </span>
+              </a>
+            {% endfor %}
+          {% else %}
+            {% assign fallback_titles = 'Heavyweight Fleece|Cotton Poplin|Structured Twill|Autumn Lookbook|Boxy Cut Fleece|Essential Poplin' | split: '|' %}
+            {% assign fallback_subs = '450 GSM Organic Cotton|Camp Collar Daily Fit|Relaxed Tailored Cut|Core Layering Capsule|Custom Milled Loopback|Pearl Button Hardware' | split: '|' %}
+            {% assign fallback_files = 'category-hoodies.jpg|category-shirts.jpg|category-trousers.jpg|hero-desktop.png|category-hoodies.jpg|category-shirts.jpg' | split: '|' %}
+            {% assign fallback_queries = 'hoodies|shirts|trousers|all|hoodies|shirts' | split: '|' %}
+            {% for title in fallback_titles %}
+              {% liquid
+                assign col = forloop.index0 | modulo: 3
+                assign row = forloop.index0 | divided_by: 3
+                assign piece = forloop.index
+                assign piece_label = piece | prepend: '0'
+                assign card_subtitle = fallback_subs[forloop.index0]
+                assign card_file = fallback_files[forloop.index0]
+                assign card_query = fallback_queries[forloop.index0]
+                if card_query == 'all'
+                  assign card_link = routes.all_products_collection_url
+                else
+                  assign card_link = routes.all_products_collection_url | append: '?category=' | append: card_query
+                endif
+              %}
+              <a
+                href="{{ card_link }}"
+                class="flow-card"
+                data-index="{{ forloop.index0 }}"
+                data-row="{{ row }}"
+                data-col="{{ col }}"
+              >
+                <span class="flow-card__frame">
+                  <img class="flow-card__img" src="{{ card_file | asset_url }}" alt="{{ title | escape }}, {{ card_subtitle | escape }}" width="800" height="1000" loading="lazy">
+                </span>
+              </a>
+            {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="flow-look__foot">
+        <div class="flow-look__progress" aria-hidden="true">
+          <span data-flow-progress></span>
+        </div>
+
+        <div class="flow-rail__panels" data-flow-panels aria-hidden="true">
+          {% if section.blocks.size > 0 %}
+            {% for block in section.blocks %}
+              {% liquid
+                assign col = forloop.index0 | modulo: 3
+                assign row = forloop.index0 | divided_by: 3
+                assign piece = forloop.index
+                assign piece_label = piece
+                if piece < 10
+                  assign piece_label = piece | prepend: '0'
+                endif
+                assign card_title = block.settings.title | default: 'Look'
+                assign card_subtitle = block.settings.subtitle
+              %}
+              {% if col == 0 %}
+                <div class="flow-rail__panel{% if row == 0 %} is-on{% endif %}" data-flow-panel="{{ row }}">
+                  <div class="flow-rail__line">
+              {% endif %}
+                    <div class="flow-rail__item{% if col != 1 %} flow-rail__item--side{% endif %}">
+                      <span class="flow-rail__index">{{ piece_label }}</span>
+                      <span class="flow-rail__name">{{ card_title }}</span>
+                      {% if card_subtitle != blank %}
+                        <span class="flow-rail__sub">{{ card_subtitle }}</span>
+                      {% endif %}
+                    </div>
+              {% if col == 2 or forloop.last %}
+                  </div>
+                </div>
+              {% endif %}
+            {% endfor %}
+          {% else %}
+            {% assign fallback_titles = 'Heavyweight Fleece|Cotton Poplin|Structured Twill|Autumn Lookbook|Boxy Cut Fleece|Essential Poplin' | split: '|' %}
+            {% assign fallback_subs = '450 GSM Organic Cotton|Camp Collar Daily Fit|Relaxed Tailored Cut|Core Layering Capsule|Custom Milled Loopback|Pearl Button Hardware' | split: '|' %}
+            {% for title in fallback_titles %}
+              {% assign col = forloop.index0 | modulo: 3 %}
+              {% assign row = forloop.index0 | divided_by: 3 %}
+              {% assign piece_label = forloop.index | prepend: '0' %}
+              {% if col == 0 %}
+                <div class="flow-rail__panel{% if row == 0 %} is-on{% endif %}" data-flow-panel="{{ row }}">
+                  <div class="flow-rail__line">
+              {% endif %}
+                    <div class="flow-rail__item{% if col != 1 %} flow-rail__item--side{% endif %}">
+                      <span class="flow-rail__index">{{ piece_label }}</span>
+                      <span class="flow-rail__name">{{ title }}</span>
+                      <span class="flow-rail__sub">{{ fallback_subs[forloop.index0] }}</span>
+                    </div>
+              {% if col == 2 or forloop.last %}
+                  </div>
+                </div>
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+        </div>
+
+        {% if section.settings.button_label != blank %}
+          <a class="btn btn-outline flow-look__cta" href="{{ section.settings.button_link | default: routes.all_products_collection_url }}">
+            <span>{{ section.settings.button_label }}</span>
+            <svg class="flow-look__cta-icon" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+              <path d="M2.5 6H9.5M9.5 6L6.5 3M9.5 6L6.5 9" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </lookbook-flow>
+</section>
+
+{% stylesheet %}
+  .flow-look {
+    --flow-gap: clamp(8px, 1.4vw, 18px);
+    --flow-board: min(100%, 920px);
+    position: relative;
+    height: auto;
+    background: var(--flow-bg, var(--color-background));
+    color: var(--flow-ink, var(--color-text));
+    border-top: 1px solid var(--color-border);
+  }
+
+  .flow-look.is-live {
+    height: calc(100svh + (var(--flow-rows, 2) - 1) * 120svh);
+  }
+
+  .flow-look__pin {
+    display: block;
+  }
+
+  .flow-look.is-live .flow-look__pin {
+    height: 100%;
+  }
+
+  .flow-look__stage {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(12px, 2vh, 22px);
+    padding-top: calc(var(--header-height, 80px) + 1.25rem);
+    padding-bottom: var(--space-lg);
+    padding-inline: var(--space-sm);
+    box-sizing: border-box;
+  }
+
+  .flow-look.is-live .flow-look__stage {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    gap: clamp(8px, 1.4vh, 16px);
+    padding-bottom: 1.15rem;
+    overflow: hidden;
+  }
+
+  .flow-look__mast,
+  .flow-look__foot {
+    width: var(--flow-board);
+    max-width: 100%;
+    margin-inline: auto;
+  }
+
+  .flow-look__kicker {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    min-height: 1rem;
+  }
+
+  .flow-look__eyebrow,
+  .flow-look__count {
+    margin: 0;
+    color: var(--color-text-subtle);
+  }
+
+  .flow-look__count {
+    display: none;
+    align-items: center;
+    gap: 0.55rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .flow-look.is-live .flow-look__count {
+    display: inline-flex;
+  }
+
+  .flow-look__count-rule {
+    width: 1.25rem;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.45;
+  }
+
+  .flow-look__heading {
+    margin: 0.35rem 0 0;
+    max-width: 16ch;
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 3.5vw, 3.4rem);
+    font-weight: 500;
+    line-height: 0.98;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+  }
+
+  .flow-look__caption {
+    margin: 0.55rem 0 0;
+    max-width: 38ch;
+    font-family: var(--font-body);
+    font-size: var(--font-size-caption);
+    line-height: var(--leading-normal);
+    color: var(--color-text-muted);
+  }
+
+  .flow-look__viewport {
+    position: relative;
+  }
+
+  .flow-look.is-live .flow-look__viewport {
+    flex: 1 1 auto;
+    min-height: 26svh;
+    overflow: hidden;
+  }
+
+  .flow-look__grid {
+    position: relative;
+    width: var(--flow-board);
+    max-width: 100%;
+    margin-inline: auto;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: var(--flow-gap);
+    row-gap: clamp(18px, 3vh, 36px);
+  }
+
+  .flow-look.is-live .flow-look__grid {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    row-gap: clamp(22px, 4.5vh, 52px);
+  }
+
+  .flow-card {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+    transform-origin: center center;
+    transition: none;
+  }
+
+  .flow-card:hover {
+    opacity: 1;
+  }
+
+  .flow-card:focus-visible {
+    outline: none;
+  }
+
+  .flow-card:focus-visible .flow-card__frame {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 3px;
+  }
+
+  .flow-card__frame {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    background: var(--color-surface);
+  }
+
+  .flow-card__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    user-select: none;
+    -webkit-user-drag: none;
+    transition: transform 400ms var(--ease-out);
+  }
+
+  .flow-card:active .flow-card__img {
+    transform: scale(0.985);
+    transition-duration: 140ms;
+  }
+
+  .flow-look__foot {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: var(--space-md);
+    row-gap: 0.85rem;
+    align-items: end;
+  }
+
+  .flow-look__progress {
+    display: none;
+    grid-column: 1 / -1;
+    height: 1px;
+    background: var(--color-border);
+  }
+
+  .flow-look.is-live .flow-look__progress {
+    display: block;
+  }
+
+  .flow-look__progress span {
+    display: block;
+    width: 100%;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0.06);
+    transform-origin: left center;
+  }
+
+  .flow-rail__panels {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    min-width: 0;
+  }
+
+  .flow-rail__panel {
+    opacity: 1;
+  }
+
+  .flow-look.is-live .flow-rail__panels {
+    display: grid;
+    gap: 0;
+  }
+
+  .flow-look.is-live .flow-rail__panel {
+    grid-area: 1 / 1;
+    opacity: 0;
+    transition: opacity 200ms var(--ease-out);
+  }
+
+  .flow-look.is-live .flow-rail__panel.is-on {
+    opacity: 1;
+  }
+
+  .flow-rail__line {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: var(--flow-gap);
+  }
+
+  .flow-rail__item {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.12rem;
+  }
+
+  .flow-rail__index {
+    font-family: var(--font-body);
+    font-size: var(--font-size-micro);
+    letter-spacing: var(--tracking-micro);
+    text-transform: uppercase;
+    color: var(--color-text-subtle);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .flow-rail__name {
+    font-family: var(--font-display);
+    font-size: var(--font-size-caption);
+    font-weight: 500;
+    letter-spacing: var(--tracking-tight);
+    line-height: 1.25;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .flow-rail__sub {
+    font-family: var(--font-body);
+    font-size: var(--font-size-micro);
+    line-height: 1.35;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .flow-look__cta.btn {
+    gap: 0.5rem;
+    width: fit-content;
+    transition:
+      transform 140ms var(--ease-out),
+      background-color 150ms ease,
+      color 150ms ease,
+      border-color 150ms ease;
+  }
+
+  .flow-look__cta-icon {
+    display: block;
+    transition: transform 180ms var(--ease-out);
+  }
+
+  .flow-look__cta.btn:active {
+    transform: scale(0.98);
+  }
+
+  @media (min-width: 750px) {
+    .flow-look__stage {
+      padding-inline: var(--space-md);
+    }
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .flow-card:hover .flow-card__img {
+      transform: scale(1.028);
+    }
+
+    .flow-card:active .flow-card__img {
+      transform: scale(0.985);
+    }
+
+    .flow-look__cta.btn:hover {
+      background: var(--color-text);
+      color: var(--color-text-inverse);
+      border-color: var(--color-text);
+      opacity: 1;
+    }
+
+    .flow-look__cta.btn:hover .flow-look__cta-icon {
+      transform: translateX(3px);
+    }
+  }
+
+  @media (max-width: 749px) {
+    .flow-look.is-live .flow-look__grid {
+      width: 132vw;
+      max-width: none;
+      left: 50%;
+      right: auto;
+      margin-left: -66vw;
+      margin-right: 0;
+    }
+
+    .flow-look__heading {
+      max-width: 12ch;
+    }
+
+    .flow-look.is-live .flow-rail__line:has(.flow-rail__item:nth-child(3)) .flow-rail__item--side {
+      display: none;
+    }
+
+    .flow-look.is-live .flow-rail__line:has(.flow-rail__item:nth-child(3)) {
+      grid-template-columns: 1fr;
+    }
+
+    .flow-rail__name,
+    .flow-rail__sub {
+      white-space: normal;
+    }
+
+    .flow-look__foot {
+      grid-template-columns: 1fr;
+      align-items: start;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .flow-look,
+    .flow-look.is-live {
+      height: auto;
+    }
+
+    .flow-look__stage,
+    .flow-look.is-live .flow-look__stage {
+      position: relative;
+      height: auto;
+      min-height: 0;
+      overflow: visible;
+    }
+
+    .flow-look__viewport,
+    .flow-look.is-live .flow-look__viewport {
+      overflow: visible;
+      flex: none;
+      min-height: 0;
+      height: auto;
+    }
+
+    .flow-look__grid,
+    .flow-look.is-live .flow-look__grid {
+      position: relative;
+      top: auto;
+      left: auto;
+      right: auto;
+      width: var(--flow-board);
+      max-width: 100%;
+      margin: 0 auto;
+      transform: none !important;
+    }
+
+    .flow-card {
+      transform: none !important;
+      opacity: 1 !important;
+    }
+
+    .flow-card__img,
+    .flow-look__cta-icon,
+    .flow-rail__panel,
+    .flow-look__cta.btn {
+      transition: none;
+    }
+
+    .flow-look__progress,
+    .flow-look__count,
+    .flow-look.is-live .flow-look__progress,
+    .flow-look.is-live .flow-look__count {
+      display: none;
+    }
+
+    .flow-rail__panels,
+    .flow-look.is-live .flow-rail__panels {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
+
+    .flow-rail__panel,
+    .flow-look.is-live .flow-rail__panel {
+      opacity: 1;
+      transition: none;
+    }
+
+    .flow-rail__line:has(.flow-rail__item:nth-child(3)) .flow-rail__item--side {
+      display: flex;
+    }
+
+    .flow-rail__line {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+{% endstylesheet %}
+
+<script>
+  (function () {
+    if (customElements.get('lookbook-flow')) return;
+
+    class LookbookFlow extends HTMLElement {
+      connectedCallback() {
+        this.stage = this.querySelector('.flow-look__stage');
+        this.viewport = this.querySelector('[data-flow-viewport]');
+        this.grid = this.querySelector('[data-flow-grid]');
+        this.sectionEl = this.closest('.flow-look');
+        this.cards = Array.from(this.querySelectorAll('.flow-card'));
+        this.panels = Array.from(this.querySelectorAll('[data-flow-panel]'));
+        this.nowEl = this.querySelector('[data-flow-now]');
+        this.progressEl = this.querySelector('[data-flow-progress]');
+        this.totalRows = Math.max(1, Math.ceil(this.cards.length / 3));
+        this.activeRow = -1;
+        this.lastProgress = -1;
+        this.baseY = 0;
+        this.stride = 1;
+        this.raf = 0;
+        this.visible = true;
+        this.mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+        this.onScroll = this.onScroll.bind(this);
+        this.onMotion = this.onMotion.bind(this);
+        this.onBlockSelect = this.onBlockSelect.bind(this);
+
+        this.mq.addEventListener('change', this.onMotion);
+        document.addEventListener('shopify:block:select', this.onBlockSelect);
+
+        if (!this.mq.matches && this.cards.length) {
+          this.sectionEl.classList.add('is-live');
+        }
+
+        this.attach();
+
+        if (this.mq.matches || this.cards.length === 0) return;
+
+        this.measure();
+        this.render(true);
+      }
+
+      attach() {
+        if (this.attached) return;
+        this.attached = true;
+
+        this.resizeObserver = new ResizeObserver(() => {
+          if (this.mq.matches) return;
+          this.measure();
+          this.render(true);
+        });
+        this.resizeObserver.observe(this.viewport);
+        this.resizeObserver.observe(this.stage);
+
+        this.intersectionObserver = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            this.visible = entry.isIntersecting;
+            const hint = this.visible && !this.mq.matches ? 'transform, opacity' : 'auto';
+            this.cards.forEach((card) => {
+              card.style.willChange = hint;
+            });
+            if (this.grid) this.grid.style.willChange = this.visible && !this.mq.matches ? 'transform' : 'auto';
+            if (this.visible && !this.mq.matches) this.render(true);
+          });
+        }, { rootMargin: '120px 0px' });
+        this.intersectionObserver.observe(this.sectionEl || this);
+
+        window.addEventListener('scroll', this.onScroll, { passive: true });
+      }
+
+      disconnectedCallback() {
+        if (this.raf) cancelAnimationFrame(this.raf);
+        if (this.resizeObserver) this.resizeObserver.disconnect();
+        if (this.intersectionObserver) this.intersectionObserver.disconnect();
+        window.removeEventListener('scroll', this.onScroll);
+        if (this.mq) this.mq.removeEventListener('change', this.onMotion);
+        document.removeEventListener('shopify:block:select', this.onBlockSelect);
+      }
+
+      onMotion() {
+        if (!this.sectionEl) return;
+        if (this.mq.matches) {
+          this.sectionEl.classList.remove('is-live');
+          this.rest();
+          return;
+        }
+        this.sectionEl.classList.add('is-live');
+        requestAnimationFrame(() => {
+          this.measure();
+          this.render(true);
+        });
+      }
+
+      rest() {
+        if (this.grid) this.grid.style.transform = '';
+        this.cards.forEach((card) => {
+          card.style.transform = '';
+          card.style.opacity = '';
+          card.style.zIndex = '';
+          card.style.willChange = 'auto';
+        });
+        this.lastProgress = -1;
+      }
+
+      onBlockSelect(event) {
+        const card = event.target && event.target.closest ? event.target.closest('.flow-card') : null;
+        if (!card || !this.contains(card) || this.mq.matches || this.totalRows < 2) return;
+        const row = Number(card.dataset.row) || 0;
+        const denom = this.totalRows - 1;
+        const progress = row / denom;
+        const top = this.sectionEl.getBoundingClientRect().top + window.scrollY;
+        const distance = Math.max(0, this.sectionEl.offsetHeight - window.innerHeight);
+        window.scrollTo({ top: top + progress * distance, behavior: 'auto' });
+      }
+
+      onScroll() {
+        if (!this.visible || this.mq.matches || this.raf) return;
+        this.raf = requestAnimationFrame(() => {
+          this.raf = 0;
+          this.render(false);
+        });
+      }
+
+      measure() {
+        const first = this.cards[0];
+        if (!first || !this.viewport) return;
+        const next = this.cards[3];
+        this.stride = next ? next.offsetTop - first.offsetTop : first.offsetHeight;
+        if (this.stride < 1) this.stride = first.offsetHeight || 1;
+        const viewH = this.viewport.clientHeight || 0;
+        this.baseY = viewH / 2 - (first.offsetTop + first.offsetHeight / 2);
+      }
+
+      render(force) {
+        if (!this.sectionEl || this.mq.matches) return;
+        const rect = this.sectionEl.getBoundingClientRect();
+        const distance = this.sectionEl.offsetHeight - window.innerHeight;
+        let progress = 0;
+        if (distance > 0) {
+          progress = Math.min(1, Math.max(0, -rect.top / distance));
+        }
+        if (!force && Math.abs(progress - this.lastProgress) < 0.0006) return;
+        this.lastProgress = progress;
+
+        const rows = this.totalRows;
+        const denom = Math.max(1, rows - 1);
+        const span = rows === 1 ? 1 : 1 / denom;
+        const hold = span * 0.18;
+        const awayAt = span * 0.84;
+
+        for (let i = 0; i < this.cards.length; i++) {
+          const card = this.cards[i];
+          const row = Number(card.dataset.row) || 0;
+          const col = Number(card.dataset.col) || 0;
+
+          if (rows === 1) {
+            card.style.opacity = '1';
+            card.style.transform = 'none';
+            card.style.zIndex = '1';
+            continue;
+          }
+
+          const dist = Math.abs(progress - row / denom);
+          let t = 0;
+          if (dist > hold) {
+            t = dist >= awayAt ? 1 : (dist - hold) / (awayAt - hold);
+          }
+
+          const sign = col === 0 ? 1 : col === 2 ? -1 : 0;
+          const x = sign * 28 * t;
+          const rot = sign * -6.5 * t;
+          const scale = 1 + ((col === 1 ? 0.94 : 0.88) - 1) * t;
+          const opacity = 1 + ((col === 1 ? 0.5 : 0.34) - 1) * t;
+
+          card.style.zIndex = String(Math.round((1 - t) * 30) + (col === 1 ? 4 : 0));
+          card.style.opacity = opacity.toFixed(3);
+          card.style.transform = 'translate3d(' + x.toFixed(2) + '%, 0, 0) scale(' + scale.toFixed(4) + ') rotate(' + rot.toFixed(2) + 'deg)';
+        }
+
+        const y = rows === 1 ? this.baseY : this.baseY - progress * denom * this.stride;
+        this.grid.style.transform = 'translate3d(0, ' + y.toFixed(2) + 'px, 0)';
+
+        const active = Math.max(0, Math.min(rows - 1, Math.round(progress * denom)));
+        if (active !== this.activeRow) {
+          this.activeRow = active;
+          this.panels.forEach((panel, index) => {
+            panel.classList.toggle('is-on', index === active);
+          });
+          if (this.nowEl) this.nowEl.textContent = String(active + 1).padStart(2, '0');
+        }
+
+        if (this.progressEl) {
+          this.progressEl.style.transform = 'scaleX(' + (0.06 + progress * 0.94).toFixed(4) + ')';
+        }
+      }
+    }
+
+    customElements.define('lookbook-flow', LookbookFlow);
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Lookbook Flow",
+  "tag": "section",
+  "class": "section-flow-scroll",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Images sit in rows of three. Scrolling brings each row into the focal plane. Titles stay as text so they can be edited here."
+    },
+    {
+      "type": "header",
+      "content": "Editorial text"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "The archive"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Form. Fabric. Permanence."
+    },
+    {
+      "type": "textarea",
+      "id": "caption",
+      "label": "Caption",
+      "default": "A season, studied in cloth."
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "Explore all pieces"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "header",
+      "content": "Color"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#111111"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "card",
+      "name": "Look",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Heavyweight Fleece"
+        },
+        {
+          "type": "text",
+          "id": "subtitle",
+          "label": "Material",
+          "default": "450 GSM Organic Cotton"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Lookbook Flow",
+      "settings": {
+        "eyebrow": "The archive",
+        "heading": "Form. Fabric. Permanence.",
+        "caption": "A season, studied in cloth.",
+        "button_label": "Explore all pieces"
+      },
+      "blocks": [
+        { "type": "card", "settings": { "title": "Heavyweight Fleece", "subtitle": "450 GSM Loopback" } },
+        { "type": "card", "settings": { "title": "Cotton Poplin", "subtitle": "Camp Collar Fit" } },
+        { "type": "card", "settings": { "title": "Structured Twill", "subtitle": "Relaxed Trouser" } },
+        { "type": "card", "settings": { "title": "Autumn Campaign", "subtitle": "Layering Capsule" } },
+        { "type": "card", "settings": { "title": "Boxy Cut Fleece", "subtitle": "Drop Shoulder" } },
+        { "type": "card", "settings": { "title": "Daily Essential", "subtitle": "Classic Poplin" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

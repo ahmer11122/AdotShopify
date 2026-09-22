@@ -77,15 +77,74 @@
         "whatsapp_number": "+923001234567"
       }
     },
-    "editorial": {
-      "type": "editorial",
+    "interactive_gallery": {
+      "type": "interactive-gallery",
+      "blocks": {
+        "card_1": {
+          "type": "card",
+          "settings": {
+            "title": "Heavyweight Fleece",
+            "subtitle": "450 GSM Organic Cotton",
+            "link": "/collections/all?category=hoodies"
+          }
+        },
+        "card_2": {
+          "type": "card",
+          "settings": {
+            "title": "Cotton Poplin",
+            "subtitle": "Camp Collar Daily Fit",
+            "link": "/collections/all?category=shirts"
+          }
+        },
+        "card_3": {
+          "type": "card",
+          "settings": {
+            "title": "Structured Twill",
+            "subtitle": "Relaxed Tailored Cut",
+            "link": "/collections/all?category=trousers"
+          }
+        },
+        "card_4": {
+          "type": "card",
+          "settings": {
+            "title": "Autumn Lookbook",
+            "subtitle": "Core Layering Capsule",
+            "link": "/collections/all"
+          }
+        },
+        "card_5": {
+          "type": "card",
+          "settings": {
+            "title": "Boxy Cut Fleece",
+            "subtitle": "Custom Milled Loopback",
+            "link": "/collections/all?category=hoodies"
+          }
+        },
+        "card_6": {
+          "type": "card",
+          "settings": {
+            "title": "Essential Poplin",
+            "subtitle": "Pearl Button Hardware",
+            "link": "/collections/all?category=shirts"
+          }
+        }
+      },
+      "block_order": [
+        "card_1",
+        "card_2",
+        "card_3",
+        "card_4",
+        "card_5",
+        "card_6"
+      ],
       "settings": {
-        "image_position": "left",
-        "eyebrow": "OUR APPROACH",
-        "quote": "Durable fabrics and relaxed silhouettes, made for daily wear.",
-        "body_text": "We make timeless wardrobe staples instead of chasing seasonal trends. Every piece is cut from heavyweight cotton and dense twill, designed for an easy, relaxed fit that lasts.",
-        "author": "ADOT STUDIO",
-        "button_label": "Our Story"
+        "eyebrow": "The archive",
+        "heading": "Form. Fabric. Permanence.",
+        "caption": "A season, studied in cloth.",
+        "button_label": "Explore all pieces",
+        "button_link": "/collections/all",
+        "background_color": "#FFFFFF",
+        "text_color": "#111111"
       }
     }
   },
@@ -94,6 +153,6 @@
     "category_tiles",
     "featured_collection",
     "trust_strip",
-    "editorial"
+    "interactive_gallery"
   ]
 }
