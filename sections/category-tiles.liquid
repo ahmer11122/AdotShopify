@@ -1,11 +1,23 @@
 {% comment %}
-  Modern Editorial Category Showcase — Smart Solutions
-  Desktop: 3-column floating garment showcase with pure canvas blend.
-  Mobile: 3 stacked full-width 4:3 cards with 12px gap, 100% tap target,
-  name & arrow placed bottom-left, zero swipe friction, pure native scroll.
+  Editorial category showcase. The sheet itself is the scroll over the hero.
+  The heading wipes up once it has scrolled into the lower third, not
+  while it is still a sliver over the hero. Each garment settles the
+  same way, and on a phone each one waits until you reach it. Fine pointers get a
+  short lift. Reduced motion shows everything immediately.
 {% endcomment %}
 
 <section class="category-tiles container" data-section-id="{{ section.id }}">
+  {% # theme-check-disable ParserBlockingScript %}
+  <script>
+    (function (el) {
+      var reduce = false;
+      try { reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+      var design = !!(window.Shopify && Shopify.designMode);
+      if (reduce || design || !('IntersectionObserver' in window)) return;
+      el.setAttribute('data-reveal', 'pending');
+    })(document.currentScript.parentElement);
+  </script>
+  {% # theme-check-enable ParserBlockingScript %}
   {% if section.settings.heading != blank %}
     <div class="category-tiles__header">
       <h2 class="category-tiles__heading">{{ section.settings.heading }}</h2>
@@ -69,6 +81,30 @@
       </div>
     {% endfor %}
   </div>
+  {% # theme-check-disable ParserBlockingScript %}
+  <script>
+    (function (el) {
+      if (!el || el.getAttribute('data-reveal') !== 'pending') return;
+      try {
+        var nodes = el.querySelectorAll('.category-tiles__header, .category-tile');
+        if (!nodes.length) {
+          el.removeAttribute('data-reveal');
+          return;
+        }
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add('is-in');
+            io.unobserve(entry.target);
+          });
+        }, { threshold: 0, rootMargin: '0px 0px -32% 0px' });
+        nodes.forEach(function (node) { io.observe(node); });
+      } catch (e) {
+        el.removeAttribute('data-reveal');
+      }
+    })(document.currentScript.parentElement);
+  </script>
+  {% # theme-check-enable ParserBlockingScript %}
 </section>
 
 {% stylesheet %}
@@ -85,6 +121,7 @@
     position: relative;
     padding-bottom: var(--space-xl);
     margin-bottom: 0;
+    --tile-rise: 8px;
   }
 
   /* Editorial Header */
@@ -117,12 +154,20 @@
     width: 100%;
     height: 100%;
     color: inherit;
-    transition: transform var(--transition-fast);
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
     -webkit-tap-highlight-color: transparent;
+    transition: transform 160ms var(--ease-out);
   }
 
   .category-tile__link:active {
     transform: scale(0.985);
+  }
+
+  .category-tile__link:hover,
+  .category-tile__link:focus-visible {
+    opacity: 1;
   }
 
   .category-tile__media-box {
@@ -132,9 +177,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    transform-origin: center bottom;
     filter: drop-shadow(0 16px 26px rgba(17, 17, 17, 0.07));
-    transition: transform 380ms cubic-bezier(0.23, 1, 0.32, 1), filter 380ms cubic-bezier(0.23, 1, 0.32, 1);
-    will-change: transform, filter;
+    transition: transform 280ms var(--ease-out);
   }
 
   .category-tile__image {
@@ -162,7 +207,7 @@
   }
 
   .category-tile__arrow {
-    transition: transform 220ms ease-out;
+    transition: transform 160ms var(--ease-out);
   }
 
   /* Shared Centered Editorial Typography Below Garment (Mobile & Desktop) */
@@ -216,8 +261,45 @@
     height: 1px;
     background-color: var(--color-text);
     transform: scaleX(0);
-    transform-origin: center;
-    transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1);
+    transform-origin: left center;
+    transition: transform 200ms var(--ease-out);
+  }
+
+  /* Heading wipes up once it has cleared the hero. Each garment settles
+     as it arrives, so a phone does not play the lower cards off screen. */
+  @media (prefers-reduced-motion: no-preference) {
+    .category-tiles[data-reveal="pending"] .category-tiles__header:not(.is-in) .category-tiles__heading {
+      clip-path: inset(100% 0 0 0);
+    }
+
+    .category-tiles[data-reveal="pending"] .category-tiles__header.is-in .category-tiles__heading {
+      clip-path: inset(0 0 0 0);
+      transition: clip-path 780ms var(--ease-out);
+    }
+
+    .category-tiles[data-reveal="pending"] .category-tile:not(.is-in) .category-tile__stage {
+      opacity: 0;
+      transform: translateY(var(--tile-rise, 8px));
+    }
+
+    .category-tiles[data-reveal="pending"] .category-tile:not(.is-in) .category-tile__meta {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+
+    .category-tiles[data-reveal="pending"] .category-tile.is-in .category-tile__stage,
+    .category-tiles[data-reveal="pending"] .category-tile.is-in .category-tile__meta {
+      opacity: 1;
+      transform: none;
+      transition:
+        opacity 560ms var(--ease-out),
+        transform 560ms var(--ease-out);
+    }
+
+    .category-tiles[data-reveal="pending"] .category-tile.is-in .category-tile__meta {
+      transition-duration: 480ms;
+      transition-delay: 70ms;
+    }
   }
 
   /* ==========================================================================
@@ -267,6 +349,17 @@
      - Tactile levitation micro-interaction
      ========================================================================== */
   @media (min-width: 750px) {
+    .category-tiles {
+      --tile-rise: 12px;
+    }
+
+    .category-tile:nth-child(1) { --reveal-delay: 80ms; }
+    .category-tile:nth-child(2) { --reveal-delay: 160ms; }
+    .category-tile:nth-child(3) { --reveal-delay: 240ms; }
+    .category-tile:nth-child(4) { --reveal-delay: 320ms; }
+    .category-tile:nth-child(5) { --reveal-delay: 400ms; }
+    .category-tile:nth-child(6) { --reveal-delay: 480ms; }
+
     .category-tiles__track {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -291,36 +384,54 @@
       max-height: 92%;
     }
 
-    /* Levitation micro-interaction on hover */
     @media (hover: hover) and (pointer: fine) {
-      .category-tile:hover .category-tile__media-box {
-        transform: translateY(-8px) scale(1.035);
-        filter: drop-shadow(0 28px 40px rgba(17, 17, 17, 0.12));
+      .category-tile:hover .category-tile__media-box,
+      .category-tile__link:focus-visible .category-tile__media-box {
+        transform: translateY(-8px) scale(1.02);
       }
 
-      .category-tile:hover .category-tile__arrow {
-        transform: translateX(4px);
+      .category-tile:hover .category-tile__arrow,
+      .category-tile__link:focus-visible .category-tile__arrow {
+        transform: translateX(5px);
+        transition-delay: 40ms;
       }
 
-      .category-tile:hover .category-tile__cta {
+      .category-tile:hover .category-tile__cta,
+      .category-tile__link:focus-visible .category-tile__cta {
         color: var(--color-text);
       }
 
-      .category-tile:hover .category-tile__cta::after {
+      .category-tile:hover .category-tile__cta::after,
+      .category-tile__link:focus-visible .category-tile__cta::after {
         transform: scaleX(1);
       }
     }
   }
 
-  /* Accessibility: Prefers Reduced Motion */
+  @media (min-width: 750px) and (prefers-reduced-motion: no-preference) {
+    .category-tiles[data-reveal="pending"] .category-tile.is-in .category-tile__stage {
+      transition-delay: var(--reveal-delay, 0ms);
+    }
+
+    .category-tiles[data-reveal="pending"] .category-tile.is-in .category-tile__meta {
+      transition-delay: calc(var(--reveal-delay, 0ms) + 70ms);
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
+    .category-tile:hover .category-tile__media-box,
+    .category-tile:hover .category-tile__arrow {
+      transform: none;
+    }
+
+    .category-tile:hover .category-tile__cta::after {
+      transform: scaleX(0);
+    }
+
     .category-tile__media-box,
-    .category-tile__link,
     .category-tile__arrow,
     .category-tile__cta::after {
-      transition: none !important;
-      transform: none !important;
-      filter: none !important;
+      transition: none;
     }
   }
 {% endstylesheet %}

@@ -1,7 +1,9 @@
 {% comment %}
-  Editorial hero. First visit: the campaign still expands from a gallery
-  frame (clip-path + scale 1.04) then type staggers in. Return visits and
-  reduced-motion lock the frame immediately. Copy stays in settings.
+  Editorial hero. Every load: the photograph eases into place, then the
+  headline wipes up and the supporting type staggers in. As the next
+  section curtains over the pinned photo, the type fades with the scroll.
+  Reduced motion and the theme editor show the finished frame.
+  Copy stays in settings.
 {% endcomment %}
 
 <editorial-hero
@@ -16,10 +18,8 @@
       (function (el) {
         var reduce = false;
         try { reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
-        var seen = false;
-        try { seen = sessionStorage.getItem('adot_hero_seen') === '1'; } catch (e) {}
         var design = !!(window.Shopify && Shopify.designMode);
-        if (seen || reduce || design) el.setAttribute('data-state', 'static');
+        if (reduce || design) el.setAttribute('data-state', 'static');
       })(document.currentScript.parentElement);
     </script>
     {% # theme-check-enable ParserBlockingScript %}
@@ -108,8 +108,10 @@
     </div>
 
     <!-- ==========================================================================
-         2. Main Editorial Content Container
+         2. Type layer. Scroll-linked fade lives on this wrapper so the
+         headline, button, and meta leave together as the next section covers them.
          ========================================================================== -->
+    <div class="hero__copy">
     <div class="hero__content-wrapper container">
       <div class="hero__content">
         
@@ -224,6 +226,7 @@
         </div>
       </div>
     {% endif %}
+    </div>
 
   </div>
 </editorial-hero>
@@ -237,6 +240,8 @@
     position: relative;
     width: 100%;
     margin-bottom: 0;
+    --hero-settle-from: 1.032;
+    --hero-recede: -8px;
   }
 
   .hero--full {
@@ -297,18 +302,34 @@
     max-width: none;
     object-fit: cover;
     object-position: center;
+    transform-origin: center center;
     display: block;
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    .hero[data-state="assemble"] .hero__media {
-      animation: heroAssemble 700ms var(--ease-out) both;
+    .hero[data-state="assemble"] .hero__image,
+    .hero[data-state="assemble"] .hero__video {
+      animation: heroSettle 2000ms var(--ease-in-out) both;
     }
   }
 
   @media (min-width: 750px) {
-    .hero__image {
+    .hero {
+      --hero-settle-from: 1.058;
+      --hero-recede: -12px;
+    }
+
+    .hero__image,
+    .hero__video {
       object-position: center var(--hero-image-position-desktop, top);
+      transform-origin: center var(--hero-image-position-desktop, top);
+    }
+  }
+
+  @media (min-width: 750px) and (prefers-reduced-motion: no-preference) {
+    .hero[data-state="assemble"] .hero__image,
+    .hero[data-state="assemble"] .hero__video {
+      animation-duration: 2600ms;
     }
   }
 
@@ -343,6 +364,16 @@
   /* ==========================================================================
      Content Layer & Typographic Hierarchy (better-typography & better-layout)
      ========================================================================== */
+  .hero__copy {
+    position: relative;
+    z-index: 4;
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    width: 100%;
+    min-height: 0;
+  }
+
   .hero__content-wrapper {
     position: relative;
     z-index: 4;
@@ -634,7 +665,7 @@
   }
 
   .hero__scroll-arrow {
-    animation: heroBounceDown 2.2s infinite ease-in-out;
+    animation: heroCue 2.6s var(--ease-in-out) infinite;
   }
 
   .hero__meta-stamp {
@@ -643,38 +674,53 @@
     margin-inline-start: auto;
   }
 
-  /* First-visit assemble: gallery frame expands, then type staggers. */
+  /* Every load: photo settles, headline wipes up, supporting type staggers. */
   @media (prefers-reduced-motion: no-preference) {
     .hero[data-state="assemble"] .hero__eyebrow-wrapper,
-    .hero[data-state="assemble"] .hero__heading,
     .hero[data-state="assemble"] .hero__subheading,
     .hero[data-state="assemble"] .hero__actions,
     .hero[data-state="assemble"] .hero__bottom-bar {
-      animation: heroFadeInUp 400ms var(--ease-out) both;
+      animation: heroFadeInUp 640ms var(--ease-out) both;
     }
 
-    .hero[data-state="assemble"] .hero__eyebrow-wrapper { animation-delay: 420ms; }
-    .hero[data-state="assemble"] .hero__heading { animation-delay: 500ms; }
-    .hero[data-state="assemble"] .hero__subheading { animation-delay: 580ms; }
-    .hero[data-state="assemble"] .hero__actions { animation-delay: 660ms; }
-    .hero[data-state="assemble"] .hero__bottom-bar { animation-delay: 740ms; }
+    .hero[data-state="assemble"] .hero__heading {
+      animation: heroMask 1100ms var(--ease-out) both;
+    }
+
+    .hero[data-state="assemble"] .hero__eyebrow-wrapper { animation-delay: 480ms; }
+    .hero[data-state="assemble"] .hero__heading { animation-delay: 560ms; }
+    .hero[data-state="assemble"] .hero__subheading { animation-delay: 640ms; }
+    .hero[data-state="assemble"] .hero__actions { animation-delay: 720ms; }
+    .hero[data-state="assemble"] .hero__bottom-bar { animation-delay: 800ms; }
   }
 
-  @keyframes heroAssemble {
-    from {
-      clip-path: inset(6% 8%);
-      transform: scale(1.04);
+  /* Type yields as the next section curtains over the pinned photograph.
+     Linear because the scroll position is the timeline. */
+  @supports (animation-timeline: scroll()) {
+    .hero__copy {
+      animation: heroRecedeFade linear both;
+      animation-timeline: scroll(root);
+      animation-range: 5vh 16vh;
     }
-    to {
-      clip-path: inset(0);
-      transform: scale(1);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: scroll()) {
+      .hero__copy {
+        animation-name: heroRecede;
+      }
     }
+  }
+
+  @keyframes heroSettle {
+    from { transform: scale(var(--hero-settle-from, 1.028)); }
+    to { transform: scale(1); }
   }
 
   @keyframes heroFadeInUp {
     from {
       opacity: 0;
-      transform: translateY(12px);
+      transform: translateY(8px);
     }
     to {
       opacity: 1;
@@ -682,15 +728,39 @@
     }
   }
 
-  @keyframes heroBounceDown {
-    0%, 20%, 50%, 80%, 100% {
+  @keyframes heroMask {
+    from { clip-path: inset(100% 0 0 0); }
+    to { clip-path: inset(0 0 0 0); }
+  }
+
+  @keyframes heroRecedeFade {
+    0% { opacity: 1; visibility: visible; }
+    99% { visibility: visible; }
+    100% { opacity: 0; visibility: hidden; }
+  }
+
+  @keyframes heroRecede {
+    0% {
+      opacity: 1;
+      transform: translateY(0);
+      visibility: visible;
+    }
+    99% { visibility: visible; }
+    100% {
+      opacity: 0;
+      transform: translateY(var(--hero-recede, -8px));
+      visibility: hidden;
+    }
+  }
+
+  @keyframes heroCue {
+    0%, 100% {
+      opacity: 0.5;
       transform: translateY(0);
     }
-    40% {
-      transform: translateY(4px);
-    }
-    60% {
-      transform: translateY(2px);
+    50% {
+      opacity: 1;
+      transform: translateY(3px);
     }
   }
 
@@ -783,7 +853,8 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .hero__media,
+    .hero__image,
+    .hero__video,
     .hero__eyebrow-wrapper,
     .hero__heading,
     .hero__subheading,
@@ -791,6 +862,7 @@
     .hero__bottom-bar,
     .hero__scroll-arrow {
       animation: none;
+      clip-path: none;
       transform: none;
     }
   }
@@ -803,9 +875,10 @@
         'editorial-hero',
         class extends HTMLElement {
           connectedCallback() {
-            if (this.getAttribute('data-state') === 'assemble') {
-              try { sessionStorage.setItem('adot_hero_seen', '1'); } catch (e) {}
-            }
+            if (this.getAttribute('data-state') !== 'assemble') return;
+            this.addEventListener('animationend', (event) => {
+              if (event.animationName === 'heroSettle') this.setAttribute('data-state', 'settled');
+            });
           }
         }
       );
