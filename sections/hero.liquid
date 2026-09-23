@@ -1,20 +1,29 @@
 {% comment %}
-  Modern Editorial Luxury Hero Banner — Smart Solutions
-  Features:
-  - 100svh full-bleed immersion across top, bottom, left, right (zero mobile URL-bar jitter)
-  - Responsive dual media: separate desktop (landscape) & mobile (portrait) photography + optional video
-  - Seamless frosted glassmorphism integration with transparent overlay header
-  - Modern Inter Tight display typography with text-wrap: balance & high-contrast clarity
-  - Dual Action Cluster (Primary Monolithic CTA + Secondary Frosted Glass CTA) with :active scale(0.96)
-  - Floating Bottom Category HUD & Mobile Quick-Access Category Chip Rail
-  - Emil Kowalski & Mobile-Native touch/motion design engineering standards
+  Editorial hero. First visit: the campaign still expands from a gallery
+  frame (clip-path + scale 1.04) then type staggers in. Return visits and
+  reduced-motion lock the frame immediately. Copy stays in settings.
 {% endcomment %}
 
-<section
+<editorial-hero
   class="hero hero--full hero--height-{{ section.settings.hero_height | default: '100svh' }} hero--align-{{ section.settings.text_alignment | default: 'left' }}"
   data-section-id="{{ section.id }}"
+  data-state="{% if section.settings.cinematic_reveal == false %}static{% else %}assemble{% endif %}"
   style="--hero-overlay-opacity: {{ section.settings.overlay_opacity | default: 45 | divided_by: 100.0 }}; --hero-image-position-desktop: {{ section.settings.desktop_image_position | default: 'top' }};"
 >
+  {% if section.settings.cinematic_reveal %}
+    {% # theme-check-disable ParserBlockingScript %}
+    <script>
+      (function (el) {
+        var reduce = false;
+        try { reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+        var seen = false;
+        try { seen = sessionStorage.getItem('adot_hero_seen') === '1'; } catch (e) {}
+        var design = !!(window.Shopify && Shopify.designMode);
+        if (seen || reduce || design) el.setAttribute('data-state', 'static');
+      })(document.currentScript.parentElement);
+    </script>
+    {% # theme-check-enable ParserBlockingScript %}
+  {% endif %}
   <div class="hero__inner">
     <!-- ==========================================================================
          1. Background Media Layer (Desktop, Mobile, Video, Placeholder)
@@ -217,13 +226,14 @@
     {% endif %}
 
   </div>
-</section>
+</editorial-hero>
 
 {% stylesheet %}
   /* ==========================================================================
      Hero Architecture & Full-Bleed 100svh Canvas
      ========================================================================== */
   .hero {
+    display: block;
     position: relative;
     width: 100%;
     margin-bottom: 0;
@@ -288,6 +298,12 @@
     object-fit: cover;
     object-position: center;
     display: block;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .hero[data-state="assemble"] .hero__media {
+      animation: heroAssemble 700ms var(--ease-out) both;
+    }
   }
 
   @media (min-width: 750px) {
@@ -372,7 +388,6 @@
     gap: 0.5rem;
     flex-wrap: wrap;
     margin-bottom: var(--space-xs);
-    animation: heroFadeInUp 350ms var(--ease-out) 100ms backwards;
   }
 
   .hero__eyebrow {
@@ -400,7 +415,6 @@
     line-height: 1.04;
     letter-spacing: var(--tracking-tight);
     font-weight: 600;
-    animation: heroFadeInUp 400ms var(--ease-out) 180ms backwards;
   }
 
 
@@ -414,7 +428,6 @@
     color: rgba(255, 255, 255, 0.88);
     margin: 0 0 var(--space-xs);
     text-wrap: pretty;
-    animation: heroFadeInUp 400ms var(--ease-out) 260ms backwards;
   }
 
   /* Action Cluster & Tactile Buttons (better-ui & emil-design-eng) */
@@ -424,7 +437,6 @@
     gap: var(--space-sm);
     flex-wrap: wrap;
     margin-top: var(--space-2xs);
-    animation: heroFadeInUp 400ms var(--ease-out) 340ms backwards;
   }
 
   .btn-hero-primary {
@@ -527,7 +539,6 @@
     -webkit-backdrop-filter: blur(20px) saturate(140%);
     padding-block: 0.85rem;
     padding-bottom: max(0.85rem, env(safe-area-inset-bottom, 0px));
-    animation: heroFadeInUp 450ms var(--ease-out) 420ms backwards;
   }
 
   .hero__bottom-container {
@@ -632,9 +643,34 @@
     margin-inline-start: auto;
   }
 
-  /* ==========================================================================
-     Keyframe Animations & Motion Decisions (Emil Kowalski Standards)
-     ========================================================================== */
+  /* First-visit assemble: gallery frame expands, then type staggers. */
+  @media (prefers-reduced-motion: no-preference) {
+    .hero[data-state="assemble"] .hero__eyebrow-wrapper,
+    .hero[data-state="assemble"] .hero__heading,
+    .hero[data-state="assemble"] .hero__subheading,
+    .hero[data-state="assemble"] .hero__actions,
+    .hero[data-state="assemble"] .hero__bottom-bar {
+      animation: heroFadeInUp 400ms var(--ease-out) both;
+    }
+
+    .hero[data-state="assemble"] .hero__eyebrow-wrapper { animation-delay: 420ms; }
+    .hero[data-state="assemble"] .hero__heading { animation-delay: 500ms; }
+    .hero[data-state="assemble"] .hero__subheading { animation-delay: 580ms; }
+    .hero[data-state="assemble"] .hero__actions { animation-delay: 660ms; }
+    .hero[data-state="assemble"] .hero__bottom-bar { animation-delay: 740ms; }
+  }
+
+  @keyframes heroAssemble {
+    from {
+      clip-path: inset(6% 8%);
+      transform: scale(1.04);
+    }
+    to {
+      clip-path: inset(0);
+      transform: scale(1);
+    }
+  }
+
   @keyframes heroFadeInUp {
     from {
       opacity: 0;
@@ -747,17 +783,35 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
+    .hero__media,
     .hero__eyebrow-wrapper,
     .hero__heading,
     .hero__subheading,
     .hero__actions,
     .hero__bottom-bar,
     .hero__scroll-arrow {
-      animation: none !important;
-      transform: none !important;
+      animation: none;
+      transform: none;
     }
   }
 {% endstylesheet %}
+
+{% javascript %}
+  (function () {
+    if (!customElements.get('editorial-hero')) {
+      customElements.define(
+        'editorial-hero',
+        class extends HTMLElement {
+          connectedCallback() {
+            if (this.getAttribute('data-state') === 'assemble') {
+              try { sessionStorage.setItem('adot_hero_seen', '1'); } catch (e) {}
+            }
+          }
+        }
+      );
+    }
+  })();
+{% endjavascript %}
 
 {% schema %}
 {
@@ -830,6 +884,13 @@
       "unit": "%",
       "label": "Atmospheric Overlay Opacity",
       "default": 20
+    },
+    {
+      "type": "checkbox",
+      "id": "cinematic_reveal",
+      "label": "Cinematic first-visit reveal",
+      "default": true,
+      "info": "Gallery-frame expand on the first view of this tab. Skipped after that, and when reduced motion is on."
     },
     {
       "type": "header",

@@ -1,0 +1,1075 @@
+{% comment %}
+  Fabric Reveal — Heavyweight Boxy Hoodie
+  Scroll-tied curtains: in view they part, leaving they close over the
+  film, returning they part again. Motion is a slow spring. No scroll lock.
+{% endcomment %}
+
+{% liquid
+  assign reveal_product = section.settings.product
+  if reveal_product == blank
+    assign reveal_product = all_products['the-complete-snowboard']
+  endif
+  if reveal_product == blank
+    assign reveal_product = collections.all.products.first
+  endif
+
+  assign is_snowboard = false
+  if reveal_product.type contains 'snowboard' or reveal_product.title contains 'Snowboard' or reveal_product.handle contains 'snowboard'
+    assign is_snowboard = true
+  endif
+
+  assign reveal_title = section.settings.heading | default: reveal_product.title | default: 'Heavyweight Boxy Hoodie'
+  assign reveal_eyebrow = section.settings.eyebrow | default: '450 GSM'
+  assign reveal_spec = section.settings.spec | default: 'Organic cotton loopback fleece'
+  assign reveal_price_cents = reveal_product.price | default: 449900
+  assign reveal_price = reveal_price_cents | money_without_currency | remove: '.00' | prepend: 'Rs. '
+  assign reveal_url = reveal_product.url | default: routes.all_products_collection_url
+
+  if is_snowboard
+    assign reveal_title = section.settings.heading | default: 'Heavyweight Boxy Hoodie'
+    assign reveal_price = 'Rs. 4,499'
+    assign reveal_price_cents = 449900
+  endif
+
+  assign under_alt = reveal_title | append: ' on body'
+  assign overlay_fallback = 'fabric-hoodie-studio.jpg' | asset_url
+  assign under_fallback = 'fabric-hoodie-campaign.jpg' | asset_url
+  assign video_src = section.settings.video_url
+  if video_src == blank
+    assign video_src = 'fabric-hoodie-campaign.mp4' | asset_url
+  endif
+%}
+
+<fabric-reveal
+  class="fabric-reveal"
+  data-section-id="{{ section.id }}"
+  data-open-at="0.35"
+  aria-labelledby="FabricRevealHeading-{{ section.id }}"
+  style="--fabric-rest: 0.08;"
+>
+  <div class="fabric-reveal__frame">
+    <header class="fabric-reveal__rail">
+      <h2 class="visually-hidden" id="FabricRevealHeading-{{ section.id }}">{{ reveal_title }}</h2>
+      {% if reveal_eyebrow != blank %}
+        <p class="fabric-reveal__eyebrow text-micro">{{ reveal_eyebrow }}</p>
+      {% endif %}
+      <p class="fabric-reveal__hint text-micro" data-hint>
+        <span data-hint-label>{{ section.settings.hint_label | default: 'Watch it open' }}</span>
+      </p>
+    </header>
+
+    <div
+      class="fabric-reveal__stage"
+      data-stage
+      style="touch-action: pan-y;"
+    >
+      <div class="fabric-reveal__under">
+        {% if video_src != blank %}
+          <video
+            class="fabric-reveal__film"
+            data-film
+            muted
+            loop
+            playsinline
+            preload="none"
+            poster="{% if section.settings.under_image != blank %}{{ section.settings.under_image | image_url: width: 1800 }}{% else %}{{ under_fallback }}{% endif %}"
+            width="1280"
+            height="720"
+          >
+            <source src="{{ video_src }}" type="video/mp4">
+          </video>
+        {% elsif section.settings.under_image != blank %}
+          {{
+            section.settings.under_image
+            | image_url: width: 1800
+            | image_tag:
+              loading: 'lazy',
+              widths: '750, 1100, 1500, 1800',
+              sizes: '100vw',
+              class: 'fabric-reveal__under-img',
+              alt: section.settings.under_image.alt | default: under_alt | escape
+          }}
+        {% else %}
+          <img
+            class="fabric-reveal__under-img"
+            src="{{ under_fallback }}"
+            alt="{{ under_alt | escape }}"
+            width="1280"
+            height="720"
+            loading="lazy"
+          >
+        {% endif %}
+      </div>
+
+      {% capture overlay_garment %}
+        {% if section.settings.overlay_image != blank %}
+          {{
+            section.settings.overlay_image
+            | image_url: width: 1800
+            | image_tag:
+              loading: 'lazy',
+              widths: '750, 1100, 1500, 1800',
+              sizes: '100vw',
+              class: 'fabric-reveal__garment',
+              alt: ''
+          }}
+        {% else %}
+          <img
+            class="fabric-reveal__garment"
+            src="{{ overlay_fallback }}"
+            alt=""
+            width="1280"
+            height="720"
+            loading="lazy"
+          >
+        {% endif %}
+      {% endcapture %}
+      <div class="fabric-reveal__over" data-over aria-hidden="true">
+        <div class="fabric-reveal__half fabric-reveal__half--left" data-half="left">
+          {{ overlay_garment }}
+        </div>
+        <div class="fabric-reveal__half fabric-reveal__half--right" data-half="right">
+          {{ overlay_garment }}
+        </div>
+      </div>
+
+      <div class="fabric-reveal__seam" data-seam aria-hidden="true"></div>
+
+      <button
+        type="button"
+        class="fabric-reveal__handle"
+        data-handle
+        role="slider"
+        aria-label="{{ section.settings.hint_label | default: 'Open fabric reveal' }}"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-valuenow="0"
+        aria-valuetext="0 percent revealed"
+      >
+        <span class="fabric-reveal__handle-mark" aria-hidden="true"></span>
+      </button>
+
+      {% if video_src != blank %}
+        <button
+          type="button"
+          class="fabric-reveal__pause text-micro"
+          data-pause
+          aria-pressed="false"
+          hidden
+        >
+          Pause film
+        </button>
+      {% endif %}
+    </div>
+
+    <aside
+      class="fabric-reveal__buy"
+      data-buy
+      aria-hidden="true"
+    >
+      <div class="fabric-reveal__buy-copy">
+        {% if reveal_eyebrow != blank %}
+          <p class="fabric-reveal__buy-kicker text-micro">{{ reveal_eyebrow }}</p>
+        {% endif %}
+        <p class="fabric-reveal__buy-title">{{ reveal_title }}</p>
+        {% if reveal_spec != blank %}
+          <p class="fabric-reveal__buy-spec">{{ reveal_spec }}</p>
+        {% endif %}
+        <p class="fabric-reveal__buy-price tabular-nums">{{ reveal_price }}</p>
+      </div>
+
+      <form
+        class="fabric-reveal__form"
+        method="post"
+        action="{{ routes.cart_add_url }}"
+        data-reveal-form
+      >
+        <input type="hidden" name="id" value="" data-variant-input required>
+        <input type="hidden" name="quantity" value="1">
+        <input type="hidden" name="properties[_adot_title]" value="{{ reveal_title | escape }}">
+        <input type="hidden" name="properties[_adot_category]" value="Hoodies">
+        <input type="hidden" name="properties[Size]" value="" data-size-property>
+
+        <fieldset class="fabric-reveal__sizes">
+          <legend class="visually-hidden">Size</legend>
+          <div class="fabric-reveal__pills" role="radiogroup" aria-label="Size">
+            {% assign apparel_sizes = 'S,M,L,XL' | split: ',' %}
+            {% for sz in apparel_sizes %}
+              {% assign variant_for_sz = reveal_product.variants[forloop.index0] %}
+              {% assign sz_available = false %}
+              {% if variant_for_sz and variant_for_sz.available %}
+                {% assign sz_available = true %}
+              {% endif %}
+              <button
+                type="button"
+                class="fabric-reveal__pill text-micro{% unless sz_available %} is-sold-out{% endunless %}"
+                data-size="{{ sz }}"
+                {% if variant_for_sz %}data-variant-id="{{ variant_for_sz.id }}"{% endif %}
+                {% unless sz_available %}aria-disabled="true"{% endunless %}
+                aria-pressed="false"
+              >
+                {{ sz }}
+              </button>
+            {% endfor %}
+          </div>
+        </fieldset>
+
+        <div class="fabric-reveal__actions">
+          <button
+            type="submit"
+            class="btn btn-primary fabric-reveal__add"
+            data-add
+            disabled
+            aria-disabled="true"
+          >
+            <span data-add-label>{{ section.settings.button_label | default: 'Add to Bag' }}</span>
+          </button>
+          <a class="fabric-reveal__pdp text-micro" href="{{ reveal_url }}">
+            View details
+          </a>
+        </div>
+        <p class="fabric-reveal__status visually-hidden" data-status role="status" aria-live="polite"></p>
+      </form>
+    </aside>
+  </div>
+</fabric-reveal>
+
+{% stylesheet %}
+  .fabric-reveal {
+    display: block;
+    background: var(--color-surface-dark);
+    color: var(--color-text-inverse);
+    margin: 0;
+  }
+
+  .fabric-reveal__frame {
+    position: relative;
+    min-height: 85svh;
+  }
+
+  .fabric-reveal__rail {
+    position: absolute;
+    z-index: 5;
+    inset-inline: var(--space-sm);
+    top: var(--space-sm);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    pointer-events: none;
+  }
+
+  .fabric-reveal__eyebrow,
+  .fabric-reveal__hint {
+    margin: 0;
+    letter-spacing: var(--tracking-micro);
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--color-white) 72%, transparent);
+  }
+
+  .fabric-reveal__stage {
+    position: relative;
+    min-height: 85svh;
+    overflow: hidden;
+    cursor: ew-resize;
+    background: var(--color-surface-dark);
+  }
+
+  .fabric-reveal__under,
+  .fabric-reveal__over {
+    position: absolute;
+    inset: 0;
+  }
+
+  .fabric-reveal__under {
+    z-index: 1;
+  }
+
+  .fabric-reveal__over {
+    z-index: 2;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .fabric-reveal__half {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 50%;
+    overflow: hidden;
+  }
+
+  .fabric-reveal__half--left {
+    left: 0;
+    border-inline-end: 1px solid color-mix(in srgb, var(--color-white) 28%, transparent);
+  }
+
+  .fabric-reveal__half--right {
+    right: 0;
+    border-inline-start: 1px solid color-mix(in srgb, var(--color-white) 28%, transparent);
+  }
+
+  .fabric-reveal__film,
+  .fabric-reveal__under-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+  }
+
+  .fabric-reveal__garment {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: 200%;
+    max-width: none;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+  }
+
+  .fabric-reveal__half--left .fabric-reveal__garment {
+    left: 0;
+  }
+
+  .fabric-reveal__half--right .fabric-reveal__garment {
+    right: 0;
+    left: auto;
+  }
+
+  .fabric-reveal__seam {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 1px;
+    z-index: 3;
+    background: color-mix(in srgb, var(--color-white) 38%, transparent);
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+
+  .fabric-reveal__handle {
+    position: absolute;
+    z-index: 6;
+    top: 50%;
+    left: 50%;
+    width: 44px;
+    height: 44px;
+    margin: 0;
+    padding: 0;
+    border: 1px solid color-mix(in srgb, var(--color-white) 40%, transparent);
+    background: color-mix(in srgb, var(--color-surface-dark) 55%, transparent);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+    border-radius: var(--radius-none);
+    color: var(--color-white);
+    cursor: ew-resize;
+    transform: translate(-50%, -50%);
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      border-color var(--transition-fast),
+      background-color var(--transition-fast),
+      transform 160ms var(--ease-out);
+  }
+
+  .fabric-reveal__handle-mark {
+    display: block;
+    width: 10px;
+    height: 1px;
+    margin-inline: auto;
+    background: var(--color-white);
+    box-shadow: 0 4px 0 var(--color-white), 0 -4px 0 var(--color-white);
+  }
+
+  .fabric-reveal__handle:active {
+    transform: translate(-50%, -50%) scale(0.96);
+  }
+
+  .fabric-reveal__handle:focus-visible {
+    outline: 2px solid var(--color-white);
+    outline-offset: 2px;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .fabric-reveal__handle:hover {
+      border-color: var(--color-white);
+      background: color-mix(in srgb, var(--color-surface-dark) 35%, transparent);
+    }
+  }
+
+  .fabric-reveal__pause {
+    position: absolute;
+    z-index: 6;
+    right: var(--space-sm);
+    bottom: var(--space-sm);
+    min-height: 44px;
+    padding-inline: var(--space-sm);
+    border: 1px solid color-mix(in srgb, var(--color-white) 28%, transparent);
+    background: color-mix(in srgb, var(--color-surface-dark) 55%, transparent);
+    color: var(--color-white);
+    letter-spacing: var(--tracking-micro);
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: var(--radius-none);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      background-color var(--transition-fast),
+      border-color var(--transition-fast),
+      transform 160ms var(--ease-out);
+  }
+
+  .fabric-reveal__pause:active {
+    transform: scale(0.96);
+  }
+
+  .fabric-reveal__pause:focus-visible {
+    outline: 2px solid var(--color-white);
+    outline-offset: 2px;
+  }
+
+  .fabric-reveal__buy {
+    position: absolute;
+    z-index: 7;
+    left: var(--space-sm);
+    right: var(--space-sm);
+    bottom: var(--space-sm);
+    padding: var(--space-sm);
+    background: color-mix(in srgb, var(--color-surface-dark) 78%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-white) 14%, transparent);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    color: var(--color-white);
+    opacity: 0;
+    transform: translateY(12px);
+    pointer-events: none;
+    visibility: hidden;
+    padding-bottom: max(var(--space-sm), env(safe-area-inset-bottom));
+  }
+
+  .fabric-reveal__buy[data-open] {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+    visibility: visible;
+    transition:
+      opacity 250ms var(--ease-out),
+      transform 250ms var(--ease-out);
+  }
+
+  .fabric-reveal__buy-kicker {
+    margin: 0 0 var(--space-2xs);
+    letter-spacing: var(--tracking-micro);
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--color-white) 62%, transparent);
+  }
+
+  .fabric-reveal__buy-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--font-size-h3);
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
+    color: var(--color-white);
+    text-wrap: balance;
+  }
+
+  .fabric-reveal__buy-spec {
+    margin: var(--space-2xs) 0 0;
+    font-size: var(--font-size-caption);
+    color: color-mix(in srgb, var(--color-white) 78%, transparent);
+  }
+
+  .fabric-reveal__buy-price {
+    margin: var(--space-xs) 0 var(--space-sm);
+    font-size: var(--font-size-h4);
+    font-weight: 600;
+  }
+
+  .fabric-reveal__pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    margin-bottom: var(--space-sm);
+  }
+
+  .fabric-reveal__pill {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0 var(--space-sm);
+    border: 1px solid color-mix(in srgb, var(--color-white) 28%, transparent);
+    background: transparent;
+    color: var(--color-white);
+    letter-spacing: var(--tracking-micro);
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: var(--radius-none);
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      background-color var(--transition-fast),
+      border-color var(--transition-fast),
+      color var(--transition-fast),
+      transform 160ms var(--ease-out);
+  }
+
+  .fabric-reveal__pill[aria-pressed="true"] {
+    background: var(--color-white);
+    color: var(--color-text);
+    border-color: var(--color-white);
+  }
+
+  .fabric-reveal__pill.is-sold-out,
+  .fabric-reveal__pill[aria-disabled="true"] {
+    opacity: 0.4;
+    cursor: not-allowed;
+    text-decoration: line-through;
+  }
+
+  .fabric-reveal__pill:active:not([aria-disabled="true"]) {
+    transform: scale(0.96);
+  }
+
+  .fabric-reveal__pill:focus-visible {
+    outline: 2px solid var(--color-white);
+    outline-offset: 2px;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .fabric-reveal__pill:hover:not([aria-disabled="true"]):not([aria-pressed="true"]) {
+      border-color: var(--color-white);
+    }
+  }
+
+  .fabric-reveal__actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-xs);
+  }
+
+  .fabric-reveal__add {
+    width: 100%;
+    min-height: 48px;
+    background: var(--color-white);
+    color: var(--color-text);
+    border-color: var(--color-white);
+  }
+
+  .fabric-reveal__add:hover {
+    background: var(--color-surface);
+    color: var(--color-text);
+    border-color: var(--color-surface);
+  }
+
+  .fabric-reveal__add:active {
+    transform: scale(0.96);
+  }
+
+  .fabric-reveal__add:disabled,
+  .fabric-reveal__add[aria-disabled="true"] {
+    background: color-mix(in srgb, var(--color-white) 18%, transparent);
+    color: color-mix(in srgb, var(--color-white) 55%, transparent);
+    border-color: color-mix(in srgb, var(--color-white) 18%, transparent);
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .fabric-reveal__pdp {
+    color: color-mix(in srgb, var(--color-white) 78%, transparent);
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-micro);
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .fabric-reveal__pdp:hover {
+      color: var(--color-white);
+    }
+  }
+
+  .fabric-reveal__pdp:focus-visible {
+    outline: 2px solid var(--color-white);
+    outline-offset: 2px;
+  }
+
+  @media (min-width: 750px) {
+    .fabric-reveal__frame,
+    .fabric-reveal__stage {
+      min-height: 100svh;
+    }
+
+    .fabric-reveal__rail {
+      inset-inline: var(--space-md);
+      top: var(--space-md);
+    }
+
+    .fabric-reveal__buy {
+      left: auto;
+      right: var(--space-md);
+      bottom: var(--space-md);
+      width: min(22rem, calc(100% - var(--space-lg)));
+    }
+
+    .fabric-reveal__pause {
+      right: var(--space-md);
+      bottom: var(--space-md);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fabric-reveal__buy,
+    .fabric-reveal__handle,
+    .fabric-reveal__pill,
+    .fabric-reveal__add,
+    .fabric-reveal__pause,
+    .fabric-reveal__half {
+      transition: none;
+    }
+
+    .fabric-reveal__buy,
+    .fabric-reveal__half {
+      transform: none;
+    }
+
+    .fabric-reveal__over {
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    .fabric-reveal__buy,
+    .fabric-reveal__handle,
+    .fabric-reveal__pause {
+      background: var(--color-surface-dark);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+  }
+{% endstylesheet %}
+
+{% javascript %}
+  (function () {
+    if (customElements.get('fabric-reveal')) return;
+
+    const REST = 0;
+    const OPEN_AT = 0.28;
+    const HYSTERESIS = 10;
+
+    function clamp(n, a, b) {
+      return Math.max(a, Math.min(b, n));
+    }
+
+    class FabricReveal extends HTMLElement {
+      connectedCallback() {
+        if (this._ready) return;
+        this._ready = true;
+
+        this.stage = this.querySelector('[data-stage]');
+        this.over = this.querySelector('[data-over]');
+        this.left = this.querySelector('[data-half="left"]');
+        this.right = this.querySelector('[data-half="right"]');
+        this.seam = this.querySelector('[data-seam]');
+        this.handle = this.querySelector('[data-handle]');
+        this.hint = this.querySelector('[data-hint]');
+        this.buy = this.querySelector('[data-buy]');
+        this.film = this.querySelector('[data-film]');
+        this.pauseBtn = this.querySelector('[data-pause]');
+        this.form = this.querySelector('[data-reveal-form]');
+        this.variantInput = this.querySelector('[data-variant-input]');
+        this.sizeProp = this.querySelector('[data-size-property]');
+        this.addBtn = this.querySelector('[data-add]');
+        this.addLabel = this.querySelector('[data-add-label]');
+        this.status = this.querySelector('[data-status]');
+        this.reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        this.progress = this.reduce ? this.targetFromScroll() : 0;
+        this.vel = 0;
+        this.dragging = false;
+        this.pending = false;
+        this.pointerId = null;
+        this.startX = 0;
+        this.lastX = 0;
+        this.lastT = 0;
+        this.raf = 0;
+        this._last = 0;
+        this.filmPaused = false;
+
+        this.apply(this.progress);
+        this.bind();
+
+        if (this.reduce) {
+          this.apply(this.targetFromScroll() > 0.5 ? 1 : 0);
+          if (this.progress > 0.5) this.toggleBuy(true);
+          this.stopFilm();
+        } else {
+          this.watchScroll();
+          this.watchFilm();
+        }
+      }
+
+      disconnectedCallback() {
+        if (this.raf) cancelAnimationFrame(this.raf);
+        if (this.io) this.io.disconnect();
+        if (this.filmIo) this.filmIo.disconnect();
+        window.removeEventListener('scroll', this.onScroll);
+        window.removeEventListener('resize', this.onResize);
+        this.stopFilm();
+      }
+
+      bind() {
+        this.onDown = this.onDown.bind(this);
+        this.onMove = this.onMove.bind(this);
+        this.onUp = this.onUp.bind(this);
+        this.onKey = this.onKey.bind(this);
+
+        this.stage.addEventListener('pointerdown', this.onDown);
+        this.handle.addEventListener('keydown', this.onKey);
+
+        this.querySelectorAll('[data-size]').forEach((pill) => {
+          pill.addEventListener('click', () => this.pickSize(pill));
+        });
+
+        if (this.pauseBtn) {
+          this.pauseBtn.addEventListener('click', () => this.toggleFilm());
+        }
+      }
+
+      apply(p) {
+        p = clamp(p, 0, 1);
+        this.progress = p;
+        const shift = (p * 100).toFixed(3);
+        if (this.left) this.left.style.transform = 'translate3d(-' + shift + '%, 0, 0)';
+        if (this.right) this.right.style.transform = 'translate3d(' + shift + '%, 0, 0)';
+        if (this.seam) this.seam.style.opacity = p > 0.08 ? '0' : '1';
+        if (this.handle) {
+          this.handle.setAttribute('aria-valuenow', String(Math.round(p * 100)));
+          this.handle.setAttribute('aria-valuetext', Math.round(p * 100) + ' percent revealed');
+          this.handle.style.opacity = p > 0.2 ? '0' : '1';
+          this.handle.style.pointerEvents = p > 0.2 ? 'none' : 'auto';
+          this.handle.tabIndex = p > 0.2 ? -1 : 0;
+        }
+        if (this.hint) this.hint.hidden = p > 0.12;
+        this.toggleBuy(p >= OPEN_AT);
+        return p;
+      }
+
+      toggleBuy(open) {
+        if (!this.buy) return;
+        if (open) {
+          this.buy.setAttribute('data-open', '');
+          this.buy.setAttribute('aria-hidden', 'false');
+        } else {
+          this.buy.removeAttribute('data-open');
+          this.buy.setAttribute('aria-hidden', 'true');
+        }
+      }
+
+      rect() {
+        return this.stage.getBoundingClientRect();
+      }
+
+      progressFromX(x) {
+        const r = this.rect();
+        const half = r.width / 2;
+        return clamp(Math.abs(x - (r.left + half)) / half, 0, 1);
+      }
+
+      onDown(e) {
+        if (e.button && e.button !== 0) return;
+        if (this.dragging) return;
+        if (e.target.closest('aside, form, a, [data-pause]')) return;
+        this.pending = true;
+        this.pointerId = e.pointerId;
+        this.startX = e.clientX;
+        this.startY = e.clientY;
+        this.startP = this.progress;
+        this.lastX = e.clientX;
+        this.lastT = performance.now();
+        this.vel = 0;
+        if (e.target.closest('[data-handle]')) {
+          this.beginDrag(e);
+        }
+        this.stage.addEventListener('pointermove', this.onMove);
+        this.stage.addEventListener('pointerup', this.onUp);
+        this.stage.addEventListener('pointercancel', this.onUp);
+      }
+
+      beginDrag(e) {
+        this.pending = false;
+        this.dragging = true;
+        if (this.raf) {
+          cancelAnimationFrame(this.raf);
+          this.raf = 0;
+        }
+        this.stage.setPointerCapture(e.pointerId);
+        this.stage.style.touchAction = 'none';
+      }
+
+      onMove(e) {
+        if (this.pointerId !== e.pointerId) return;
+        const dx = e.clientX - this.startX;
+        const dy = e.clientY - (this.startY || e.clientY);
+        if (this.pending) {
+          if (Math.abs(dx) + Math.abs(dy) < HYSTERESIS) return;
+          if (Math.abs(dy) > Math.abs(dx)) {
+            this.cleanup();
+            return;
+          }
+          this.beginDrag(e);
+        }
+        if (!this.dragging) return;
+        e.preventDefault();
+        const now = performance.now();
+        const dt = Math.max(1, now - this.lastT);
+        const r = this.rect();
+        const center = r.left + r.width / 2;
+        const startDist = Math.abs(this.startX - center);
+        const nowDist = Math.abs(e.clientX - center);
+        const next = clamp(this.startP + (nowDist - startDist) / (r.width / 2), 0, 1);
+        this.vel = ((next - this.progress) / dt) * 1000;
+        this.lastX = e.clientX;
+        this.lastT = now;
+        this.apply(next);
+      }
+
+      onUp(e) {
+        if (this.pointerId !== e.pointerId) return;
+        this.cleanup();
+        if (this.reduce) return;
+        this.ensureLoop();
+      }
+
+      cleanup() {
+        this.dragging = false;
+        this.pending = false;
+        this.stage.style.touchAction = 'pan-y';
+        this.stage.removeEventListener('pointermove', this.onMove);
+        this.stage.removeEventListener('pointerup', this.onUp);
+        this.stage.removeEventListener('pointercancel', this.onUp);
+        try {
+          if (this.pointerId != null) this.stage.releasePointerCapture(this.pointerId);
+        } catch (err) {}
+        this.pointerId = null;
+      }
+
+      onKey(e) {
+        const map = { ArrowRight: 0.05, ArrowUp: 0.05, ArrowLeft: -0.05, ArrowDown: -0.05 };
+        if (e.key in map) {
+          e.preventDefault();
+          this.apply(this.progress + map[e.key]);
+        } else if (e.key === 'Home') {
+          e.preventDefault();
+          this.apply(REST);
+        } else if (e.key === 'End') {
+          e.preventDefault();
+          this.apply(1);
+        }
+      }
+
+      targetFromScroll() {
+        const box = this.getBoundingClientRect();
+        const vh = window.innerHeight || 1;
+        if (box.bottom <= 0 || box.top >= vh) return 0;
+        const enter = clamp(1 - box.top / (vh * 0.5), 0, 1);
+        const leave = clamp(box.bottom / (vh * 0.72), 0, 1);
+        const t = Math.min(enter, leave);
+        return t * t * (3 - 2 * t);
+      }
+
+      watchScroll() {
+        this.onScroll = () => this.ensureLoop();
+        this.onResize = () => this.ensureLoop();
+        window.addEventListener('scroll', this.onScroll, { passive: true });
+        window.addEventListener('resize', this.onResize, { passive: true });
+        this.io = new IntersectionObserver(
+          () => this.ensureLoop(),
+          { threshold: [0, 0.15, 0.35, 0.55, 0.75, 1], rootMargin: '15% 0px' }
+        );
+        this.io.observe(this);
+        this.ensureLoop();
+      }
+
+      ensureLoop() {
+        if (this.dragging || this.reduce) return;
+        if (this.raf) return;
+        this._last = 0;
+        this.raf = requestAnimationFrame((now) => this.tick(now));
+      }
+
+      tick(now) {
+        if (this.dragging) {
+          this.raf = 0;
+          this._last = 0;
+          return;
+        }
+        if (!this._last) this._last = now;
+        const dt = Math.min(0.04, (now - this._last) / 1000);
+        this._last = now;
+
+        const target = this.targetFromScroll();
+        let x = this.progress;
+        let v = this.vel;
+        const stiffness = 28;
+        const damping = 13;
+        const a = -stiffness * (x - target) - damping * v;
+        v += a * dt;
+        x += v * dt;
+        this.vel = v;
+        this.apply(clamp(x, -0.02, 1.02));
+
+        const settled = Math.abs(v) < 0.00045 && Math.abs(x - target) < 0.004;
+        if (settled) {
+          this.apply(target);
+          this.vel = 0;
+          this.raf = 0;
+          this._last = 0;
+          return;
+        }
+        this.raf = requestAnimationFrame((t) => this.tick(t));
+      }
+
+      watchFilm() {
+        if (!this.film) return;
+        this.filmIo = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (this.filmPaused) return;
+              if (entry.isIntersecting) this.playFilm();
+              else this.stopFilm();
+            });
+          },
+          { threshold: 0.25 }
+        );
+        this.filmIo.observe(this);
+      }
+
+      playFilm() {
+        if (!this.film || this.reduce || this.filmPaused) return;
+        const play = this.film.play();
+        if (play && play.catch) play.catch(() => {});
+        if (this.pauseBtn) {
+          this.pauseBtn.hidden = false;
+          this.pauseBtn.setAttribute('aria-pressed', 'false');
+          this.pauseBtn.textContent = 'Pause film';
+        }
+      }
+
+      stopFilm() {
+        if (!this.film) return;
+        this.film.pause();
+      }
+
+      toggleFilm() {
+        if (!this.film) return;
+        this.filmPaused = !this.filmPaused;
+        if (this.filmPaused) {
+          this.stopFilm();
+          if (this.pauseBtn) {
+            this.pauseBtn.setAttribute('aria-pressed', 'true');
+            this.pauseBtn.textContent = 'Play film';
+          }
+        } else {
+          this.playFilm();
+        }
+      }
+
+      pickSize(pill) {
+        if (pill.getAttribute('aria-disabled') === 'true') return;
+        this.querySelectorAll('[data-size]').forEach((el) => el.setAttribute('aria-pressed', 'false'));
+        pill.setAttribute('aria-pressed', 'true');
+        const id = pill.getAttribute('data-variant-id');
+        if (this.variantInput) this.variantInput.value = id || '';
+        if (this.sizeProp) this.sizeProp.value = pill.getAttribute('data-size') || '';
+        if (this.addBtn) {
+          this.addBtn.disabled = !id;
+          this.addBtn.setAttribute('aria-disabled', id ? 'false' : 'true');
+        }
+        if (this.status) this.status.textContent = 'Size ' + pill.getAttribute('data-size') + ' selected';
+      }
+    }
+
+    customElements.define('fabric-reveal', FabricReveal);
+  })();
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "Fabric Reveal",
+  "tag": "section",
+  "class": "section-fabric-reveal",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Studio garment peels from the center. Headline, price, and CTA stay editable here — they are never painted into the image."
+    },
+    {
+      "type": "product",
+      "id": "product",
+      "label": "Product",
+      "info": "Defaults to the Heavyweight Boxy Hoodie mapping when empty."
+    },
+    {
+      "type": "image_picker",
+      "id": "overlay_image",
+      "label": "Studio overlay (peels apart)"
+    },
+    {
+      "type": "image_picker",
+      "id": "under_image",
+      "label": "Campaign still (under / poster)"
+    },
+    {
+      "type": "text",
+      "id": "video_url",
+      "label": "Campaign film MP4 URL",
+      "info": "Leave blank to use the bundled campaign loop. Film pauses off-screen and when reduced motion is requested."
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "450 GSM"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Heavyweight Boxy Hoodie"
+    },
+    {
+      "type": "text",
+      "id": "spec",
+      "label": "Spec line",
+      "default": "Organic cotton loopback fleece"
+    },
+    {
+      "type": "text",
+      "id": "hint_label",
+      "label": "Drag hint",
+      "default": "Watch it open"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Add to bag label",
+      "default": "Add to Bag"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Fabric Reveal"
+    }
+  ]
+}
+{% endschema %}
