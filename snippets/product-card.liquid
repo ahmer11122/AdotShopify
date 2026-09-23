@@ -3,7 +3,7 @@
   Crafted with:
   - better-typography: Tabular prices, balanced line wrapping, restrained type scale.
   - emil-design-eng: Custom cubic-bezier easing, snappy <220ms durations, :active press scale(0.96), scoped hover transitions.
-  - find-animation-opportunities: High-leverage motion (smooth image crossfade, tactile button depression, floating glass quick-add).
+  - find-animation-opportunities: High-leverage motion (film-strip image slide, tactile button depression, floating glass quick-add).
   - apple-design: Translucent frosted glassmorphism (backdrop-filter: blur(16px)), direct manipulation, zero clutter, 44px touch targets.
 
   @param {product} [product] - The product object
@@ -237,54 +237,47 @@
   <div class="product-card__media-wrapper">
     <a href="{{ card_url }}" class="product-card__media-link" aria-label="{{ card_title | escape }}">
       {% if product and featured_media %}
-        {{
-          featured_media
-          | image_url: width: 750
-          | image_tag:
-            loading: image_loading,
-            fetchpriority: image_fetch,
-            width: 750,
-            height: 1000,
-            widths: '350, 500, 750',
-            sizes: '(min-width: 990px) 25vw, (min-width: 750px) 33vw, 50vw',
-            class: 'product-card__image product-card__image--primary',
-            alt: featured_media.alt | default: card_title | escape
-        }}
-
-        {% if has_secondary_image %}
-          {{
-            secondary_media
-            | image_url: width: 750
-            | image_tag:
-              loading: 'lazy',
-              width: 750,
-              height: 1000,
-              widths: '350, 500, 750',
-              sizes: '(min-width: 990px) 25vw, (min-width: 750px) 33vw, 50vw',
-              class: 'product-card__image product-card__image--secondary',
-              alt: secondary_media.alt | default: card_title | escape
-          }}
-        {% endif %}
+        <div class="product-card__film">
+          {% for image in product.images limit: 3 %}
+            {{
+              image
+              | image_url: width: 750
+              | image_tag:
+                loading: image_loading,
+                fetchpriority: image_fetch,
+                width: 750,
+                height: 1000,
+                widths: '350, 500, 750',
+                sizes: '(min-width: 990px) 25vw, (min-width: 750px) 33vw, 50vw',
+                class: 'product-card__image',
+                alt: image.alt | default: card_title | escape
+            }}
+            {% assign image_loading = 'lazy' %}
+            {% assign image_fetch = 'auto' %}
+          {% endfor %}
+        </div>
       {% elsif image_src != blank %}
-        <img
-          src="{{ image_src }}"
-          alt="{{ card_title | escape }}"
-          width="750"
-          height="1000"
-          loading="{{ image_loading }}"
-          fetchpriority="{{ image_fetch }}"
-          class="product-card__image product-card__image--primary"
-        >
-        {% if has_secondary_image %}
+        <div class="product-card__film">
           <img
-            src="{{ secondary_image_src }}"
+            src="{{ image_src }}"
             alt="{{ card_title | escape }}"
             width="750"
             height="1000"
-            loading="lazy"
-            class="product-card__image product-card__image--secondary"
+            loading="{{ image_loading }}"
+            fetchpriority="{{ image_fetch }}"
+            class="product-card__image"
           >
-        {% endif %}
+          {% if has_secondary_image %}
+            <img
+              src="{{ secondary_image_src }}"
+              alt="{{ card_title | escape }}"
+              width="750"
+              height="1000"
+              loading="lazy"
+              class="product-card__image"
+            >
+          {% endif %}
+        </div>
       {% else %}
         <div class="product-card__placeholder">
           {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
@@ -542,38 +535,21 @@
     -webkit-tap-highlight-color: transparent;
   }
 
-  .product-card__image {
+  .product-card__film {
+    display: flex;
+    height: 100%;
     width: 100%;
+    transform: translateX(calc(var(--i, 0) * -100%));
+    transition: transform 640ms var(--ease-in-out);
+  }
+
+  .product-card__image {
+    flex: 0 0 100%;
+    width: 100%;
+    min-width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
-    transition:
-      transform 280ms var(--ease-out),
-      opacity 200ms var(--ease-out);
-  }
-
-  .product-card__image--primary {
-    position: relative;
-    z-index: 1;
-  }
-
-  .product-card__image--secondary {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    z-index: 2;
-  }
-
-  /* Desktop Hover Reveal (Gated per emil-design-eng) */
-  @media (hover: hover) and (pointer: fine) {
-    .product-card:hover .product-card__image--primary {
-      transform: scale(1.02);
-    }
-
-    .product-card:hover .product-card__image--secondary {
-      opacity: 1;
-      transform: scale(1.02);
-    }
   }
 
   .product-card__placeholder {
@@ -1007,6 +983,7 @@
 
   @media (prefers-reduced-motion: reduce) {
     .product-card__image,
+    .product-card__film,
     .product-card__desktop-action-bar,
     .product-card__mobile-sheet,
     .product-card__mobile-quick-btn::before,
@@ -1021,6 +998,57 @@
   // Delegated handler for Mobile Size Sheet & Desktop AJAX Quick-Add
   if (!window._productCardScriptInitialized) {
     window._productCardScriptInitialized = true;
+
+    var filmFine = false;
+    var filmReduce = false;
+    try {
+      filmFine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+      filmReduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch (err) {}
+
+    if (filmFine && !filmReduce) {
+      var filmHold = 480;
+      var filmSlide = 640;
+      var cardOf = function (node) {
+        return node && node.closest ? node.closest('[data-product-card]') : null;
+      };
+      var clearFilm = function (card) {
+        window.clearTimeout(card._filmTimer);
+      };
+      var playFilm = function (card) {
+        var film = card.querySelector('.product-card__film');
+        if (!film || film.children.length < 2) return;
+        clearFilm(card);
+        var count = film.children.length;
+        var index = 0;
+        film.style.setProperty('--i', '0');
+        var advance = function () {
+          if (index >= count - 1) return;
+          index += 1;
+          film.style.setProperty('--i', String(index));
+          card._filmTimer = window.setTimeout(advance, filmSlide + filmHold);
+        };
+        card._filmTimer = window.setTimeout(advance, filmHold);
+      };
+      var resetFilm = function (card) {
+        var film = card.querySelector('.product-card__film');
+        if (!film) return;
+        clearFilm(card);
+        var at = film.style.getPropertyValue('--i');
+        if (!at || at === '0') return;
+        film.style.setProperty('--i', '0');
+      };
+      document.addEventListener('pointerover', function (event) {
+        var card = cardOf(event.target);
+        if (!card || card === cardOf(event.relatedTarget)) return;
+        playFilm(card);
+      });
+      document.addEventListener('pointerout', function (event) {
+        var card = cardOf(event.target);
+        if (!card || card === cardOf(event.relatedTarget)) return;
+        resetFilm(card);
+      });
+    }
 
     // Open/Close Mobile Size Sheet
     document.addEventListener('click', (e) => {
