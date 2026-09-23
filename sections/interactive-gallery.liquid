@@ -27,9 +27,9 @@
   <lookbook-flow class="flow-look__pin" data-rows="{{ flow_rows }}">
     <div class="flow-look__stage">
       <header class="flow-look__mast">
-        <div class="flow-look__kicker">
-          {% if section.settings.eyebrow != blank %}
-            <p class="text-micro flow-look__eyebrow">{{ section.settings.eyebrow }}</p>
+        <div class="flow-look__header-row">
+          {% if section.settings.heading != blank %}
+            <h2 id="FlowLookHeading-{{ section.id }}" class="flow-look__heading">{{ section.settings.heading }}</h2>
           {% endif %}
           <p class="text-micro flow-look__count" aria-hidden="true">
             <span data-flow-now>01</span>
@@ -38,8 +38,8 @@
           </p>
         </div>
 
-        {% if section.settings.heading != blank %}
-          <h2 id="FlowLookHeading-{{ section.id }}" class="flow-look__heading">{{ section.settings.heading }}</h2>
+        {% if section.settings.eyebrow != blank %}
+          <p class="text-micro flow-look__eyebrow">{{ section.settings.eyebrow }}</p>
         {% endif %}
 
         {% if section.settings.caption != blank %}
@@ -97,8 +97,8 @@
               </a>
             {% endfor %}
           {% else %}
-            {% assign fallback_titles = 'Heavyweight Fleece|Cotton Poplin|Structured Twill|Autumn Lookbook|Boxy Cut Fleece|Essential Poplin' | split: '|' %}
-            {% assign fallback_subs = '450 GSM Organic Cotton|Camp Collar Daily Fit|Relaxed Tailored Cut|Core Layering Capsule|Custom Milled Loopback|Pearl Button Hardware' | split: '|' %}
+            {% assign fallback_titles = 'Heavyweight Hoodie|Poplin Shirt|Twill Trouser|Daily Overshirt|Boxy Sweatshirt|Casual Shirt' | split: '|' %}
+            {% assign fallback_subs = 'Organic Cotton|Relaxed Fit|Straight Cut|Classic Layer|Heavy Fleece|100% Cotton' | split: '|' %}
             {% assign fallback_files = 'category-hoodies.jpg|category-shirts.jpg|category-trousers.jpg|hero-desktop.png|category-hoodies.jpg|category-shirts.jpg' | split: '|' %}
             {% assign fallback_queries = 'hoodies|shirts|trousers|all|hoodies|shirts' | split: '|' %}
             {% for title in fallback_titles %}
@@ -168,8 +168,8 @@
               {% endif %}
             {% endfor %}
           {% else %}
-            {% assign fallback_titles = 'Heavyweight Fleece|Cotton Poplin|Structured Twill|Autumn Lookbook|Boxy Cut Fleece|Essential Poplin' | split: '|' %}
-            {% assign fallback_subs = '450 GSM Organic Cotton|Camp Collar Daily Fit|Relaxed Tailored Cut|Core Layering Capsule|Custom Milled Loopback|Pearl Button Hardware' | split: '|' %}
+            {% assign fallback_titles = 'Heavyweight Hoodie|Poplin Shirt|Twill Trouser|Daily Overshirt|Boxy Sweatshirt|Casual Shirt' | split: '|' %}
+            {% assign fallback_subs = 'Organic Cotton|Relaxed Fit|Straight Cut|Classic Layer|Heavy Fleece|100% Cotton' | split: '|' %}
             {% for title in fallback_titles %}
               {% assign col = forloop.index0 | modulo: 3 %}
               {% assign row = forloop.index0 | divided_by: 3 %}
@@ -253,16 +253,20 @@
     margin-inline: auto;
   }
 
-  .flow-look__kicker {
+  .flow-look__mast {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-sm);
-    min-height: 1rem;
+    flex-direction: column;
+    gap: 0.25rem;
   }
 
-  .flow-look__eyebrow,
-  .flow-look__count {
+  .flow-look__header-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-md);
+  }
+
+  .flow-look__eyebrow {
     margin: 0;
     color: var(--color-text-subtle);
   }
@@ -271,7 +275,12 @@
     display: none;
     align-items: center;
     gap: 0.55rem;
+    color: var(--color-text-subtle);
     font-variant-numeric: tabular-nums;
+    font-size: var(--font-size-micro);
+    letter-spacing: var(--tracking-micro);
+    text-transform: uppercase;
+    flex-shrink: 0;
   }
 
   .flow-look.is-live .flow-look__count {
@@ -286,19 +295,18 @@
   }
 
   .flow-look__heading {
-    margin: 0.35rem 0 0;
-    max-width: 16ch;
+    margin: 0;
     font-family: var(--font-display);
-    font-size: clamp(2rem, 3.5vw, 3.4rem);
+    font-size: clamp(1.75rem, 3.2vw, 2.75rem);
     font-weight: 500;
-    line-height: 0.98;
-    letter-spacing: -0.03em;
+    line-height: 1.08;
+    letter-spacing: -0.025em;
     text-wrap: balance;
   }
 
   .flow-look__caption {
-    margin: 0.55rem 0 0;
-    max-width: 38ch;
+    margin: 0.25rem 0 0;
+    max-width: 42ch;
     font-family: var(--font-body);
     font-size: var(--font-size-caption);
     line-height: var(--leading-normal);
@@ -849,25 +857,25 @@
       "type": "text",
       "id": "eyebrow",
       "label": "Eyebrow",
-      "default": "The archive"
+      "default": ""
     },
     {
       "type": "text",
       "id": "heading",
       "label": "Heading",
-      "default": "Form. Fabric. Permanence."
+      "default": "Clean Cuts. Quality Fabrics."
     },
     {
       "type": "textarea",
       "id": "caption",
       "label": "Caption",
-      "default": "A season, studied in cloth."
+      "default": ""
     },
     {
       "type": "text",
       "id": "button_label",
       "label": "Button label",
-      "default": "Explore all pieces"
+      "default": "Shop All Pieces"
     },
     {
       "type": "url",
@@ -905,13 +913,13 @@
           "type": "text",
           "id": "title",
           "label": "Title",
-          "default": "Heavyweight Fleece"
+          "default": "Heavyweight Hoodie"
         },
         {
           "type": "text",
           "id": "subtitle",
           "label": "Material",
-          "default": "450 GSM Organic Cotton"
+          "default": "Organic Cotton"
         },
         {
           "type": "url",
@@ -925,18 +933,18 @@
     {
       "name": "Lookbook Flow",
       "settings": {
-        "eyebrow": "The archive",
-        "heading": "Form. Fabric. Permanence.",
-        "caption": "A season, studied in cloth.",
-        "button_label": "Explore all pieces"
+        "eyebrow": "",
+        "heading": "Clean Cuts. Quality Fabrics.",
+        "caption": "",
+        "button_label": "Shop All Pieces"
       },
       "blocks": [
-        { "type": "card", "settings": { "title": "Heavyweight Fleece", "subtitle": "450 GSM Loopback" } },
-        { "type": "card", "settings": { "title": "Cotton Poplin", "subtitle": "Camp Collar Fit" } },
-        { "type": "card", "settings": { "title": "Structured Twill", "subtitle": "Relaxed Trouser" } },
-        { "type": "card", "settings": { "title": "Autumn Campaign", "subtitle": "Layering Capsule" } },
-        { "type": "card", "settings": { "title": "Boxy Cut Fleece", "subtitle": "Drop Shoulder" } },
-        { "type": "card", "settings": { "title": "Daily Essential", "subtitle": "Classic Poplin" } }
+        { "type": "card", "settings": { "title": "Heavyweight Hoodie", "subtitle": "Organic Cotton" } },
+        { "type": "card", "settings": { "title": "Poplin Shirt", "subtitle": "Relaxed Fit" } },
+        { "type": "card", "settings": { "title": "Twill Trouser", "subtitle": "Straight Cut" } },
+        { "type": "card", "settings": { "title": "Daily Overshirt", "subtitle": "Classic Layer" } },
+        { "type": "card", "settings": { "title": "Boxy Sweatshirt", "subtitle": "Heavy Fleece" } },
+        { "type": "card", "settings": { "title": "Casual Shirt", "subtitle": "100% Cotton" } }
       ]
     }
   ]

@@ -83,48 +83,48 @@
         "card_1": {
           "type": "card",
           "settings": {
-            "title": "Heavyweight Fleece",
-            "subtitle": "450 GSM Organic Cotton",
+            "title": "Heavyweight Hoodie",
+            "subtitle": "Organic Cotton",
             "link": "/collections/all?category=hoodies"
           }
         },
         "card_2": {
           "type": "card",
           "settings": {
-            "title": "Cotton Poplin",
-            "subtitle": "Camp Collar Daily Fit",
+            "title": "Poplin Shirt",
+            "subtitle": "Relaxed Fit",
             "link": "/collections/all?category=shirts"
           }
         },
         "card_3": {
           "type": "card",
           "settings": {
-            "title": "Structured Twill",
-            "subtitle": "Relaxed Tailored Cut",
+            "title": "Twill Trouser",
+            "subtitle": "Straight Cut",
             "link": "/collections/all?category=trousers"
           }
         },
         "card_4": {
           "type": "card",
           "settings": {
-            "title": "Autumn Lookbook",
-            "subtitle": "Core Layering Capsule",
+            "title": "Daily Overshirt",
+            "subtitle": "Classic Layer",
             "link": "/collections/all"
           }
         },
         "card_5": {
           "type": "card",
           "settings": {
-            "title": "Boxy Cut Fleece",
-            "subtitle": "Custom Milled Loopback",
+            "title": "Boxy Sweatshirt",
+            "subtitle": "Heavy Fleece",
             "link": "/collections/all?category=hoodies"
           }
         },
         "card_6": {
           "type": "card",
           "settings": {
-            "title": "Essential Poplin",
-            "subtitle": "Pearl Button Hardware",
+            "title": "Casual Shirt",
+            "subtitle": "100% Cotton",
             "link": "/collections/all?category=shirts"
           }
         }
@@ -138,10 +138,10 @@
         "card_6"
       ],
       "settings": {
-        "eyebrow": "The archive",
-        "heading": "Form. Fabric. Permanence.",
-        "caption": "A season, studied in cloth.",
-        "button_label": "Explore all pieces",
+        "eyebrow": "",
+        "heading": "Clean Cuts. Quality Fabrics.",
+        "caption": "",
+        "button_label": "Shop All Pieces",
         "button_link": "/collections/all",
         "background_color": "#FFFFFF",
         "text_color": "#111111"
