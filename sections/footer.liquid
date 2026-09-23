@@ -1,234 +1,584 @@
 {% comment %}
-  Modern Editorial Inverted Dark Footer
-  Quiet luxury aesthetic using --color-surface-dark and --color-text-inverse.
+  Cinematic footer, translated from a fixed curtain reveal.
+  Desktop: the page scrolls away and this panel is revealed underneath.
+  Mobile and reduced motion: the same layout, in normal document flow.
+  No GSAP. Motion is a linear marquee, a link underline, and the curtain.
 {% endcomment %}
 
-<footer class="footer full-width" data-section-id="{{ section.id }}">
-  <div class="footer__inner container">
-    <div class="footer__grid">
-      <!-- Column 1: Brand & Philosophy -->
-      <div class="footer__col footer__col--brand">
-        <h2 class="footer__logo">
-          <a href="{{ routes.root_url }}">{{ shop.name }}</a>
-        </h2>
-        <p class="footer__tagline caption">
-          {{ section.settings.tagline | default: 'Modern menswear tailored with architectural discipline. Heavyweight essentials made for permanence.' }}
-        </p>
-      </div>
+<div class="footer-reveal">
+  {% # theme-check-disable ParserBlockingScript %}
+  <script>
+    (function (el) {
+      var reduce = false;
+      try { reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+      var design = !!(window.Shopify && Shopify.designMode);
+      if (reduce || design) el.setAttribute('data-static', '');
+    })(document.currentScript.parentElement);
+  </script>
+  {% # theme-check-enable ParserBlockingScript %}
 
-      <!-- Column 2: Navigation Links -->
-      <div class="footer__col footer__col--nav">
-        <span class="footer__heading text-micro">{{ 'general.navigation' | t | default: 'COLLECTION' }}</span>
-        <ul class="footer__links">
-          {% for link in section.settings.menu.links %}
-            <li>
-              <a href="{{ link.url }}" class="footer__link">{{ link.title }}</a>
-            </li>
-          {% else %}
-            <li><a href="{{ routes.collections_url }}/hoodies" class="footer__link">Hoodies</a></li>
-            <li><a href="{{ routes.collections_url }}/shirts" class="footer__link">Shirts</a></li>
-            <li><a href="{{ routes.collections_url }}/trousers" class="footer__link">Trousers</a></li>
-            <li><a href="{{ routes.root_url }}pages/size-guide" class="footer__link">Size Guide</a></li>
-          {% endfor %}
-        </ul>
-      </div>
+  <div class="footer" data-section-id="{{ section.id }}">
+    <p class="footer__mark" aria-hidden="true">{{ shop.name }}</p>
 
-      <!-- Column 3: Editorial Newsletter -->
-      <div class="footer__col footer__col--newsletter">
-        <span class="footer__heading text-micro">{{ 'general.newsletter.title' | t | default: 'THE DISPATCH' }}</span>
-        <p class="footer__newsletter-desc caption">
-          {{ section.settings.newsletter_text | default: 'Sign up to receive early access to seasonal drops and material studies.' }}
-        </p>
-        {% form 'customer', class: 'footer__form' %}
-          <input type="hidden" name="contact[tags]" value="newsletter">
-          <div class="footer__input-group">
-            <input
-              type="email"
-              name="contact[email]"
-              id="FooterEmail-{{ section.id }}"
-              class="footer__input"
-              placeholder="{{ 'general.newsletter.placeholder' | t | default: 'Enter your email' }}"
-              required
-            >
-            <button type="submit" class="btn btn-primary footer__submit" aria-label="Subscribe">
-              &rarr;
-            </button>
-          </div>
-          {% if form.posted_successfully? %}
-            <p class="footer__success text-micro">{{ 'general.newsletter.success' | t | default: 'Thank you for subscribing.' }}</p>
-          {% endif %}
-        {% endform %}
+    <div class="footer__marquee" aria-hidden="true">
+      <div class="footer__marquee-track">
+        {%- assign marquee = section.settings.marquee_text | default: 'Heavyweight essentials · Cash on delivery · Easy exchange · Made to last' -%}
+        {%- assign marquee_parts = marquee | split: '·' -%}
+        {%- for pass in (1..2) -%}
+          <span class="footer__marquee-group">
+            {%- for part in marquee_parts -%}
+              <span class="footer__marquee-word">{{ part | strip }}</span>
+              <span class="footer__dot"></span>
+            {%- endfor -%}
+          </span>
+        {%- endfor -%}
       </div>
     </div>
 
-    <!-- Bottom Bar -->
-    <div class="footer__bottom">
-      <div class="footer__copyright text-micro">
-        &copy; {{ 'now' | date: '%Y' }} {{ shop.name }}. All rights reserved.
-      </div>
+    <div class="footer__body">
+    <div class="footer__center">
+      <p class="footer__eyebrow text-micro">{{ section.settings.eyebrow | default: 'The dispatch' }}</p>
+      <h2 class="footer__display">{{ section.settings.heading | default: 'Made to be worn.' }}</h2>
+      <p class="footer__tagline">
+        {{ section.settings.tagline | default: 'Modern menswear tailored with architectural discipline. Heavyweight essentials made for permanence.' }}
+      </p>
 
-      <div class="footer__payment">
-        {% if section.settings.show_payment_icons %}
-          {% for type in shop.enabled_payment_types %}
-            {{ type | payment_type_svg_tag }}
-          {% endfor %}
+      {% form 'customer', class: 'footer__form' %}
+        <input type="hidden" name="contact[tags]" value="newsletter">
+        <label class="visually-hidden" for="FooterEmail-{{ section.id }}">Email</label>
+        <div class="footer__input-group">
+          <input
+            type="email"
+            name="contact[email]"
+            id="FooterEmail-{{ section.id }}"
+            class="footer__input"
+            placeholder="{{ 'general.newsletter.placeholder' | t | default: 'Email address' }}"
+            autocomplete="email"
+            required
+          >
+          <button type="submit" class="footer__submit" aria-label="Subscribe">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path d="M1 7H13M13 7L7.5 1.5M13 7L7.5 12.5" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
+        {% if form.posted_successfully? %}
+          <p class="footer__success text-micro" role="status">{{ 'general.newsletter.success' | t | default: 'Thank you for subscribing.' }}</p>
         {% endif %}
-      </div>
+      {% endform %}
+
+    </div>
+
+    <nav class="footer__col" aria-label="Shop">
+      <p class="footer__col-label text-micro">Shop</p>
+      <ul class="footer__links">
+        <li><a href="{{ routes.all_products_collection_url }}?category=hoodies" class="footer__link">Hoodies</a></li>
+        <li><a href="{{ routes.all_products_collection_url }}?category=shirts" class="footer__link">Shirts</a></li>
+        <li><a href="{{ routes.all_products_collection_url }}?category=trousers" class="footer__link">Trousers</a></li>
+        <li><a href="{{ routes.all_products_collection_url }}" class="footer__link">All pieces</a></li>
+      </ul>
+    </nav>
+
+    <nav class="footer__col" aria-label="Pages">
+      <p class="footer__col-label text-micro">Pages</p>
+      <ul class="footer__links">
+        {% if section.settings.menu != blank and section.settings.menu.links.size > 0 %}
+          {% for link in section.settings.menu.links %}
+            <li><a href="{{ link.url }}" class="footer__link">{{ link.title }}</a></li>
+          {% endfor %}
+        {% else %}
+          <li><a href="{{ routes.root_url }}pages/size-guide" class="footer__link">Size guide</a></li>
+          <li><a href="{{ routes.search_url }}" class="footer__link">Search</a></li>
+          {% if shop.customer_accounts_enabled %}
+            <li><a href="{{ routes.account_url }}" class="footer__link">{% if customer %}Account{% else %}Sign in{% endif %}</a></li>
+          {% endif %}
+        {% endif %}
+        {% if shop.shipping_policy %}
+          <li><a href="{{ shop.shipping_policy.url }}" class="footer__link">{{ shop.shipping_policy.title }}</a></li>
+        {% endif %}
+        {% if shop.refund_policy %}
+          <li><a href="{{ shop.refund_policy.url }}" class="footer__link">{{ shop.refund_policy.title }}</a></li>
+        {% endif %}
+        {% if shop.privacy_policy %}
+          <li><a href="{{ shop.privacy_policy.url }}" class="footer__link">{{ shop.privacy_policy.title }}</a></li>
+        {% endif %}
+        {% if shop.terms_of_service %}
+          <li><a href="{{ shop.terms_of_service.url }}" class="footer__link">{{ shop.terms_of_service.title }}</a></li>
+        {% endif %}
+      </ul>
+    </nav>
+
+    {%- assign wa_raw = section.settings.whatsapp_number | default: '923131707080' | replace: '+', '' | replace: ' ', '' | replace: '-', '' -%}
+    {%- assign wa_mid = wa_raw | slice: 2, 3 -%}
+    {%- assign wa_end = wa_raw | slice: 5, 7 -%}
+    {%- if wa_raw.size == 12 -%}
+      {%- assign wa_display = '+92 ' | append: wa_mid | append: ' ' | append: wa_end -%}
+    {%- else -%}
+      {%- assign wa_display = '+' | append: wa_raw -%}
+    {%- endif -%}
+    <a
+      class="footer__whatsapp"
+      href="https://wa.me/{{ wa_raw }}?text={{ 'Hello ADOT, I would like to place an order.' | url_encode }}"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      <span class="footer__dot footer__dot--live" aria-hidden="true"></span>
+      <span class="footer__whatsapp-copy">
+        <span class="footer__col-label text-micro">WhatsApp</span>
+        <span class="footer__whatsapp-number">{{ wa_display }}</span>
+      </span>
+    </a>
+    </div>
+
+    <div class="footer__bottom">
+      <p class="footer__copyright text-micro">
+        &copy; {{ 'now' | date: '%Y' }} {{ shop.name }}. All rights reserved.
+      </p>
+
+      <button type="button" class="footer__top" data-footer-top>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <path d="M7 13V1M7 1L1.5 6.5M7 1L12.5 6.5" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="visually-hidden">Back to top</span>
+      </button>
     </div>
   </div>
-</footer>
+</div>
 
 {% stylesheet %}
-  .footer {
+  #MainContent {
+    position: relative;
+    z-index: 2;
+    background-color: var(--color-background);
+  }
+
+  .footer-reveal {
+    position: relative;
     width: 100vw;
     margin-left: calc(50% - 50vw);
     margin-right: calc(50% - 50vw);
     background-color: var(--color-surface-dark);
+  }
+
+  .footer-reveal .footer {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: var(--space-lg);
+    min-height: 100svh;
+    padding: var(--space-lg) var(--page-margin) max(var(--space-md), env(safe-area-inset-bottom));
+    background-color: var(--color-surface-dark);
     color: var(--color-text-inverse);
-    margin-top: var(--space-xl);
-    padding-top: var(--space-xl);
-    padding-bottom: var(--space-lg);
-    border-top: 1px solid var(--color-border-dark);
+    overflow: hidden;
     box-sizing: border-box;
   }
 
-  .footer__grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: var(--space-lg);
-    padding-bottom: var(--space-xl);
-    border-bottom: 1px solid var(--color-border-dark);
+  .footer a:hover,
+  .footer a:focus-visible {
+    opacity: 1;
   }
 
-  @media (min-width: 750px) {
-    .footer__grid {
-      grid-template-columns: 1.5fr 1fr 1.5fr;
-      gap: var(--space-xl);
-    }
+  .footer :focus-visible {
+    outline-color: var(--color-white);
   }
 
-  .footer__logo a {
+  .footer__mark {
+    position: absolute;
+    left: 50%;
+    bottom: -0.06em;
+    z-index: 0;
+    margin: 0;
+    transform: translateX(-50%);
     font-family: var(--font-display);
-    font-size: 1.75rem;
-    font-weight: 400;
-    letter-spacing: var(--tracking-tight);
+    font-size: clamp(4.5rem, 22vw, 18rem);
+    font-weight: 600;
+    line-height: 0.8;
+    letter-spacing: -0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: transparent;
+    -webkit-text-stroke: 1px color-mix(in srgb, var(--color-text-inverse) 16%, transparent);
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .footer__marquee {
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+    border-block: 1px solid var(--color-border-dark);
+    padding-block: var(--space-sm);
+  }
+
+  .footer__marquee-track {
+    display: flex;
+    width: max-content;
+    animation: footer-marquee 40s linear infinite;
+  }
+
+  .footer__marquee-group {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding-inline: var(--space-md);
+  }
+
+  .footer__marquee-word {
+    font-family: var(--font-body);
+    font-size: var(--font-size-micro);
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: color-mix(in srgb, var(--color-text-inverse) 62%, transparent);
+  }
+
+  .footer__dot {
+    width: 4px;
+    height: 4px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background-color: var(--color-text-inverse);
+    opacity: 0.4;
+  }
+
+  .footer__body {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-md) var(--space-sm);
+    align-items: start;
+  }
+
+  .footer__center {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-sm);
+    max-width: 36rem;
+  }
+
+  .footer__eyebrow {
+    margin: 0;
+    color: color-mix(in srgb, var(--color-text-inverse) 58%, transparent);
+    letter-spacing: var(--tracking-micro);
+    text-transform: uppercase;
+  }
+
+  .footer__display {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 7vw, 5.5rem);
+    font-weight: 500;
+    line-height: 0.95;
+    letter-spacing: -0.04em;
     color: var(--color-text-inverse);
-    text-decoration: none;
   }
 
   .footer__tagline {
-    margin-top: var(--space-xs);
-    color: var(--color-text-subtle);
-    max-width: 36ch;
-    line-height: var(--leading-normal);
-  }
-
-  .footer__heading {
-    display: block;
-    color: var(--color-text-subtle);
-    margin-bottom: var(--space-sm);
-  }
-
-  .footer__links {
-    list-style: none;
-    padding: 0;
     margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-xs);
-  }
-
-  .footer__link {
-    color: var(--color-text-inverse);
-    text-decoration: none;
+    max-width: 42ch;
     font-family: var(--font-body);
     font-size: var(--font-size-caption);
-    transition: opacity var(--transition-fast);
-  }
-
-  .footer__link:hover {
-    opacity: 0.7;
-  }
-
-  .footer__newsletter-desc {
-    color: var(--color-text-subtle);
-    margin-bottom: var(--space-xs);
     line-height: var(--leading-normal);
+    color: color-mix(in srgb, var(--color-text-inverse) 72%, transparent);
+  }
+
+  .footer__form {
+    width: 100%;
+    max-width: 28rem;
   }
 
   .footer__input-group {
     display: flex;
-    position: relative;
     border: 1px solid var(--color-border-dark);
-    background-color: rgba(255, 255, 255, 0.04);
+    background-color: color-mix(in srgb, var(--color-white) 4%, transparent);
   }
 
   .footer__input {
     flex: 1;
+    min-width: 0;
+    min-height: 48px;
+    padding: 0 var(--space-sm);
+    border: 0;
     background: transparent;
-    border: none;
-    padding: 0.75rem 1rem;
     color: var(--color-text-inverse);
     font-family: var(--font-body);
-    font-size: var(--font-size-caption);
+    font-size: 1rem;
     outline: none;
   }
 
   .footer__input::placeholder {
-    color: var(--color-text-subtle);
+    color: color-mix(in srgb, var(--color-text-inverse) 45%, transparent);
   }
 
   .footer__submit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 48px;
+    min-height: 48px;
+    padding: 0 var(--space-sm);
+    border: 0;
+    border-radius: var(--radius-none);
     background-color: var(--color-white);
     color: var(--color-surface-dark);
-    border: none;
-    padding: 0 1.25rem;
     cursor: pointer;
-    font-size: 1.25rem;
-    transition: opacity var(--transition-fast);
-    min-height: 44px;
+    touch-action: manipulation;
+    transition: transform 160ms var(--ease-out);
   }
 
-  .footer__submit:hover {
-    background-color: var(--color-white);
-    opacity: 0.85;
+  .footer__submit svg {
+    transition: transform 160ms var(--ease-out);
+  }
+
+  .footer__submit:active {
+    transform: scale(0.96);
   }
 
   .footer__success {
-    margin-top: var(--space-xs);
-    color: var(--color-in-stock);
+    margin: var(--space-xs) 0 0;
+    color: var(--color-text-inverse);
+  }
+
+  .footer__col-label {
+    margin: 0 0 var(--space-2xs);
+    color: color-mix(in srgb, var(--color-text-inverse) 48%, transparent);
+    letter-spacing: var(--tracking-micro);
+    text-transform: uppercase;
+  }
+
+  .footer__links {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .footer__link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--color-text-inverse);
+    font-family: var(--font-body);
+    font-size: var(--font-size-micro);
+    font-weight: 500;
+    letter-spacing: var(--tracking-micro);
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+
+  .footer__link::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 8px;
+    width: 100%;
+    height: 1px;
+    background-color: currentColor;
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 200ms var(--ease-out);
+  }
+
+  .footer__whatsapp {
+    grid-column: 1 / -1;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    min-height: 44px;
+    color: var(--color-text-inverse);
+    text-decoration: none;
+    touch-action: manipulation;
+    transition: transform 160ms var(--ease-out);
+  }
+
+  .footer__whatsapp-copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.1rem;
+  }
+
+  .footer__whatsapp-number {
+    font-family: var(--font-body);
+    font-size: clamp(1.125rem, 2vw, 1.35rem);
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.2;
+  }
+
+  .footer__dot--live {
+    width: 6px;
+    height: 6px;
+    opacity: 1;
+  }
+
+  .footer__whatsapp:active {
+    transform: scale(0.98);
   }
 
   .footer__bottom {
+    position: relative;
+    z-index: 1;
     display: flex;
-    flex-direction: column;
-    gap: var(--space-sm);
+    flex-wrap: wrap;
+    align-items: center;
     justify-content: space-between;
-    align-items: flex-start;
-    padding-top: var(--space-md);
-  }
-
-  @media (min-width: 750px) {
-    .footer__bottom {
-      flex-direction: row;
-      align-items: center;
-    }
+    gap: var(--space-sm);
   }
 
   .footer__copyright {
-    color: var(--color-text-subtle);
+    margin: 0;
+    color: color-mix(in srgb, var(--color-text-inverse) 55%, transparent);
   }
 
-  .footer__payment {
-    display: flex;
-    gap: var(--space-xs);
+  .footer__top {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    margin-inline-start: auto;
+    border: 1px solid var(--color-border-dark);
+    border-radius: var(--radius-none);
+    background: transparent;
+    color: var(--color-text-inverse);
+    cursor: pointer;
+    touch-action: manipulation;
+    transition:
+      background-color 160ms var(--ease-out),
+      transform 160ms var(--ease-out);
   }
 
-  .footer__payment svg {
-    height: 1.5rem;
-    width: auto;
+  .footer__top svg {
+    transition: transform 160ms var(--ease-out);
+  }
+
+  .footer__top:active {
+    transform: scale(0.96);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .footer__marquee:hover .footer__marquee-track {
+      animation-play-state: paused;
+    }
+
+    .footer__submit:hover svg,
+    .footer__top:hover svg {
+      transform: translateX(3px);
+    }
+
+    .footer__top:hover svg {
+      transform: translateY(-3px);
+    }
+
+    .footer__link:hover::after,
+    .footer__link:focus-visible::after,
+    .footer__whatsapp:hover .footer__whatsapp-number {
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+
+    .footer__link:hover::after,
+    .footer__link:focus-visible::after {
+      transform: scaleX(1);
+      text-decoration: none;
+    }
+
+    .footer__top:hover {
+      background-color: var(--color-white);
+      color: var(--color-surface-dark);
+    }
+  }
+
+  @media (min-width: 990px) {
+    .footer__body {
+      grid-template-columns: minmax(0, 1.4fr) auto auto minmax(12rem, 0.9fr);
+      align-items: end;
+      gap: var(--space-lg) var(--space-xl);
+    }
+
+    .footer__center,
+    .footer__whatsapp {
+      grid-column: auto;
+    }
+
+    .footer__whatsapp {
+      justify-self: end;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .footer__dot {
+      animation: footer-dot 2.8s var(--ease-in-out) infinite;
+    }
+
+    .footer__marquee-group .footer__dot:nth-child(4) {
+      animation-delay: 0.6s;
+    }
+
+    .footer__marquee-group .footer__dot:nth-child(6) {
+      animation-delay: 1.2s;
+    }
+  }
+
+  @media (min-width: 990px) {
+    .footer-reveal:not([data-static]) {
+      height: 100svh;
+      clip-path: inset(0);
+    }
+
+    .footer-reveal:not([data-static]) .footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 100svh;
+      min-height: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .footer__marquee-track {
+      animation: none;
+      flex-wrap: wrap;
+      width: auto;
+      justify-content: center;
+    }
+  }
+
+  @keyframes footer-marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  @keyframes footer-dot {
+    0%, 100% { opacity: 0.28; }
+    50% { opacity: 1; }
   }
 {% endstylesheet %}
+
+{% javascript %}
+  (function () {
+    if (window.__adotFooterTop) return;
+    window.__adotFooterTop = true;
+    document.addEventListener('click', function (event) {
+      var button = event.target.closest('[data-footer-top]');
+      if (!button) return;
+      var reduce = false;
+      try { reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+      window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+    });
+  })();
+{% endjavascript %}
 
 {% schema %}
 {
@@ -236,28 +586,41 @@
   "tag": "footer",
   "settings": [
     {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "The dispatch"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Made to be worn."
+    },
+    {
       "type": "textarea",
       "id": "tagline",
       "label": "Brand Tagline",
       "default": "Modern menswear tailored with architectural discipline. Heavyweight essentials made for permanence."
     },
     {
+      "type": "text",
+      "id": "marquee_text",
+      "label": "Marquee text",
+      "default": "Heavyweight essentials  ·  Cash on delivery  ·  Easy exchange  ·  Made to last"
+    },
+    {
       "type": "link_list",
       "id": "menu",
-      "label": "Footer Menu",
+      "label": "Pages menu",
       "default": "footer"
     },
     {
-      "type": "textarea",
-      "id": "newsletter_text",
-      "label": "Newsletter Description",
-      "default": "Sign up to receive early access to seasonal drops and material studies."
-    },
-    {
-      "type": "checkbox",
-      "id": "show_payment_icons",
-      "label": "Show Payment Icons",
-      "default": true
+      "type": "text",
+      "id": "whatsapp_number",
+      "label": "WhatsApp number",
+      "default": "923131707080",
+      "info": "Country code, no plus sign. Example: 923131707080"
     }
   ]
 }

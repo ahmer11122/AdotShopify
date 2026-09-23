@@ -1,10 +1,22 @@
 {% comment %}
-  Modern Editorial Featured Collection — New Arrivals
-  Clean 4-column desktop / 2-column mobile product grid with fixed 3:4 cards,
-  mobile corner quick-add, desktop hover reveal, and quick size picker.
+  New Arrivals. Two columns on a phone, three from 750px, four from 990px.
+  The title leads and View All trails. The header wipes in once it has
+  scrolled into the lower third; each product settles as its row arrives.
+  Card hover and quick-add stay on the product card.
 {% endcomment %}
 
 <section class="featured-collection container" data-section-id="{{ section.id }}">
+  {% # theme-check-disable ParserBlockingScript %}
+  <script>
+    (function (el) {
+      var reduce = false;
+      try { reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+      var design = !!(window.Shopify && Shopify.designMode);
+      if (reduce || design || !('IntersectionObserver' in window)) return;
+      el.setAttribute('data-reveal', 'pending');
+    })(document.currentScript.parentElement);
+  </script>
+  {% # theme-check-enable ParserBlockingScript %}
   <div class="featured-collection__header">
     <div class="featured-collection__title-group">
       {% if section.settings.eyebrow != blank %}
@@ -17,7 +29,12 @@
 
     {% if section.settings.show_view_all %}
       <a href="{{ section.settings.collection.url | default: routes.all_products_collection_url }}" class="featured-collection__view-all text-micro">
-        View All Drops &rarr;
+        <span class="featured-collection__view-all-label">
+          <span>View All Drops</span>
+          <svg class="featured-collection__view-all-arrow" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M1 7H13M13 7L7.5 1.5M13 7L7.5 12.5" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
       </a>
     {% endif %}
   </div>
@@ -183,13 +200,37 @@
       </div>
     {% endif %}
   </div>
+  {% # theme-check-disable ParserBlockingScript %}
+  <script>
+    (function (el) {
+      if (!el || el.getAttribute('data-reveal') !== 'pending') return;
+      try {
+        var nodes = el.querySelectorAll('.featured-collection__header, .featured-collection__item');
+        if (!nodes.length) {
+          el.removeAttribute('data-reveal');
+          return;
+        }
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add('is-in');
+            io.unobserve(entry.target);
+          });
+        }, { threshold: 0, rootMargin: '0px 0px -32% 0px' });
+        nodes.forEach(function (node) { io.observe(node); });
+      } catch (e) {
+        el.removeAttribute('data-reveal');
+      }
+    })(document.currentScript.parentElement);
+  </script>
+  {% # theme-check-enable ParserBlockingScript %}
 </section>
 
 {% stylesheet %}
   .section-featured-collection {
     position: relative;
     z-index: 1;
-    background-color: var(--color-background, #FFFFFF);
+    background-color: var(--color-background);
     border-top: 1px solid var(--color-border);
   }
 
@@ -199,13 +240,18 @@
     margin-bottom: 0;
   }
 
+  .featured-collection a:hover,
+  .featured-collection a:focus-visible {
+    opacity: 1;
+  }
+
   .featured-collection__header {
     display: flex;
+    flex-wrap: wrap;
     align-items: flex-end;
     justify-content: space-between;
-    margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
-    padding-bottom: var(--space-xs);
-    border-bottom: 1px solid var(--color-border);
+    gap: var(--space-sm);
+    margin-bottom: clamp(1.75rem, 3.5vw, 2.5rem);
   }
 
   .featured-collection__eyebrow {
@@ -227,28 +273,55 @@
   }
 
   .featured-collection__view-all {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
     color: var(--color-text);
     text-decoration: none;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     font-weight: 500;
-    transition: opacity var(--transition-fast);
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 160ms var(--ease-out);
+  }
+
+  .featured-collection__view-all:active {
+    transform: scale(0.96);
+  }
+
+  .featured-collection__view-all-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
     padding-bottom: 2px;
-    border-bottom: 1px solid transparent;
+    border-bottom: 1px solid var(--color-text);
   }
 
-  .featured-collection__view-all:hover {
-    border-bottom-color: var(--color-text);
+  .featured-collection__view-all-arrow {
+    transition: transform 160ms var(--ease-out);
   }
 
-  /* Responsive 2-column mobile / 4-column desktop grid */
+  @media (hover: hover) and (pointer: fine) {
+    .featured-collection__view-all:hover .featured-collection__view-all-arrow {
+      transform: translateX(4px);
+    }
+  }
+
+  .featured-collection__item:nth-child(2n + 1) { --reveal-delay: 0ms; }
+  .featured-collection__item:nth-child(2n) { --reveal-delay: 70ms; }
+
   .featured-collection__grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: clamp(10px, 3vw, 20px) clamp(10px, 2.5vw, 16px);
+    gap: var(--space-md) var(--space-sm);
   }
 
   @media (min-width: 750px) {
+    .featured-collection__item:nth-child(3n + 1) { --reveal-delay: 0ms; }
+    .featured-collection__item:nth-child(3n + 2) { --reveal-delay: 70ms; }
+    .featured-collection__item:nth-child(3n + 3) { --reveal-delay: 140ms; }
+
     .featured-collection__grid {
       grid-template-columns: repeat(3, 1fr);
       gap: var(--space-md);
@@ -256,9 +329,74 @@
   }
 
   @media (min-width: 990px) {
+    .featured-collection__item:nth-child(4n + 1) { --reveal-delay: 0ms; }
+    .featured-collection__item:nth-child(4n + 2) { --reveal-delay: 60ms; }
+    .featured-collection__item:nth-child(4n + 3) { --reveal-delay: 120ms; }
+    .featured-collection__item:nth-child(4n + 4) { --reveal-delay: 180ms; }
+
     .featured-collection__grid {
       grid-template-columns: repeat(4, 1fr);
-      gap: 2.25rem 1.75rem;
+      gap: var(--space-md);
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .featured-collection[data-reveal="pending"] .featured-collection__header:not(.is-in) .featured-collection__eyebrow,
+    .featured-collection[data-reveal="pending"] .featured-collection__header:not(.is-in) .featured-collection__view-all-label {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+
+    .featured-collection[data-reveal="pending"] .featured-collection__header:not(.is-in) .featured-collection__heading {
+      clip-path: inset(100% 0 0 0);
+    }
+
+    .featured-collection[data-reveal="pending"] .featured-collection__header:not(.is-in) .featured-collection__view-all {
+      pointer-events: none;
+    }
+
+    .featured-collection[data-reveal="pending"] .featured-collection__header.is-in .featured-collection__eyebrow,
+    .featured-collection[data-reveal="pending"] .featured-collection__header.is-in .featured-collection__view-all-label {
+      opacity: 1;
+      transform: none;
+      transition:
+        opacity 480ms var(--ease-out),
+        transform 480ms var(--ease-out);
+    }
+
+    .featured-collection[data-reveal="pending"] .featured-collection__header.is-in .featured-collection__view-all-label {
+      transition-delay: 80ms;
+    }
+
+    .featured-collection[data-reveal="pending"] .featured-collection__header.is-in .featured-collection__heading {
+      clip-path: inset(0 0 0 0);
+      transition: clip-path 780ms var(--ease-out);
+    }
+
+    .featured-collection[data-reveal="pending"] .featured-collection__header.is-in .featured-collection__view-all {
+      pointer-events: auto;
+    }
+
+    .featured-collection[data-reveal="pending"] .featured-collection__item:not(.is-in) {
+      opacity: 0;
+      transform: translateY(8px);
+      pointer-events: none;
+    }
+
+    .featured-collection[data-reveal="pending"] .featured-collection__item.is-in {
+      opacity: 1;
+      transform: none;
+      pointer-events: auto;
+      transition:
+        opacity 520ms var(--ease-out),
+        transform 520ms var(--ease-out);
+      transition-delay: var(--reveal-delay, 0ms);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .featured-collection__view-all-arrow {
+      transition: none;
     }
   }
 {% endstylesheet %}

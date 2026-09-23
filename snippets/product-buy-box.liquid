@@ -226,11 +226,9 @@
 
       {% if is_on_sale %}
         <span class="product-buy-box__badge product-buy-box__badge--sale" aria-label="{{ discount_pct }}% discount">
-          <span class="product-buy-box__badge-dot product-buy-box__badge-dot--sale"></span>
           <span>Sale</span>
           {% if discount_pct > 0 %}
-            <span class="product-buy-box__badge-divider" aria-hidden="true">&middot;</span>
-            <span class="product-buy-box__badge-pct">-{{ discount_pct }}%</span>
+            <span class="product-buy-box__badge-pct">−{{ discount_pct }}%</span>
           {% endif %}
         </span>
       {% endif %}
@@ -413,6 +411,9 @@
             SELECT A SIZE
           {% endif %}
         </span>
+        <svg class="product-buy-box__btn-arrow" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <path d="M1 7H13M13 7L7.5 1.5M13 7L7.5 12.5" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
         <span class="product-buy-box__btn-loader" aria-hidden="true" hidden>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10" stroke-dasharray="40" stroke-dashoffset="10"></circle>
@@ -566,8 +567,12 @@
     align-items: baseline;
     font-size: clamp(1.25rem, 2vw, 1.5rem);
     font-weight: 600;
-    color: var(--color-text, #111111);
+    color: var(--color-text);
     letter-spacing: -0.01em;
+  }
+
+  .product-buy-box__price-row .price__item--sale {
+    color: var(--color-sale);
   }
 
   .product-buy-box__price-row .price__currency {
@@ -589,50 +594,29 @@
     display: inline;
   }
 
-  /* Apple-Style Translucent Frosted Glass Badge */
   .product-buy-box__badge {
     display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    height: 22px;
-    padding: 0 8px;
-    font-size: 10.5px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
+    align-items: baseline;
+    gap: 0.4rem;
+    padding: 0.35rem 0.45rem;
+    border-radius: var(--radius-none);
+    background-color: var(--color-white);
+    color: var(--color-text);
+    box-shadow: 0 0 0 1px var(--color-border-subtle);
+    font-family: var(--font-body);
+    font-size: var(--font-size-micro);
+    font-weight: 500;
+    letter-spacing: var(--tracking-micro);
+    line-height: 1;
     text-transform: uppercase;
-    border-radius: 9999px;
     white-space: nowrap;
     user-select: none;
   }
 
-  .product-buy-box__badge--sale {
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    color: var(--color-text, #111111);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  }
-
-  .product-buy-box__badge-dot {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
-  .product-buy-box__badge-dot--sale {
-    background-color: #B91C1C;
-  }
-
-  .product-buy-box__badge-divider {
-    opacity: 0.35;
-  }
-
   .product-buy-box__badge-pct {
+    color: var(--color-sale);
     font-variant-numeric: tabular-nums;
     font-weight: 600;
-    color: #B91C1C;
   }
 
 
@@ -699,8 +683,9 @@
     transition: color 150ms ease;
   }
 
-  .product-buy-box__size-guide-trigger:hover {
-    color: var(--color-text, #111111);
+  .product-buy-box__size-guide-trigger {
+    min-height: 44px;
+    touch-action: manipulation;
   }
 
   .product-buy-box__option-values {
@@ -726,21 +711,25 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: 2px;
-    transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease, transform 100ms cubic-bezier(0.23, 1, 0.32, 1), box-shadow 150ms ease;
+    border-radius: var(--radius-none);
+    touch-action: manipulation;
+    transition:
+      background-color 160ms var(--ease-out),
+      border-color 160ms var(--ease-out),
+      color 160ms var(--ease-out),
+      transform 160ms var(--ease-out);
     -webkit-tap-highlight-color: transparent;
   }
 
   @media (hover: hover) and (pointer: fine) {
     .product-buy-box__pill:hover:not(.is-sold-out):not(.is-selected) {
-      border-color: var(--color-text, #111111);
-      background-color: #F8F8F8;
+      border-color: var(--color-text);
+      background-color: var(--color-surface);
     }
   }
 
   .product-buy-box__pill:active:not(.is-sold-out) {
-    transform: scale(0.94);
-    transition-duration: 70ms;
+    transform: scale(0.96);
   }
 
   .product-buy-box__pill.is-selected {
@@ -791,24 +780,23 @@
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    color: var(--color-sale, #B91C1C);
+    color: var(--color-sale);
     font-weight: 500;
     font-size: 0.75rem;
     letter-spacing: 0.04em;
   }
 
+  .product-buy-box__stock-notice[hidden],
+  .product-buy-box__error[hidden] {
+    display: none;
+  }
+
   .product-buy-box__stock-pulse {
     width: 6px;
     height: 6px;
-    border-radius: 50%;
-    background-color: var(--color-sale, #B91C1C);
-    animation: pulse 1.5s infinite;
-  }
-
-  @keyframes pulse {
-    0% { transform: scale(0.95); opacity: 0.8; }
-    50% { transform: scale(1.35); opacity: 1; }
-    100% { transform: scale(0.95); opacity: 0.8; }
+    border-radius: var(--radius-none);
+    background-color: var(--color-sale);
+    flex-shrink: 0;
   }
 
   /* Inline Error */
@@ -830,9 +818,9 @@
 
   .product-buy-box__submit-btn {
     width: 100%;
-    height: 50px;
-    background-color: var(--color-btn-bg, #0A0A0A);
-    color: var(--color-btn-text, #FFFFFF);
+    min-height: 52px;
+    background-color: var(--color-btn-bg);
+    color: var(--color-btn-text);
     border: none;
     font-family: var(--font-body);
     font-size: 0.8125rem;
@@ -843,26 +831,45 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 2px;
-    transition: background-color 150ms ease, opacity 150ms ease, transform 100ms cubic-bezier(0.23, 1, 0.32, 1);
+    gap: 0.65rem;
+    border-radius: var(--radius-none);
+    touch-action: manipulation;
+    transition:
+      background-color 160ms var(--ease-out),
+      transform 160ms var(--ease-out);
     -webkit-tap-highlight-color: transparent;
+  }
+
+  .product-buy-box__btn-arrow {
+    transition: transform 160ms var(--ease-out);
+  }
+
+  .product-buy-box__submit-btn:has(.product-buy-box__btn-loader:not([hidden])) .product-buy-box__btn-arrow {
+    display: none;
   }
 
   @media (hover: hover) and (pointer: fine) {
     .product-buy-box__submit-btn:hover:not(:disabled) {
-      background-color: #262626;
+      background-color: color-mix(in srgb, var(--color-btn-bg) 82%, white);
+    }
+
+    .product-buy-box__submit-btn:hover:not(:disabled) .product-buy-box__btn-arrow {
+      transform: translateX(4px);
     }
   }
 
   .product-buy-box__submit-btn:active:not(:disabled) {
-    transform: scale(0.985);
-    transition-duration: 70ms;
+    transform: scale(0.98);
   }
 
   .product-buy-box__submit-btn:disabled {
-    background-color: #EDEDED;
-    color: #A0A0A0;
+    background-color: var(--color-surface);
+    color: var(--color-text-subtle);
     cursor: not-allowed;
+  }
+
+  .product-buy-box__submit-btn:disabled .product-buy-box__btn-arrow {
+    opacity: 0.45;
   }
 
   /* WhatsApp Order Button */
@@ -882,21 +889,28 @@
     align-items: center;
     justify-content: center;
     gap: 0.45rem;
-    border-radius: 2px;
-    transition: all 150ms cubic-bezier(0.23, 1, 0.32, 1);
+    border-radius: var(--radius-none);
+    touch-action: manipulation;
+    transition:
+      background-color 160ms var(--ease-out),
+      border-color 160ms var(--ease-out),
+      transform 160ms var(--ease-out);
     -webkit-tap-highlight-color: transparent;
   }
 
   @media (hover: hover) and (pointer: fine) {
     .product-buy-box__whatsapp-btn:hover {
-      border-color: var(--color-text, #111111);
-      background-color: #F8F8F8;
+      border-color: var(--color-text);
+      background-color: var(--color-surface);
+    }
+
+    .product-buy-box__size-guide-trigger:hover {
+      color: var(--color-text);
     }
   }
 
   .product-buy-box__whatsapp-btn:active {
-    transform: scale(0.985);
-    background-color: #F3F3F3;
+    transform: scale(0.98);
   }
 
   /* Reassurance Strip: Quiet Luxury Responsive Treatment */
@@ -1065,6 +1079,20 @@
     .product-accordion__summary {
       padding: 1rem 0;
       font-size: 0.75rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .product-buy-box__submit-btn,
+    .product-buy-box__btn-arrow,
+    .product-buy-box__whatsapp-btn,
+    .product-buy-box__pill,
+    .product-accordion__icon {
+      transition: none;
+    }
+
+    .product-buy-box__option-group.has-error .product-buy-box__pill {
+      animation: none;
     }
   }
 </style>

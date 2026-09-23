@@ -5,6 +5,17 @@
 {% endcomment %}
 
 <div class="collection container" data-collection-page>
+  {% # theme-check-disable ParserBlockingScript %}
+  <script>
+    (function (el) {
+      var reduce = false;
+      try { reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+      var design = !!(window.Shopify && Shopify.designMode);
+      if (reduce || design || !('IntersectionObserver' in window)) return;
+      el.setAttribute('data-reveal', 'pending');
+    })(document.currentScript.parentElement);
+  </script>
+  {% # theme-check-enable ParserBlockingScript %}
   <header class="collection__header">
     <div class="collection__header-main">
       <div class="collection__title-group">
@@ -88,6 +99,30 @@
       {% endif %}
     {% endpaginate %}
   </div>
+  {% # theme-check-disable ParserBlockingScript %}
+  <script>
+    (function (el) {
+      if (!el || el.getAttribute('data-reveal') !== 'pending') return;
+      try {
+        var nodes = el.querySelectorAll('.collection__item');
+        if (!nodes.length) {
+          el.removeAttribute('data-reveal');
+          return;
+        }
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add('is-in');
+            io.unobserve(entry.target);
+          });
+        }, { threshold: 0, rootMargin: '0px 0px -28% 0px' });
+        nodes.forEach(function (node) { io.observe(node); });
+      } catch (e) {
+        el.removeAttribute('data-reveal');
+      }
+    })(document.currentScript.parentElement);
+  </script>
+  {% # theme-check-enable ParserBlockingScript %}
 </div>
 
 <style>
@@ -98,7 +133,7 @@
 
   .collection__header {
     margin-bottom: clamp(1.5rem, 3vw, 2.25rem);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+    border-bottom: 1px solid var(--color-border);
     padding-bottom: clamp(1rem, 2vw, 1.5rem);
   }
 
@@ -156,32 +191,42 @@
 
   .collection__filter-rail {
     display: inline-flex;
-    align-items: center;
-    background: #F4F4F4;
-    padding: 3px;
-    border-radius: 6px;
-    gap: 2px;
+    align-items: stretch;
   }
 
   .collection__filter-btn {
-    border: none;
+    border: 1px solid var(--color-border);
+    margin-inline-start: -1px;
     background: transparent;
-    color: #666666;
+    color: var(--color-text-subtle);
     font-family: var(--font-body);
-    font-size: 0.75rem;
+    font-size: var(--font-size-micro);
     font-weight: 500;
-    letter-spacing: 0.04em;
+    letter-spacing: var(--tracking-micro);
     text-transform: uppercase;
-    padding: 0.42rem 0.9rem;
-    border-radius: 4px;
+    min-height: 44px;
+    padding: 0 var(--space-sm);
+    border-radius: var(--radius-none);
     cursor: pointer;
     white-space: nowrap;
-    transition: color 150ms ease, background-color 150ms ease, box-shadow 150ms ease, transform 100ms ease;
+    touch-action: manipulation;
+    transition:
+      color 160ms var(--ease-out),
+      background-color 160ms var(--ease-out),
+      border-color 160ms var(--ease-out),
+      transform 160ms var(--ease-out);
     -webkit-tap-highlight-color: transparent;
   }
 
-  .collection__filter-btn:hover:not(.is-active) {
-    color: #111111;
+  .collection__filter-btn:first-child {
+    margin-inline-start: 0;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .collection__filter-btn:hover:not(.is-active) {
+      color: var(--color-text);
+      background-color: var(--color-surface);
+    }
   }
 
   .collection__filter-btn:active {
@@ -189,10 +234,44 @@
   }
 
   .collection__filter-btn.is-active {
-    background: #FFFFFF;
-    color: #111111;
+    position: relative;
+    z-index: 1;
+    background: var(--color-btn-bg);
+    color: var(--color-btn-text);
+    border-color: var(--color-btn-bg);
     font-weight: 600;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  }
+
+  .collection__item:nth-child(2n + 1) { --reveal-delay: 0ms; }
+  .collection__item:nth-child(2n) { --reveal-delay: 70ms; }
+
+  @media (min-width: 750px) {
+    .collection__item:nth-child(3n + 1) { --reveal-delay: 0ms; }
+    .collection__item:nth-child(3n + 2) { --reveal-delay: 70ms; }
+    .collection__item:nth-child(3n + 3) { --reveal-delay: 140ms; }
+  }
+
+  @media (min-width: 990px) {
+    .collection__item:nth-child(4n + 1) { --reveal-delay: 0ms; }
+    .collection__item:nth-child(4n + 2) { --reveal-delay: 60ms; }
+    .collection__item:nth-child(4n + 3) { --reveal-delay: 120ms; }
+    .collection__item:nth-child(4n + 4) { --reveal-delay: 180ms; }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .collection[data-reveal="pending"] .collection__item:not(.is-in) {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+
+    .collection[data-reveal="pending"] .collection__item.is-in {
+      opacity: 1;
+      transform: none;
+      transition:
+        opacity 520ms var(--ease-out),
+        transform 520ms var(--ease-out);
+      transition-delay: var(--reveal-delay, 0ms);
+    }
   }
 
   .collection__grid {
