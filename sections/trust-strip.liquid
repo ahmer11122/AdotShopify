@@ -1,255 +1,490 @@
 {% comment %}
-  Editorial service ledger under the campaign film.
-  Four facts, index numbers, one hairline. WhatsApp is the only link.
+  Kinetic Editorial Service Ledger
+  Desktop: Interactive 4-pillar service dock with micro-hover depth and live WhatsApp status.
+  Mobile: Seamless 120Hz kinetic marquee ribbon docked under the campaign film.
 {% endcomment %}
 
-<section class="trust-strip container" data-section-id="{{ section.id }}">
-  <ul class="trust-strip__list" aria-label="Order guarantees">
-    <li class="trust-strip__item">
-      <div class="trust-strip__body">
-        <span class="trust-strip__index" aria-hidden="true">01</span>
-        <div class="trust-strip__copy">
-          <p class="trust-strip__title">{{ section.settings.pillar_1_title | default: 'Cash on delivery' }}</p>
-          <p class="trust-strip__desc">{{ section.settings.pillar_1_desc | default: 'Pay when it arrives' }}</p>
-        </div>
-      </div>
-    </li>
+{% liquid
+  assign p1_title = section.settings.pillar_1_title | default: 'Cash on delivery'
+  assign p1_desc = section.settings.pillar_1_desc | default: 'Pay when it arrives'
+  assign p2_title = section.settings.pillar_2_title | default: '7-day exchange'
+  assign p2_desc = section.settings.pillar_2_desc | default: 'Size or fit, replaced'
+  assign p3_title = section.settings.pillar_3_title | default: '2–4 day delivery'
+  assign p3_desc = section.settings.pillar_3_desc | default: 'Across Pakistan'
+  assign p4_title = section.settings.pillar_4_title | default: 'WhatsApp'
+  assign p4_desc = section.settings.pillar_4_desc | default: 'Order in a chat'
+  assign wa_num = section.settings.whatsapp_number | default: '923131707080' | remove: '+' | remove: ' ' | remove: '-'
+  assign wa_msg = 'Hello ADOT, I would like to place an order.' | url_encode
+  assign wa_url = 'https://wa.me/' | append: wa_num | append: '?text=' | append: wa_msg
+  assign scheme = section.settings.color_scheme | default: 'dark'
+%}
 
-    <li class="trust-strip__item">
-      <div class="trust-strip__body">
-        <span class="trust-strip__index" aria-hidden="true">02</span>
-        <div class="trust-strip__copy">
-          <p class="trust-strip__title">{{ section.settings.pillar_2_title | default: '7-day exchange' }}</p>
-          <p class="trust-strip__desc">{{ section.settings.pillar_2_desc | default: 'Size or fit, replaced' }}</p>
-        </div>
-      </div>
-    </li>
-
-    <li class="trust-strip__item">
-      <div class="trust-strip__body">
-        <span class="trust-strip__index" aria-hidden="true">03</span>
-        <div class="trust-strip__copy">
-          <p class="trust-strip__title">{{ section.settings.pillar_3_title | default: '2–4 day delivery' }}</p>
-          <p class="trust-strip__desc">{{ section.settings.pillar_3_desc | default: 'Across Pakistan' }}</p>
-        </div>
-      </div>
-    </li>
-
-    <li class="trust-strip__item">
-      {% if section.settings.whatsapp_number != blank %}
-        <a
-          class="trust-strip__link"
-          href="https://wa.me/{{ section.settings.whatsapp_number | remove: '+' | remove: ' ' | remove: '-' }}?text={{ 'Hello ADOT, I would like to place an order.' | url_encode }}"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <span class="trust-strip__index" aria-hidden="true">04</span>
-          <span class="trust-strip__copy">
-            <span class="trust-strip__title">{{ section.settings.pillar_4_title | default: 'WhatsApp' }}</span>
-            <span class="trust-strip__desc">
-              {{ section.settings.pillar_4_desc | default: 'Order in a chat' }}
-              <span class="trust-strip__arrow" aria-hidden="true">→</span>
-            </span>
-          </span>
-        </a>
-      {% else %}
-        <div class="trust-strip__body">
-          <span class="trust-strip__index" aria-hidden="true">04</span>
+<section
+  class="trust-strip trust-strip--{{ scheme }}"
+  data-section-id="{{ section.id }}"
+  aria-label="Service and order guarantees"
+>
+  <!-- Desktop Editorial Service Dock (>= 750px) -->
+  <div class="trust-strip__desktop container">
+    <ul class="trust-strip__list" role="list">
+      <li class="trust-strip__item">
+        <div class="trust-strip__card">
+          <span class="trust-strip__index" aria-hidden="true">01</span>
           <div class="trust-strip__copy">
-            <p class="trust-strip__title">{{ section.settings.pillar_4_title | default: 'WhatsApp' }}</p>
-            <p class="trust-strip__desc">{{ section.settings.pillar_4_desc | default: 'Order in a chat' }}</p>
+            <h3 class="trust-strip__title">{{ p1_title }}</h3>
+            <p class="trust-strip__desc">{{ p1_desc }}</p>
           </div>
         </div>
-      {% endif %}
-    </li>
-  </ul>
+      </li>
+
+      <li class="trust-strip__item">
+        <div class="trust-strip__card">
+          <span class="trust-strip__index" aria-hidden="true">02</span>
+          <div class="trust-strip__copy">
+            <h3 class="trust-strip__title">{{ p2_title }}</h3>
+            <p class="trust-strip__desc">{{ p2_desc }}</p>
+          </div>
+        </div>
+      </li>
+
+      <li class="trust-strip__item">
+        <div class="trust-strip__card">
+          <span class="trust-strip__index" aria-hidden="true">03</span>
+          <div class="trust-strip__copy">
+            <h3 class="trust-strip__title">{{ p3_title }}</h3>
+            <p class="trust-strip__desc">{{ p3_desc }}</p>
+          </div>
+        </div>
+      </li>
+
+      <li class="trust-strip__item trust-strip__item--wa">
+        {% if wa_num != blank %}
+          <a
+            class="trust-strip__card trust-strip__card--link"
+            href="{{ wa_url }}"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="{{ p4_title }} - {{ p4_desc }} (opens WhatsApp chat)"
+          >
+            <span class="trust-strip__index" aria-hidden="true">04</span>
+            <div class="trust-strip__copy">
+              <div class="trust-strip__title-row">
+                <h3 class="trust-strip__title">{{ p4_title }}</h3>
+                <span class="trust-strip__live-pill">
+                  <span class="trust-strip__live-dot" aria-hidden="true"></span>
+                  <span class="trust-strip__live-label">Live</span>
+                </span>
+              </div>
+              <p class="trust-strip__desc">
+                {{ p4_desc }}
+                <span class="trust-strip__arrow" aria-hidden="true">→</span>
+              </p>
+            </div>
+          </a>
+        {% else %}
+          <div class="trust-strip__card">
+            <span class="trust-strip__index" aria-hidden="true">04</span>
+            <div class="trust-strip__copy">
+              <h3 class="trust-strip__title">{{ p4_title }}</h3>
+              <p class="trust-strip__desc">{{ p4_desc }}</p>
+            </div>
+          </div>
+        {% endif %}
+      </li>
+    </ul>
+  </div>
+
+  <!-- Mobile Kinetic Marquee Ribbon (< 750px) -->
+  <div class="trust-strip__mobile" aria-label="Order guarantees ticker">
+    <div class="trust-strip__fade trust-strip__fade--left" aria-hidden="true"></div>
+    <div class="trust-strip__track">
+      {% for i in (1..2) %}
+        <div class="trust-strip__group" {% if forloop.index == 2 %}aria-hidden="true"{% endif %}>
+          <div class="trust-strip__pill">
+            <span class="trust-strip__pill-index">[01]</span>
+            <span class="trust-strip__pill-title">{{ p1_title }}</span>
+            <span class="trust-strip__pill-sub">{{ p1_desc }}</span>
+          </div>
+          <span class="trust-strip__sep" aria-hidden="true">✦</span>
+
+          <div class="trust-strip__pill">
+            <span class="trust-strip__pill-index">[02]</span>
+            <span class="trust-strip__pill-title">{{ p2_title }}</span>
+            <span class="trust-strip__pill-sub">{{ p2_desc }}</span>
+          </div>
+          <span class="trust-strip__sep" aria-hidden="true">✦</span>
+
+          <div class="trust-strip__pill">
+            <span class="trust-strip__pill-index">[03]</span>
+            <span class="trust-strip__pill-title">{{ p3_title }}</span>
+            <span class="trust-strip__pill-sub">{{ p3_desc }}</span>
+          </div>
+          <span class="trust-strip__sep" aria-hidden="true">✦</span>
+
+          {% if wa_num != blank %}
+            <a
+              class="trust-strip__pill trust-strip__pill--link"
+              href="{{ wa_url }}"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="{{ p4_title }} - {{ p4_desc }} (opens WhatsApp)"
+            >
+              <span class="trust-strip__pill-index">[04]</span>
+              <span class="trust-strip__pill-title">{{ p4_title }}</span>
+              <span class="trust-strip__pill-dot" aria-hidden="true"></span>
+              <span class="trust-strip__pill-sub">{{ p4_desc }} →</span>
+            </a>
+          {% else %}
+            <div class="trust-strip__pill">
+              <span class="trust-strip__pill-index">[04]</span>
+              <span class="trust-strip__pill-title">{{ p4_title }}</span>
+              <span class="trust-strip__pill-sub">{{ p4_desc }}</span>
+            </div>
+          {% endif %}
+          <span class="trust-strip__sep" aria-hidden="true">✦</span>
+        </div>
+      {% endfor %}
+    </div>
+    <div class="trust-strip__fade trust-strip__fade--right" aria-hidden="true"></div>
+  </div>
 </section>
 
 {% stylesheet %}
   .section-trust-strip {
     position: relative;
-    z-index: 1;
-    background-color: var(--color-background, #FFFFFF);
-    border-top: 1px solid var(--color-border);
-  }
-
-  @media (max-width: 749px) {
-    .section-trust-strip {
-      display: none;
-    }
+    z-index: 2;
   }
 
   .trust-strip {
+    display: block;
+    position: relative;
+    overflow: hidden;
     padding-block: 0;
   }
 
-  .trust-strip__list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    grid-template-columns: 1fr;
+  .trust-strip--dark {
+    --ts-bg: var(--color-surface-dark, #111111);
+    --ts-text: var(--color-text-inverse, #F5F5F5);
+    --ts-sub: color-mix(in srgb, var(--color-white) 64%, transparent);
+    --ts-index: color-mix(in srgb, var(--color-white) 44%, transparent);
+    --ts-border: rgba(255, 255, 255, 0.08);
+    --ts-hover-bg: rgba(255, 255, 255, 0.04);
+    --ts-fade-left: linear-gradient(to right, var(--ts-bg), transparent);
+    --ts-fade-right: linear-gradient(to left, var(--ts-bg), transparent);
+    background-color: var(--ts-bg);
+    color: var(--ts-text);
+    border-top: 1px solid var(--ts-border);
+    border-bottom: 1px solid var(--ts-border);
   }
 
-  .trust-strip__item {
-    min-width: 0;
-    border-top: 1px solid var(--color-border);
+  .trust-strip--light {
+    --ts-bg: var(--color-background, #FFFFFF);
+    --ts-text: var(--color-text, #111111);
+    --ts-sub: var(--color-text-muted, #666666);
+    --ts-index: var(--color-text-subtle, #999999);
+    --ts-border: var(--color-border, #E5E5E5);
+    --ts-hover-bg: rgba(0, 0, 0, 0.03);
+    --ts-fade-left: linear-gradient(to right, var(--ts-bg), transparent);
+    --ts-fade-right: linear-gradient(to left, var(--ts-bg), transparent);
+    background-color: var(--ts-bg);
+    color: var(--ts-text);
+    border-top: 1px solid var(--ts-border);
+    border-bottom: 1px solid var(--ts-border);
   }
 
-  .trust-strip__item:first-child {
-    border-top: 0;
+  /* ----------------------------------------------------
+     Mobile Kinetic Marquee (< 750px)
+     ---------------------------------------------------- */
+  .trust-strip__desktop {
+    display: none;
   }
 
-  .trust-strip__body,
-  .trust-strip__link {
-    display: grid;
-    grid-template-columns: 2rem minmax(0, 1fr);
-    column-gap: 0.75rem;
-    align-items: start;
-    padding-block: 1.125rem;
+  .trust-strip__mobile {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 48px;
+    width: 100%;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: pan-y;
+  }
+
+  .trust-strip__track {
+    display: flex;
+    width: max-content;
+    animation: trust-marquee 28s linear infinite;
+    will-change: transform;
+  }
+
+  .trust-strip__mobile:hover .trust-strip__track,
+  .trust-strip__mobile:active .trust-strip__track,
+  .trust-strip__mobile:focus-within .trust-strip__track {
+    animation-play-state: paused;
+  }
+
+  .trust-strip__group {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding-inline: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  .trust-strip__pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
     color: inherit;
     text-decoration: none;
+    white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
   }
 
-  .trust-strip__link {
-    min-height: 44px;
-    opacity: 1;
-  }
-
-  .trust-strip__link:hover,
-  .trust-strip__link:focus-visible {
-    opacity: 1;
-  }
-
-  .trust-strip__link:focus-visible {
-    outline: 2px solid var(--color-focus);
-    outline-offset: 2px;
-  }
-
-  .trust-strip__index {
-    padding-top: 0.2rem;
+  .trust-strip__pill-index {
     font-family: var(--font-body);
-    font-size: var(--font-size-micro);
+    font-size: var(--font-size-micro, 0.75rem);
+    letter-spacing: var(--tracking-micro, 0.08em);
     font-variant-numeric: tabular-nums;
-    letter-spacing: 0.14em;
-    line-height: 1.2;
-    color: var(--color-text-subtle);
+    color: var(--ts-index);
   }
 
-  .trust-strip__copy {
-    display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
-    min-width: 0;
-  }
-
-  .trust-strip__title {
-    margin: 0;
+  .trust-strip__pill-title {
     font-family: var(--font-display);
-    font-size: 1.0625rem;
-    font-weight: 500;
-    letter-spacing: var(--tracking-tight);
-    line-height: 1.2;
-    color: var(--color-text);
-  }
-
-  .trust-strip__desc {
-    margin: 0;
-    font-family: var(--font-body);
     font-size: 0.8125rem;
-    line-height: 1.4;
-    color: var(--color-text-muted);
+    font-weight: 500;
+    letter-spacing: var(--tracking-tight, -0.01em);
+    text-transform: uppercase;
   }
 
-  .trust-strip__arrow {
+  .trust-strip__pill-sub {
+    font-family: var(--font-body);
+    font-size: var(--font-size-micro, 0.75rem);
+    color: var(--ts-sub);
+  }
+
+  .trust-strip__pill-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #25D366;
+    box-shadow: 0 0 6px rgba(37, 211, 102, 0.8);
     display: inline-block;
-    margin-inline-start: 0.2rem;
-    transition: transform 200ms var(--ease-out);
   }
 
-  @media (hover: hover) and (pointer: fine) {
-    .trust-strip__link:hover .trust-strip__title {
-      text-decoration: underline;
-      text-underline-offset: 0.18em;
-    }
+  .trust-strip__sep {
+    color: var(--ts-index);
+    font-size: 0.625rem;
+    opacity: 0.75;
+    user-select: none;
+  }
 
-    .trust-strip__link:hover .trust-strip__arrow {
-      transform: translateX(4px);
+  .trust-strip__fade {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 28px;
+    z-index: 3;
+    pointer-events: none;
+  }
+
+  .trust-strip__fade--left {
+    left: 0;
+    background: var(--ts-fade-left);
+  }
+
+  .trust-strip__fade--right {
+    right: 0;
+    background: var(--ts-fade-right);
+  }
+
+  @keyframes trust-marquee {
+    0% {
+      transform: translate3d(0, 0, 0);
+    }
+    100% {
+      transform: translate3d(-50%, 0, 0);
     }
   }
 
+  /* ----------------------------------------------------
+     Desktop Service Dock (>= 750px)
+     ---------------------------------------------------- */
   @media (min-width: 750px) {
+    .trust-strip__mobile {
+      display: none;
+    }
+
+    .trust-strip__desktop {
+      display: block;
+      padding-block: 0;
+    }
+
     .trust-strip__list {
-      grid-template-columns: 1fr 1fr;
-    }
-
-    .trust-strip__item,
-    .trust-strip__item:first-child {
-      border-top: 0;
-    }
-
-    .trust-strip__item:nth-child(odd) {
-      border-inline-end: 1px solid var(--color-border);
-    }
-
-    .trust-strip__item:nth-child(n + 3) {
-      border-top: 1px solid var(--color-border);
-    }
-
-    .trust-strip__body,
-    .trust-strip__link {
-      height: 100%;
-      padding: 1.5rem 1.5rem 1.5rem 0;
-    }
-
-    .trust-strip__item:nth-child(even) .trust-strip__body,
-    .trust-strip__item:nth-child(even) .trust-strip__link {
-      padding-inline-start: 1.5rem;
-    }
-  }
-
-  @media (min-width: 990px) {
-    .trust-strip__list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 
-    .trust-strip__item,
-    .trust-strip__item:nth-child(odd),
-    .trust-strip__item:nth-child(n + 3) {
-      border-top: 0;
-      border-inline-end: 0;
-      border-inline-start: 1px solid var(--color-border);
+    .trust-strip__item {
+      min-width: 0;
+      border-inline-start: 1px solid var(--ts-border);
     }
 
     .trust-strip__item:first-child {
       border-inline-start: 0;
     }
 
-    .trust-strip__body,
-    .trust-strip__link,
-    .trust-strip__item:nth-child(even) .trust-strip__body,
-    .trust-strip__item:nth-child(even) .trust-strip__link {
-      padding: 1.75rem 1.5rem;
+    .trust-strip__card {
+      display: grid;
+      grid-template-columns: 2rem minmax(0, 1fr);
+      column-gap: 0.85rem;
+      align-items: start;
+      padding: 1.75rem 1.25rem;
+      color: inherit;
+      text-decoration: none;
+      height: 100%;
+      box-sizing: border-box;
+      transition:
+        transform 200ms var(--ease-out),
+        background-color 200ms ease;
     }
 
-    .trust-strip__item:first-child .trust-strip__body,
-    .trust-strip__item:first-child .trust-strip__link {
+    .trust-strip__item:first-child .trust-strip__card {
       padding-inline-start: 0;
     }
 
-    .trust-strip__item:last-child .trust-strip__body,
-    .trust-strip__item:last-child .trust-strip__link {
+    .trust-strip__item:last-child .trust-strip__card {
       padding-inline-end: 0;
     }
 
+    .trust-strip__index {
+      padding-top: 0.15rem;
+      font-family: var(--font-body);
+      font-size: var(--font-size-micro, 0.75rem);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.12em;
+      line-height: 1.2;
+      color: var(--ts-index);
+    }
+
+    .trust-strip__copy {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      min-width: 0;
+    }
+
     .trust-strip__title {
-      font-size: 1.125rem;
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: 1.0625rem;
+      font-weight: 500;
+      letter-spacing: var(--tracking-tight);
+      line-height: 1.2;
+      color: var(--ts-text);
+    }
+
+    .trust-strip__desc {
+      margin: 0;
+      font-family: var(--font-body);
+      font-size: 0.8125rem;
+      line-height: 1.4;
+      color: var(--ts-sub);
+    }
+
+    .trust-strip__title-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .trust-strip__live-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.15rem 0.45rem;
+      background: rgba(37, 211, 102, 0.12);
+      border: 1px solid rgba(37, 211, 102, 0.3);
+      border-radius: 9999px;
+      line-height: 1;
+    }
+
+    .trust-strip__live-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #25D366;
+      box-shadow: 0 0 6px rgba(37, 211, 102, 0.8);
+      animation: pulse-ring 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    .trust-strip__live-label {
+      font-size: 0.625rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #25D366;
+    }
+
+    .trust-strip__arrow {
+      display: inline-block;
+      margin-inline-start: 0.25rem;
+      transition: transform 200ms var(--ease-out);
+    }
+
+    @keyframes pulse-ring {
+      0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7);
+      }
+      70% {
+        transform: scale(1.05);
+        box-shadow: 0 0 0 5px rgba(37, 211, 102, 0);
+      }
+      100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
+      }
+    }
+  }
+
+  @media (hover: hover) and (pointer: fine) and (min-width: 750px) {
+    .trust-strip__card {
+      border-radius: var(--radius-sm, 2px);
+    }
+
+    .trust-strip__card:hover {
+      background-color: var(--ts-hover-bg);
+      transform: translateY(-2px);
+    }
+
+    .trust-strip__card--link:hover .trust-strip__arrow {
+      transform: translateX(4px);
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
+    .trust-strip__track {
+      animation: none !important;
+      overflow-x: auto;
+    }
+
+    .trust-strip__live-dot {
+      animation: none !important;
+    }
+
+    .trust-strip__card {
+      transition: none !important;
+      transform: none !important;
+    }
+
     .trust-strip__arrow {
-      transition: none;
+      transition: none !important;
     }
   }
 {% endstylesheet %}
@@ -260,6 +495,16 @@
   "tag": "section",
   "class": "section-trust-strip",
   "settings": [
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "options": [
+        { "value": "dark", "label": "Inky Dark (Match Hoodie Film)" },
+        { "value": "light", "label": "Art Paper Light" }
+      ],
+      "default": "dark"
+    },
     {
       "type": "text",
       "id": "pillar_1_title",
