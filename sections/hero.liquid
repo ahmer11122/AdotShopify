@@ -768,20 +768,35 @@
      Mobile & Tablet Responsive Optimizations (mobile-native skill)
      ========================================================================== */
   @media (max-width: 749px) {
+    .hero__overlay--vignette {
+      background: linear-gradient(
+        to top,
+        rgba(10, 10, 10, 0.78) 0%,
+        rgba(10, 10, 10, 0.42) 36%,
+        rgba(10, 10, 10, 0) 65%,
+        rgba(10, 10, 10, 0.2) 100%
+      );
+    }
+
     .hero__content-wrapper {
       padding-top: calc(var(--header-height) + var(--space-md));
-      padding-bottom: var(--space-sm);
+      padding-bottom: max(var(--space-lg), calc(env(safe-area-inset-bottom, 0px) + var(--space-md)));
+    }
+
+    .hero__content {
+      gap: 1.25rem;
+    }
+
+    .hero__eyebrow-wrapper,
+    .hero__subheading {
+      display: none !important;
     }
 
     .hero__heading {
-      font-size: clamp(2.25rem, 10.5vw, 3.25rem);
+      font-size: clamp(2.15rem, 9.8vw, 3rem);
       line-height: 1.05;
-      max-width: 15ch;
-    }
-
-    .hero__subheading {
-      font-size: 0.9375rem;
-      line-height: 1.5;
+      max-width: 14ch;
+      letter-spacing: var(--tracking-tight, -0.02em);
     }
 
     .hero__actions {
@@ -789,6 +804,7 @@
       width: 100%;
       align-items: stretch;
       gap: 0.625rem;
+      margin-top: 0.25rem;
     }
 
     .btn-hero-primary,

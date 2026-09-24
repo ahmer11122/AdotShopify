@@ -7,7 +7,7 @@
         "desktop_image_position": "top",
         "overlay_opacity": 20,
         "cinematic_reveal": true,
-        "badge_label": "New Autumn Collection",
+        "badge_label": "",
         "edition_tag": "",
         "heading": "Polos and Trousers. Made for Daily Wear.",
         "subheading": "Soft cotton polos and clean trousers. Easy to wear every day.",
@@ -17,7 +17,7 @@
         "secondary_button_label": "",
         "show_category_bar": false,
         "show_scroll_indicator": false,
-        "footer_metadata": "Cash on Delivery · Easy Exchange"
+        "footer_metadata": ""
       }
     },
     "featured_collection": {
