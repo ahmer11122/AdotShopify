@@ -77,15 +77,15 @@
     "trust_strip": {
       "type": "trust-strip",
       "settings": {
-        "pillar_1_title": "Cash on Delivery",
-        "pillar_1_desc": "Pay with cash at your doorstep nationwide",
-        "pillar_2_title": "Easy 7-Day Exchange",
-        "pillar_2_desc": "Hassle-free size or fit replacements",
-        "pillar_3_title": "Fast Delivery",
-        "pillar_3_desc": "Delivered in 2 to 4 working days",
-        "pillar_4_title": "Order on WhatsApp",
-        "pillar_4_desc": "Click here to chat & order directly",
-        "whatsapp_number": "+923001234567"
+        "pillar_1_title": "Cash on delivery",
+        "pillar_1_desc": "Pay when it arrives",
+        "pillar_2_title": "7-day exchange",
+        "pillar_2_desc": "Size or fit, replaced",
+        "pillar_3_title": "2–4 day delivery",
+        "pillar_3_desc": "Across Pakistan",
+        "pillar_4_title": "WhatsApp",
+        "pillar_4_desc": "Order in a chat",
+        "whatsapp_number": "923131707080"
       }
     },
     "interactive_gallery": {

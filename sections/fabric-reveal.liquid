@@ -33,10 +33,10 @@
 
   assign under_alt = reveal_title | append: ' on body'
   assign overlay_fallback = 'fabric-hoodie-studio.jpg' | asset_url
-  assign under_fallback = 'fabric-hoodie-campaign.jpg' | asset_url
+  assign under_fallback = 'hoodie-walk-campaign.jpg' | asset_url
   assign video_src = section.settings.video_url
   if video_src == blank
-    assign video_src = 'fabric-hoodie-campaign.mp4' | asset_url
+    assign video_src = 'hoodie-walk-campaign.mp4' | asset_url
   endif
 %}
 
@@ -407,7 +407,7 @@
     position: absolute;
     z-index: 6;
     right: var(--space-sm);
-    bottom: var(--space-sm);
+    top: var(--space-sm);
     min-height: 44px;
     padding-inline: var(--space-sm);
     border: 1px solid color-mix(in srgb, var(--color-white) 28%, transparent);
@@ -603,12 +603,85 @@
     outline-offset: 2px;
   }
 
-  @media (min-width: 750px) {
-    .fabric-reveal__frame,
-    .fabric-reveal__stage {
-      min-height: 100svh;
+  @media (max-width: 749px) {
+    .fabric-reveal__frame {
+      min-height: 0;
     }
 
+    .fabric-reveal__stage {
+      min-height: 0;
+      aspect-ratio: 4 / 5;
+    }
+
+    .fabric-reveal__buy {
+      left: 0.75rem;
+      right: 0.75rem;
+      bottom: 0.75rem;
+      padding: 0.75rem;
+      padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+    }
+
+    .fabric-reveal__buy-copy {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      column-gap: 0.75rem;
+      align-items: baseline;
+    }
+
+    .fabric-reveal__buy-kicker,
+    .fabric-reveal__buy-spec {
+      display: none;
+    }
+
+    .fabric-reveal__buy-title {
+      font-size: 1.0625rem;
+    }
+
+    .fabric-reveal__buy-price {
+      grid-column: 2;
+      grid-row: 1;
+      margin: 0;
+      font-size: 0.9375rem;
+    }
+
+    .fabric-reveal__pills {
+      gap: 0.375rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .fabric-reveal__pill {
+      padding-inline: 0.625rem;
+    }
+
+    .fabric-reveal__actions {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .fabric-reveal__add {
+      min-height: 44px;
+    }
+
+    .fabric-reveal__pdp {
+      min-height: 44px;
+      padding-inline: 0.25rem;
+    }
+  }
+
+  @media (min-width: 750px) and (max-width: 989px) {
+    .fabric-reveal__frame {
+      min-height: 0;
+    }
+
+    .fabric-reveal__stage {
+      min-height: 0;
+      aspect-ratio: 16 / 9;
+    }
+  }
+
+  @media (min-width: 750px) {
     .fabric-reveal__rail {
       inset-inline: var(--space-md);
       top: var(--space-md);
@@ -623,7 +696,15 @@
 
     .fabric-reveal__pause {
       right: var(--space-md);
-      bottom: var(--space-md);
+      top: var(--space-md);
+    }
+  }
+
+  @media (min-width: 990px) {
+    .fabric-reveal__frame,
+    .fabric-reveal__stage {
+      min-height: 100svh;
+      aspect-ratio: auto;
     }
   }
 
