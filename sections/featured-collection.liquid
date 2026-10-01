@@ -39,7 +39,7 @@
     {% endif %}
   </div>
 
-  <div class="featured-collection__grid">
+  <div class="featured-collection__grid featured-collection__grid--mobile-{{ section.settings.mobile_columns | default: '1' }}">
     {% assign selected_collection = section.settings.collection %}
     {% if selected_collection != blank and selected_collection.products_count > 0 %}
       {% for product in selected_collection.products limit: section.settings.products_to_show %}
@@ -301,10 +301,15 @@
   }
 
   .featured-collection__item:nth-child(2n + 1) { --reveal-delay: 0ms; }
-  .featured-collection__item:nth-child(2n) { --reveal-delay: 70ms; }
+  .featured-collection__item:nth-child(2n) { --reveal-delay: 60ms; }
 
   .featured-collection__grid {
     display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(2rem, 5vw, 2.75rem);
+  }
+
+  .featured-collection__grid--mobile-2 {
     grid-template-columns: repeat(2, 1fr);
     gap: var(--space-md) var(--space-sm);
   }
@@ -314,7 +319,8 @@
     .featured-collection__item:nth-child(3n + 2) { --reveal-delay: 70ms; }
     .featured-collection__item:nth-child(3n + 3) { --reveal-delay: 140ms; }
 
-    .featured-collection__grid {
+    .featured-collection__grid,
+    .featured-collection__grid--mobile-2 {
       grid-template-columns: repeat(3, 1fr);
       gap: var(--space-md);
     }
@@ -326,7 +332,8 @@
     .featured-collection__item:nth-child(4n + 3) { --reveal-delay: 120ms; }
     .featured-collection__item:nth-child(4n + 4) { --reveal-delay: 180ms; }
 
-    .featured-collection__grid {
+    .featured-collection__grid,
+    .featured-collection__grid--mobile-2 {
       grid-template-columns: repeat(4, 1fr);
       gap: var(--space-md);
     }
@@ -415,6 +422,22 @@
       "id": "heading",
       "label": "Heading",
       "default": "New Arrivals"
+    },
+    {
+      "type": "select",
+      "id": "mobile_columns",
+      "label": "Mobile Layout",
+      "options": [
+        {
+          "value": "1",
+          "label": "1 Column (Full-Width Editorial)"
+        },
+        {
+          "value": "2",
+          "label": "2 Columns (Compact Grid)"
+        }
+      ],
+      "default": "1"
     },
     {
       "type": "range",
