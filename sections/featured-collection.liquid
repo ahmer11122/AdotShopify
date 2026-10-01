@@ -247,11 +247,17 @@
   }
 
   .featured-collection__eyebrow {
+    display: none;
     color: var(--color-text-subtle);
-    display: block;
     margin-bottom: var(--space-2xs);
     letter-spacing: 0.12em;
     text-transform: uppercase;
+  }
+
+  @media (min-width: 750px) {
+    .featured-collection__eyebrow {
+      display: block;
+    }
   }
 
   .featured-collection__heading {
