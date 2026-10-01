@@ -312,17 +312,28 @@
 
     // Smart IntersectionObserver: show sticky bar only after main Buy Box button scrolls past top
     const mainAddToCartBtn = document.getElementById('AddToCartBtn-{{ section.id }}');
+    let isPastButton = false;
+
+    function updateStickyVisibility() {
+      if (isPastButton && window.scrollY >= 300) {
+        stickyBar.classList.add('is-visible');
+      } else {
+        stickyBar.classList.remove('is-visible');
+      }
+    }
+
     if (mainAddToCartBtn && 'IntersectionObserver' in window) {
       const observer = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
           const bounding = entry.boundingClientRect;
           // If the button is visible or below the viewport, keep sticky bar hidden
           if (entry.isIntersecting || bounding.top > 0) {
-            stickyBar.classList.remove('is-visible');
+            isPastButton = false;
           } else {
             // Main button has scrolled past the top of the viewport
-            stickyBar.classList.add('is-visible');
+            isPastButton = true;
           }
+          updateStickyVisibility();
         });
       }, {
         threshold: 0
@@ -332,13 +343,13 @@
     } else {
       // Fallback for older browsers
       window.addEventListener('scroll', () => {
-        if (window.scrollY > 450) {
-          stickyBar.classList.add('is-visible');
-        } else {
-          stickyBar.classList.remove('is-visible');
-        }
+        isPastButton = window.scrollY > 450;
+        updateStickyVisibility();
       }, { passive: true });
     }
+    
+    // Ensure scroll coordinates are respected even if observer fires early on load
+    window.addEventListener('scroll', updateStickyVisibility, { passive: true });
 
     // Listen for variant selections dispatched from buy box
     window.addEventListener('variant:change', (e) => {

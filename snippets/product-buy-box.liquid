@@ -443,7 +443,7 @@
   </form>
 
   <!-- Editorial Product Summary (Calm & Positioned Below Primary CTA) -->
-  {% assign clean_desc = adot_description | default: product.description | strip_html | truncatewords: 28 %}
+  {% assign clean_desc = adot_description | default: product.description | strip_html | split: '. ' | first | append: '.' %}
   {% if clean_desc != blank %}
     <p class="product-buy-box__summary">{{ clean_desc }}</p>
   {% endif %}
@@ -511,7 +511,7 @@
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 1.15rem;
+    gap: 0;
   }
 
   /* Calm Luxury Category */
@@ -532,6 +532,7 @@
     letter-spacing: -0.015em;
     text-wrap: balance;
     margin: 0;
+    margin-top: 0.35rem;
     color: var(--color-text, #111111);
   }
 
@@ -540,6 +541,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
+    margin-top: 0.5rem;
   }
 
   .product-buy-box__price-container {
@@ -626,6 +628,7 @@
     line-height: 1.55;
     color: #555555;
     margin: 0;
+    margin-top: 1rem;
   }
 
   /* Variant Selection Options */
@@ -633,7 +636,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.875rem;
-    padding-top: 0.25rem;
+    margin-top: 1.25rem;
   }
 
   .product-buy-box__option-group {
@@ -813,7 +816,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    margin-top: 0.25rem;
+    margin-top: 1.25rem;
   }
 
   .product-buy-box__submit-btn {
@@ -915,27 +918,27 @@
 
   /* Reassurance Strip: Quiet Luxury Minimalist Ribbon */
   .product-buy-box__trust-strip {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 0.5rem 0.75rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
     padding: 0.875rem 0;
-    margin-top: 0.25rem;
+    margin-top: 1rem;
     border-top: 1px solid rgba(0, 0, 0, 0.07);
     border-bottom: 1px solid rgba(0, 0, 0, 0.07);
     background: transparent;
   }
 
   .product-buy-box__trust-item {
-    display: inline-flex;
+    display: flex;
+    flex-direction: column;
     align-items: center;
+    text-align: center;
     gap: 0.4rem;
   }
 
   .product-buy-box__trust-icon {
-    width: 14px;
-    height: 14px;
+    width: 16px;
+    height: 16px;
     color: var(--color-text, #111111);
     opacity: 0.75;
     flex-shrink: 0;
@@ -943,19 +946,20 @@
 
   .product-buy-box__trust-title {
     font-family: var(--font-body);
-    font-size: 0.6875rem;
+    font-size: 0.625rem;
     font-weight: 550;
     letter-spacing: 0.04em;
     text-transform: uppercase;
     color: var(--color-text-subtle, #555555);
-    white-space: nowrap;
+    white-space: normal;
+    line-height: 1.2;
   }
 
   /* Native <details> Accordions (Minimal & Calm) */
   .product-buy-box__accordions {
     display: flex;
     flex-direction: column;
-    margin-top: 0.25rem;
+    margin-top: 1rem;
   }
 
   .product-accordion {
@@ -1007,34 +1011,53 @@
   /* Desktop Luxury Breathing Space & Vertical Rhythm */
   @media (min-width: 990px) {
     .product-buy-box {
-      gap: 1.75rem;
+      gap: 0;
     }
 
     .product-buy-box__title {
       font-size: clamp(2rem, 3.2vw, 2.5rem);
-      margin-bottom: 0.15rem;
+      margin-top: 0.5rem;
+    }
+
+    .product-buy-box__price-row {
+      margin-top: 0.75rem;
     }
 
     .product-buy-box__options {
       gap: 1.15rem;
-      padding-top: 0.5rem;
+      margin-top: 1.75rem;
     }
 
     .product-buy-box__actions {
       gap: 0.75rem;
-      margin-top: 0.5rem;
+      margin-top: 1.75rem;
     }
 
     .product-buy-box__summary {
       font-size: 0.875rem;
       line-height: 1.65;
       color: #444444;
-      padding: 0.25rem 0;
+      margin-top: 1.25rem;
     }
 
     .product-buy-box__trust-strip {
       padding: 1rem 0;
-      margin-top: 0.25rem;
+      margin-top: 1.5rem;
+      gap: 1rem;
+    }
+
+    .product-buy-box__trust-item {
+      flex-direction: row;
+      text-align: left;
+    }
+
+    .product-buy-box__trust-title {
+      font-size: 0.6875rem;
+      white-space: nowrap;
+    }
+
+    .product-buy-box__accordions {
+      margin-top: 1.5rem;
     }
 
     .product-accordion__summary {

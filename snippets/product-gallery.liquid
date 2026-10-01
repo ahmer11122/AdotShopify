@@ -160,19 +160,6 @@
     {% endif %}
   </div>
 
-  <!-- Mobile Scroll Dots (Visual indicator for small screens) -->
-  {% if total_slides > 1 %}
-    <div class="product-gallery__dots" aria-hidden="true">
-      {% for i in (1..total_slides) %}
-        <button
-          type="button"
-          class="product-gallery__dot {% if forloop.first %}is-active{% endif %}"
-          data-dot-index="{{ forloop.index }}"
-          aria-label="Go to slide {{ forloop.index }}"
-        ></button>
-      {% endfor %}
-    </div>
-  {% endif %}
 </product-gallery>
 
 <style>
@@ -239,6 +226,7 @@
       margin-left: calc(-1 * var(--page-margin, 1rem));
       margin-right: calc(-1 * var(--page-margin, 1rem));
       padding: 0;
+      touch-action: pan-y;
     }
 
     .product-gallery__track::-webkit-scrollbar {
@@ -272,33 +260,6 @@
       border-radius: 9999px;
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
       pointer-events: none;
-    }
-
-    /* Minimalist Dot Bar */
-    .product-gallery__dots {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 0.4rem;
-      padding: 0.75rem 0;
-    }
-
-    .product-gallery__dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      border: none;
-      background-color: var(--color-border-strong, #8A8A8A);
-      opacity: 0.35;
-      padding: 0;
-      cursor: pointer;
-      transition: opacity 200ms ease, transform 200ms ease, background-color 200ms ease;
-    }
-
-    .product-gallery__dot.is-active {
-      opacity: 1;
-      background-color: var(--color-text, #111111);
-      transform: scale(1.3);
     }
   }
 
