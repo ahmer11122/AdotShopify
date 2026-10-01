@@ -4,7 +4,46 @@
   "sections": {
     "header": {
       "type": "header",
-      "settings": {}
+      "blocks": {
+        "search_tag_hoodies": {
+          "type": "search_tag",
+          "settings": {
+            "label": "Hoodies",
+            "query": "Hoodie"
+          }
+        },
+        "search_tag_shirts": {
+          "type": "search_tag",
+          "settings": {
+            "label": "Shirts",
+            "query": "Shirt"
+          }
+        },
+        "search_tag_trousers": {
+          "type": "search_tag",
+          "settings": {
+            "label": "Trousers",
+            "query": "Trouser"
+          }
+        },
+        "search_tag_winter": {
+          "type": "search_tag",
+          "settings": {
+            "label": "Winter",
+            "query": "Winter"
+          }
+        }
+      },
+      "block_order": [
+        "search_tag_hoodies",
+        "search_tag_shirts",
+        "search_tag_trousers",
+        "search_tag_winter"
+      ],
+      "settings": {
+        "drawer_meta_text": "ADOT STUDIO \u00b7 AUTUMN / WINTER 2026",
+        "search_placeholder": "Search essentials, styles, collections..."
+      }
     }
   },
   "order": [

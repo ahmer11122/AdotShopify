@@ -82,7 +82,7 @@
     </nav>
 
     <div class="header-drawer__footer">
-      <p class="text-micro header-drawer__meta">ADOT STUDIO · AUTUMN / WINTER 2026</p>
+      <p class="text-micro header-drawer__meta">{{ section.settings.drawer_meta_text | default: 'ADOT STUDIO · AUTUMN / WINTER 2026' }}</p>
     </div>
   </div>
 </header-drawer>
@@ -130,7 +130,7 @@
               type="search"
               name="q"
               class="search-modal__input"
-              placeholder="Search essentials, styles, collections..."
+              placeholder="{{ section.settings.search_placeholder | default: 'Search essentials, styles, collections...' }}"
               autocomplete="off"
               autocorrect="off"
               autocapitalize="none"
@@ -157,10 +157,26 @@
           <div class="search-modal__suggestions-group">
             <p class="text-micro search-modal__suggestions-title">POPULAR SEARCHES</p>
             <div class="search-modal__tags">
-              <button type="button" class="search-modal__tag" data-tag-search="Hoodie">Hoodies</button>
-              <button type="button" class="search-modal__tag" data-tag-search="Shirt">Shirts</button>
-              <button type="button" class="search-modal__tag" data-tag-search="Trouser">Trousers</button>
-              <button type="button" class="search-modal__tag" data-tag-search="Winter">Winter</button>
+              {% assign search_tag_blocks = section.blocks | where: 'type', 'search_tag' %}
+              {% if search_tag_blocks.size > 0 %}
+                {% for block in search_tag_blocks %}
+                  {% if block.settings.label != blank %}
+                    <button
+                      type="button"
+                      class="search-modal__tag"
+                      data-tag-search="{{ block.settings.query | default: block.settings.label | escape }}"
+                      {{ block.shopify_attributes }}
+                    >
+                      {{ block.settings.label }}
+                    </button>
+                  {% endif %}
+                {% endfor %}
+              {% else %}
+                <button type="button" class="search-modal__tag" data-tag-search="Hoodie">Hoodies</button>
+                <button type="button" class="search-modal__tag" data-tag-search="Shirt">Shirts</button>
+                <button type="button" class="search-modal__tag" data-tag-search="Trouser">Trousers</button>
+                <button type="button" class="search-modal__tag" data-tag-search="Winter">Winter</button>
+              {% endif %}
             </div>
           </div>
 
@@ -2675,30 +2691,13 @@
       if (itemsContainer) itemsContainer.hidden = false;
 
       if (itemsContainer) {
-        const adotFallbackMap = {
-          'the-complete-snowboard': { title: 'Heavyweight Boxy Hoodie', img: '{{ "category-hoodies.jpg" | asset_url }}', price: 'Rs. 4,499' },
-          'the-collection-snowboard-hydrogen': { title: 'Relaxed Poplin Shirt', img: '{{ "category-shirts.jpg" | asset_url }}', price: 'Rs. 3,699' },
-          'the-collection-snowboard-liquid': { title: 'Tailored Pleated Trousers', img: '{{ "category-trousers.jpg" | asset_url }}', price: 'Rs. 4,299' },
-          'the-collection-snowboard-oxygen': { title: 'Heavyweight Zip Hoodie', img: '{{ "category-hoodies.jpg" | asset_url }}', price: 'Rs. 4,899' },
-          'the-compare-at-price-snowboard': { title: 'Oversized Oxford Button-Down', img: '{{ "category-shirts.jpg" | asset_url }}', price: 'Rs. 3,899' },
-          'selling-plans-ski-wax': { title: 'Wide-Leg Minimalist Chino', img: '{{ "category-trousers.jpg" | asset_url }}', price: 'Rs. 3,999' },
-          'the-inventory-not-tracked-snowboard': { title: 'Heavyweight Loopback Crewneck', img: '{{ "category-hoodies.jpg" | asset_url }}', price: 'Rs. 3,999' },
-          'the-3p-fulfilled-snowboard': { title: 'Double-Pleat Cotton Chino', img: '{{ "category-trousers.jpg" | asset_url }}', price: 'Rs. 4,199' },
-          'the-multi-location-snowboard': { title: 'Oversized Fleece Pullover', img: '{{ "category-hoodies.jpg" | asset_url }}', price: 'Rs. 4,699' },
-          'the-multi-managed-snowboard': { title: 'Structured Twill Overshirt', img: '{{ "category-shirts.jpg" | asset_url }}', price: 'Rs. 4,199' },
-          'the-videographer-snowboard': { title: 'Relaxed Straight Trousers', img: '{{ "category-trousers.jpg" | asset_url }}', price: 'Rs. 4,499' },
-          'the-out-of-stock-snowboard': { title: 'Relaxed Camp Collar Shirt', img: '{{ "category-shirts.jpg" | asset_url }}', price: 'Rs. 3,799' }
-        };
-
         itemsContainer.innerHTML = cart.items
           .map((item) => {
-            const fallback = adotFallbackMap[item.handle] || {};
-            const itemTitle = item.properties?._adot_title || fallback.title || item.product_title || item.title;
-            const imgUrl = item.properties?._adot_image || fallback.img || item.image || item.featured_image?.url || '';
+            const itemTitle = item.properties?._adot_title || item.product_title || item.title;
+            const imgUrl = item.properties?._adot_image || item.image || item.featured_image?.url || '';
             const sizeText = item.properties?.Size ? `Size: ${item.properties.Size}` : '';
-            const isDummySnowboard = item.handle && (item.handle.includes('snowboard') || item.handle.includes('ski-wax'));
-            const variant = sizeText || (item.variant_title && item.variant_title !== 'Default Title' && !isDummySnowboard ? item.variant_title : '');
-            const priceFormatted = item.properties?._adot_price || fallback.price || this.formatMoney(item.final_line_price);
+            const variant = sizeText || (item.variant_title && item.variant_title !== 'Default Title' ? item.variant_title : '');
+            const priceFormatted = item.properties?._adot_price || this.formatMoney(item.final_line_price);
             const qtyMax = maxByVariant[String(item.variant_id)] || '';
             const atMax = qtyMax !== '' && item.quantity >= Number(qtyMax);
 
@@ -2853,6 +2852,74 @@
       "id": "sticky",
       "label": "Enable Sticky Glassmorphism Header",
       "default": true
+    },
+    {
+      "type": "text",
+      "id": "drawer_meta_text",
+      "label": "Drawer meta text",
+      "default": "ADOT STUDIO · AUTUMN / WINTER 2026"
+    },
+    {
+      "type": "text",
+      "id": "search_placeholder",
+      "label": "Search placeholder",
+      "default": "Search essentials, styles, collections..."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "search_tag",
+      "name": "Search tag",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "Hoodies"
+        },
+        {
+          "type": "text",
+          "id": "query",
+          "label": "Search query",
+          "default": "Hoodie",
+          "info": "Value submitted when the tag is clicked."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Header",
+      "blocks": [
+        {
+          "type": "search_tag",
+          "settings": {
+            "label": "Hoodies",
+            "query": "Hoodie"
+          }
+        },
+        {
+          "type": "search_tag",
+          "settings": {
+            "label": "Shirts",
+            "query": "Shirt"
+          }
+        },
+        {
+          "type": "search_tag",
+          "settings": {
+            "label": "Trousers",
+            "query": "Trouser"
+          }
+        },
+        {
+          "type": "search_tag",
+          "settings": {
+            "label": "Winter",
+            "query": "Winter"
+          }
+        }
+      ]
     }
   ]
 }

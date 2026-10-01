@@ -64,5 +64,22 @@
         "default": 0
       }
     ]
+  },
+  {
+    "name": "Favicon / Branding",
+    "settings": [
+      {
+        "type": "image_picker",
+        "id": "favicon",
+        "label": "Favicon",
+        "info": "Shown in browser tabs. Square PNG or ICO recommended."
+      },
+      {
+        "type": "image_picker",
+        "id": "logo",
+        "label": "Logo",
+        "info": "Used for Organization schema and gift card template. Falls back to theme logo.png asset when empty."
+      }
+    ]
   }
 ]

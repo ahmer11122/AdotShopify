@@ -19,12 +19,13 @@
   <header class="collection__header">
     <div class="collection__header-main">
       <div class="collection__title-group">
-        <h1 class="collection__title" data-collection-title>
-          {% if collection.handle == 'all' or collection.title == 'Products' %}
-            Collection
-          {% else %}
-            {{ collection.title }}
-          {% endif %}
+        {%- if collection.handle == 'all' or collection.title == 'Products' -%}
+          {%- assign collection_heading = section.settings.all_title | default: 'All Essentials' -%}
+        {%- else -%}
+          {%- assign collection_heading = collection.title | default: section.settings.all_title | default: 'All Essentials' -%}
+        {%- endif -%}
+        <h1 class="collection__title" data-collection-title data-base-title="{{ collection_heading | escape }}">
+          {{ collection_heading }}
         </h1>
         <span class="collection__count" data-collection-count>{{ collection.all_products_count }} items</span>
       </div>
@@ -40,30 +41,48 @@
           >
             All
           </button>
-          <button
-            type="button"
-            class="collection__filter-btn"
-            data-category-filter="hoodies"
-            aria-pressed="false"
-          >
-            Hoodies
-          </button>
-          <button
-            type="button"
-            class="collection__filter-btn"
-            data-category-filter="shirts"
-            aria-pressed="false"
-          >
-            Shirts
-          </button>
-          <button
-            type="button"
-            class="collection__filter-btn"
-            data-category-filter="trousers"
-            aria-pressed="false"
-          >
-            Trousers
-          </button>
+          {%- assign category_filter_blocks = section.blocks | where: 'type', 'category_filter' -%}
+          {%- if category_filter_blocks.size > 0 -%}
+            {%- for block in category_filter_blocks -%}
+              {%- if block.settings.label != blank and block.settings.value != blank -%}
+                <button
+                  type="button"
+                  class="collection__filter-btn"
+                  data-category-filter="{{ block.settings.value | downcase | escape }}"
+                  aria-pressed="false"
+                  {{ block.shopify_attributes }}
+                >
+                  {{ block.settings.label }}
+                </button>
+              {%- endif -%}
+            {%- endfor -%}
+          {%- else -%}
+            {%- assign derived_types = '' -%}
+            {%- for product_type in collection.all_types -%}
+              {%- assign type_stripped = product_type | strip -%}
+              {%- assign type_down = type_stripped | downcase -%}
+              {%- if type_down == blank or type_down == 'gift card' -%}
+                {%- continue -%}
+              {%- endif -%}
+              {%- assign type_token = '|' | append: type_down | append: '|' -%}
+              {%- unless derived_types contains type_token -%}
+                {%- assign derived_types = derived_types | append: type_token -%}
+                <button
+                  type="button"
+                  class="collection__filter-btn"
+                  data-category-filter="{{ type_down | escape }}"
+                  aria-pressed="false"
+                >
+                  {{ type_stripped }}
+                </button>
+              {%- endunless -%}
+            {%- endfor -%}
+            {%- if derived_types == blank -%}
+              <button type="button" class="collection__filter-btn" data-category-filter="hoodies" aria-pressed="false">Hoodies</button>
+              <button type="button" class="collection__filter-btn" data-category-filter="shirts" aria-pressed="false">Shirts</button>
+              <button type="button" class="collection__filter-btn" data-category-filter="trousers" aria-pressed="false">Trousers</button>
+            {%- endif -%}
+          {%- endif -%}
         </div>
       </nav>
     </div>
@@ -75,16 +94,7 @@
         {% if product.handle == 'gift-card' %}
           {% continue %}
         {% endif %}
-        {% case product.handle %}
-          {% when 'the-complete-snowboard', 'the-collection-snowboard-oxygen', 'the-inventory-not-tracked-snowboard', 'the-multi-location-snowboard' %}
-            {% assign item_category = 'hoodies' %}
-          {% when 'the-collection-snowboard-hydrogen', 'the-compare-at-price-snowboard', 'the-multi-managed-snowboard', 'the-out-of-stock-snowboard' %}
-            {% assign item_category = 'shirts' %}
-          {% when 'the-collection-snowboard-liquid', 'selling-plans-ski-wax', 'the-3p-fulfilled-snowboard', 'the-videographer-snowboard' %}
-            {% assign item_category = 'trousers' %}
-          {% else %}
-            {% assign item_category = product.type | downcase %}
-        {% endcase %}
+        {% assign item_category = product.type | downcase %}
         <div class="collection__item" data-category="{{ item_category }}">
           {% render 'product-card', product: product %}
         </div>
@@ -332,65 +342,66 @@
     const countEl = page.querySelector('[data-collection-count]');
     const filterBtns = page.querySelectorAll('[data-category-filter]');
     const items = page.querySelectorAll('.collection__item');
+    const baseTitle = (titleEl && (titleEl.dataset.baseTitle || titleEl.textContent.trim())) || 'All Essentials';
 
-    const categoryMeta = {
-      all: {
-        title: 'Collection'
-      },
-      hoodies: {
-        title: 'Hoodies'
-      },
-      shirts: {
-        title: 'Shirts'
-      },
-      trousers: {
-        title: 'Trousers'
-      }
-    };
+    const categoryMeta = { all: { title: baseTitle } };
+    const counts = { all: items.length };
 
-    // Calculate dynamic counts based on rendered items
-    let counts = { all: items.length, hoodies: 0, shirts: 0, trousers: 0 };
-    items.forEach(item => {
-      const cat = (item.dataset.category || '').toLowerCase();
-      if (cat.includes('hoodie')) counts.hoodies++;
-      else if (cat.includes('shirt')) counts.shirts++;
-      else if (cat.includes('trouser')) counts.trousers++;
+    filterBtns.forEach((btn) => {
+      const key = (btn.dataset.categoryFilter || '').toLowerCase();
+      if (!key || key === 'all') return;
+      categoryMeta[key] = { title: btn.textContent.trim() || key };
+      counts[key] = 0;
+    });
+
+    function matchesCategory(itemCat, cat) {
+      if (!itemCat || !cat) return false;
+      if (itemCat === cat) return true;
+      if (itemCat.includes(cat) || cat.includes(itemCat)) return true;
+      return false;
+    }
+
+    items.forEach((item) => {
+      const itemCat = (item.dataset.category || '').toLowerCase();
+      Object.keys(counts).forEach((key) => {
+        if (key === 'all') return;
+        if (matchesCategory(itemCat, key)) counts[key] += 1;
+      });
     });
 
     function setCategory(cat, updateUrl = true) {
       cat = (cat || 'all').toLowerCase();
-      if (!categoryMeta[cat]) cat = 'all';
+      if (!categoryMeta[cat]) {
+        const btn = Array.prototype.find.call(filterBtns, (b) => b.dataset.categoryFilter === cat);
+        if (btn) {
+          categoryMeta[cat] = { title: btn.textContent.trim() || cat };
+          if (typeof counts[cat] !== 'number') {
+            counts[cat] = 0;
+            items.forEach((item) => {
+              if (matchesCategory((item.dataset.category || '').toLowerCase(), cat)) counts[cat] += 1;
+            });
+          }
+        } else {
+          cat = 'all';
+        }
+      }
 
-      // Update Buttons State
-      filterBtns.forEach(btn => {
+      filterBtns.forEach((btn) => {
         const isMatch = btn.dataset.categoryFilter === cat;
         btn.classList.toggle('is-active', isMatch);
         btn.setAttribute('aria-pressed', isMatch);
       });
 
-      // Update Header Content
       const meta = categoryMeta[cat];
       if (titleEl) titleEl.textContent = meta.title;
-      if (countEl) countEl.textContent = `${counts[cat]} items`;
+      if (countEl) countEl.textContent = `${counts[cat] || 0} items`;
 
-      // Filter Grid Items
-      items.forEach(item => {
+      items.forEach((item) => {
         const itemCat = (item.dataset.category || '').toLowerCase();
-        let show = false;
-        if (cat === 'all') {
-          show = true;
-        } else if (cat === 'hoodies' && itemCat.includes('hoodie')) {
-          show = true;
-        } else if (cat === 'shirts' && itemCat.includes('shirt')) {
-          show = true;
-        } else if (cat === 'trousers' && itemCat.includes('trouser')) {
-          show = true;
-        }
-
+        const show = cat === 'all' || matchesCategory(itemCat, cat);
         item.style.display = show ? '' : 'none';
       });
 
-      // Update URL search parameter
       if (updateUrl) {
         const url = new URL(window.location);
         if (cat === 'all') {
@@ -402,20 +413,16 @@
       }
     }
 
-    // Attach click listeners to category filter pills
-    filterBtns.forEach(btn => {
+    filterBtns.forEach((btn) => {
       btn.addEventListener('click', () => {
-        const cat = btn.dataset.categoryFilter;
-        setCategory(cat, true);
+        setCategory(btn.dataset.categoryFilter, true);
       });
     });
 
-    // Initialize state from URL query parameter (e.g. ?category=hoodies)
     const initialParams = new URLSearchParams(window.location.search);
     const initialCat = initialParams.get('category') || 'all';
     setCategory(initialCat, false);
 
-    // Handle browser back/forward buttons
     window.addEventListener('popstate', (e) => {
       const stateCat = e.state?.category || new URLSearchParams(window.location.search).get('category') || 'all';
       setCategory(stateCat, false);
@@ -426,6 +433,35 @@
 {% schema %}
 {
   "name": "t:general.collection",
-  "settings": []
+  "settings": [
+    {
+      "type": "text",
+      "id": "all_title",
+      "label": "All products title",
+      "default": "All Essentials",
+      "info": "Used when the collection handle is “all” or the title is “Products”."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "category_filter",
+      "name": "Category filter",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "Hoodies"
+        },
+        {
+          "type": "text",
+          "id": "value",
+          "label": "Filter value",
+          "default": "hoodies",
+          "info": "Matched against product type (case-insensitive). Example: hoodies"
+        }
+      ]
+    }
+  ]
 }
 {% endschema %}

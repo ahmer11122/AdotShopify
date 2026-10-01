@@ -52,7 +52,7 @@
           {% else %}
             <source
               media="(max-width: 749px)"
-              srcset="{{ 'hero-mobile.png' | asset_url }}"
+              srcset="{{ 'hero-mobile.jpg' | asset_url }}"
             >
           {% endif %}
           {% if section.settings.image != blank %}
@@ -69,7 +69,7 @@
             }}
           {% else %}
             <img
-              src="{{ 'hero-desktop.png' | asset_url }}"
+              src="{{ 'hero-desktop.jpg' | asset_url }}"
               alt="{{ section.settings.image.alt | default: 'Man wearing a black polo shirt with white trim and grey trousers' | escape }}"
               class="hero__image"
               loading="eager"
@@ -80,18 +80,18 @@
           {% endif %}
         </picture>
       {% else %}
-        <!-- Responsive Dual Photography (Mobile: hero-mobile.png, Desktop: hero-desktop.png) -->
+        <!-- Responsive Dual Photography (Mobile: hero-mobile.jpg, Desktop: hero-desktop.jpg) -->
         <picture class="hero__picture">
           <source
             media="(max-width: 749px)"
-            srcset="{{ 'hero-mobile.png' | asset_url }}"
+            srcset="{{ 'hero-mobile.jpg' | asset_url }}"
           >
           <source
             media="(min-width: 750px)"
-            srcset="{{ 'hero-desktop.png' | asset_url }}"
+            srcset="{{ 'hero-desktop.jpg' | asset_url }}"
           >
           <img
-            src="{{ 'hero-desktop.png' | asset_url }}"
+            src="{{ 'hero-desktop.jpg' | asset_url }}"
             alt="{{ section.settings.image.alt | default: 'Man wearing a black polo shirt with white trim and grey trousers' | escape }}"
             class="hero__image"
             loading="eager"

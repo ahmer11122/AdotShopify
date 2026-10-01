@@ -26,7 +26,7 @@
 
   <div class="category-tiles__track" role="region" aria-label="{{ section.settings.heading | default: 'Shop by Category' }}">
     {% for block in section.blocks %}
-      {%- assign fallback_png = 'category-' | append: block.settings.title | downcase | append: '.png' -%}
+      {%- assign fallback_jpg = 'category-' | append: block.settings.title | downcase | append: '.jpg' -%}
       <div class="category-tile" {{ block.shopify_attributes }}>
         <a
           href="{{ block.settings.link | default: routes.all_products_collection_url }}"
@@ -49,7 +49,7 @@
                 }}
               {% else %}
                 <img
-                  src="{{ fallback_png | asset_url }}"
+                  src="{{ fallback_jpg | asset_url }}"
                   alt="{{ block.settings.title | escape }}"
                   width="896"
                   height="1200"

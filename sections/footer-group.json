@@ -6,7 +6,11 @@
       "type": "footer",
       "settings": {
         "menu": "",
-        "whatsapp_number": "923131707080"
+        "whatsapp_number": "923131707080",
+        "whatsapp_greeting": "Hello ADOT, I would like assistance with an order.",
+        "horizon_badge_1": "ARCHITECTURAL ESSENTIALS",
+        "horizon_badge_2": "SARGODHA",
+        "collections_menu": ""
       }
     }
   },

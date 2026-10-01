@@ -7,29 +7,14 @@
 {% liquid
   assign reveal_product = section.settings.product
   if reveal_product == blank
-    assign reveal_product = all_products['the-complete-snowboard']
-  endif
-  if reveal_product == blank
     assign reveal_product = collections.all.products.first
-  endif
-
-  assign is_snowboard = false
-  if reveal_product.type contains 'snowboard' or reveal_product.title contains 'Snowboard' or reveal_product.handle contains 'snowboard'
-    assign is_snowboard = true
   endif
 
   assign reveal_title = section.settings.heading | default: reveal_product.title | default: 'Heavyweight Boxy Hoodie'
   assign reveal_eyebrow = section.settings.eyebrow | default: '450 GSM'
   assign reveal_spec = section.settings.spec | default: 'Organic cotton loopback fleece'
-  assign reveal_price_cents = reveal_product.price | default: 449900
-  assign reveal_price = reveal_price_cents | money_without_currency | remove: '.00' | prepend: 'Rs. '
+  assign reveal_price_cents = reveal_product.price | default: 0
   assign reveal_url = reveal_product.url | default: routes.all_products_collection_url
-
-  if is_snowboard
-    assign reveal_title = section.settings.heading | default: 'Heavyweight Boxy Hoodie'
-    assign reveal_price = 'Rs. 4,499'
-    assign reveal_price_cents = 449900
-  endif
 
   assign under_alt = reveal_title | append: ' on body'
   assign overlay_fallback = 'fabric-hoodie-studio.jpg' | asset_url
@@ -39,6 +24,8 @@
     assign video_src = 'hoodie-walk-campaign.mp4' | asset_url
   endif
 %}
+{% capture reveal_price %}{% render 'money', price: reveal_price_cents %}{% endcapture %}
+{% assign reveal_price = reveal_price | strip %}
 
 <fabric-reveal
   class="fabric-reveal"
@@ -193,24 +180,32 @@
         <fieldset class="fabric-reveal__sizes">
           <legend class="visually-hidden">Size</legend>
           <div class="fabric-reveal__pills" role="radiogroup" aria-label="Size">
-            {% assign apparel_sizes = 'S,M,L,XL' | split: ',' %}
-            {% for sz in apparel_sizes %}
-              {% assign variant_for_sz = reveal_product.variants[forloop.index0] %}
-              {% assign sz_available = false %}
-              {% if variant_for_sz and variant_for_sz.available %}
-                {% assign sz_available = true %}
-              {% endif %}
+            {% if reveal_product != blank and reveal_product.has_only_default_variant == false %}
+              {% for variant in reveal_product.variants %}
+                <button
+                  type="button"
+                  class="fabric-reveal__pill text-micro{% unless variant.available %} is-sold-out{% endunless %}"
+                  data-size="{{ variant.title | escape }}"
+                  data-variant-id="{{ variant.id }}"
+                  {% unless variant.available %}aria-disabled="true"{% endunless %}
+                  aria-pressed="false"
+                >
+                  {{ variant.title }}
+                </button>
+              {% endfor %}
+            {% elsif reveal_product != blank %}
+              {% assign default_variant = reveal_product.selected_or_first_available_variant %}
               <button
                 type="button"
-                class="fabric-reveal__pill text-micro{% unless sz_available %} is-sold-out{% endunless %}"
-                data-size="{{ sz }}"
-                {% if variant_for_sz %}data-variant-id="{{ variant_for_sz.id }}"{% endif %}
-                {% unless sz_available %}aria-disabled="true"{% endunless %}
+                class="fabric-reveal__pill text-micro{% unless default_variant.available %} is-sold-out{% endunless %}"
+                data-size="Add"
+                data-variant-id="{{ default_variant.id }}"
+                {% unless default_variant.available %}aria-disabled="true"{% endunless %}
                 aria-pressed="false"
               >
-                {{ sz }}
+                Add
               </button>
-            {% endfor %}
+            {% endif %}
           </div>
         </fieldset>
 
@@ -1107,7 +1102,7 @@
       "type": "product",
       "id": "product",
       "label": "Product",
-      "info": "Defaults to the Heavyweight Boxy Hoodie mapping when empty."
+      "info": "Falls back to the first product in All products when empty."
     },
     {
       "type": "image_picker",

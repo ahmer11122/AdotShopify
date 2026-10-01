@@ -14,176 +14,12 @@
 {% enddoc %}
 
 {% liquid
-  assign is_snowboard = false
-  if product.type contains 'snowboard' or product.title contains 'Snowboard' or product.handle contains 'snowboard' or product.handle contains 'ski-wax'
-    assign is_snowboard = true
-  endif
-
-  assign hoodie_img = 'category-hoodies.jpg' | asset_url
-  assign hoodie_png = 'category-hoodies.png' | asset_url
-  assign shirt_img = 'category-shirts.jpg' | asset_url
-  assign shirt_png = 'category-shirts.png' | asset_url
-  assign trouser_img = 'category-trousers.jpg' | asset_url
-  assign trouser_png = 'category-trousers.png' | asset_url
-
   assign adot_title = product.title
   assign adot_category = product.type
   assign adot_price = product.price
-  assign adot_price_formatted = adot_price | money_without_currency | remove: '.00' | prepend: 'Rs. '
   assign adot_compare_at = product.compare_at_price | default: 0
   assign adot_image = product.featured_image | image_url: width: 1200
-  assign adot_secondary_image = product.images[1] | image_url: width: 1200
-  assign adot_fabric = product.metafields.custom.fabric
-  assign adot_fit = product.metafields.custom.fit
   assign adot_description = product.description
-
-  if is_snowboard
-    case product.handle
-      when 'the-complete-snowboard'
-        assign adot_title = 'Heavyweight Boxy Hoodie'
-        assign adot_category = 'Hoodies'
-        assign adot_price = 449900
-        assign adot_price_formatted = 'Rs. 4,499'
-        assign adot_compare_at = 0
-        assign adot_image = hoodie_img
-        assign adot_secondary_image = hoodie_png
-        assign adot_fabric = '450 GSM Loopback Fleece'
-        assign adot_fit = 'Boxy Relaxed Silhouette'
-        assign adot_description = 'Engineered from custom-knitted 450 GSM combed cotton loopback fleece. Featuring double-lined hood architecture, dropped shoulders, and pre-shrunk construction for zero post-wash distortion.'
-      when 'the-collection-snowboard-hydrogen'
-        assign adot_title = 'Relaxed Poplin Shirt'
-        assign adot_category = 'Shirts'
-        assign adot_price = 369900
-        assign adot_price_formatted = 'Rs. 3,699'
-        assign adot_compare_at = 449900
-        assign adot_image = shirt_img
-        assign adot_secondary_image = shirt_png
-        assign adot_fabric = '100% Crisp Long-Staple Cotton'
-        assign adot_fit = 'Casual Relaxed Fit'
-        assign adot_description = 'Crafted from breathable 100% long-staple cotton poplin. Cut with a modern dropped shoulder, clean French placket, and curved hem suitable for untucked everyday styling.'
-      when 'the-collection-snowboard-liquid'
-        assign adot_title = 'Tailored Pleated Trousers'
-        assign adot_category = 'Trousers'
-        assign adot_price = 429900
-        assign adot_price_formatted = 'Rs. 4,299'
-        assign adot_compare_at = 0
-        assign adot_image = trouser_img
-        assign adot_secondary_image = trouser_png
-        assign adot_fabric = 'High-Density Cotton Twill'
-        assign adot_fit = 'Relaxed Straight Cut'
-        assign adot_description = 'Structured high-density cotton twill trousers with subtle double front pleats. Designed with a clean straight leg, slant pockets, and tailored waistband for effortless versatility.'
-      when 'the-collection-snowboard-oxygen'
-        assign adot_title = 'Heavyweight Zip Hoodie'
-        assign adot_category = 'Hoodies'
-        assign adot_price = 489900
-        assign adot_price_formatted = 'Rs. 4,899'
-        assign adot_compare_at = 0
-        assign adot_image = hoodie_img
-        assign adot_secondary_image = hoodie_png
-        assign adot_fabric = '450 GSM Heavy Fleece'
-        assign adot_fit = 'Relaxed Dropped Shoulder'
-        assign adot_description = 'Full-zip luxury hoodie crafted from 450 GSM loopback cotton fleece. Featuring dual custom oxidized metal zippers, ribbed cuffs, and seamless kangaroo pockets.'
-      when 'the-compare-at-price-snowboard'
-        assign adot_title = 'Oversized Oxford Button-Down'
-        assign adot_category = 'Shirts'
-        assign adot_price = 389900
-        assign adot_price_formatted = 'Rs. 3,899'
-        assign adot_compare_at = 450000
-        assign adot_image = shirt_img
-        assign adot_secondary_image = shirt_png
-        assign adot_fabric = 'Heavyweight Oxford Weave'
-        assign adot_fit = 'Oversized Silhouette'
-        assign adot_description = 'Vintage-inspired heavyweight Oxford weave with a substantial hand feel. Designed with dropped shoulders, chest pocket, and mother-of-pearl finish buttons.'
-      when 'selling-plans-ski-wax'
-        assign adot_title = 'Wide-Leg Minimalist Chino'
-        assign adot_category = 'Trousers'
-        assign adot_price = 399900
-        assign adot_price_formatted = 'Rs. 3,999'
-        assign adot_compare_at = 0
-        assign adot_image = trouser_img
-        assign adot_secondary_image = trouser_png
-        assign adot_fabric = 'Brushed Cotton Chino Twill'
-        assign adot_fit = 'Wide Leg Straight Hem'
-        assign adot_description = 'Minimalist wide-leg chinos crafted from pre-washed brushed cotton. Clean front waistband with concealed fastening and generous hem break.'
-      when 'the-inventory-not-tracked-snowboard'
-        assign adot_title = 'Heavyweight Loopback Crewneck'
-        assign adot_category = 'Hoodies'
-        assign adot_price = 399900
-        assign adot_price_formatted = 'Rs. 3,999'
-        assign adot_compare_at = 0
-        assign adot_image = hoodie_img
-        assign adot_secondary_image = hoodie_png
-        assign adot_fabric = '450 GSM Unbrushed Cotton'
-        assign adot_fit = 'Boxy Crewneck Fit'
-        assign adot_description = 'Essential boxy crewneck sweatshirt in 450 GSM heavyweight cotton. Ribbed collar, cuffs, and hem with reinforced flatlock stitching.'
-      when 'the-3p-fulfilled-snowboard'
-        assign adot_title = 'Double-Pleat Cotton Chino'
-        assign adot_category = 'Trousers'
-        assign adot_price = 419900
-        assign adot_price_formatted = 'Rs. 4,199'
-        assign adot_compare_at = 0
-        assign adot_image = trouser_img
-        assign adot_secondary_image = trouser_png
-        assign adot_fabric = 'Custom Weave Twill'
-        assign adot_fit = 'Relaxed Tapered Leg'
-        assign adot_description = 'Modern pleated chinos tailored from structured cotton twill. Designed with gentle taper towards the ankle and reinforced pocket welts.'
-      when 'the-multi-location-snowboard'
-        assign adot_title = 'Oversized Fleece Pullover'
-        assign adot_category = 'Hoodies'
-        assign adot_price = 469900
-        assign adot_price_formatted = 'Rs. 4,699'
-        assign adot_compare_at = 0
-        assign adot_image = hoodie_img
-        assign adot_secondary_image = hoodie_png
-        assign adot_fabric = '450 GSM Combed Fleece'
-        assign adot_fit = 'Oversized Pullover Fit'
-        assign adot_description = 'Premium pullover hoodie featuring an exaggerated hood, dropped shoulders, and minimal seamlines for a clean silhouette.'
-      when 'the-multi-managed-snowboard'
-        assign adot_title = 'Structured Twill Overshirt'
-        assign adot_category = 'Shirts'
-        assign adot_price = 419900
-        assign adot_price_formatted = 'Rs. 4,199'
-        assign adot_compare_at = 0
-        assign adot_image = shirt_img
-        assign adot_secondary_image = shirt_png
-        assign adot_fabric = 'Heavy Structured Twill'
-        assign adot_fit = 'Boxy Overshirt Cut'
-        assign adot_description = 'Heavyweight cotton overshirt designed for transitional layering. Dual flap chest pockets, horn buttons, and square bottom hem.'
-      when 'the-videographer-snowboard'
-        assign adot_title = 'Relaxed Straight Trousers'
-        assign adot_category = 'Trousers'
-        assign adot_price = 449900
-        assign adot_price_formatted = 'Rs. 4,499'
-        assign adot_compare_at = 0
-        assign adot_image = trouser_img
-        assign adot_secondary_image = trouser_png
-        assign adot_fabric = 'Heavy Italian-style Twill'
-        assign adot_fit = 'Straight Leg Fit'
-        assign adot_description = 'Relaxed straight trousers with clean tailoring lines and minimal hardware. Comfortable mid-rise with belt loops and hidden zip fly.'
-      when 'the-out-of-stock-snowboard'
-        assign adot_title = 'Relaxed Camp Collar Shirt'
-        assign adot_category = 'Shirts'
-        assign adot_price = 379900
-        assign adot_price_formatted = 'Rs. 3,799'
-        assign adot_compare_at = 0
-        assign adot_image = shirt_img
-        assign adot_secondary_image = shirt_png
-        assign adot_fabric = 'Soft Washed Poplin'
-        assign adot_fit = 'Boxy Cuban Collar'
-        assign adot_description = 'Relaxed camp collar short sleeve shirt tailored in soft washed poplin cotton.'
-      else
-        assign adot_title = 'Heavyweight Boxy Hoodie'
-        assign adot_category = 'Hoodies'
-        assign adot_price = 449900
-        assign adot_price_formatted = 'Rs. 4,499'
-        assign adot_compare_at = 0
-        assign adot_image = hoodie_img
-        assign adot_secondary_image = hoodie_png
-        assign adot_fabric = '450 GSM Loopback Fleece'
-        assign adot_fit = 'Boxy Relaxed Fit'
-        assign adot_description = 'Engineered from custom-knitted 450 GSM combed cotton loopback fleece.'
-    endcase
-  endif
 
   assign is_on_sale = false
   assign discount_pct = 0
@@ -192,10 +28,12 @@
     assign discount_diff = adot_compare_at | minus: adot_price
     assign discount_pct = discount_diff | times: 100.0 | divided_by: adot_compare_at | round
   endif
-
-  assign price_clean = adot_price | money_without_currency | remove: '.00'
-  assign compare_clean = adot_compare_at | money_without_currency | remove: '.00'
 %}
+{% capture adot_price_formatted %}{% render 'money', price: adot_price %}{% endcapture %}
+{% assign adot_price_formatted = adot_price_formatted | strip %}
+{% capture adot_compare_formatted %}{% render 'money', price: adot_compare_at %}{% endcapture %}
+{% assign adot_compare_formatted = adot_compare_formatted | strip %}
+
 
 <div class="product-buy-box" id="ProductBuyBox-{{ section.id }}" data-product-buy-box>
   <!-- Calm Luxury Category -->
@@ -212,14 +50,10 @@
       <div class="price {% if is_on_sale %}price--on-sale{% endif %}">
         <div class="price__container">
           {% if is_on_sale %}
-            <span class="price__item price__item--sale">
-              <span class="price__currency">Rs.</span><span class="price__amount">{{ price_clean }}</span>
-            </span>
-            <s class="price__item price__item--regular">Rs. {{ compare_clean }}</s>
+            <span class="price__item price__item--sale">{{ adot_price_formatted }}</span>
+            <s class="price__item price__item--regular">{{ adot_compare_formatted }}</s>
           {% else %}
-            <span class="price__item price__item--regular">
-              <span class="price__currency">Rs.</span><span class="price__amount">{{ price_clean }}</span>
-            </span>
+            <span class="price__item price__item--regular">{{ adot_price_formatted }}</span>
           {% endif %}
         </div>
       </div>
@@ -258,60 +92,7 @@
     <input type="hidden" name="properties[Size]" value="" id="ProductSizeProperty-{{ section.id }}">
 
     <!-- Variant Options (Sizes / Colors) -->
-    {% if is_snowboard %}
-      <div class="product-buy-box__options" id="ProductOptions-{{ section.id }}">
-        <fieldset class="product-buy-box__option-group" data-option-index="0">
-          <div class="product-buy-box__option-header">
-            <legend class="product-buy-box__option-label text-micro">
-              <span>SIZE:</span>
-              <span class="product-buy-box__option-selected" data-option-selected-label>Select a size</span>
-            </legend>
-
-            <button
-              type="button"
-              class="product-buy-box__size-guide-trigger text-micro"
-              data-open-size-guide
-              data-size-category="{{ size_guide_cat }}"
-              aria-haspopup="dialog"
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <rect x="2" y="5" width="20" height="14" rx="0"></rect>
-                <line x1="6" y1="5" x2="6" y2="10"></line>
-                <line x1="10" y1="5" x2="10" y2="8"></line>
-                <line x1="14" y1="5" x2="14" y2="10"></line>
-                <line x1="18" y1="5" x2="18" y2="8"></line>
-              </svg>
-              <span>Size Guide</span>
-            </button>
-          </div>
-
-          <!-- Authentic ADOT Apparel Sizes -->
-          <div class="product-buy-box__option-values" role="radiogroup" aria-label="Size">
-            {% assign apparel_sizes = 'S,M,L,XL' | split: ',' %}
-            {% for sz in apparel_sizes %}
-              {% assign variant_for_sz = product.variants[forloop.index0] %}
-              {% assign sz_available = false %}
-              {% if variant_for_sz and variant_for_sz.available %}
-                {% assign sz_available = true %}
-              {% endif %}
-              <button
-                type="button"
-                class="product-buy-box__pill text-micro{% unless sz_available %} is-sold-out{% endunless %}"
-                data-option-name="Size"
-                data-option-value="{{ sz }}"
-                {% if variant_for_sz %}data-variant-id="{{ variant_for_sz.id }}"{% endif %}
-                {% unless sz_available %}aria-disabled="true"{% endunless %}
-              >
-                <span>{{ sz }}</span>
-                {% unless sz_available %}
-                  <span class="product-buy-box__sold-out-slash" aria-hidden="true"></span>
-                {% endunless %}
-              </button>
-            {% endfor %}
-          </div>
-        </fieldset>
-      </div>
-    {% elsif product.has_only_default_variant == false %}
+    {% if product.has_only_default_variant == false %}
       <div class="product-buy-box__options" id="ProductOptions-{{ section.id }}">
         {% for option in product.options_with_values %}
           {% assign option_name_lower = option.name | downcase %}
@@ -406,7 +187,7 @@
       >
         <span class="product-buy-box__btn-text" data-btn-label>
           {% if product.has_only_default_variant or product.variants.size == 1 %}
-            ADD TO BAG — {{ adot_price_formatted | default: default_product_price }}
+            ADD TO BAG — {{ adot_price_formatted }}
           {% else %}
             SELECT A SIZE
           {% endif %}
@@ -430,7 +211,7 @@
           id="WhatsAppBtn-{{ section.id }}"
           data-phone="{{ wa_phone }}"
           data-product-title="{{ adot_title | default: product.title | escape }}"
-          data-product-price="{{ adot_price_formatted | default: default_product_price }}"
+          data-product-price="{{ adot_price_formatted }}"
           data-product-url="{{ shop.url }}{{ product.url }}"
         >
           <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -1212,8 +993,7 @@
         addToCartBtn.disabled = false;
         addToCartBtn.removeAttribute('aria-disabled');
         if (btnLabel) {
-          const adotPrice = '{{ adot_price_formatted }}';
-          btnLabel.textContent = `ADD TO BAG — ${adotPrice || formatMoney(variant.price)}`;
+          btnLabel.textContent = `ADD TO BAG — ${formatMoney(variant.price)}`;
         }
       } else {
         addToCartBtn.disabled = true;

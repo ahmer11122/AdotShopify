@@ -14,3 +14,13 @@
 # Ignore internal AI rules and reference repos
 .agent/*
 .reference/*
+
+# Docs and local-only
+*.md
+PRD.md
+design.md
+PREVIEW_GUIDE.md
+campaign/*
+.playwright-mcp/*
+.kilo/*
+.github/*

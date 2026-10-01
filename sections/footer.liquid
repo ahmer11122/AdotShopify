@@ -6,7 +6,7 @@
   - Tier 2: 4-Column balanced architectural grid (Newsletter / Collections / Support / Contact on WhatsApp)
             Optimized for mobile with 2-column compact layout (Collections & Support side-by-side)
   - Tier 3: Monolithic ADOT horizon wordmark nestled lower to ground the layout with perfect visual balance
-  - Tier 4: Minimalist baseline bar without dividing border (Copyright 2025 & Tactile Back to Top)
+  - Tier 4: Minimalist baseline bar without dividing border (dynamic year copyright & Tactile Back to Top)
   - Mobile-native optimizations: 16px inputs (no iOS zoom), 44px tap targets, safe-area insets
 {% endcomment %}
 
@@ -82,10 +82,16 @@
       <nav class="footer__col footer__col--collections" aria-label="Collections">
         <p class="footer__col-label text-micro">Collections</p>
         <ul class="footer__links">
-          <li><a href="{{ routes.all_products_collection_url }}?category=hoodies" class="footer__link">Hoodies</a></li>
-          <li><a href="{{ routes.all_products_collection_url }}?category=shirts" class="footer__link">Shirts</a></li>
-          <li><a href="{{ routes.all_products_collection_url }}?category=trousers" class="footer__link">Trousers</a></li>
-          <li><a href="{{ routes.all_products_collection_url }}" class="footer__link">All Essentials</a></li>
+          {% if section.settings.collections_menu != blank and section.settings.collections_menu.links.size > 0 %}
+            {% for link in section.settings.collections_menu.links %}
+              <li><a href="{{ link.url }}" class="footer__link">{{ link.title }}</a></li>
+            {% endfor %}
+          {% else %}
+            <li><a href="{{ routes.all_products_collection_url }}?category=hoodies" class="footer__link">Hoodies</a></li>
+            <li><a href="{{ routes.all_products_collection_url }}?category=shirts" class="footer__link">Shirts</a></li>
+            <li><a href="{{ routes.all_products_collection_url }}?category=trousers" class="footer__link">Trousers</a></li>
+            <li><a href="{{ routes.all_products_collection_url }}" class="footer__link">All Essentials</a></li>
+          {% endif %}
         </ul>
       </nav>
 
@@ -118,11 +124,12 @@
         {%- else -%}
           {%- assign wa_display = '+' | append: wa_raw -%}
         {%- endif -%}
+        {%- assign wa_greeting = section.settings.whatsapp_greeting | default: 'Hello ADOT, I would like assistance with an order.' -%}
 
         <ul class="footer__links">
           <li>
             <a
-              href="https://wa.me/{{ wa_raw }}?text={{ 'Hello ADOT, I would like assistance with an order.' | url_encode }}"
+              href="https://wa.me/{{ wa_raw }}?text={{ wa_greeting | url_encode }}"
               class="footer__whatsapp-link"
               target="_blank"
               rel="noopener noreferrer"
@@ -150,17 +157,25 @@
 
     <!-- TIER 3: Monolithic ADOT Horizon Wordmark Tier (Nestled Lower for Balance) -->
     <div class="footer__horizon" aria-hidden="true">
-      <div class="footer__horizon-meta">
-        <span class="text-micro footer__horizon-badge">ARCHITECTURAL ESSENTIALS</span>
-        <span class="text-micro footer__horizon-badge">SARGODHA</span>
-      </div>
+      {%- assign horizon_badge_1 = section.settings.horizon_badge_1 | default: 'ARCHITECTURAL ESSENTIALS' -%}
+      {%- assign horizon_badge_2 = section.settings.horizon_badge_2 | default: 'SARGODHA' -%}
+      {%- if horizon_badge_1 != blank or horizon_badge_2 != blank -%}
+        <div class="footer__horizon-meta">
+          {%- if horizon_badge_1 != blank -%}
+            <span class="text-micro footer__horizon-badge">{{ horizon_badge_1 }}</span>
+          {%- endif -%}
+          {%- if horizon_badge_2 != blank -%}
+            <span class="text-micro footer__horizon-badge">{{ horizon_badge_2 }}</span>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
       <p class="footer__wordmark">{{ section.settings.wordmark_text | default: shop.name | default: 'ADOT' }}</p>
     </div>
 
     <!-- TIER 4: Baseline Utility Bar (No Separating Border Line) -->
     <div class="footer__bottom">
       <p class="footer__copyright text-micro">
-        &copy; 2025 {{ shop.name }}. All rights reserved.
+        &copy; {{ 'now' | date: '%Y' }} {{ shop.name }}. All rights reserved.
       </p>
 
       <button type="button" class="footer__top" data-footer-top aria-label="Scroll back to top">
@@ -732,6 +747,24 @@
       "default": "Heavyweight essentials · Cash on delivery · Easy exchange · Made to last"
     },
     {
+      "type": "text",
+      "id": "horizon_badge_1",
+      "label": "Horizon badge (left)",
+      "default": "ARCHITECTURAL ESSENTIALS"
+    },
+    {
+      "type": "text",
+      "id": "horizon_badge_2",
+      "label": "Horizon badge (right)",
+      "default": "SARGODHA"
+    },
+    {
+      "type": "link_list",
+      "id": "collections_menu",
+      "label": "Collections menu",
+      "info": "Optional. Falls back to Hoodies, Shirts, Trousers, All Essentials when empty."
+    },
+    {
       "type": "link_list",
       "id": "menu",
       "label": "Pages menu",
@@ -743,6 +776,13 @@
       "label": "WhatsApp number",
       "default": "923131707080",
       "info": "Country code, no plus sign. Example: 923131707080"
+    },
+    {
+      "type": "textarea",
+      "id": "whatsapp_greeting",
+      "label": "WhatsApp greeting message",
+      "default": "Hello ADOT, I would like assistance with an order.",
+      "info": "Pre-filled text sent with the WhatsApp chat link."
     }
   ]
 }
