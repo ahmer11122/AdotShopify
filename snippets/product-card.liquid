@@ -15,7 +15,6 @@
   @param {string} [image_src] - Fallback primary image asset url
   @param {string} [secondary_image_src] - Fallback secondary image asset url
   @param {string} [spec] - Technical fabric / fit fact (optional)
-  @param {number} [color_count] - Number of colors (only shown if > 1)
   @param {boolean} [available] - Fallback availability
   @param {boolean} [lazy_load] - Whether to lazy load images (default: true)
   @param {boolean} [show_vendor] - Whether to show category or vendor
@@ -170,13 +169,6 @@
       endif
     endif
 
-    assign color_option = product.options_by_name['Color'] | default: product.options_by_name['Colour']
-    assign has_colors = false
-    if color_option and color_option.values.size > 1
-      assign has_colors = true
-      assign color_num = color_option.values.size
-    endif
-
     assign size_option = product.options_by_name['Size']
     assign has_sizes = false
     if size_option and size_option.values.size > 0
@@ -197,12 +189,6 @@
     assign has_secondary_image = false
     if secondary_image_src != blank
       assign has_secondary_image = true
-    endif
-    if color_count and color_count > 1
-      assign has_colors = true
-      assign color_num = color_count
-    else
-      assign has_colors = false
     endif
     assign has_sizes = true
     assign fallback_variant_id = variant_id | default: fallback_product.selected_or_first_available_variant.id
@@ -380,79 +366,6 @@
           {% endif %}
         </div>
       </div>
-
-      <!-- Mobile Slide-Up Size Selector Sheet -->
-      <div class="product-card__mobile-sheet" data-mobile-sheet aria-hidden="true">
-        <div class="mobile-sheet__header">
-          <span class="mobile-sheet__title text-micro">Select Size</span>
-          <button type="button" class="mobile-sheet__close" data-sheet-close aria-label="Close size sheet">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <path d="M1 1L11 11M1 11L11 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
-          </button>
-        </div>
-        <div class="mobile-sheet__sizes">
-          {% if product and has_sizes and is_snowboard == false %}
-            {% for variant in product.variants %}
-              <form method="post" action="{{ routes.cart_add_url }}" class="mobile-sheet__form">
-                <input type="hidden" name="id" value="{{ variant.id }}">
-                <input type="hidden" name="quantity" value="1">
-                <input type="hidden" name="properties[_adot_title]" value="{{ card_title | escape }}">
-                <input type="hidden" name="properties[_adot_image]" value="{{ image_src }}">
-                <input type="hidden" name="properties[_adot_price]" value="{{ card_price | money_without_currency | remove: '.00' | prepend: 'Rs. ' }}">
-                <button
-                  type="submit"
-                  class="mobile-sheet__btn {% unless variant.available %}mobile-sheet__btn--sold-out{% endunless %}"
-                  {% unless variant.available %}disabled aria-disabled="true"{% endunless %}
-                  data-variant-title="{{ variant.title }}"
-                >
-                  {{ variant.title }}
-                </button>
-              </form>
-            {% endfor %}
-          {% elsif product %}
-            {% assign base_variant_id = product.selected_or_first_available_variant.id %}
-            {% assign card_sizes = 'S,M,L,XL' | split: ',' %}
-            {% for sz in card_sizes %}
-              <form method="post" action="{{ routes.cart_add_url }}" class="mobile-sheet__form">
-                <input type="hidden" name="id" value="{{ base_variant_id }}">
-                <input type="hidden" name="quantity" value="1">
-                <input type="hidden" name="properties[_adot_title]" value="{{ card_title | escape }}">
-                <input type="hidden" name="properties[_adot_image]" value="{{ image_src }}">
-                <input type="hidden" name="properties[_adot_price]" value="{{ card_price | money_without_currency | remove: '.00' | prepend: 'Rs. ' }}">
-                <input type="hidden" name="properties[Size]" value="{{ sz }}">
-                <button
-                  type="submit"
-                  class="mobile-sheet__btn"
-                  data-variant-title="{{ sz }}"
-                >
-                  {{ sz }}
-                </button>
-              </form>
-            {% endfor %}
-          {% else %}
-            {% assign demo_sizes = 'S,M,L,XL' | split: ',' %}
-            {% for sz in demo_sizes %}
-              <form method="post" action="{{ routes.cart_add_url }}" class="mobile-sheet__form">
-                <input type="hidden" name="id" value="{{ fallback_variant_id }}">
-                <input type="hidden" name="quantity" value="1">
-                <input type="hidden" name="properties[_adot_title]" value="{{ card_title | escape }}">
-                <input type="hidden" name="properties[_adot_image]" value="{{ image_src }}">
-                <input type="hidden" name="properties[_adot_price]" value="{{ card_price | money_without_currency | remove: '.00' | prepend: 'Rs. ' }}">
-                <input type="hidden" name="properties[Size]" value="{{ sz }}">
-                <button
-                  type="submit"
-                  class="mobile-sheet__btn {% if sz == 'XL' and is_on_sale %}mobile-sheet__btn--sold-out{% endif %}"
-                  {% if sz == 'XL' and is_on_sale %}disabled aria-disabled="true"{% endif %}
-                  data-variant-title="{{ sz }}"
-                >
-                  {{ sz }}
-                </button>
-              </form>
-            {% endfor %}
-          {% endif %}
-        </div>
-      </div>
     {% endif %}
   </div>
 
@@ -469,7 +382,7 @@
       </a>
     </h3>
 
-    <!-- Meta Row: Tabular Price + Optional Subtle Color Pill -->
+    <!-- Meta Row: Tabular Price -->
     <div class="product-card__meta-row">
       <div class="product-card__price">
         {% if product and is_snowboard == false %}
@@ -491,10 +404,6 @@
           </div>
         {% endif %}
       </div>
-
-      {% if has_colors %}
-        <div class="product-card__colors">{{ color_num }} {% if color_num == 1 %}color{% else %}colors{% endif %}</div>
-      {% endif %}
     </div>
   </div>
 </div>
@@ -709,8 +618,8 @@
      ========================================================================== */
   .product-card__mobile-quick-btn {
     position: absolute;
-    right: 6px;
-    bottom: 6px;
+    right: 8px;
+    bottom: 8px;
     z-index: 5;
     width: 44px;
     height: 44px;
@@ -723,6 +632,7 @@
     justify-content: center;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
 
   .product-card__mobile-quick-btn::before {
@@ -730,9 +640,12 @@
     position: absolute;
     width: 36px;
     height: 36px;
-    border-radius: var(--radius-none);
-    background-color: color-mix(in srgb, var(--color-white) 92%, transparent);
-    border: 1px solid var(--color-border-subtle);
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     transition:
       transform 160ms var(--ease-out),
       background-color 160ms var(--ease-out);
@@ -745,8 +658,8 @@
   }
 
   .product-card__mobile-quick-btn:active::before {
-    transform: scale(0.96);
-    background-color: var(--color-white);
+    transform: scale(0.92);
+    background-color: var(--color-white, #FFFFFF);
   }
 
   @media (min-width: 750px) {
@@ -756,112 +669,239 @@
   }
 
   /* ==========================================================================
-     Mobile Slide-Up Mini Size Sheet
-     - Spring-like entrance with Apple-grade frosted glass
+     Global Mobile Quick-Add Bottom Sheet (Apple iOS / Native UX)
      ========================================================================== */
-  .product-card__mobile-sheet {
-    position: absolute;
-    inset: auto 0 0 0;
-    z-index: 10;
-    background: rgba(255, 255, 255, 0.96);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-top: 1px solid rgba(0, 0, 0, 0.08);
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
-    padding: 8px 10px 10px;
-    box-sizing: border-box;
+  .mobile-quick-sheet {
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    transform: translateY(102%);
-    transition:
-      transform 280ms var(--ease-drawer),
-      visibility 280ms var(--ease-drawer);
+    justify-content: flex-end;
     pointer-events: none;
     visibility: hidden;
+    transition: visibility 280ms ease;
   }
 
-  .product-card__mobile-sheet.is-active {
-    transform: translateY(0);
+  .mobile-quick-sheet.is-active {
     pointer-events: auto;
     visibility: visible;
   }
 
-  .mobile-sheet__header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+  .mobile-quick-sheet__backdrop {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0;
+    transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .mobile-sheet__title {
-    font-size: 0.6875rem;
+  .mobile-quick-sheet.is-active .mobile-quick-sheet__backdrop {
+    opacity: 1;
+  }
+
+  .mobile-quick-sheet__container {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 2;
+    background-color: var(--color-background, #FFFFFF);
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.16);
+    padding: 10px 18px max(24px, env(safe-area-inset-bottom, 24px));
+    width: 100%;
+    max-width: 520px;
+    margin: 0 auto;
+    box-sizing: border-box;
+    transform: translateY(105%);
+    transition: transform 340ms cubic-bezier(0.32, 0.72, 0, 1);
+    will-change: transform;
+  }
+
+  .mobile-quick-sheet.is-active .mobile-quick-sheet__container {
+    transform: translateY(0);
+  }
+
+  .mobile-quick-sheet__drag-handle-wrap {
+    display: flex;
+    justify-content: center;
+    padding: 4px 0 10px;
+    cursor: grab;
+  }
+
+  .mobile-quick-sheet__drag-handle {
+    width: 38px;
+    height: 4.5px;
+    background-color: rgba(0, 0, 0, 0.16);
+    border-radius: 999px;
+  }
+
+  .mobile-quick-sheet__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--color-border-subtle, rgba(0, 0, 0, 0.08));
+    margin-bottom: 12px;
+  }
+
+  .mobile-quick-sheet__product {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .mobile-quick-sheet__thumb-wrap {
+    width: 54px;
+    height: 72px;
+    border-radius: 4px;
+    overflow: hidden;
+    background-color: var(--color-surface, #F5F5F5);
+    flex-shrink: 0;
+  }
+
+  .mobile-quick-sheet__thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .mobile-quick-sheet__info {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .mobile-quick-sheet__title {
+    font-size: 0.9375rem;
+    font-weight: 550;
+    letter-spacing: -0.01em;
+    color: var(--color-text, #111111);
+    margin: 0;
+    line-height: 1.25;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  .mobile-quick-sheet__price {
+    font-size: 0.875rem;
     font-weight: 600;
-    letter-spacing: 0.08em;
+    color: var(--color-text, #111111);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .mobile-quick-sheet__spec {
+    font-size: 0.6875rem;
+    color: var(--color-text-subtle, #757575);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  .mobile-quick-sheet__close {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: var(--color-surface, #F5F5F5);
+    border: 1px solid var(--color-border-subtle, rgba(0, 0, 0, 0.08));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text, #111111);
+    cursor: pointer;
+    flex-shrink: 0;
+    padding: 0;
+    touch-action: manipulation;
+    transition: transform 140ms ease, background-color 140ms ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-quick-sheet__close:active {
+    transform: scale(0.92);
+    background-color: var(--color-border, #E5E5E5);
+  }
+
+  .mobile-quick-sheet__label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 10px;
+  }
+
+  .mobile-quick-sheet__label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--color-text, #111111);
   }
 
-  .mobile-sheet__close {
-    background: transparent;
-    border: none;
-    color: var(--color-text-muted, #555555);
-    cursor: pointer;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 44px;
-    min-height: 44px;
-    touch-action: manipulation;
+  .mobile-quick-sheet__hint {
+    font-size: 0.6875rem;
+    color: var(--color-text-subtle, #757575);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
   }
 
-  .mobile-sheet__sizes {
+  .mobile-quick-sheet__sizes {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 6px;
+    gap: 8px;
   }
 
-  .mobile-sheet__form {
+  .mobile-quick-sheet__sizes .product-card__quick-form {
     margin: 0;
-    padding: 0;
   }
 
-  .mobile-sheet__btn {
+  .mobile-quick-sheet__sizes .product-card__size-pill {
     width: 100%;
-    min-height: 44px;
-    background-color: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-none);
-    color: var(--color-text);
-    font-family: var(--font-body);
-    font-size: var(--font-size-micro);
-    font-weight: 500;
-    letter-spacing: var(--tracking-micro);
-    text-transform: uppercase;
+    min-height: 48px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    background-color: var(--color-surface, #F8F8F8);
+    border: 1.5px solid var(--color-border, #E5E5E5);
+    border-radius: 4px;
+    color: var(--color-text, #111111);
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
     transition:
       background-color 140ms var(--ease-out),
       color 140ms var(--ease-out),
-      transform 160ms var(--ease-out);
-    -webkit-tap-highlight-color: transparent;
+      border-color 140ms var(--ease-out),
+      transform 140ms var(--ease-out);
   }
 
-  .mobile-sheet__btn:active:not(:disabled) {
-    transform: scale(0.96);
-    background-color: var(--color-text);
-    color: var(--color-white);
+  .mobile-quick-sheet__sizes .product-card__size-pill:active:not(:disabled) {
+    transform: scale(0.95);
+    background-color: var(--color-text, #111111);
+    color: var(--color-white, #FFFFFF);
+    border-color: var(--color-text, #111111);
   }
 
-  .mobile-sheet__btn--sold-out,
-  .mobile-sheet__btn:disabled {
-    opacity: 0.3;
+  .mobile-quick-sheet__sizes .product-card__size-pill--sold-out,
+  .mobile-quick-sheet__sizes .product-card__size-pill:disabled {
+    opacity: 0.35;
     text-decoration: line-through;
-    cursor: not-allowed;
     background-color: transparent;
+    border-style: dashed;
+    cursor: not-allowed;
   }
 
   /* ==========================================================================
@@ -903,11 +943,8 @@
   }
 
   .product-card__meta-row {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: start;
-    column-gap: var(--space-xs);
-    row-gap: 0.15rem;
+    display: flex;
+    align-items: baseline;
     margin-top: 0.125rem;
   }
 
@@ -967,35 +1004,23 @@
     font-weight: 500;
   }
 
-  .product-card__colors {
-    justify-self: end;
-    align-self: start;
-    margin-top: 0.2rem;
-    color: var(--color-text-subtle);
-    font-family: var(--font-body);
-    font-size: var(--font-size-micro);
-    font-weight: 500;
-    letter-spacing: var(--tracking-micro);
-    line-height: 1;
-    text-transform: uppercase;
-    white-space: nowrap;
-  }
+
 
   @media (prefers-reduced-motion: reduce) {
     .product-card__image,
     .product-card__film,
     .product-card__desktop-action-bar,
-    .product-card__mobile-sheet,
+    .mobile-quick-sheet__container,
+    .mobile-quick-sheet__backdrop,
     .product-card__mobile-quick-btn::before,
-    .product-card__size-pill,
-    .mobile-sheet__btn {
+    .product-card__size-pill {
       transition: none;
     }
   }
 {% endstylesheet %}
 
 <script>
-  // Delegated handler for Mobile Size Sheet & Desktop AJAX Quick-Add
+  // Delegated handler for Mobile Quick-Add Bottom Sheet & Desktop Quick-Add
   if (!window._productCardScriptInitialized) {
     window._productCardScriptInitialized = true;
 
@@ -1050,69 +1075,156 @@
       });
     }
 
-    // Open/Close Mobile Size Sheet
-    document.addEventListener('click', (e) => {
-      const mobileTrigger = e.target.closest('[data-mobile-quick-trigger]');
+    // Helper: Ensure Global Mobile Quick Sheet in DOM
+    var ensureQuickAddSheet = function () {
+      var sheet = document.getElementById('MobileQuickAddSheet');
+      if (!sheet) {
+        sheet = document.createElement('div');
+        sheet.id = 'MobileQuickAddSheet';
+        sheet.className = 'mobile-quick-sheet';
+        sheet.setAttribute('aria-hidden', 'true');
+        sheet.setAttribute('role', 'dialog');
+        sheet.setAttribute('aria-modal', 'true');
+        sheet.setAttribute('inert', '');
+        sheet.innerHTML = [
+          '<div class="mobile-quick-sheet__backdrop" data-quick-sheet-close></div>',
+          '<div class="mobile-quick-sheet__container" role="document">',
+          '  <div class="mobile-quick-sheet__drag-handle-wrap" data-quick-sheet-close>',
+          '    <div class="mobile-quick-sheet__drag-handle"></div>',
+          '  </div>',
+          '  <div class="mobile-quick-sheet__header">',
+          '    <div class="mobile-quick-sheet__product">',
+          '      <div class="mobile-quick-sheet__thumb-wrap">',
+          '        <img class="mobile-quick-sheet__thumb" src="" alt="" width="54" height="72" loading="lazy">',
+          '      </div>',
+          '      <div class="mobile-quick-sheet__info">',
+          '        <h4 class="mobile-quick-sheet__title"></h4>',
+          '        <div class="mobile-quick-sheet__price"></div>',
+          '        <div class="mobile-quick-sheet__spec text-micro"></div>',
+          '      </div>',
+          '    </div>',
+          '    <button type="button" class="mobile-quick-sheet__close" data-quick-sheet-close aria-label="Close size sheet">',
+          '      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">',
+          '        <path d="M1 1L11 11M1 11L11 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>',
+          '      </svg>',
+          '    </button>',
+          '  </div>',
+          '  <div class="mobile-quick-sheet__body">',
+          '    <div class="mobile-quick-sheet__label-row">',
+          '      <span class="mobile-quick-sheet__label text-micro">Select Size</span>',
+          '      <span class="mobile-quick-sheet__hint text-micro">Instant Add</span>',
+          '    </div>',
+          '    <div class="mobile-quick-sheet__sizes" data-quick-sheet-sizes></div>',
+          '  </div>',
+          '</div>'
+        ].join('\n');
+        document.body.appendChild(sheet);
+      }
+      return sheet;
+    };
+
+    var closeQuickSheet = function () {
+      var sheet = document.getElementById('MobileQuickAddSheet');
+      if (sheet && sheet.classList.contains('is-active')) {
+        sheet.classList.remove('is-active');
+        sheet.setAttribute('aria-hidden', 'true');
+        sheet.setAttribute('inert', '');
+        document.body.style.overflow = '';
+      }
+    };
+
+    // Open/Close Mobile Quick Add Bottom Sheet
+    document.addEventListener('click', function (e) {
+      var mobileTrigger = e.target.closest('[data-mobile-quick-trigger]');
       if (mobileTrigger) {
         e.preventDefault();
         e.stopPropagation();
-        const card = mobileTrigger.closest('[data-product-card]');
+        var card = mobileTrigger.closest('[data-product-card]');
         if (!card) return;
-        const sheet = card.querySelector('[data-mobile-sheet]');
-        if (sheet) {
-          document.querySelectorAll('[data-mobile-sheet].is-active').forEach(s => {
-            if (s !== sheet) s.classList.remove('is-active');
-          });
-          sheet.classList.toggle('is-active');
-          sheet.setAttribute('aria-hidden', !sheet.classList.contains('is-active'));
+
+        var sheet = ensureQuickAddSheet();
+        if (!sheet) return;
+
+        // Extract product card metadata
+        var titleEl = card.querySelector('.product-card__title-link') || card.querySelector('.product-card__title');
+        var title = titleEl ? titleEl.textContent.trim() : '';
+
+        var priceEl = card.querySelector('.product-card__price');
+        var priceHTML = priceEl ? priceEl.innerHTML : '';
+
+        var imgEl = card.querySelector('.product-card__image');
+        var imgSrc = imgEl ? (imgEl.currentSrc || imgEl.src) : '';
+
+        var specEl = card.querySelector('.product-card__spec');
+        var specText = specEl ? specEl.textContent.trim() : '';
+
+        // Inject into sheet
+        var sheetTitle = sheet.querySelector('.mobile-quick-sheet__title');
+        if (sheetTitle) sheetTitle.textContent = title;
+
+        var sheetPrice = sheet.querySelector('.mobile-quick-sheet__price');
+        if (sheetPrice && priceHTML) sheetPrice.innerHTML = priceHTML;
+
+        var sheetThumb = sheet.querySelector('.mobile-quick-sheet__thumb');
+        if (sheetThumb && imgSrc) {
+          sheetThumb.src = imgSrc;
+          sheetThumb.alt = title;
         }
+
+        var sheetSpec = sheet.querySelector('.mobile-quick-sheet__spec');
+        if (sheetSpec) {
+          sheetSpec.textContent = specText;
+          sheetSpec.style.display = specText ? 'block' : 'none';
+        }
+
+        var sizeFormsContainer = card.querySelector('.product-card__quick-size-pills');
+        var sizesTarget = sheet.querySelector('[data-quick-sheet-sizes]');
+        if (sizesTarget && sizeFormsContainer) {
+          sizesTarget.innerHTML = sizeFormsContainer.innerHTML;
+        }
+
+        // Reveal sheet
+        sheet.classList.add('is-active');
+        sheet.removeAttribute('inert');
+        sheet.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
         return;
       }
 
-      const closeBtn = e.target.closest('[data-sheet-close]');
-      if (closeBtn) {
+      if (e.target.closest('[data-quick-sheet-close]')) {
         e.preventDefault();
-        const sheet = closeBtn.closest('[data-mobile-sheet]');
-        if (sheet) {
-          sheet.classList.remove('is-active');
-          sheet.setAttribute('aria-hidden', 'true');
-        }
+        closeQuickSheet();
         return;
       }
 
-      // Outside click closes any open mobile sheet
-      if (!e.target.closest('[data-mobile-sheet]')) {
-        document.querySelectorAll('[data-mobile-sheet].is-active').forEach(s => {
-          s.classList.remove('is-active');
-          s.setAttribute('aria-hidden', 'true');
-        });
+      if (e.target.classList && e.target.classList.contains('mobile-quick-sheet__backdrop')) {
+        e.preventDefault();
+        closeQuickSheet();
+        return;
       }
     });
 
     // Close on Escape key
-    document.addEventListener('keydown', (e) => {
+    document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') {
-        document.querySelectorAll('[data-mobile-sheet].is-active').forEach(s => {
-          s.classList.remove('is-active');
-          s.setAttribute('aria-hidden', 'true');
-        });
+        closeQuickSheet();
       }
     });
 
     // Instant AJAX Add to Cart Submission with tactile feedback
-    document.addEventListener('submit', (e) => {
-      const form = e.target.closest('.product-card__quick-form, .mobile-sheet__form');
+    document.addEventListener('submit', function (e) {
+      var form = e.target.closest('.product-card__quick-form');
       if (!form) return;
 
       e.preventDefault();
-      const btn = form.querySelector('button[type="submit"]');
+      var btn = form.querySelector('button[type="submit"]');
       if (!btn || btn.disabled) return;
 
-      const originalText = btn.textContent;
+      var originalText = btn.textContent;
       btn.textContent = '...';
       btn.disabled = true;
 
-      const formData = new FormData(form);
+      var formData = new FormData(form);
 
       fetch('{{ routes.cart_add_url }}.js', {
         method: 'POST',
@@ -1121,38 +1233,36 @@
         },
         body: formData
       })
-      .then(res => {
+      .then(function (res) {
         if (!res.ok) throw new Error('Add to cart failed');
         return res.json();
       })
-      .then(item => {
+      .then(function (item) {
         btn.textContent = '✓';
         btn.style.backgroundColor = 'var(--color-text, #111111)';
         btn.style.color = '#FFFFFF';
+        btn.style.borderColor = 'var(--color-text, #111111)';
 
-        setTimeout(() => {
+        setTimeout(function () {
           btn.textContent = originalText;
           btn.disabled = false;
           btn.style.backgroundColor = '';
           btn.style.color = '';
+          btn.style.borderColor = '';
 
           // Close mobile sheet if open
-          const sheet = form.closest('[data-mobile-sheet]');
-          if (sheet) {
-            sheet.classList.remove('is-active');
-            sheet.setAttribute('aria-hidden', 'true');
-          }
+          closeQuickSheet();
 
           // Trigger Cart Drawer update & slide-out
           window.dispatchEvent(new CustomEvent('cart:refresh'));
           window.dispatchEvent(new CustomEvent('cart:open'));
         }, 320);
       })
-      .catch(err => {
+      .catch(function (err) {
         console.error('Quick add failed:', err);
         btn.textContent = originalText;
         btn.disabled = false;
-        form.submit(); // fallback to standard submission
+        form.submit();
       });
     });
   }
