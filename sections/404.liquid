@@ -18,6 +18,7 @@
     <!-- Search Bar -->
     <form action="{{ routes.search_url }}" method="get" role="search" class="error-page__search-form">
       <div class="error-page__search-wrap">
+        <label for="ErrorPageSearchInput" class="visually-hidden">Search store</label>
         <svg class="error-page__search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <circle cx="11" cy="11" r="7.5"></circle>
           <line x1="21" y1="21" x2="16.5" y2="16.5"></line>
@@ -25,9 +26,11 @@
         <input
           type="search"
           name="q"
+          id="ErrorPageSearchInput"
           placeholder="Search our store..."
           class="error-page__search-input"
           autocomplete="off"
+          aria-label="Search store products"
         >
         <button type="submit" class="error-page__search-submit">Search</button>
       </div>
@@ -112,42 +115,86 @@
 
   .error-page__search-wrap {
     display: flex;
-    align-items: center;
-    border: 1px solid var(--color-border-strong);
-    background: var(--color-background);
+    align-items: stretch;
+    height: 52px;
+    border: 1px solid var(--color-border-strong, #111111);
+    background: var(--color-background, #FFFFFF);
     overflow: hidden;
+    transition: border-color var(--transition-fast);
+  }
+
+  .error-page__search-wrap:focus-within {
+    border-color: var(--color-text, #111111);
   }
 
   .error-page__search-icon {
     flex-shrink: 0;
-    margin-left: 0.85rem;
+    align-self: center;
+    margin-left: 1.15rem;
     color: var(--color-text-muted);
   }
 
   .error-page__search-input {
-    flex: 1;
+    flex: 1 1 0%;
+    min-width: 0;
+    height: 100%;
     border: none !important;
     outline: none !important;
     box-shadow: none !important;
-    padding: 0.75rem;
+    padding: 0 1rem;
     font-size: 16px;
-    background: transparent;
-    color: var(--color-text);
+    font-family: var(--font-body, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+    background: transparent !important;
+    color: var(--color-text, #111111);
     -webkit-appearance: none;
     appearance: none;
   }
 
+  .error-page__search-input::-webkit-search-decoration,
+  .error-page__search-input::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    display: none;
+  }
+
   .error-page__search-submit {
     flex-shrink: 0;
-    background: var(--color-text);
-    color: var(--color-white);
-    border: none;
-    padding: 0.75rem 1.25rem;
-    font-size: var(--font-size-micro);
+    height: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-text, #111111);
+    color: var(--color-white, #FFFFFF);
+    border: none !important;
+    border-radius: 0;
+    padding: 0 1.5rem;
+    margin: 0;
+    font-family: var(--font-body, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+    font-size: var(--font-size-micro, 11px);
     font-weight: 600;
-    letter-spacing: var(--tracking-micro);
+    letter-spacing: var(--tracking-micro, 0.08em);
     text-transform: uppercase;
+    white-space: nowrap;
     cursor: pointer;
+    transition: background-color var(--transition-fast);
+  }
+
+  .error-page__search-submit:hover {
+    background-color: #333333;
+  }
+
+  @media (max-width: 480px) {
+    .error-page__search-wrap {
+      height: 48px;
+    }
+    .error-page__search-icon {
+      margin-left: 0.85rem;
+    }
+    .error-page__search-input {
+      padding: 0 0.65rem;
+    }
+    .error-page__search-submit {
+      padding: 0 1.15rem;
+    }
   }
 
   /* Actions */

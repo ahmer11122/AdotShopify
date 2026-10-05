@@ -15,6 +15,7 @@
 
       <form action="{{ routes.search_url }}" method="get" role="search" class="search-page__form">
         <div class="search-page__input-bar">
+          <label for="SearchPageInput" class="visually-hidden">Search products</label>
           <svg class="search-page__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <circle cx="11" cy="11" r="7.5"></circle>
             <line x1="21" y1="21" x2="16.5" y2="16.5"></line>
@@ -29,6 +30,7 @@
             autocomplete="off"
             autocorrect="off"
             autocapitalize="none"
+            aria-label="Search store products"
           >
           {% if search.terms != blank %}
             <a href="{{ routes.search_url }}" class="search-page__clear" aria-label="Clear search">
@@ -210,43 +212,56 @@
 
   .search-page__input-bar {
     display: flex;
-    align-items: center;
-    border: 1px solid var(--color-border-strong);
-    background: var(--color-background);
+    align-items: stretch;
+    height: 52px;
+    border: 1px solid var(--color-border-strong, #111111);
+    background: var(--color-background, #FFFFFF);
     position: relative;
+    overflow: hidden;
     transition: border-color var(--transition-fast);
   }
 
   .search-page__input-bar:focus-within {
-    border-color: var(--color-text);
+    border-color: var(--color-text, #111111);
   }
 
   .search-page__icon {
     flex-shrink: 0;
-    margin-left: 1rem;
+    align-self: center;
+    margin-left: 1.25rem;
     color: var(--color-text-muted);
   }
 
   .search-page__input {
-    flex: 1;
+    flex: 1 1 0%;
+    min-width: 0;
+    height: 100%;
     border: none !important;
     outline: none !important;
     box-shadow: none !important;
-    padding: 0.95rem 0.75rem;
+    padding: 0 1rem;
     font-size: 16px;
-    background: transparent;
-    color: var(--color-text);
+    font-family: var(--font-body, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+    background: transparent !important;
+    color: var(--color-text, #111111);
     -webkit-appearance: none;
     appearance: none;
   }
 
+  .search-page__input::-webkit-search-decoration,
+  .search-page__input::-webkit-search-cancel-button,
+  .search-page__input::-webkit-search-results-button,
+  .search-page__input::-webkit-search-results-decoration {
+    -webkit-appearance: none;
+    display: none;
+  }
+
   .search-page__clear {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
-    margin-right: 0.5rem;
+    width: 44px;
+    height: 100%;
     color: var(--color-text-muted);
     text-decoration: none;
     transition: color var(--transition-fast);
@@ -258,22 +273,43 @@
 
   .search-page__submit {
     flex-shrink: 0;
-    background: var(--color-text);
-    color: var(--color-white);
-    border: none;
-    padding: 0.95rem 1.75rem;
-    font-family: var(--font-body);
-    font-size: var(--font-size-micro);
+    height: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-text, #111111);
+    color: var(--color-white, #FFFFFF);
+    border: none !important;
+    border-radius: 0;
+    padding: 0 1.75rem;
+    margin: 0;
+    font-family: var(--font-body, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+    font-size: var(--font-size-micro, 11px);
     font-weight: 600;
-    letter-spacing: var(--tracking-micro);
+    letter-spacing: var(--tracking-micro, 0.08em);
     text-transform: uppercase;
+    white-space: nowrap;
     cursor: pointer;
-    transition: background-color var(--transition-fast);
-    min-height: 48px;
+    transition: background-color var(--transition-fast), color var(--transition-fast);
   }
 
   .search-page__submit:hover {
     background-color: #333333;
+  }
+
+  @media (max-width: 480px) {
+    .search-page__input-bar {
+      height: 48px;
+    }
+    .search-page__icon {
+      margin-left: 0.85rem;
+    }
+    .search-page__input {
+      padding: 0 0.65rem;
+    }
+    .search-page__submit {
+      padding: 0 1.15rem;
+    }
   }
 
   /* Tags */
