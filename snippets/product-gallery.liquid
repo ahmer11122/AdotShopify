@@ -1,130 +1,310 @@
 {% doc %}
-  Product Gallery Component
-  - Mobile: Pure CSS scroll-snap horizontal carousel with slide counter
-  - Desktop: Monolithic vertical stack with 3:4 aspect ratio
-  - Performance: First image eager/high-priority, rest lazy-loaded
-  - Variant Synchronization: Smoothly scrolls to variant's featured media
+  Product Gallery (editorial)
+  - Desktop: hero image full width, then two-up rows. Each frame unveils and drifts on scroll
+    (CSS scroll-driven animation, progressive enhancement).
+  - Mobile: native scroll-snap carousel, segmented progress, 4:5 frames so the title and price
+    stay in the first screen.
+  - Live index (01 / 05) so the buyer always knows where they are in the set.
+  - Tap or click opens a full-screen viewer. The frame morphs into the viewer with a view
+    transition; on desktop the viewer zooms 2x and pans with the pointer.
+  - Card -> PDP: the first frame receives the shared `pdp-hero` transition name on arrival.
+  - Variant sync: selecting a size with its own media scrolls to that media.
 
   @param {product} product - The product object
 {% enddoc %}
 
-<product-gallery class="product-gallery" data-product-gallery>
-  {% assign total_slides = product.images.size %}
+{%- liquid
+  assign total_slides = product.images.size
+  assign view_label = product.title | escape
+-%}
 
-  <!-- Mobile Counter / Badge -->
-  {% if total_slides > 1 %}
-    <div class="product-gallery__counter text-micro" aria-hidden="true">
-      <span data-gallery-current>1</span> / <span>{{ total_slides }}</span>
-    </div>
-  {% endif %}
-
-  <!-- Gallery View (Mobile Scroll-Snap & Desktop Vertical Stack) -->
-  <div class="product-gallery__track" data-gallery-track>
-    {% if product.images.size > 0 %}
-      {% for image in product.images %}
-        {% assign loading_val = 'lazy' %}
-        {% assign priority_val = 'auto' %}
-        {% if forloop.first %}
-          {% assign loading_val = 'eager' %}
-          {% assign priority_val = 'high' %}
-        {% endif %}
-        <div
-          class="product-gallery__item"
-          data-media-id="{{ image.id }}"
-          data-index="{{ forloop.index }}"
-        >
-          <div class="product-gallery__media aspect-3-4">
-            {{
-              image
-              | image_url: width: 1400
-              | image_tag:
-                loading: loading_val,
-                fetchpriority: priority_val,
-                widths: '600, 800, 1000, 1200, 1400',
-                sizes: '(min-width: 990px) 55vw, 100vw',
-                alt: image.alt,
-                class: 'product-gallery__image'
-            }}
-          </div>
-        </div>
-      {% endfor %}
-    {% else %}
-      <!-- Fallback Placeholder -->
-      <div class="product-gallery__item product-gallery__item--placeholder">
-        <div class="product-gallery__media aspect-3-4 product-gallery__placeholder">
-          {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
-        </div>
+<product-gallery class="product-gallery" data-product-gallery data-total="{{ total_slides }}">
+  {%- if total_slides > 1 -%}
+    <div class="product-gallery__hud" aria-hidden="true">
+      <div class="product-gallery__hud-inner">
+        <span class="product-gallery__count">
+          <span data-gallery-current>01</span><span class="product-gallery__count-sep"></span><span>{{ total_slides | prepend: '00' | slice: -2, 2 }}</span>
+        </span>
+        <span class="product-gallery__meter"><span class="product-gallery__meter-fill" data-gallery-meter></span></span>
+        <span class="product-gallery__segments">
+          {%- for image in product.images -%}
+            <span class="product-gallery__segment{% if forloop.first %} is-on{% endif %}" data-gallery-segment></span>
+          {%- endfor -%}
+        </span>
       </div>
-    {% endif %}
+    </div>
+  {%- endif -%}
+
+  <div class="product-gallery__track" data-gallery-track>
+    {%- if total_slides > 0 -%}
+      {%- for image in product.images -%}
+        {%- liquid
+          assign loading_val = 'lazy'
+          assign priority_val = 'auto'
+          if forloop.first
+            assign loading_val = 'eager'
+            assign priority_val = 'high'
+          endif
+          assign frame_alt = image.alt | default: view_label
+        -%}
+        <div class="product-gallery__item" data-media-id="{{ image.id }}" data-index="{{ forloop.index }}">
+          <button
+            type="button"
+            class="product-gallery__open"
+            data-gallery-open
+            aria-label="Open image {{ forloop.index }} of {{ total_slides }} full screen"
+            aria-haspopup="dialog"
+          >
+            <span class="product-gallery__media">
+              {{
+                image
+                | image_url: width: 1400
+                | image_tag:
+                  loading: loading_val,
+                  fetchpriority: priority_val,
+                  widths: '600, 800, 1000, 1200, 1400',
+                  sizes: '(min-width: 990px) 55vw, 100vw',
+                  alt: frame_alt,
+                  class: 'product-gallery__image'
+              }}
+            </span>
+          </button>
+        </div>
+      {%- endfor -%}
+    {%- else -%}
+      <div class="product-gallery__item product-gallery__item--placeholder">
+        <span class="product-gallery__media product-gallery__placeholder">
+          {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+        </span>
+      </div>
+    {%- endif -%}
   </div>
 
+  {%- if total_slides > 0 -%}
+    <dialog class="pdp-viewer" data-viewer aria-label="{{ view_label }} images">
+      <div class="pdp-viewer__bar">
+        <span class="pdp-viewer__count" data-viewer-count aria-live="polite">01 / {{ total_slides | prepend: '00' | slice: -2, 2 }}</span>
+        <button type="button" class="pdp-viewer__close" data-viewer-close>
+          <span>Close</span>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M1.5 1.5l11 11M12.5 1.5l-11 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="pdp-viewer__track" data-viewer-track>
+        {%- for image in product.images -%}
+          <div class="pdp-viewer__slide" data-viewer-slide data-index="{{ forloop.index }}">
+            <img
+              class="pdp-viewer__img"
+              alt="{{ image.alt | default: view_label | escape }}"
+              width="{{ image.width }}"
+              height="{{ image.height }}"
+              data-hi="{{ image | image_url: width: 2000 }}"
+              decoding="async"
+            >
+          </div>
+        {%- endfor -%}
+      </div>
+
+      {%- if total_slides > 1 -%}
+        <button type="button" class="pdp-viewer__nav pdp-viewer__nav--prev" data-viewer-prev aria-label="Previous image">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+            <path d="M11 3L5 9l6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <button type="button" class="pdp-viewer__nav pdp-viewer__nav--next" data-viewer-next aria-label="Next image">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+            <path d="M7 3l6 6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      {%- endif -%}
+    </dialog>
+  {%- endif -%}
 </product-gallery>
+
+<script>
+  /* Card -> PDP shared element. Must be registered synchronously, before first render. */
+  window.addEventListener('pagereveal', function (event) {
+    if (!event.viewTransition) return;
+    var arrived = false;
+    try {
+      arrived = sessionStorage.getItem('adot-pdp-vt') === '1';
+      sessionStorage.removeItem('adot-pdp-vt');
+    } catch (err) {}
+    if (!arrived) return;
+    var hero = document.querySelector('.product-gallery__item:first-child .product-gallery__media');
+    if (!hero) return;
+    hero.style.viewTransitionName = 'pdp-hero';
+    document.documentElement.setAttribute('data-pdp-vt', '');
+    event.viewTransition.finished.then(function () {
+      hero.style.viewTransitionName = '';
+    });
+  });
+</script>
 
 <style>
   .product-gallery {
     position: relative;
-    width: 100%;
     display: block;
+    width: 100%;
   }
 
-  /* Aspect Ratio Utility */
-  .aspect-3-4 {
-    aspect-ratio: 3 / 4;
+  /* ------------------------------------------------------------------ frames */
+  .product-gallery__item {
     position: relative;
+    min-width: 0;
+  }
+
+  .product-gallery__open {
+    display: block;
     width: 100%;
-    overflow: hidden;
-    background-color: var(--color-surface, #F5F5F5);
+    padding: 0;
+    margin: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    cursor: zoom-in;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .product-gallery__media {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    background-color: var(--color-surface, #f5f5f5);
+  }
+
+  /* Image outline: 1px, pure black at 10%, never a tinted neutral */
+  .product-gallery__media::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    outline: 1px solid oklch(0 0 0 / 0.1);
+    outline-offset: -1px;
+    pointer-events: none;
+  }
+
+  .product-gallery__image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  .product-gallery__placeholder {
     display: flex;
     align-items: center;
     justify-content: center;
   }
 
-  .product-gallery__image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-    display: block;
-    transition: transform var(--transition-base, 250ms cubic-bezier(0.16, 1, 0.3, 1));
+  .product-gallery__placeholder svg {
+    width: 40%;
+    height: 40%;
+    opacity: 0.3;
   }
 
-  /* Desktop Presentation: Vertical Monolithic Stack */
+  /* --------------------------------------------------------------------- HUD */
+  .product-gallery__hud {
+    z-index: 4;
+    pointer-events: none;
+    color: #fff;
+    mix-blend-mode: difference; /* reads on white paper and on dark garments */
+  }
+
+  .product-gallery__hud-inner {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+
+  .product-gallery__count {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .product-gallery__count-sep {
+    width: 1rem;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.6;
+  }
+
+  .product-gallery__meter,
+  .product-gallery__segments {
+    display: none;
+  }
+
+  /* ---------------------------------------------------------- Desktop layout */
   @media (min-width: 990px) {
     .product-gallery__track {
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-xs, 0.5rem);
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.5rem;
     }
 
-    .product-gallery__item {
+    .product-gallery__item:first-child,
+    .product-gallery__item:last-child:nth-child(even) {
+      grid-column: 1 / -1;
+    }
+
+    .product-gallery__item:not(:first-child) .product-gallery__media {
+      aspect-ratio: 3 / 4;
+    }
+
+    /* Sticky index sits on the bottom edge of the viewport while the set scrolls */
+    .product-gallery__hud {
+      position: sticky;
+      top: calc(100dvh - 3.5rem);
+      height: 0;
+    }
+
+    .product-gallery__hud-inner {
+      position: absolute;
+      left: 1.5rem;
+      bottom: 0;
+    }
+
+    .product-gallery__meter {
+      display: block;
+      width: 4.5rem;
+      height: 1px;
+      background: rgb(255 255 255 / 0.35);
+      overflow: hidden;
+    }
+
+    .product-gallery__meter-fill {
+      display: block;
       width: 100%;
-    }
-
-    .product-gallery__item:hover .product-gallery__image {
-      transform: scale(1.02);
-    }
-
-    .product-gallery__counter,
-    .product-gallery__dots {
-      display: none !important;
+      height: 100%;
+      background: currentColor;
+      transform: scaleX(0.2);
+      transform-origin: left center;
+      transition: transform 500ms var(--ease-out);
     }
   }
 
-  /* Mobile Presentation: Smooth Pure CSS Scroll-Snap */
+  /* ----------------------------------------------------------- Mobile layout */
   @media (max-width: 989px) {
     .product-gallery__track {
       display: flex;
       overflow-x: auto;
+      overscroll-behavior-x: contain;
       scroll-snap-type: x mandatory;
       scrollbar-width: none;
-      -webkit-overflow-scrolling: touch;
-      margin-left: calc(-1 * var(--page-margin, 1rem));
-      margin-right: calc(-1 * var(--page-margin, 1rem));
-      padding: 0;
-      touch-action: pan-y;
+      margin-inline: calc(-1 * var(--page-margin, 1rem));
+      touch-action: pan-x pan-y;
     }
 
     .product-gallery__track::-webkit-scrollbar {
@@ -133,120 +313,608 @@
 
     .product-gallery__item {
       flex: 0 0 100%;
-      min-width: 100%;
       scroll-snap-align: start;
       scroll-snap-stop: always;
     }
 
-    /* Counter Badge: Apple Frosted Glass */
-    .product-gallery__counter {
+    .product-gallery__hud {
       position: absolute;
-      top: 1rem;
-      right: 1rem;
-      z-index: 5;
-      background: rgba(255, 255, 255, 0.82);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(0, 0, 0, 0.08);
-      color: #111111;
-      padding: 0.25rem 0.65rem;
-      font-family: var(--font-body);
-      font-size: 0.6875rem;
-      font-weight: 600;
-      font-variant-numeric: tabular-nums;
-      letter-spacing: 0.08em;
-      border-radius: 9999px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-      pointer-events: none;
+      left: 0;
+      right: 0;
+      bottom: 1rem;
+    }
+
+    .product-gallery__hud-inner {
+      width: 100%;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .product-gallery__segments {
+      display: flex;
+      flex: 1;
+      gap: 3px;
+      max-width: 9rem;
+      margin-inline-start: auto;
+    }
+
+    .product-gallery__segment {
+      position: relative;
+      flex: 1;
+      height: 2px;
+      background: rgb(255 255 255 / 0.35);
+      overflow: hidden;
+    }
+
+    .product-gallery__segment::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: currentColor;
+      transform: scaleX(0);
+      transform-origin: left center;
+      transition: transform 360ms var(--ease-out);
+    }
+
+    .product-gallery__segment.is-on::after {
+      transform: scaleX(1);
     }
   }
 
-  /* Placeholder Styling */
-  .product-gallery__placeholder {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: var(--color-surface);
+  /* ------------------------------------------------------------------ Motion */
+  @media (prefers-reduced-motion: no-preference) {
+    /* Hero: unveils bottom-up once, on arrival. Skipped when the shared-element morph runs. */
+    .product-gallery__item:first-child .product-gallery__media {
+      animation: pdp-unveil 1000ms var(--ease-in-out) both;
+    }
+
+    [data-pdp-vt] .product-gallery__item:first-child .product-gallery__media {
+      animation: none;
+    }
+
+    @media (max-width: 989px) {
+      .product-gallery__item:first-child .product-gallery__image {
+        animation: pdp-settle 1100ms var(--ease-out) both;
+      }
+
+      [data-pdp-vt] .product-gallery__item:first-child .product-gallery__image {
+        animation: none;
+      }
+    }
+
+    @supports (animation-timeline: view()) {
+      @media (min-width: 990px) {
+        .product-gallery__item:not(:first-child) .product-gallery__media {
+          animation: pdp-unveil linear both;
+          animation-timeline: view();
+          animation-range: entry 0% entry 60%;
+        }
+
+        .product-gallery__image {
+          animation: pdp-drift linear both;
+          animation-timeline: view();
+        }
+      }
+    }
   }
 
-  .product-gallery__placeholder svg {
-    width: 40%;
-    height: 40%;
-    opacity: 0.3;
+  @keyframes pdp-unveil {
+    from {
+      clip-path: inset(100% 0 0 0);
+    }
+    to {
+      clip-path: inset(0 0 0 0);
+    }
+  }
+
+  @keyframes pdp-settle {
+    from {
+      transform: scale(1.08);
+    }
+    to {
+      transform: scale(1);
+    }
+  }
+
+  @keyframes pdp-drift {
+    from {
+      transform: translateY(-3.5%) scale(1.08);
+    }
+    to {
+      transform: translateY(3.5%) scale(1.08);
+    }
+  }
+
+  /* ------------------------------------------------------------------ Viewer */
+  .pdp-viewer {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: var(--color-background, #fff);
+    color: var(--color-text, #111);
+    overflow: hidden;
+    opacity: 0;
+    transition:
+      opacity 220ms var(--ease-out),
+      display 220ms allow-discrete,
+      overlay 220ms allow-discrete;
+  }
+
+  .pdp-viewer[open] {
+    opacity: 1;
+  }
+
+  @starting-style {
+    .pdp-viewer[open]:not([data-vt]) {
+      opacity: 0;
+    }
+  }
+
+  .pdp-viewer[data-vt] {
+    transition: none;
+  }
+
+  .pdp-viewer::backdrop {
+    background: transparent;
+  }
+
+  html:has(.pdp-viewer[open]) {
+    overflow: hidden;
+  }
+
+  .pdp-viewer__bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: max(0.5rem, env(safe-area-inset-top, 0px)) 0.5rem 0.5rem 1.25rem;
+    pointer-events: none;
+  }
+
+  .pdp-viewer__count {
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pdp-viewer__close {
+    pointer-events: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    padding: 0 0.875rem;
+    border: 0;
+    background: none;
+    color: inherit;
+    font-family: var(--font-body);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 160ms var(--ease-out), opacity 160ms var(--ease-out);
+  }
+
+  .pdp-viewer__close:active {
+    transform: scale(0.96);
+  }
+
+  .pdp-viewer__track {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    overflow-x: auto;
+    overscroll-behavior: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .pdp-viewer__track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .pdp-viewer__slide {
+    flex: 0 0 100%;
+    height: 100%;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    padding: 3.5rem 0 max(1rem, env(safe-area-inset-bottom, 0px));
+    overflow: hidden;
+    display: flex;
+  }
+
+  .pdp-viewer__img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    user-select: none;
+    -webkit-user-drag: none;
+    will-change: transform;
+  }
+
+  .pdp-viewer__nav {
+    position: absolute;
+    top: 50%;
+    z-index: 3;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    margin-top: -24px;
+    border: 0;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+    transition: transform 160ms var(--ease-out), opacity 160ms var(--ease-out);
+  }
+
+  .pdp-viewer__nav--prev {
+    left: 1rem;
+  }
+
+  .pdp-viewer__nav--next {
+    right: 1rem;
+  }
+
+  .pdp-viewer__nav:active {
+    transform: scale(0.96);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .pdp-viewer__nav {
+      display: inline-flex;
+    }
+
+    .pdp-viewer__slide {
+      padding-inline: 6rem;
+      cursor: zoom-in;
+    }
+
+    .pdp-viewer__slide.is-zoomed {
+      cursor: zoom-out;
+    }
+
+    .pdp-viewer__close:hover,
+    .pdp-viewer__nav:hover {
+      opacity: 0.6;
+    }
+  }
+
+  ::view-transition-group(pdp-viewer-img) {
+    animation-duration: 480ms;
+    animation-timing-function: var(--ease-in-out);
+  }
+
+  ::view-transition-old(pdp-viewer-img),
+  ::view-transition-new(pdp-viewer-img) {
+    height: 100%;
+    object-fit: cover;
+    overflow: clip;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .product-gallery__meter-fill,
+    .product-gallery__segment::after {
+      transition: none;
+    }
+
+    .pdp-viewer {
+      transition-duration: 0.01ms;
+    }
   }
 </style>
 
 <script>
-  (function() {
+  (function () {
     class ProductGallery extends HTMLElement {
       connectedCallback() {
-        this.track = this.querySelector('[data-gallery-track]');
-        this.counter = this.querySelector('[data-gallery-current]');
-        this.dots = this.querySelectorAll('.product-gallery__dot');
-        this.items = this.querySelectorAll('.product-gallery__item');
+        if (this._ready) return;
+        this._ready = true;
 
-        if (this.track && this.items.length > 1) {
-          this.initScrollObserver();
-          this.initDotClicks();
+        this.track = this.querySelector('[data-gallery-track]');
+        this.items = [...this.querySelectorAll('.product-gallery__item')];
+        this.counter = this.querySelector('[data-gallery-current]');
+        this.meter = this.querySelector('[data-gallery-meter]');
+        this.segments = [...this.querySelectorAll('[data-gallery-segment]')];
+        this.total = this.items.length;
+        this.index = 0;
+
+        this.viewer = this.querySelector('[data-viewer]');
+        this.viewerTrack = this.querySelector('[data-viewer-track]');
+        this.slides = [...this.querySelectorAll('[data-viewer-slide]')];
+        this.viewerCount = this.querySelector('[data-viewer-count]');
+        this.viewerIndex = 0;
+
+        this.desktop = window.matchMedia('(min-width: 990px)');
+        this.reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+        this.finePointer = window.matchMedia('(hover: hover) and (pointer: fine)');
+
+        this.measure = this.measure.bind(this);
+        this.queueMeasure = () => {
+          if (!this._raf) this._raf = requestAnimationFrame(() => { this._raf = 0; this.measure(); });
+        };
+
+        if (this.total > 1) {
+          window.addEventListener('scroll', this.queueMeasure, { passive: true });
+          window.addEventListener('resize', this.queueMeasure, { passive: true });
+          this.track.addEventListener('scroll', this.queueMeasure, { passive: true });
+          this.measure();
         }
 
-        // Listen for variant change to jump to matching media
-        window.addEventListener('variant:change', (e) => this.onVariantChange(e));
+        this.items.forEach((item, i) => {
+          const opener = item.querySelector('[data-gallery-open]');
+          if (opener) opener.addEventListener('click', () => this.openViewer(i));
+        });
+
+        if (this.viewer) this.initViewer();
+
+        this._onVariant = (e) => this.onVariantChange(e);
+        window.addEventListener('variant:change', this._onVariant);
       }
 
-      initScrollObserver() {
-        if (!('IntersectionObserver' in window)) return;
-
-        const observer = new IntersectionObserver(
-          (entries) => {
-            entries.forEach((entry) => {
-              if (entry.isIntersecting) {
-                const idx = entry.target.dataset.index;
-                if (this.counter) this.counter.textContent = idx;
-                this.dots.forEach((dot) => {
-                  dot.classList.toggle('is-active', dot.dataset.dotIndex === idx);
-                });
-              }
-            });
-          },
-          { root: this.track, threshold: 0.55 }
-        );
-
-        this.items.forEach((item) => observer.observe(item));
+      disconnectedCallback() {
+        window.removeEventListener('variant:change', this._onVariant);
+        window.removeEventListener('scroll', this.queueMeasure);
+        window.removeEventListener('resize', this.queueMeasure);
       }
 
-      initDotClicks() {
-        this.dots.forEach((dot) => {
-          dot.addEventListener('click', () => {
-            const idx = parseInt(dot.dataset.dotIndex, 10) - 1;
-            const targetItem = this.items[idx];
-            if (targetItem && this.track) {
-              this.track.scrollTo({
-                left: targetItem.offsetLeft,
-                behavior: 'smooth'
-              });
+      pad(n) {
+        return String(n).padStart(2, '0');
+      }
+
+      /* ---------------------------------------------------------------- index */
+      measure() {
+        let best = 0;
+        if (this.desktop.matches) {
+          const mid = window.innerHeight / 2;
+          let bestDist = Infinity;
+          this.items.forEach((item, k) => {
+            const r = item.getBoundingClientRect();
+            const d = mid >= r.top && mid <= r.bottom ? 0 : Math.min(Math.abs(r.top - mid), Math.abs(r.bottom - mid));
+            if (d < bestDist) { bestDist = d; best = k; }
+          });
+        } else {
+          const w = this.track.clientWidth || 1;
+          best = Math.max(0, Math.min(this.total - 1, Math.round(this.track.scrollLeft / w)));
+        }
+        this.setIndex(best);
+      }
+
+      setIndex(i) {
+        if (i === this.index && this._painted) return;
+        this._painted = true;
+        this.index = i;
+        if (this.counter) this.counter.textContent = this.pad(i + 1);
+        if (this.meter) this.meter.style.transform = 'scaleX(' + (i + 1) / this.total + ')';
+        this.segments.forEach((s, k) => s.classList.toggle('is-on', k <= i));
+      }
+
+      /* ---------------------------------------------------------- variant sync */
+      onVariantChange(e) {
+        const mediaId = e.detail && e.detail.mediaId;
+        if (!mediaId) return;
+        const target = this.querySelector('[data-media-id="' + mediaId + '"]');
+        if (!target) return;
+        const behavior = this.reduceMotion.matches ? 'auto' : 'smooth';
+        if (this.desktop.matches) {
+          target.scrollIntoView({ behavior: behavior, block: 'center' });
+        } else if (this.track) {
+          this.track.scrollTo({ left: target.offsetLeft, behavior: behavior });
+        }
+      }
+
+      /* ---------------------------------------------------------------- viewer */
+      canTransition() {
+        return typeof document.startViewTransition === 'function' && !this.reduceMotion.matches;
+      }
+
+      initViewer() {
+        const closeBtn = this.querySelector('[data-viewer-close]');
+        const prev = this.querySelector('[data-viewer-prev]');
+        const next = this.querySelector('[data-viewer-next]');
+
+        if (closeBtn) closeBtn.addEventListener('click', () => this.closeViewer());
+        if (prev) prev.addEventListener('click', () => this.stepViewer(-1));
+        if (next) next.addEventListener('click', () => this.stepViewer(1));
+
+        this.viewer.addEventListener('cancel', (e) => {
+          e.preventDefault();
+          this.closeViewer();
+        });
+
+        this.viewer.addEventListener('keydown', (e) => {
+          if (e.key === 'ArrowRight') { e.preventDefault(); this.stepViewer(1); }
+          if (e.key === 'ArrowLeft') { e.preventDefault(); this.stepViewer(-1); }
+        });
+
+        this.viewerTrack.addEventListener('scroll', () => {
+          if (this._vraf) return;
+          this._vraf = requestAnimationFrame(() => {
+            this._vraf = 0;
+            const w = this.viewerTrack.clientWidth || 1;
+            const i = Math.max(0, Math.min(this.total - 1, Math.round(this.viewerTrack.scrollLeft / w)));
+            if (i !== this.viewerIndex) {
+              this.resetZoom();
+              this.viewerIndex = i;
+              this.paintViewerCount();
+              this.loadSlide(i);
             }
+          });
+        }, { passive: true });
+
+        this.initZoom();
+      }
+
+      paintViewerCount() {
+        if (this.viewerCount) this.viewerCount.textContent = this.pad(this.viewerIndex + 1) + ' / ' + this.pad(this.total);
+      }
+
+      loadSlide(i) {
+        const slide = this.slides[i];
+        if (!slide) return;
+        const img = slide.querySelector('img');
+        const source = this.items[i].querySelector('img');
+        if (!img.getAttribute('src') && source) img.src = source.currentSrc || source.src;
+        if (img.dataset.upgraded) return;
+        img.dataset.upgraded = '1';
+        const hi = new Image();
+        hi.src = img.dataset.hi;
+        hi.decode().then(() => { img.src = hi.src; }).catch(() => {});
+      }
+
+      goTo(i, smooth) {
+        const w = this.viewerTrack.clientWidth;
+        this.viewerTrack.scrollTo({ left: i * w, behavior: smooth ? 'smooth' : 'instant' });
+      }
+
+      stepViewer(dir) {
+        const i = Math.max(0, Math.min(this.total - 1, this.viewerIndex + dir));
+        if (i === this.viewerIndex) return;
+        this.goTo(i, !this.reduceMotion.matches);
+      }
+
+      async openViewer(index) {
+        const dlg = this.viewer;
+        if (!dlg || dlg.open) return;
+
+        const frame = this.items[index].querySelector('.product-gallery__media');
+        const img = this.slides[index].querySelector('img');
+        this.loadSlide(index);
+
+        const reveal = () => {
+          dlg.showModal();
+          this.viewerIndex = index;
+          this.goTo(index, false);
+          this.paintViewerCount();
+          dlg.querySelector('[data-viewer-close]').focus({ preventScroll: true });
+        };
+
+        if (this.canTransition()) {
+          dlg.dataset.vt = '1';
+          frame.style.viewTransitionName = 'pdp-viewer-img';
+          try {
+            await Promise.race([img.decode(), new Promise((r) => setTimeout(r, 160))]);
+          } catch (err) { /* decode can reject on a cached error; the morph still runs */ }
+          const t = document.startViewTransition(() => {
+            frame.style.viewTransitionName = '';
+            img.style.viewTransitionName = 'pdp-viewer-img';
+            reveal();
+          });
+          t.finished.finally(() => { img.style.viewTransitionName = ''; });
+        } else {
+          delete dlg.dataset.vt;
+          reveal();
+        }
+
+        window.setTimeout(() => {
+          this.slides.forEach((_, k) => { if (Math.abs(k - index) <= 1) this.loadSlide(k); });
+        }, 350);
+      }
+
+      closeViewer() {
+        const dlg = this.viewer;
+        if (!dlg || !dlg.open) return;
+        this.resetZoom();
+
+        const i = this.viewerIndex;
+        const img = this.slides[i].querySelector('img');
+        const item = this.items[i];
+        const frame = item.querySelector('.product-gallery__media');
+
+        const settle = () => {
+          if (this.desktop.matches) item.scrollIntoView({ block: 'center', behavior: 'instant' });
+          else this.track.scrollTo({ left: item.offsetLeft, behavior: 'instant' });
+        };
+
+        if (this.canTransition()) {
+          dlg.dataset.vt = '1';
+          img.style.viewTransitionName = 'pdp-viewer-img';
+          const t = document.startViewTransition(() => {
+            img.style.viewTransitionName = '';
+            dlg.close();
+            settle();
+            frame.style.viewTransitionName = 'pdp-viewer-img';
+          });
+          t.finished.finally(() => { frame.style.viewTransitionName = ''; });
+        } else {
+          delete dlg.dataset.vt;
+          dlg.close();
+          settle();
+        }
+      }
+
+      /* ------------------------------------------- desktop zoom, pointer-driven */
+      initZoom() {
+        this.zoom = { on: false, x: 0, y: 0, tx: 0, ty: 0, raf: 0, img: null, slide: null };
+
+        const tick = () => {
+          const z = this.zoom;
+          z.x += (z.tx - z.x) * 0.16;
+          z.y += (z.ty - z.y) * 0.16;
+          if (z.img) z.img.style.transform = 'translate3d(' + z.x.toFixed(1) + 'px,' + z.y.toFixed(1) + 'px,0) scale(2)';
+          z.raf = z.on ? requestAnimationFrame(tick) : 0;
+        };
+        this._tick = tick;
+
+        this.slides.forEach((slide) => {
+          slide.addEventListener('click', (e) => {
+            if (!this.finePointer.matches) return;
+            const img = slide.querySelector('img');
+            if (this.zoom.on) { this.resetZoom(); return; }
+            this.zoom.on = true;
+            this.zoom.img = img;
+            this.zoom.slide = slide;
+            slide.classList.add('is-zoomed');
+            this.aim(e, img);
+            this.zoom.x = this.zoom.tx;
+            this.zoom.y = this.zoom.ty;
+            img.style.transition = 'transform 360ms var(--ease-out)';
+            img.style.transform = 'translate3d(' + this.zoom.x + 'px,' + this.zoom.y + 'px,0) scale(2)';
+            window.setTimeout(() => { if (this.zoom.on) { img.style.transition = 'none'; this.zoom.raf = requestAnimationFrame(this._tick); } }, 380);
+          });
+
+          slide.addEventListener('pointermove', (e) => {
+            if (this.zoom.on && this.zoom.slide === slide) this.aim(e, slide.querySelector('img'));
           });
         });
       }
 
-      onVariantChange(e) {
-        const mediaId = e.detail?.mediaId;
-        if (!mediaId) return;
+      aim(e, img) {
+        const r = img.getBoundingClientRect();
+        const px = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+        const py = Math.max(0, Math.min(1, (e.clientY - r.top) / r.height));
+        this.zoom.tx = (0.5 - px) * r.width;
+        this.zoom.ty = (0.5 - py) * r.height;
+      }
 
-        const targetItem = this.querySelector(`[data-media-id="${mediaId}"]`);
-        if (!targetItem) return;
-
-        if (window.innerWidth >= 990) {
-          // On desktop, smooth-scroll page to the image
-          targetItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        } else if (this.track) {
-          // On mobile, scroll track to slide
-          this.track.scrollTo({
-            left: targetItem.offsetLeft,
-            behavior: 'smooth'
-          });
+      resetZoom() {
+        const z = this.zoom;
+        if (!z || !z.on) return;
+        z.on = false;
+        cancelAnimationFrame(z.raf);
+        z.raf = 0;
+        if (z.slide) z.slide.classList.remove('is-zoomed');
+        if (z.img) {
+          z.img.style.transition = 'transform 280ms var(--ease-out)';
+          z.img.style.transform = '';
         }
+        z.img = null;
+        z.slide = null;
       }
     }
 

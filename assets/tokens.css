@@ -158,10 +158,30 @@
   }
 }
 
+/* Shared element: product card image -> PDP hero image.
+   The `pdp-hero` name is applied at runtime (see theme.js `pageswap` and
+   snippets/product-gallery.liquid `pagereveal`), so it is never duplicated. */
+::view-transition-group(pdp-hero) {
+  animation-duration: 560ms;
+  animation-timing-function: var(--ease-in-out);
+  z-index: 2;
+}
+
+::view-transition-old(pdp-hero),
+::view-transition-new(pdp-hero) {
+  height: 100%;
+  object-fit: cover;
+  overflow: clip;
+}
+
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-old(root),
   ::view-transition-new(root) {
     animation: none !important;
+  }
+
+  ::view-transition-group(pdp-hero) {
+    animation-duration: 0.01ms;
   }
 }
 

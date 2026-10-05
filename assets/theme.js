@@ -521,4 +521,30 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('touchstart', handleLinkPrefetch, { passive: true });
 });
 
+// Shared-element transition: when leaving a listing for a product page, name the
+// matching card image so it morphs into the PDP hero (named again on arrival).
+window.addEventListener('pageswap', (event) => {
+  if (!event.viewTransition || !event.activation || !event.activation.entry) return;
+  let target;
+  try {
+    target = new URL(event.activation.entry.url);
+  } catch (err) {
+    return;
+  }
+  const match = target.pathname.match(/\/products\/([^/?#]+)/);
+  if (!match) return;
+  const links = [...document.querySelectorAll(`a[href*="/products/${match[1]}"]`)];
+  const link = links.find((el) => el.querySelector('img')) || null;
+  if (!link) return;
+  const frame = link.closest('.product-card__media-wrapper') || link.querySelector('img');
+  if (frame) {
+    frame.style.viewTransitionName = 'pdp-hero';
+    try {
+      sessionStorage.setItem('adot-pdp-vt', '1');
+    } catch (err) {
+      /* storage unavailable: the PDP simply plays its own unveil */
+    }
+  }
+});
+
 
