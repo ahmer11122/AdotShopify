@@ -1,7 +1,8 @@
 {% comment %}
-  Kinetic Editorial Service Ledger
-  Desktop: Interactive 4-pillar service dock with micro-hover depth and live WhatsApp status.
-  Mobile: Seamless 120Hz kinetic marquee ribbon docked under the campaign film.
+  Service Ledger
+  One markup for every breakpoint: a hairline-ruled ledger of four guarantees.
+  Mobile: 2 x 2 grid. Desktop: 4 columns with oversized type. Continues the
+  Brand Marquee above it (shared hairline, shared surface) — no second ticker.
 {% endcomment %}
 
 {% liquid
@@ -22,42 +23,37 @@
 <section
   class="trust-strip trust-strip--{{ scheme }}"
   data-section-id="{{ section.id }}"
-  aria-label="Service and order guarantees"
+  aria-labelledby="TrustStripHeading-{{ section.id }}"
 >
-  <!-- Desktop Editorial Service Dock (>= 750px) -->
-  <div class="trust-strip__desktop container">
+  <div class="container">
+    <h2 class="visually-hidden" id="TrustStripHeading-{{ section.id }}">Ordering and delivery guarantees</h2>
+
     <ul class="trust-strip__list" role="list">
       <li class="trust-strip__item">
         <div class="trust-strip__card">
           <span class="trust-strip__index" aria-hidden="true">01</span>
-          <div class="trust-strip__copy">
-            <h3 class="trust-strip__title">{{ p1_title }}</h3>
-            <p class="trust-strip__desc">{{ p1_desc }}</p>
-          </div>
+          <h3 class="trust-strip__title">{{ p1_title }}</h3>
+          <p class="trust-strip__desc">{{ p1_desc }}</p>
         </div>
       </li>
 
       <li class="trust-strip__item">
         <div class="trust-strip__card">
           <span class="trust-strip__index" aria-hidden="true">02</span>
-          <div class="trust-strip__copy">
-            <h3 class="trust-strip__title">{{ p2_title }}</h3>
-            <p class="trust-strip__desc">{{ p2_desc }}</p>
-          </div>
+          <h3 class="trust-strip__title">{{ p2_title }}</h3>
+          <p class="trust-strip__desc">{{ p2_desc }}</p>
         </div>
       </li>
 
       <li class="trust-strip__item">
         <div class="trust-strip__card">
           <span class="trust-strip__index" aria-hidden="true">03</span>
-          <div class="trust-strip__copy">
-            <h3 class="trust-strip__title">{{ p3_title }}</h3>
-            <p class="trust-strip__desc">{{ p3_desc }}</p>
-          </div>
+          <h3 class="trust-strip__title">{{ p3_title }}</h3>
+          <p class="trust-strip__desc">{{ p3_desc }}</p>
         </div>
       </li>
 
-      <li class="trust-strip__item trust-strip__item--wa">
+      <li class="trust-strip__item">
         {% if wa_num != blank %}
           <a
             class="trust-strip__card trust-strip__card--link"
@@ -66,86 +62,28 @@
             rel="noopener noreferrer"
             aria-label="{{ p4_title }} - {{ p4_desc }} (opens WhatsApp chat)"
           >
-            <span class="trust-strip__index" aria-hidden="true">04</span>
-            <div class="trust-strip__copy">
-              <div class="trust-strip__title-row">
-                <h3 class="trust-strip__title">{{ p4_title }}</h3>
-                <span class="trust-strip__live-pill">
-                  <span class="trust-strip__live-dot" aria-hidden="true"></span>
-                  <span class="trust-strip__live-label">Live</span>
-                </span>
-              </div>
-              <p class="trust-strip__desc">
-                {{ p4_desc }}
-                <span class="trust-strip__arrow" aria-hidden="true">→</span>
-              </p>
-            </div>
+            <span class="trust-strip__index" aria-hidden="true">
+              04
+              <span class="trust-strip__live" aria-hidden="true">
+                <span class="trust-strip__live-dot"></span>
+                Live
+              </span>
+            </span>
+            <span class="trust-strip__title">{{ p4_title }}</span>
+            <span class="trust-strip__desc">
+              {{ p4_desc }}
+              <svg class="trust-strip__arrow" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true" focusable="false"><path d="M2.5 11.5l9-9M5 2.5h6.5V9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg>
+            </span>
           </a>
         {% else %}
           <div class="trust-strip__card">
             <span class="trust-strip__index" aria-hidden="true">04</span>
-            <div class="trust-strip__copy">
-              <h3 class="trust-strip__title">{{ p4_title }}</h3>
-              <p class="trust-strip__desc">{{ p4_desc }}</p>
-            </div>
+            <h3 class="trust-strip__title">{{ p4_title }}</h3>
+            <p class="trust-strip__desc">{{ p4_desc }}</p>
           </div>
         {% endif %}
       </li>
     </ul>
-  </div>
-
-  <!-- Mobile Kinetic Marquee Ribbon (< 750px) -->
-  <div class="trust-strip__mobile" aria-label="Order guarantees ticker">
-    <div class="trust-strip__fade trust-strip__fade--left" aria-hidden="true"></div>
-    <div class="trust-strip__track">
-      {% for i in (1..2) %}
-        <div class="trust-strip__group" {% if forloop.index == 2 %}aria-hidden="true"{% endif %}>
-          <div class="trust-strip__pill">
-            <span class="trust-strip__pill-index">[01]</span>
-            <span class="trust-strip__pill-title">{{ p1_title }}</span>
-            <span class="trust-strip__pill-sub">{{ p1_desc }}</span>
-          </div>
-          <span class="trust-strip__sep" aria-hidden="true">✦</span>
-
-          <div class="trust-strip__pill">
-            <span class="trust-strip__pill-index">[02]</span>
-            <span class="trust-strip__pill-title">{{ p2_title }}</span>
-            <span class="trust-strip__pill-sub">{{ p2_desc }}</span>
-          </div>
-          <span class="trust-strip__sep" aria-hidden="true">✦</span>
-
-          <div class="trust-strip__pill">
-            <span class="trust-strip__pill-index">[03]</span>
-            <span class="trust-strip__pill-title">{{ p3_title }}</span>
-            <span class="trust-strip__pill-sub">{{ p3_desc }}</span>
-          </div>
-          <span class="trust-strip__sep" aria-hidden="true">✦</span>
-
-          {% if wa_num != blank %}
-            <a
-              class="trust-strip__pill trust-strip__pill--link"
-              href="{{ wa_url }}"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="{{ p4_title }} - {{ p4_desc }} (opens WhatsApp)"
-            >
-              <span class="trust-strip__pill-index">[04]</span>
-              <span class="trust-strip__pill-title">{{ p4_title }}</span>
-              <span class="trust-strip__pill-dot" aria-hidden="true"></span>
-              <span class="trust-strip__pill-sub">{{ p4_desc }} →</span>
-            </a>
-          {% else %}
-            <div class="trust-strip__pill">
-              <span class="trust-strip__pill-index">[04]</span>
-              <span class="trust-strip__pill-title">{{ p4_title }}</span>
-              <span class="trust-strip__pill-sub">{{ p4_desc }}</span>
-            </div>
-          {% endif %}
-          <span class="trust-strip__sep" aria-hidden="true">✦</span>
-        </div>
-      {% endfor %}
-    </div>
-    <div class="trust-strip__fade trust-strip__fade--right" aria-hidden="true"></div>
   </div>
 </section>
 
@@ -158,199 +96,180 @@
   .trust-strip {
     display: block;
     position: relative;
-    overflow: hidden;
-    padding-block: 0;
+    padding-block: 0 clamp(2.5rem, 6vw, 5rem);
   }
 
   .trust-strip--dark {
     --ts-bg: var(--color-surface-dark, #111111);
-    --ts-text: var(--color-text-inverse, #F5F5F5);
+    --ts-text: var(--color-text-inverse, #FFFFFF);
     --ts-sub: color-mix(in srgb, var(--color-white) 64%, transparent);
-    --ts-index: color-mix(in srgb, var(--color-white) 44%, transparent);
-    --ts-border: rgba(255, 255, 255, 0.08);
-    --ts-hover-bg: rgba(255, 255, 255, 0.04);
-    --ts-fade-left: linear-gradient(to right, var(--ts-bg), transparent);
-    --ts-fade-right: linear-gradient(to left, var(--ts-bg), transparent);
-    background-color: var(--ts-bg);
-    color: var(--ts-text);
-    border-top: 1px solid var(--ts-border);
-    border-bottom: 1px solid var(--ts-border);
+    --ts-index: color-mix(in srgb, var(--color-white) 48%, transparent);
+    --ts-line: rgba(255, 255, 255, 0.14);
   }
 
   .trust-strip--light {
     --ts-bg: var(--color-background, #FFFFFF);
     --ts-text: var(--color-text, #111111);
-    --ts-sub: var(--color-text-muted, #666666);
-    --ts-index: var(--color-text-subtle, #999999);
-    --ts-border: var(--color-border, #E5E5E5);
-    --ts-hover-bg: rgba(0, 0, 0, 0.03);
-    --ts-fade-left: linear-gradient(to right, var(--ts-bg), transparent);
-    --ts-fade-right: linear-gradient(to left, var(--ts-bg), transparent);
+    --ts-sub: var(--color-text-muted, #555555);
+    --ts-index: var(--color-text-subtle, #6B6B6B);
+    --ts-line: var(--color-border, #E5E5E5);
+  }
+
+  .trust-strip--dark,
+  .trust-strip--light {
     background-color: var(--ts-bg);
     color: var(--ts-text);
-    border-top: 1px solid var(--ts-border);
-    border-bottom: 1px solid var(--ts-border);
   }
 
-  /* ----------------------------------------------------
-     Mobile Kinetic Marquee (< 750px)
-     ---------------------------------------------------- */
-  .trust-strip__desktop {
-    display: none;
+  .trust-strip--light {
+    padding-top: clamp(2.5rem, 6vw, 5rem);
   }
 
-  .trust-strip__mobile {
+  /* Mobile: 2 x 2 ledger */
+  .trust-strip__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border-top: 1px solid var(--ts-line);
+  }
+
+  .trust-strip__item {
+    min-width: 0;
+    border-bottom: 1px solid var(--ts-line);
+  }
+
+  .trust-strip__item:nth-child(even) {
+    border-inline-start: 1px solid var(--ts-line);
+  }
+
+  .trust-strip__card {
     position: relative;
     display: flex;
-    align-items: center;
-    height: 48px;
-    width: 100%;
-    overflow: hidden;
-    user-select: none;
-    -webkit-user-select: none;
-    touch-action: pan-y;
-  }
-
-  .trust-strip__track {
-    display: flex;
-    width: max-content;
-    animation: trust-marquee 28s linear infinite;
-    will-change: transform;
-  }
-
-  .trust-strip__mobile:hover .trust-strip__track,
-  .trust-strip__mobile:active .trust-strip__track,
-  .trust-strip__mobile:focus-within .trust-strip__track {
-    animation-play-state: paused;
-  }
-
-  .trust-strip__group {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    padding-inline: 0.75rem;
-    flex-shrink: 0;
-  }
-
-  .trust-strip__pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
+    flex-direction: column;
+    gap: 0.35rem;
+    height: 100%;
+    box-sizing: border-box;
+    padding: 1.25rem 1rem 1.5rem 0;
     color: inherit;
     text-decoration: none;
-    white-space: nowrap;
     -webkit-tap-highlight-color: transparent;
   }
 
-  .trust-strip__pill-index {
+  .trust-strip__item:nth-child(even) .trust-strip__card {
+    padding-inline-start: 1rem;
+    padding-inline-end: 0;
+  }
+
+  .trust-strip__index {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: clamp(1.25rem, 4vw, 3rem);
     font-family: var(--font-body);
     font-size: var(--font-size-micro, 0.75rem);
-    letter-spacing: var(--tracking-micro, 0.08em);
     font-variant-numeric: tabular-nums;
+    letter-spacing: 0.12em;
+    line-height: 1;
     color: var(--ts-index);
   }
 
-  .trust-strip__pill-title {
+  .trust-strip__title {
+    display: block;
+    margin: 0;
     font-family: var(--font-display);
-    font-size: 0.8125rem;
-    font-weight: 500;
-    letter-spacing: var(--tracking-tight, -0.01em);
-    text-transform: uppercase;
+    font-size: clamp(1.125rem, 4.6vw, 1.5rem);
+    font-weight: 600;
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+    color: var(--ts-text);
+    text-wrap: balance;
   }
 
-  .trust-strip__pill-sub {
+  .trust-strip__desc {
+    display: block;
+    margin: 0;
     font-family: var(--font-body);
-    font-size: var(--font-size-micro, 0.75rem);
+    font-size: 0.8125rem;
+    line-height: 1.45;
     color: var(--ts-sub);
+    text-wrap: balance;
   }
 
-  .trust-strip__pill-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #25D366;
-    box-shadow: 0 0 6px rgba(37, 211, 102, 0.8);
+  .trust-strip__arrow {
     display: inline-block;
+    vertical-align: -1px;
+    margin-inline-start: 0.2rem;
+    transition: transform 250ms var(--ease-out);
   }
 
-  .trust-strip__sep {
-    color: var(--ts-index);
+  /* WhatsApp live pill */
+  .trust-strip__live {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.2rem 0.5rem;
+    background: rgba(37, 211, 102, 0.12);
+    border: 1px solid rgba(37, 211, 102, 0.3);
+    border-radius: 9999px;
     font-size: 0.625rem;
-    opacity: 0.75;
-    user-select: none;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #25D366;
   }
 
-  .trust-strip__fade {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 28px;
-    z-index: 3;
-    pointer-events: none;
+  .trust-strip--light .trust-strip__live {
+    color: #166534;
+    background: rgba(22, 101, 52, 0.08);
+    border-color: rgba(22, 101, 52, 0.28);
   }
 
-  .trust-strip__fade--left {
-    left: 0;
-    background: var(--ts-fade-left);
+  .trust-strip__live-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: trust-pulse 2.4s ease-in-out infinite;
   }
 
-  .trust-strip__fade--right {
-    right: 0;
-    background: var(--ts-fade-right);
-  }
-
-  @keyframes trust-marquee {
-    0% {
-      transform: translate3d(0, 0, 0);
+  @keyframes trust-pulse {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
     }
-    100% {
-      transform: translate3d(-50%, 0, 0);
+    50% {
+      opacity: 0.4;
+      transform: scale(0.75);
     }
   }
 
-  /* ----------------------------------------------------
-     Desktop Service Dock (>= 750px)
-     ---------------------------------------------------- */
+  .trust-strip__card:focus-visible {
+    outline: 2px solid var(--ts-text);
+    outline-offset: -2px;
+  }
+
+  /* Desktop: 4 columns, oversized type */
   @media (min-width: 750px) {
-    .trust-strip__mobile {
-      display: none;
-    }
-
-    .trust-strip__desktop {
-      display: block;
-      padding-block: 0;
-    }
-
     .trust-strip__list {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 
     .trust-strip__item {
-      min-width: 0;
-      border-inline-start: 1px solid var(--ts-border);
+      border-bottom: 0;
+      border-inline-start: 1px solid var(--ts-line);
     }
 
     .trust-strip__item:first-child {
       border-inline-start: 0;
     }
 
-    .trust-strip__card {
-      display: grid;
-      grid-template-columns: 2rem minmax(0, 1fr);
-      column-gap: 0.85rem;
-      align-items: start;
-      padding: 1.75rem 1.25rem;
-      color: inherit;
-      text-decoration: none;
-      height: 100%;
-      box-sizing: border-box;
-      transition:
-        transform 200ms var(--ease-out),
-        background-color 200ms ease;
+    .trust-strip__card,
+    .trust-strip__item:nth-child(even) .trust-strip__card {
+      gap: 0.5rem;
+      padding: 1.5rem 1.5rem 0.5rem;
     }
 
     .trust-strip__item:first-child .trust-strip__card {
@@ -361,130 +280,55 @@
       padding-inline-end: 0;
     }
 
-    .trust-strip__index {
-      padding-top: 0.15rem;
-      font-family: var(--font-body);
-      font-size: var(--font-size-micro, 0.75rem);
-      font-variant-numeric: tabular-nums;
-      letter-spacing: 0.12em;
-      line-height: 1.2;
-      color: var(--ts-index);
-    }
-
-    .trust-strip__copy {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-      min-width: 0;
-    }
-
     .trust-strip__title {
-      margin: 0;
-      font-family: var(--font-display);
-      font-size: 1.0625rem;
-      font-weight: 500;
-      letter-spacing: var(--tracking-tight);
-      line-height: 1.2;
-      color: var(--ts-text);
+      font-size: clamp(1.375rem, 2.3vw, 2.125rem);
+      letter-spacing: -0.035em;
     }
 
     .trust-strip__desc {
-      margin: 0;
-      font-family: var(--font-body);
-      font-size: 0.8125rem;
-      line-height: 1.4;
-      color: var(--ts-sub);
+      font-size: 0.9375rem;
     }
 
-    .trust-strip__title-row {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      flex-wrap: wrap;
+    /* Hairline that draws across the top of a card on hover */
+    .trust-strip__card::before {
+      content: '';
+      position: absolute;
+      inset-inline: 0;
+      top: -1px;
+      height: 1px;
+      background: var(--ts-text);
+      transform: scaleX(0);
+      transform-origin: left center;
+      transition: transform 500ms var(--ease-out);
     }
 
-    .trust-strip__live-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      padding: 0.15rem 0.45rem;
-      background: rgba(37, 211, 102, 0.12);
-      border: 1px solid rgba(37, 211, 102, 0.3);
-      border-radius: 9999px;
-      line-height: 1;
-    }
-
-    .trust-strip__live-dot {
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      background: #25D366;
-      box-shadow: 0 0 6px rgba(37, 211, 102, 0.8);
-      animation: pulse-ring 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    }
-
-    .trust-strip__live-label {
-      font-size: 0.625rem;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      color: #25D366;
-    }
-
-    .trust-strip__arrow {
-      display: inline-block;
-      margin-inline-start: 0.25rem;
-      transition: transform 200ms var(--ease-out);
-    }
-
-    @keyframes pulse-ring {
-      0% {
-        transform: scale(0.95);
-        box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7);
-      }
-      70% {
-        transform: scale(1.05);
-        box-shadow: 0 0 0 5px rgba(37, 211, 102, 0);
-      }
-      100% {
-        transform: scale(0.95);
-        box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
-      }
+    .trust-strip__item:first-child .trust-strip__card::before {
+      inset-inline-start: 0;
     }
   }
 
   @media (hover: hover) and (pointer: fine) and (min-width: 750px) {
-    .trust-strip__card {
-      border-radius: var(--radius-sm, 2px);
+    .trust-strip__card:hover::before {
+      transform: scaleX(1);
     }
 
-    .trust-strip__card:hover {
-      background-color: var(--ts-hover-bg);
-      transform: translateY(-2px);
+    .trust-strip__card:hover .trust-strip__desc {
+      color: var(--ts-text);
     }
 
     .trust-strip__card--link:hover .trust-strip__arrow {
-      transform: translateX(4px);
+      transform: translate(3px, -3px);
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .trust-strip__track {
-      animation: none !important;
-      overflow-x: auto;
-    }
-
     .trust-strip__live-dot {
-      animation: none !important;
+      animation: none;
     }
 
-    .trust-strip__card {
-      transition: none !important;
-      transform: none !important;
-    }
-
+    .trust-strip__card::before,
     .trust-strip__arrow {
-      transition: none !important;
+      transition: none;
     }
   }
 {% endstylesheet %}
@@ -500,7 +344,7 @@
       "id": "color_scheme",
       "label": "Color scheme",
       "options": [
-        { "value": "dark", "label": "Inky Dark (Match Hoodie Film)" },
+        { "value": "dark", "label": "Inky Dark (Match Brand Marquee)" },
         { "value": "light", "label": "Art Paper Light" }
       ],
       "default": "dark"

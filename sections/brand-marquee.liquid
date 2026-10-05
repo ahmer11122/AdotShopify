@@ -1,0 +1,925 @@
+{% comment %}
+  Brand Marquee — Kinetic Type Band
+  Row 1: oversized statement, alternating solid / outlined words, drifting left.
+  Row 2: category chips (product cutout + label, linked), drifting right.
+  Motion: constant drift that surges and leans (skew) with scroll velocity,
+  eases to a stop on hover / focus / touch, and can be paused by the visitor.
+  Reduced motion: no drift — rows wrap into a static, readable statement.
+{% endcomment %}
+
+{% liquid
+  assign scheme = section.settings.color_scheme | default: 'dark'
+  assign eyebrow = section.settings.eyebrow
+  assign meta = section.settings.meta
+
+  assign statement_raw = section.settings.statement
+  if statement_raw == blank
+    assign statement_raw = 'Soft cotton|Heavy fleece|Daily wear|Easy fits'
+  endif
+  assign words = statement_raw | split: '|'
+  assign words_count = words | size | times: 1.0
+  assign word_repeats = 4 | divided_by: words_count | ceil
+  if word_repeats < 1
+    assign word_repeats = 1
+  endif
+
+  assign chips = section.blocks
+  assign chips_count = chips | size
+  assign chip_repeats = 1
+  if chips_count > 0
+    assign chips_float = chips_count | times: 1.0
+    assign chip_repeats = 6 | divided_by: chips_float | ceil
+  endif
+
+  assign chip_fallbacks = 'category-hoodies.jpg|category-shirts.jpg|category-trousers.jpg' | split: '|'
+  assign all_url = routes.all_products_collection_url
+%}
+
+<brand-marquee class="brand-marquee brand-marquee--{{ scheme }}" data-section-id="{{ section.id }}">
+  <h2 class="visually-hidden">{{ words | join: '. ' }}.</h2>
+
+  <div class="brand-marquee__head container brand-marquee__reveal" style="--i: 0;">
+    <p class="brand-marquee__eyebrow text-micro">
+      <span class="brand-marquee__eyebrow-dot" aria-hidden="true"></span>
+      {{- eyebrow -}}
+    </p>
+    <div class="brand-marquee__head-end">
+      {% if meta != blank %}
+        <p class="brand-marquee__meta text-micro">{{ meta }}</p>
+      {% endif %}
+      <button type="button" class="brand-marquee__pause text-micro" data-pause hidden>
+        <svg class="brand-marquee__pause-icon brand-marquee__pause-icon--pause" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true" focusable="false"><path d="M1.5 0.5h2.5v9H1.5zM6 0.5h2.5v9H6z" fill="currentColor"/></svg>
+        <svg class="brand-marquee__pause-icon brand-marquee__pause-icon--play" width="10" height="10" viewBox="0 0 10 10" aria-hidden="true" focusable="false"><path d="M2 0.5l7 4.5-7 4.5z" fill="currentColor"/></svg>
+        <span data-pause-label>Pause</span>
+      </button>
+    </div>
+  </div>
+
+  {%- comment -%} Row 1 — statement {%- endcomment -%}
+  <div class="brand-marquee__reveal" style="--i: 1;">
+    <div class="brand-marquee__row brand-marquee__row--statement" data-row data-dir="left" data-speed="64" aria-hidden="true">
+      <div class="brand-marquee__skew" data-skew>
+        <div class="brand-marquee__track" data-track>
+          {%- for copy in (1..2) -%}
+            <div class="brand-marquee__group" data-group {% if copy == 2 %}data-clone{% endif %}>
+              {%- for r in (1..word_repeats) -%}
+                {%- for word in words -%}
+                  {%- assign word_text = word | strip -%}
+                  {%- if word_text != blank -%}
+                    <span class="brand-marquee__word {% cycle 'brand-marquee__word--solid', 'brand-marquee__word--outline' %}">{{ word_text }}</span>
+                    <svg class="brand-marquee__star" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 0C12 6.6 17.4 12 24 12 17.4 12 12 17.4 12 24 12 17.4 6.6 12 0 12 6.6 12 12 6.6 12 0z" fill="currentColor"/></svg>
+                  {%- endif -%}
+                {%- endfor -%}
+              {%- endfor -%}
+            </div>
+          {%- endfor -%}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {%- comment -%} Row 2 — category chips {%- endcomment -%}
+  {% if chips_count > 0 %}
+    <div class="brand-marquee__reveal" style="--i: 2;">
+      <div class="brand-marquee__row brand-marquee__row--chips" data-row data-dir="right" data-speed="46">
+        <div class="brand-marquee__skew" data-skew>
+          <div class="brand-marquee__track" data-track>
+            {%- for copy in (1..2) -%}
+              <div
+                class="brand-marquee__group"
+                data-group
+                {% if copy == 2 %}data-clone aria-hidden="true" inert{% endif %}
+              >
+                {%- for r in (1..chip_repeats) -%}
+                  <ul
+                    class="brand-marquee__list"
+                    role="list"
+                    {% if copy == 2 or r > 1 %}aria-hidden="true" inert{% endif %}
+                  >
+                    {%- for chip in chips -%}
+                      {%- assign fb_index = forloop.index0 | modulo: 3 -%}
+                      {%- assign chip_title = chip.settings.title | default: 'Shop all' -%}
+                      {%- assign chip_link = chip.settings.link | default: all_url -%}
+                      <li class="brand-marquee__item" {{ chip.shopify_attributes }}>
+                        <a class="brand-marquee__chip-link" href="{{ chip_link }}">
+                          <span class="brand-marquee__chip">
+                            {%- if chip.settings.image != blank -%}
+                              {{-
+                                chip.settings.image
+                                | image_url: width: 480
+                                | image_tag:
+                                  loading: 'lazy',
+                                  widths: '160, 240, 360, 480',
+                                  sizes: '(min-width: 750px) 6rem, 4rem',
+                                  class: 'brand-marquee__img',
+                                  alt: ''
+                              -}}
+                            {%- else -%}
+                              <img
+                                class="brand-marquee__img"
+                                src="{{ chip_fallbacks[fb_index] | asset_url }}"
+                                alt=""
+                                width="896"
+                                height="1200"
+                                loading="lazy"
+                              >
+                            {%- endif -%}
+                          </span>
+                          <span class="brand-marquee__label">{{ chip_title }}</span>
+                          <svg class="brand-marquee__arrow" width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" focusable="false"><path d="M4 14L14 4M6 4h8v8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg>
+                        </a>
+                        <svg class="brand-marquee__star brand-marquee__star--small" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 0C12 6.6 17.4 12 24 12 17.4 12 12 17.4 12 24 12 17.4 6.6 12 0 12 6.6 12 12 6.6 12 0z" fill="currentColor"/></svg>
+                      </li>
+                    {%- endfor -%}
+                  </ul>
+                {%- endfor -%}
+              </div>
+            {%- endfor -%}
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+</brand-marquee>
+
+{% stylesheet %}
+  .section-brand-marquee {
+    position: relative;
+    z-index: 1;
+  }
+
+  .brand-marquee {
+    --bm-gap: clamp(1.25rem, 3vw, 3rem);
+    --bm-statement-size: clamp(3.5rem, 13vw, 11rem);
+    --bm-chip-size: clamp(2.25rem, 6.5vw, 5.75rem);
+    --bm-outline: 1px;
+    --bm-edge: linear-gradient(to right, transparent 0, #000 7%, #000 93%, transparent 100%);
+
+    display: block;
+    position: relative;
+    overflow: hidden;
+    padding-block: clamp(3.5rem, 8vw, 7.5rem);
+    background: var(--bm-bg);
+    color: var(--bm-fg);
+  }
+
+  .brand-marquee--dark {
+    --bm-bg: var(--color-surface-dark);
+    --bm-fg: var(--color-text-inverse);
+    --bm-muted: color-mix(in srgb, var(--color-white) 64%, transparent);
+    --bm-line: rgba(255, 255, 255, 0.14);
+    --bm-chip-bg: #ececea;
+    --bm-image-outline: oklch(1 0 0 / 0.1);
+  }
+
+  .brand-marquee--light {
+    --bm-bg: var(--color-background);
+    --bm-fg: var(--color-text);
+    --bm-muted: var(--color-text-muted);
+    --bm-line: var(--color-border);
+    --bm-chip-bg: var(--color-surface);
+    --bm-image-outline: oklch(0 0 0 / 0.1);
+  }
+
+  /* ---------- Head ---------- */
+  .brand-marquee__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    padding-bottom: var(--space-sm);
+    margin-bottom: clamp(1.5rem, 4vw, 3.5rem);
+    border-bottom: 1px solid var(--bm-line);
+  }
+
+  .brand-marquee__eyebrow,
+  .brand-marquee__meta {
+    margin: 0;
+    letter-spacing: var(--tracking-micro);
+    text-transform: uppercase;
+    color: var(--bm-muted);
+  }
+
+  .brand-marquee__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--bm-fg);
+  }
+
+  .brand-marquee__eyebrow-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-live-indicator);
+  }
+
+  .brand-marquee__head-end {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
+  .brand-marquee__meta {
+    display: none;
+  }
+
+  .brand-marquee__pause {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    margin-inline-end: -0.5rem;
+    padding: 0 0.5rem;
+    border: 0;
+    background: transparent;
+    color: var(--bm-muted);
+    letter-spacing: var(--tracking-micro);
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: var(--radius-none);
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      color var(--transition-fast),
+      transform 160ms var(--ease-out);
+  }
+
+  .brand-marquee__pause[hidden] {
+    display: none;
+  }
+
+  .brand-marquee__pause:active {
+    transform: scale(0.96);
+  }
+
+  .brand-marquee__pause:focus-visible,
+  .brand-marquee__chip-link:focus-visible {
+    outline: 2px solid var(--bm-fg);
+    outline-offset: 4px;
+  }
+
+  .brand-marquee__pause-icon--play,
+  .brand-marquee[data-paused] .brand-marquee__pause-icon--pause {
+    display: none;
+  }
+
+  .brand-marquee[data-paused] .brand-marquee__pause-icon--play {
+    display: block;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .brand-marquee__pause:hover {
+      color: var(--bm-fg);
+    }
+  }
+
+  /* ---------- Rows ---------- */
+  .brand-marquee__row {
+    overflow: hidden;
+    -webkit-mask-image: var(--bm-edge);
+    mask-image: var(--bm-edge);
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: pan-y;
+  }
+
+  .brand-marquee__row + .brand-marquee__row,
+  .brand-marquee__reveal + .brand-marquee__reveal {
+    margin-top: clamp(0.75rem, 2vw, 1.75rem);
+  }
+
+  .brand-marquee__skew {
+    width: max-content;
+    min-width: 100%;
+    transform-origin: 50% 50%;
+  }
+
+  .brand-marquee__track {
+    display: flex;
+    width: max-content;
+    will-change: transform;
+  }
+
+  .brand-marquee__group {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    gap: var(--bm-gap);
+    padding-inline-end: var(--bm-gap);
+  }
+
+  .brand-marquee__list {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    gap: var(--bm-gap);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .brand-marquee__group > .brand-marquee__list + .brand-marquee__list {
+    margin-inline-start: 0;
+  }
+
+  /* Statement row */
+  .brand-marquee__word {
+    flex-shrink: 0;
+    font-family: var(--font-display);
+    font-size: var(--bm-statement-size);
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -0.025em;
+    word-spacing: 0.06em;
+    font-kerning: normal;
+    font-variant-ligatures: none;
+    font-feature-settings: 'liga' 0, 'clig' 0, 'kern' 1;
+    text-rendering: geometricPrecision;
+    white-space: nowrap;
+    padding-block: 0.06em 0.1em;
+  }
+
+  .brand-marquee__word--solid {
+    color: var(--bm-fg);
+  }
+
+  /* Fill = surface colour, painted over the stroke: hides the inner half of the
+     stroke and any contour overlaps, leaving one clean outline per word. */
+  .brand-marquee__word--outline {
+    color: var(--bm-bg);
+    -webkit-text-stroke: calc(var(--bm-outline) * 2) var(--bm-fg);
+    paint-order: stroke fill;
+    stroke-linejoin: round;
+  }
+
+  .brand-marquee__star {
+    flex-shrink: 0;
+    width: calc(var(--bm-statement-size) * 0.3);
+    height: calc(var(--bm-statement-size) * 0.3);
+    color: var(--bm-fg);
+  }
+
+  .brand-marquee__star--small {
+    width: calc(var(--bm-chip-size) * 0.3);
+    height: calc(var(--bm-chip-size) * 0.3);
+    margin-inline-start: var(--bm-gap);
+    color: var(--bm-muted);
+  }
+
+  .brand-marquee[data-motion] .brand-marquee__star {
+    animation: brand-marquee-spin 14s linear infinite;
+  }
+
+  .brand-marquee[data-motion][data-paused] .brand-marquee__star {
+    animation-play-state: paused;
+  }
+
+  @keyframes brand-marquee-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* Chip row */
+  .brand-marquee__item {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .brand-marquee__chip-link {
+    display: inline-flex;
+    align-items: center;
+    gap: calc(var(--bm-chip-size) * 0.22);
+    color: var(--bm-muted);
+    text-decoration: none;
+    white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      color 200ms ease,
+      transform 160ms var(--ease-out);
+  }
+
+  .brand-marquee__chip-link:active {
+    transform: scale(0.96);
+  }
+
+  .brand-marquee__chip {
+    position: relative;
+    display: block;
+    flex-shrink: 0;
+    height: calc(var(--bm-chip-size) * 1.15);
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    background: var(--bm-chip-bg);
+    border-radius: var(--radius-none);
+  }
+
+  .brand-marquee__chip::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    outline: 1px solid var(--bm-image-outline);
+    outline-offset: -1px;
+    pointer-events: none;
+  }
+
+  .brand-marquee__img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    object-fit: cover;
+    object-position: center;
+    transition: transform 400ms var(--ease-out);
+  }
+
+  .brand-marquee__label {
+    font-family: var(--font-display);
+    font-size: var(--bm-chip-size);
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    padding-block: 0.08em 0.12em;
+  }
+
+  .brand-marquee__arrow {
+    flex-shrink: 0;
+    width: calc(var(--bm-chip-size) * 0.3);
+    height: calc(var(--bm-chip-size) * 0.3);
+    margin-inline-start: calc(var(--bm-chip-size) * -0.08);
+    align-self: flex-start;
+    margin-top: calc(var(--bm-chip-size) * 0.12);
+    opacity: 0;
+    transform: translate(-4px, 4px);
+    transition:
+      opacity 200ms ease,
+      transform 250ms var(--ease-out);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .brand-marquee__chip-link:hover,
+    .brand-marquee__chip-link:focus-visible {
+      color: var(--bm-fg);
+    }
+
+    .brand-marquee__chip-link:hover .brand-marquee__img {
+      transform: scale(1.06);
+    }
+
+    .brand-marquee__chip-link:hover .brand-marquee__arrow,
+    .brand-marquee__chip-link:focus-visible .brand-marquee__arrow {
+      opacity: 1;
+      transform: translate(0, 0);
+    }
+  }
+
+  /* Touch: no hover, so the arrow is always a visible affordance */
+  @media (hover: none), (pointer: coarse) {
+    .brand-marquee__arrow {
+      opacity: 0.7;
+      transform: none;
+    }
+  }
+
+  /* ---------- Entrance (JS-gated so content never hides without script) ---------- */
+  .brand-marquee__reveal {
+    transition:
+      opacity 700ms var(--ease-out),
+      transform 900ms var(--ease-out);
+    transition-delay: calc(var(--i, 0) * 90ms);
+  }
+
+  .brand-marquee[data-ready]:not(.is-in) .brand-marquee__reveal {
+    opacity: 0;
+    transform: translateY(1.5rem);
+  }
+
+  /* ---------- Breakpoints ---------- */
+  @media (min-width: 750px) {
+    .brand-marquee {
+      --bm-outline: 1.5px;
+    }
+
+    .brand-marquee__meta {
+      display: block;
+    }
+  }
+
+  @media (min-width: 1200px) {
+    .brand-marquee {
+      --bm-outline: 2px;
+    }
+  }
+
+  /* ---------- Reduced motion: static, readable statement ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    .brand-marquee__pause {
+      display: none;
+    }
+
+    .brand-marquee__row {
+      overflow: visible;
+      -webkit-mask-image: none;
+      mask-image: none;
+    }
+
+    .brand-marquee__skew,
+    .brand-marquee__track {
+      width: auto;
+      transform: none !important;
+    }
+
+    .brand-marquee__track {
+      display: block;
+    }
+
+    .brand-marquee__group {
+      flex-wrap: wrap;
+      padding-inline: var(--space-sm);
+      row-gap: 0.25rem;
+      justify-content: center;
+    }
+
+    .brand-marquee__list {
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .brand-marquee__group[data-clone],
+    .brand-marquee__group > .brand-marquee__list:not(:first-child) {
+      display: none;
+    }
+
+    .brand-marquee__reveal {
+      transition: opacity 300ms ease;
+      transition-delay: 0ms;
+    }
+
+    .brand-marquee[data-ready]:not(.is-in) .brand-marquee__reveal {
+      transform: none;
+    }
+
+    .brand-marquee__arrow {
+      opacity: 0.7;
+      transform: none;
+      transition: none;
+    }
+  }
+{% endstylesheet %}
+
+{% javascript %}
+  (function () {
+    if (customElements.get('brand-marquee')) return;
+
+    const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+
+    class BrandMarquee extends HTMLElement {
+      connectedCallback() {
+        if (this._ready) return;
+        this._ready = true;
+
+        this.pauseBtn = this.querySelector('[data-pause]');
+        this.pauseLabel = this.querySelector('[data-pause-label]');
+        this.rows = Array.from(this.querySelectorAll('[data-row]')).map((el) => ({
+          el,
+          skew: el.querySelector('[data-skew]'),
+          track: el.querySelector('[data-track]'),
+          group: el.querySelector('[data-group]'),
+          speed: parseFloat(el.dataset.speed) || 48,
+          reverse: el.dataset.dir === 'right',
+          anim: null,
+          lastSkew: 0
+        }));
+
+        this.rate = 1;
+        this.v = 0;
+        this.lastY = window.scrollY;
+        this.last = 0;
+        this.raf = 0;
+        this.visible = false;
+        this.userPaused = false;
+        this.hover = false;
+        this.focused = false;
+        this.touching = false;
+        this.touchTimer = 0;
+        this.motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+        this.reduce = this.motion.matches;
+
+        this.setAttribute('data-ready', '');
+        this.bindReveal();
+        this.bindInput();
+
+        this.onMotionChange = (e) => {
+          this.reduce = e.matches;
+          if (this.reduce) this.teardown();
+          else this.build();
+        };
+        this.motion.addEventListener('change', this.onMotionChange);
+
+        if (this.reduce) {
+          this.classList.add('is-in');
+        } else {
+          this.build();
+        }
+      }
+
+      disconnectedCallback() {
+        this.teardown();
+        if (this.io) this.io.disconnect();
+        if (this.visIo) this.visIo.disconnect();
+        if (this.motion && this.onMotionChange) {
+          this.motion.removeEventListener('change', this.onMotionChange);
+        }
+        window.removeEventListener('scroll', this.onScroll);
+        this._ready = false;
+      }
+
+      /* One-shot entrance */
+      bindReveal() {
+        if (this.reduce || !('IntersectionObserver' in window)) {
+          this.classList.add('is-in');
+          return;
+        }
+        this.io = new IntersectionObserver(
+          (entries) => {
+            if (entries.some((e) => e.isIntersecting)) {
+              this.classList.add('is-in');
+              this.io.disconnect();
+            }
+          },
+          { threshold: 0.15 }
+        );
+        this.io.observe(this);
+      }
+
+      /* Hold sources: pause button, hover, keyboard focus, touch */
+      bindInput() {
+        if (this.pauseBtn) {
+          this.pauseBtn.addEventListener('click', () => {
+            this.userPaused = !this.userPaused;
+            this.toggleAttribute('data-paused', this.userPaused);
+            if (this.pauseLabel) this.pauseLabel.textContent = this.userPaused ? 'Play' : 'Pause';
+            if (!this.userPaused) this.wake();
+          });
+        }
+
+        this.addEventListener('pointerenter', (e) => {
+          if (e.pointerType !== 'mouse') return;
+          this.hover = true;
+        });
+        this.addEventListener('pointerleave', (e) => {
+          if (e.pointerType !== 'mouse') return;
+          this.hover = false;
+          this.wake();
+        });
+        this.addEventListener('focusin', () => {
+          this.focused = true;
+        });
+        this.addEventListener('focusout', () => {
+          this.focused = false;
+          this.wake();
+        });
+
+        // Moving targets are hard to tap — freeze instantly on touch, resume shortly after release.
+        this.addEventListener('pointerdown', (e) => {
+          if (e.pointerType === 'mouse') return;
+          clearTimeout(this.touchTimer);
+          this.touching = true;
+          this.rate = 0;
+          this.applyRate();
+        });
+        const release = (e) => {
+          if (e.pointerType === 'mouse') return;
+          clearTimeout(this.touchTimer);
+          this.touchTimer = setTimeout(() => {
+            this.touching = false;
+            this.wake();
+          }, 900);
+        };
+        this.addEventListener('pointerup', release);
+        this.addEventListener('pointercancel', release);
+      }
+
+      isHeld() {
+        return this.userPaused || this.hover || this.focused || this.touching;
+      }
+
+      build() {
+        this.teardown();
+        if (!this.rows.length || typeof Element.prototype.animate !== 'function') return;
+
+        this.setAttribute('data-motion', '');
+        if (this.pauseBtn) this.pauseBtn.hidden = false;
+
+        this.rows.forEach((row) => {
+          const width = row.group.getBoundingClientRect().width;
+          if (!width) return;
+          row.anim = row.track.animate(
+            [{ transform: 'translate3d(0, 0, 0)' }, { transform: 'translate3d(-50%, 0, 0)' }],
+            {
+              duration: this.durationFor(row, width),
+              iterations: Infinity,
+              easing: 'linear',
+              direction: row.reverse ? 'reverse' : 'normal'
+            }
+          );
+        });
+
+        this.onScroll = () => this.wake();
+        window.addEventListener('scroll', this.onScroll, { passive: true });
+
+        this.resizeObs = new ResizeObserver(() => this.retime());
+        this.rows.forEach((row) => this.resizeObs.observe(row.group));
+
+        this.visIo = new IntersectionObserver(
+          (entries) => {
+            this.visible = entries.some((e) => e.isIntersecting);
+            this.rows.forEach((row) => {
+              if (!row.anim) return;
+              if (this.visible) row.anim.play();
+              else row.anim.pause();
+            });
+            if (this.visible) {
+              this.lastY = window.scrollY;
+              this.wake();
+            }
+          },
+          { rootMargin: '80px 0px' }
+        );
+        this.visIo.observe(this);
+      }
+
+      durationFor(row, width) {
+        const scale = window.innerWidth < 750 ? 0.6 : 1;
+        return (width / (row.speed * scale)) * 1000;
+      }
+
+      /* Keep each row's phase when fonts load or the viewport resizes */
+      retime() {
+        this.rows.forEach((row) => {
+          if (!row.anim) return;
+          const width = row.group.getBoundingClientRect().width;
+          if (!width) return;
+          const oldDuration = row.anim.effect.getTiming().duration;
+          const next = this.durationFor(row, width);
+          if (Math.abs(next - oldDuration) < 1) return;
+          const phase = ((row.anim.currentTime || 0) % oldDuration) / oldDuration;
+          row.anim.effect.updateTiming({ duration: next });
+          row.anim.currentTime = phase * next;
+        });
+      }
+
+      teardown() {
+        cancelAnimationFrame(this.raf);
+        this.raf = 0;
+        if (this.resizeObs) this.resizeObs.disconnect();
+        if (this.visIo) this.visIo.disconnect();
+        window.removeEventListener('scroll', this.onScroll);
+        this.rows.forEach((row) => {
+          if (row.anim) row.anim.cancel();
+          row.anim = null;
+          if (row.skew) row.skew.style.transform = '';
+        });
+        this.removeAttribute('data-motion');
+        if (this.pauseBtn) this.pauseBtn.hidden = true;
+      }
+
+      wake() {
+        if (this.raf || !this.visible || this.reduce) return;
+        this.last = performance.now() - 16;
+        this.raf = requestAnimationFrame((t) => this.tick(t));
+      }
+
+      applyRate() {
+        this.rows.forEach((row) => {
+          if (row.anim) row.anim.updatePlaybackRate(this.rate);
+        });
+      }
+
+      /* Scroll velocity -> drift speed + lean. Idles itself when nothing changes. */
+      tick(now) {
+        this.raf = 0;
+        const dt = clamp(now - this.last, 1, 64);
+        this.last = now;
+
+        const y = window.scrollY;
+        const instant = ((y - this.lastY) / dt) * 1000;
+        this.lastY = y;
+        this.v += (instant - this.v) * (1 - Math.exp(-dt / 90));
+
+        const held = this.isHeld();
+        const target = held ? 0 : 1 + clamp(Math.abs(this.v) / 450, 0, 4.5);
+        const tau = target < this.rate ? 160 : 110;
+        const prev = this.rate;
+        this.rate += (target - this.rate) * (1 - Math.exp(-dt / tau));
+        if (target === 0 && this.rate < 0.004) this.rate = 0;
+        if (Math.abs(this.rate - prev) > 0.004 || this.rate === 0) this.applyRate();
+
+        const maxLean = window.innerWidth < 750 ? 4 : 6;
+        const lean = held ? 0 : clamp(this.v / 260, -maxLean, maxLean);
+        this.rows.forEach((row) => {
+          if (!row.skew) return;
+          if (Math.abs(lean - row.lastSkew) < 0.01 && lean !== 0) return;
+          row.lastSkew = lean;
+          row.skew.style.transform = Math.abs(lean) < 0.02 ? '' : 'skewX(' + -lean.toFixed(2) + 'deg)';
+        });
+
+        const settled = Math.abs(this.rate - target) < 0.003 && Math.abs(this.v) < 1;
+        if (this.visible && !(settled && (target === 0 || target === 1))) {
+          this.raf = requestAnimationFrame((t) => this.tick(t));
+        } else {
+          if (target === 1) this.rate = 1;
+          this.v = 0;
+          this.applyRate();
+          this.rows.forEach((row) => {
+            if (row.skew) row.skew.style.transform = '';
+            row.lastSkew = 0;
+          });
+          this.lastY = window.scrollY;
+        }
+      }
+    }
+
+    customElements.define('brand-marquee', BrandMarquee);
+  })();
+{% endjavascript %}
+
+{% schema %}
+{
+  "name": "Brand Marquee",
+  "tag": "section",
+  "class": "section-brand-marquee",
+  "max_blocks": 8,
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Two-row kinetic type band. Row 1 is the brand statement; row 2 is clickable category chips (add them as blocks)."
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Color scheme",
+      "options": [
+        { "value": "dark", "label": "Inky dark" },
+        { "value": "light", "label": "Gallery white" }
+      ],
+      "default": "dark"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "The ADOT standard"
+    },
+    {
+      "type": "text",
+      "id": "meta",
+      "label": "Meta (desktop only)",
+      "default": "Autumn / Winter 2026"
+    },
+    {
+      "type": "text",
+      "id": "statement",
+      "label": "Statement words",
+      "info": "Separate phrases with a vertical bar ( | ). Words alternate between solid and outlined.",
+      "default": "Soft cotton|Heavy fleece|Daily wear|Easy fits"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "chip",
+      "name": "Category chip",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Product image",
+          "info": "Portrait 3:4 works best. Leave blank to use the bundled category photo."
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Label",
+          "default": "Hoodies"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Brand Marquee",
+      "blocks": [
+        { "type": "chip", "settings": { "title": "Hoodies" } },
+        { "type": "chip", "settings": { "title": "Shirts" } },
+        { "type": "chip", "settings": { "title": "Trousers" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

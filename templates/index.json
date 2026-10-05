@@ -65,14 +65,41 @@
         "heading": "Shop by Category"
       }
     },
-    "fabric_reveal": {
-      "type": "fabric-reveal",
+    "brand_marquee": {
+      "type": "brand-marquee",
+      "blocks": {
+        "chip_hoodies": {
+          "type": "chip",
+          "settings": {
+            "title": "Hoodies",
+            "link": "/collections/all?category=hoodies"
+          }
+        },
+        "chip_shirts": {
+          "type": "chip",
+          "settings": {
+            "title": "Shirts",
+            "link": "/collections/all?category=shirts"
+          }
+        },
+        "chip_trousers": {
+          "type": "chip",
+          "settings": {
+            "title": "Trousers",
+            "link": "/collections/all?category=trousers"
+          }
+        }
+      },
+      "block_order": [
+        "chip_hoodies",
+        "chip_shirts",
+        "chip_trousers"
+      ],
       "settings": {
-        "eyebrow": "450 GSM",
-        "heading": "Heavyweight Boxy Hoodie",
-        "spec": "Organic cotton loopback fleece",
-        "hint_label": "Watch it open",
-        "button_label": "Add to Bag"
+        "color_scheme": "dark",
+        "eyebrow": "The ADOT standard",
+        "meta": "Autumn / Winter 2026",
+        "statement": "Soft cotton|Heavy fleece|Daily wear|Easy fits"
       }
     },
     "trust_strip": {
@@ -165,7 +192,7 @@
     "hero",
     "category_tiles",
     "featured_collection",
-    "fabric_reveal",
+    "brand_marquee",
     "trust_strip",
     "interactive_gallery"
   ]
