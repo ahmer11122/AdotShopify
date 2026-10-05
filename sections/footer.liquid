@@ -106,8 +106,6 @@
           {% else %}
             <li><a href="{{ routes.root_url }}pages/contact" class="footer__link">Contact Us</a></li>
             <li><a href="{{ routes.root_url }}pages/faq" class="footer__link">FAQs</a></li>
-            <li><a href="{{ routes.search_url }}" class="footer__link">Search Catalog</a></li>
-            <li><a href="{{ routes.all_products_collection_url }}" class="footer__link">All Essentials</a></li>
           {% endif %}
         </ul>
       </nav>
@@ -127,9 +125,6 @@
         {%- assign wa_greeting = section.settings.whatsapp_greeting | default: 'Hello ADOT, I would like assistance with an order.' -%}
 
         <ul class="footer__links">
-          <li>
-            <a href="{{ routes.root_url }}pages/contact" class="footer__link">Email Contact Form</a>
-          </li>
           <li>
             <a
               href="https://wa.me/{{ wa_raw }}?text={{ wa_greeting | url_encode }}"
