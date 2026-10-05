@@ -1,0 +1,317 @@
+{% comment %}
+  FAQ Page — Clean Editorial Accordion with Theme Editor Blocks
+  Assign this template to your FAQ page in Shopify Admin > Pages.
+{% endcomment %}
+
+<div class="faq-page container">
+  <!-- Header -->
+  <header class="faq-page__header">
+    <span class="faq-page__eyebrow text-micro">HELP & QUESTIONS</span>
+    <h1 class="faq-page__title">{{ page.title | default: 'Frequently Asked Questions' }}</h1>
+    {% if page.content != blank %}
+      <div class="faq-page__intro rte">{{ page.content }}</div>
+    {% else %}
+      <p class="faq-page__intro">
+        Find quick answers regarding delivery, Cash on Delivery, sizing, and exchanges.
+      </p>
+    {% endif %}
+  </header>
+
+  <!-- FAQ Accordion List -->
+  <div class="faq-page__content">
+    <div class="faq-page__list">
+      {% for block in section.blocks %}
+        <details class="faq-page__item" {{ block.shopify_attributes }}>
+          <summary class="faq-page__summary">
+            <span class="faq-page__question">{{ block.settings.question }}</span>
+            <svg class="faq-page__chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="4 6 8 10 12 6"></polyline>
+            </svg>
+          </summary>
+          <div class="faq-page__answer rte">
+            {{ block.settings.answer }}
+          </div>
+        </details>
+      {% endfor %}
+    </div>
+
+    <!-- Help Card Footer -->
+    <div class="faq-page__footer-card">
+      <div class="faq-page__footer-text">
+        <span class="text-micro faq-page__footer-eyebrow">STILL NEED HELP?</span>
+        <h2 class="faq-page__footer-title">Have a specific question?</h2>
+        <p class="faq-page__footer-desc">
+          Our team is available on WhatsApp to answer any question about sizes, fabrics, or orders.
+        </p>
+      </div>
+
+      {%- assign wa_num = section.settings.whatsapp_number | default: '923131707080' | remove: '+' | remove: ' ' | remove: '-' -%}
+      <div class="faq-page__footer-actions">
+        <a
+          href="https://wa.me/{{ wa_num }}?text={{ 'Hello ADOT, I have a question about my order.' | url_encode }}"
+          class="faq-page__wa-btn"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span class="faq-page__wa-dot" aria-hidden="true"></span>
+          <span>Chat on WhatsApp</span>
+        </a>
+        <a href="{{ routes.root_url }}pages/contact" class="faq-page__contact-btn">
+          Email Contact Form
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% stylesheet %}
+  .faq-page {
+    padding-top: clamp(2.5rem, 5vw, 4rem);
+    padding-bottom: clamp(4rem, 8vw, 7rem);
+  }
+
+  .faq-page__header {
+    margin-bottom: clamp(2.5rem, 4vw, 3.5rem);
+    padding-bottom: clamp(1.5rem, 3vw, 2rem);
+    border-bottom: 1px solid var(--color-border);
+    max-width: 720px;
+  }
+
+  .faq-page__eyebrow {
+    display: block;
+    color: var(--color-text-subtle);
+    margin-bottom: 0.75rem;
+  }
+
+  .faq-page__title {
+    font-family: var(--font-display);
+    font-size: clamp(2.25rem, 4.5vw, 3.5rem);
+    font-weight: 500;
+    letter-spacing: var(--tracking-tight);
+    line-height: var(--leading-tight);
+    margin: 0 0 1rem 0;
+  }
+
+  .faq-page__intro {
+    font-size: var(--font-size-body);
+    color: var(--color-text-muted);
+    line-height: var(--leading-normal);
+    margin: 0;
+  }
+
+  .faq-page__content {
+    max-width: 760px;
+  }
+
+  /* List */
+  .faq-page__list {
+    border-top: 1px solid var(--color-border);
+    margin-bottom: clamp(3rem, 6vw, 5rem);
+  }
+
+  .faq-page__item {
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .faq-page__summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 1.35rem 0;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .faq-page__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .faq-page__summary::marker {
+    display: none;
+    content: '';
+  }
+
+  .faq-page__question {
+    font-family: var(--font-display);
+    font-size: clamp(1.05rem, 2vw, 1.25rem);
+    font-weight: 500;
+    letter-spacing: var(--tracking-tight);
+    color: var(--color-text);
+    transition: color var(--transition-fast);
+  }
+
+  .faq-page__summary:hover .faq-page__question {
+    color: var(--color-text-muted);
+  }
+
+  .faq-page__chevron {
+    flex-shrink: 0;
+    color: var(--color-text-muted);
+    transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1), color var(--transition-fast);
+  }
+
+  .faq-page__item[open] .faq-page__chevron {
+    transform: rotate(180deg);
+    color: var(--color-text);
+  }
+
+  .faq-page__answer {
+    padding: 0 0 1.5rem 0;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-body);
+    line-height: var(--leading-normal);
+    max-width: 660px;
+  }
+
+  .faq-page__answer p {
+    margin: 0 0 0.75rem 0;
+  }
+
+  .faq-page__answer p:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Help Card Footer */
+  .faq-page__footer-card {
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    padding: clamp(1.75rem, 3.5vw, 2.5rem);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  @media (min-width: 640px) {
+    .faq-page__footer-card {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .faq-page__footer-text {
+      max-width: 440px;
+    }
+  }
+
+  .faq-page__footer-eyebrow {
+    display: block;
+    color: var(--color-text-subtle);
+    margin-bottom: 0.35rem;
+  }
+
+  .faq-page__footer-title {
+    font-family: var(--font-display);
+    font-size: var(--font-size-h3);
+    font-weight: 500;
+    letter-spacing: var(--tracking-tight);
+    margin: 0 0 0.5rem 0;
+  }
+
+  .faq-page__footer-desc {
+    font-size: var(--font-size-caption);
+    color: var(--color-text-muted);
+    line-height: var(--leading-normal);
+    margin: 0;
+  }
+
+  .faq-page__footer-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  .faq-page__wa-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    padding: 0.9rem 1.5rem;
+    background: #25D366;
+    color: #ffffff;
+    border: none;
+    text-decoration: none;
+    font-family: var(--font-body);
+    font-size: var(--font-size-micro);
+    font-weight: 600;
+    letter-spacing: var(--tracking-micro);
+    text-transform: uppercase;
+    white-space: nowrap;
+    transition: background-color var(--transition-fast);
+  }
+
+  .faq-page__wa-btn:hover {
+    background-color: #20bd5a;
+  }
+
+  .faq-page__wa-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #ffffff;
+    animation: wa-pulse 2s infinite;
+  }
+
+  .faq-page__contact-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.85rem 1.5rem;
+    border: 1px solid var(--color-border-strong);
+    background: transparent;
+    color: var(--color-text);
+    text-decoration: none;
+    font-family: var(--font-body);
+    font-size: var(--font-size-micro);
+    font-weight: 600;
+    letter-spacing: var(--tracking-micro);
+    text-transform: uppercase;
+    white-space: nowrap;
+    transition: background-color var(--transition-fast), color var(--transition-fast);
+  }
+
+  .faq-page__contact-btn:hover {
+    background-color: var(--color-text);
+    color: var(--color-white);
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "FAQ Page",
+  "settings": [
+    {
+      "type": "text",
+      "id": "whatsapp_number",
+      "label": "WhatsApp Phone Number",
+      "default": "923131707080",
+      "info": "Include country code without plus sign (e.g. 923131707080)."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "question",
+      "name": "FAQ Item",
+      "settings": [
+        {
+          "type": "text",
+          "id": "question",
+          "label": "Question",
+          "default": "How does shipping work?"
+        },
+        {
+          "type": "richtext",
+          "id": "answer",
+          "label": "Answer",
+          "default": "<p>We deliver nationwide across Pakistan in 2 to 4 working days.</p>"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

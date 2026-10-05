@@ -1,0 +1,422 @@
+{% comment %}
+  Contact Page — Clean Editorial Form + WhatsApp Direct Support
+  Assign this template to your Contact page in Shopify Admin > Pages.
+{% endcomment %}
+
+<div class="contact-page container">
+  <!-- Header -->
+  <header class="contact-page__header">
+    <span class="contact-page__eyebrow text-micro">CUSTOMER CARE</span>
+    <h1 class="contact-page__title">{{ page.title | default: 'Get in Touch' }}</h1>
+    {% if page.content != blank %}
+      <div class="contact-page__intro rte">{{ page.content }}</div>
+    {% else %}
+      <p class="contact-page__intro">
+        We are here to help. Send us an email using the form below or chat with us on WhatsApp for fast support.
+      </p>
+    {% endif %}
+  </header>
+
+  <div class="contact-page__grid">
+    <!-- Contact Form Column -->
+    <div class="contact-page__form-wrap">
+      {% form 'contact', id: 'ContactForm', class: 'contact-page__form' %}
+        {% if form.posted_successfully? %}
+          <div class="contact-page__alert contact-page__alert--success" role="status">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <p>{{ section.settings.success_message | default: 'Thank you! Your message has been sent. We will get back to you shortly.' }}</p>
+          </div>
+        {% endif %}
+
+        {% if form.errors %}
+          <div class="contact-page__alert contact-page__alert--error" role="alert">
+            {{ form.errors | default_errors }}
+          </div>
+        {% endif %}
+
+        <div class="contact-page__field">
+          <label for="ContactName-{{ section.id }}" class="contact-page__label text-micro">YOUR NAME</label>
+          <input
+            type="text"
+            name="contact[name]"
+            id="ContactName-{{ section.id }}"
+            class="contact-page__input"
+            value="{% if form.name %}{{ form.name }}{% elsif customer %}{{ customer.name }}{% endif %}"
+            placeholder="Full name"
+            autocomplete="name"
+            required
+          >
+        </div>
+
+        <div class="contact-page__field">
+          <label for="ContactEmail-{{ section.id }}" class="contact-page__label text-micro">EMAIL ADDRESS</label>
+          <input
+            type="email"
+            name="contact[email]"
+            id="ContactEmail-{{ section.id }}"
+            class="contact-page__input"
+            value="{% if form.email %}{{ form.email }}{% elsif customer %}{{ customer.email }}{% endif %}"
+            placeholder="name@example.com"
+            autocomplete="email"
+            required
+          >
+        </div>
+
+        <div class="contact-page__field">
+          <label for="ContactPhone-{{ section.id }}" class="contact-page__label text-micro">PHONE NUMBER (OPTIONAL)</label>
+          <input
+            type="tel"
+            name="contact[phone]"
+            id="ContactPhone-{{ section.id }}"
+            class="contact-page__input"
+            value="{% if form.phone %}{{ form.phone }}{% elsif customer %}{{ customer.phone }}{% endif %}"
+            placeholder="0300 1234567"
+            autocomplete="tel"
+          >
+        </div>
+
+        <div class="contact-page__field">
+          <label for="ContactMessage-{{ section.id }}" class="contact-page__label text-micro">MESSAGE</label>
+          <textarea
+            name="contact[body]"
+            id="ContactMessage-{{ section.id }}"
+            class="contact-page__textarea"
+            rows="5"
+            placeholder="Tell us about your order, size inquiry, or question..."
+            required
+          >{% if form.body %}{{ form.body }}{% endif %}</textarea>
+        </div>
+
+        <button type="submit" class="contact-page__submit">
+          Send Message
+        </button>
+      {% endform %}
+    </div>
+
+    <!-- Sidebar Info & WhatsApp Column -->
+    <aside class="contact-page__sidebar" aria-label="Support details">
+      <!-- WhatsApp Box -->
+      <div class="contact-page__card contact-page__card--wa">
+        <div class="contact-page__card-header">
+          <span class="contact-page__card-badge text-micro">INSTANT CHAT</span>
+          <h2 class="contact-page__card-title">Message on WhatsApp</h2>
+          <p class="contact-page__card-text">
+            For fastest help with your orders, sizing questions, or exchange requests.
+          </p>
+        </div>
+
+        {%- assign wa_num = section.settings.whatsapp_number | default: '923131707080' | remove: '+' | remove: ' ' | remove: '-' -%}
+        <a
+          href="https://wa.me/{{ wa_num }}?text={{ section.settings.whatsapp_message | default: 'Hello ADOT, I need help with an order.' | url_encode }}"
+          class="contact-page__wa-btn"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span class="contact-page__wa-dot" aria-hidden="true"></span>
+          <span>Open WhatsApp Chat</span>
+        </a>
+      </div>
+
+      <!-- Quick Details Box -->
+      <div class="contact-page__card contact-page__card--details">
+        <div class="contact-page__info-row">
+          <span class="contact-page__info-title text-micro">RESPONSE TIME</span>
+          <p class="contact-page__info-body">{{ section.settings.response_time | default: 'Within 2 to 4 hours on business days.' }}</p>
+        </div>
+
+        <div class="contact-page__info-row">
+          <span class="contact-page__info-title text-micro">WORKING HOURS</span>
+          <p class="contact-page__info-body">{{ section.settings.working_hours | default: 'Monday to Saturday, 10:00 AM – 8:00 PM (PKT)' }}</p>
+        </div>
+
+        <div class="contact-page__info-row">
+          <span class="contact-page__info-title text-micro">DELIVERY COVERAGE</span>
+          <p class="contact-page__info-body">Cash on Delivery available nationwide across Pakistan.</p>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+{% stylesheet %}
+  .contact-page {
+    padding-top: clamp(2.5rem, 5vw, 4rem);
+    padding-bottom: clamp(4rem, 8vw, 7rem);
+  }
+
+  .contact-page__header {
+    margin-bottom: clamp(2.5rem, 4vw, 3.5rem);
+    padding-bottom: clamp(1.5rem, 3vw, 2rem);
+    border-bottom: 1px solid var(--color-border);
+    max-width: 640px;
+  }
+
+  .contact-page__eyebrow {
+    display: block;
+    color: var(--color-text-subtle);
+    margin-bottom: 0.75rem;
+  }
+
+  .contact-page__title {
+    font-family: var(--font-display);
+    font-size: clamp(2.25rem, 4.5vw, 3.5rem);
+    font-weight: 500;
+    letter-spacing: var(--tracking-tight);
+    line-height: var(--leading-tight);
+    margin: 0 0 1rem 0;
+  }
+
+  .contact-page__intro {
+    font-size: var(--font-size-body);
+    color: var(--color-text-muted);
+    line-height: var(--leading-normal);
+    margin: 0;
+  }
+
+  .contact-page__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(2.5rem, 5vw, 4.5rem);
+  }
+
+  @media (min-width: 900px) {
+    .contact-page__grid {
+      grid-template-columns: 1.15fr 0.85fr;
+      align-items: start;
+    }
+  }
+
+  /* Form */
+  .contact-page__form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .contact-page__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .contact-page__label {
+    color: var(--color-text-muted);
+  }
+
+  .contact-page__input,
+  .contact-page__textarea {
+    width: 100%;
+    padding: 0.95rem 1rem;
+    border: 1px solid var(--color-border-strong);
+    background: var(--color-background);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: 16px; /* Prevents auto-zoom on mobile */
+    border-radius: 0;
+    transition: border-color var(--transition-fast);
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .contact-page__input:focus,
+  .contact-page__textarea:focus {
+    border-color: var(--color-text);
+    outline: none;
+  }
+
+  .contact-page__textarea {
+    resize: vertical;
+    min-height: 140px;
+    line-height: var(--leading-normal);
+  }
+
+  .contact-page__submit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.1rem 2.5rem;
+    background: var(--color-text);
+    color: var(--color-white);
+    border: none;
+    border-radius: 0;
+    font-family: var(--font-body);
+    font-size: var(--font-size-micro);
+    font-weight: 600;
+    letter-spacing: var(--tracking-micro);
+    text-transform: uppercase;
+    cursor: pointer;
+    align-self: flex-start;
+    transition: background-color var(--transition-fast);
+  }
+
+  .contact-page__submit:hover {
+    background-color: #333333;
+  }
+
+  @media (max-width: 600px) {
+    .contact-page__submit {
+      width: 100%;
+    }
+  }
+
+  /* Alerts */
+  .contact-page__alert {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    font-size: var(--font-size-body);
+  }
+
+  .contact-page__alert--success {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: var(--color-in-stock, #15803d);
+  }
+
+  .contact-page__alert--error {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: var(--color-sale, #b91c1c);
+  }
+
+  /* Sidebar */
+  .contact-page__sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .contact-page__card {
+    border: 1px solid var(--color-border);
+    padding: clamp(1.5rem, 3vw, 2.25rem);
+    background: var(--color-surface);
+  }
+
+  .contact-page__card--wa {
+    border-color: var(--color-border-strong);
+  }
+
+  .contact-page__card-badge {
+    display: inline-block;
+    color: #15803d;
+    margin-bottom: 0.5rem;
+  }
+
+  .contact-page__card-title {
+    font-family: var(--font-display);
+    font-size: var(--font-size-h3);
+    font-weight: 500;
+    letter-spacing: var(--tracking-tight);
+    margin: 0 0 0.75rem 0;
+  }
+
+  .contact-page__card-text {
+    font-size: var(--font-size-caption);
+    color: var(--color-text-muted);
+    line-height: var(--leading-normal);
+    margin: 0 0 1.5rem 0;
+  }
+
+  .contact-page__wa-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 1rem 1.5rem;
+    background: #25D366;
+    color: #ffffff;
+    border: none;
+    text-decoration: none;
+    font-family: var(--font-body);
+    font-size: var(--font-size-micro);
+    font-weight: 600;
+    letter-spacing: var(--tracking-micro);
+    text-transform: uppercase;
+    transition: background-color var(--transition-fast);
+  }
+
+  .contact-page__wa-btn:hover {
+    background-color: #20bd5a;
+  }
+
+  .contact-page__wa-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #ffffff;
+    animation: wa-pulse 2s infinite;
+  }
+
+  @keyframes wa-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.85); }
+  }
+
+  .contact-page__info-row {
+    padding-bottom: 1.25rem;
+    margin-bottom: 1.25rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .contact-page__info-row:last-child {
+    padding-bottom: 0;
+    margin-bottom: 0;
+    border-bottom: none;
+  }
+
+  .contact-page__info-title {
+    display: block;
+    color: var(--color-text-subtle);
+    margin-bottom: 0.35rem;
+  }
+
+  .contact-page__info-body {
+    font-size: var(--font-size-caption);
+    color: var(--color-text);
+    line-height: var(--leading-normal);
+    margin: 0;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Contact Page",
+  "settings": [
+    {
+      "type": "text",
+      "id": "whatsapp_number",
+      "label": "WhatsApp Phone Number",
+      "default": "923131707080",
+      "info": "Include country code without plus sign or spaces (e.g. 923131707080)."
+    },
+    {
+      "type": "text",
+      "id": "whatsapp_message",
+      "label": "Pre-filled WhatsApp Message",
+      "default": "Hello ADOT, I need help with an order."
+    },
+    {
+      "type": "text",
+      "id": "success_message",
+      "label": "Success Message",
+      "default": "Thank you! Your message has been sent. We will get back to you shortly."
+    },
+    {
+      "type": "text",
+      "id": "response_time",
+      "label": "Response Time Note",
+      "default": "Within 2 to 4 hours on business days."
+    },
+    {
+      "type": "text",
+      "id": "working_hours",
+      "label": "Working Hours",
+      "default": "Monday to Saturday, 10:00 AM – 8:00 PM (PKT)"
+    }
+  ]
+}
+{% endschema %}
