@@ -1,16 +1,45 @@
 {% comment %}
-  Cinematic Architectural Footer — ADOT Monolithic Editorial Foundation
-  Features:
-  - Fixed curtain reveal on desktop (≥990px) with dynamic height calculation & safe viewport fallback
-  - Tier 1: Continuous brand philosophy marquee ticker with hairline framing
-  - Tier 2: 4-Column balanced architectural grid (Newsletter / Collections / Support / Contact on WhatsApp)
-            Optimized for mobile with 2-column compact layout (Collections & Support side-by-side)
-  - Tier 3: Monolithic ADOT horizon wordmark nestled lower to ground the layout with perfect visual balance
-  - Tier 4: Minimalist baseline bar without dividing border (dynamic year copyright & Tactile Back to Top)
-  - Mobile-native optimizations: 16px inputs (no iOS zoom), 44px tap targets, safe-area insets
+  ADOT Footer v2 — "Monolith"
+  One memorable thing: the wordmark. Everything else is quiet.
+
+  - Desktop (>=990px wide, >=720px tall): fixed curtain reveal, footer is exactly one screen.
+    Wordmark spans the full width and bleeds off the bottom edge if the screen is short.
+  - Everything else: normal flow, wordmark never cropped.
+  - Scoped CSS custom properties live on .footer-reveal. No theme files need editing.
 {% endcomment %}
 
-<div class="footer-reveal" id="FooterReveal">
+{%- liquid
+  assign principles = section.settings.marquee_text | default: 'Heavyweight essentials · Cash on delivery · Easy exchange · Made to last' | split: '·'
+  assign heading = section.settings.heading | default: 'First access to every drop.'
+  assign wordmark = section.settings.wordmark_text | default: shop.name | default: 'ADOT'
+  assign wordmark_chars = wordmark | upcase | split: ''
+  assign badge_1 = section.settings.horizon_badge_1
+  assign badge_2 = section.settings.horizon_badge_2
+
+  assign form_id = 'FooterNewsletter-' | append: section.id
+  assign input_placeholder = section.settings.placeholder | default: 'Email address'
+  assign button_label = section.settings.button_label | default: 'Subscribe'
+  assign success_text = section.settings.success_text | default: "You're subscribed."
+
+  assign tz = section.settings.timezone | default: 'Asia/Karachi'
+  assign open_h = section.settings.support_open
+  assign close_h = section.settings.support_close
+  assign open_label = open_h | plus: 100 | slice: 1, 2
+
+  assign wa_raw = section.settings.whatsapp_number | default: '923131707080' | replace: '+', '' | replace: ' ', '' | replace: '-', ''
+  assign wa_mid = wa_raw | slice: 2, 3
+  assign wa_end = wa_raw | slice: 5, 7
+  if wa_raw.size == 12
+    assign wa_display = '+92 ' | append: wa_mid | append: ' ' | append: wa_end
+  else
+    assign wa_display = '+' | append: wa_raw
+  endif
+  assign wa_greeting = section.settings.whatsapp_greeting | default: 'Hello ADOT, I would like assistance with an order.'
+
+  assign social = section.settings.social_menu
+-%}
+
+<div class="footer-reveal" id="FooterReveal" data-footer-reveal>
   {% # theme-check-disable ParserBlockingScript %}
   <script>
     (function (el) {
@@ -18,179 +47,213 @@
       try { reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
       var design = !!(window.Shopify && Shopify.designMode);
       if (reduce || design) el.setAttribute('data-static', '');
+      if (!reduce && !design) el.setAttribute('data-motion', '');
     })(document.currentScript.parentElement);
   </script>
   {% # theme-check-enable ParserBlockingScript %}
 
-  <footer class="footer" data-section-id="{{ section.id }}" role="contentinfo">
-    
-    <!-- TIER 1: Marquee Brand Philosophy Ticker -->
-    <div class="footer__marquee" aria-hidden="true">
-      <div class="footer__marquee-track">
-        {%- assign marquee = section.settings.marquee_text | default: 'Heavyweight essentials · Cash on delivery · Easy exchange · Made to last' -%}
-        {%- assign marquee_parts = marquee | split: '·' -%}
-        {%- for pass in (1..2) -%}
-          <span class="footer__marquee-group">
-            {%- for part in marquee_parts -%}
-              <span class="footer__marquee-word">{{ part | strip }}</span>
-              <span class="footer__dot"></span>
-            {%- endfor -%}
-          </span>
+  <div class="footer" data-section-id="{{ section.id }}">
+    <div class="footer__inner">
+
+      {%- comment %} 1 · Principles: quiet trust strip {% endcomment -%}
+      <ul class="footer__principles">
+        {%- for part in principles -%}
+          {%- assign item = part | strip -%}
+          {%- if item != blank -%}
+            <li class="footer__principle">{{ item }}</li>
+          {%- endif -%}
         {%- endfor -%}
-      </div>
-    </div>
+      </ul>
 
-    <!-- TIER 2: Main 4-Column Editorial Grid (Mobile: 2-Column Responsive) -->
-    <div class="footer__body">
-      
-      <!-- Column 1: Newsletter -->
-      <section class="footer__col footer__col--newsletter" aria-labelledby="FooterDispatchHeading-{{ section.id }}">
-        <p class="footer__eyebrow text-micro">{{ section.settings.eyebrow | default: 'Newsletter' }}</p>
-        <h2 id="FooterDispatchHeading-{{ section.id }}" class="footer__heading">
-          {{ section.settings.heading | default: 'Stay updated.' }}
-        </h2>
-        <p class="footer__tagline">
-          {{ section.settings.tagline | default: 'New drops and private releases.' }}
-        </p>
+      {%- comment %} 2 · Body {% endcomment -%}
+      <div class="footer__body">
 
-        {% form 'customer', class: 'footer__form' %}
-          <input type="hidden" name="contact[tags]" value="newsletter">
-          <label class="visually-hidden" for="FooterEmail-{{ section.id }}">Email address</label>
-          <div class="footer__input-group">
-            <input
-              type="email"
-              name="contact[email]"
-              id="FooterEmail-{{ section.id }}"
-              class="footer__input"
-              placeholder="{{ 'general.newsletter.placeholder' | t | default: 'Email address' }}"
-              autocomplete="email"
-              required
-            >
-            <button type="submit" class="footer__submit" aria-label="Subscribe">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                <path d="M1 7H13M13 7L7.5 1.5M13 7L7.5 12.5" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>
+        <section class="footer__col footer__col--newsletter" aria-labelledby="FooterHeading-{{ section.id }}">
+          {%- if section.settings.eyebrow != blank -%}
+            <p class="footer__label">{{ section.settings.eyebrow }}</p>
+          {%- endif -%}
+
+          <h2 class="footer__heading" id="FooterHeading-{{ section.id }}">{{ heading }}</h2>
+
+          {%- if section.settings.tagline != blank -%}
+            <p class="footer__tagline">{{ section.settings.tagline }}</p>
+          {%- endif -%}
+
+          {%- form 'customer', id: form_id, class: 'footer__form' -%}
+            <input type="hidden" name="contact[tags]" value="newsletter">
+
+            {%- comment %} Success sits BEFORE the field so CSS can use the ~ sibling selector {% endcomment -%}
+            <div class="footer__success" {% if form.posted_successfully? %}data-visible{% endif %}>
+              <svg class="footer__check" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M4.5 10.5L8.5 14.5L15.5 6" pathLength="1" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
               </svg>
-            </button>
-          </div>
-          {% if form.posted_successfully? %}
-            <p class="footer__success text-micro" role="status">{{ 'general.newsletter.success' | t | default: 'Subscribed.' }}</p>
-          {% endif %}
-        {% endform %}
-      </section>
+              <span>{{ success_text }}</span>
+            </div>
 
-      <!-- Column 2: Collections Navigation -->
-      <nav class="footer__col footer__col--collections" aria-label="Collections">
-        <p class="footer__col-label text-micro">Collections</p>
-        <ul class="footer__links">
-          {% if section.settings.collections_menu != blank and section.settings.collections_menu.links.size > 0 %}
-            {% for link in section.settings.collections_menu.links %}
-              <li><a href="{{ link.url }}" class="footer__link">{{ link.title }}</a></li>
-            {% endfor %}
-          {% else %}
-            <li><a href="{{ routes.all_products_collection_url }}?category=hoodies" class="footer__link">Hoodies</a></li>
-            <li><a href="{{ routes.all_products_collection_url }}?category=shirts" class="footer__link">Shirts</a></li>
-            <li><a href="{{ routes.all_products_collection_url }}?category=trousers" class="footer__link">Trousers</a></li>
-            <li><a href="{{ routes.all_products_collection_url }}" class="footer__link">All Essentials</a></li>
-          {% endif %}
-        </ul>
-      </nav>
+            <div class="footer__field">
+              <label class="visually-hidden" for="FooterEmail-{{ section.id }}">Email address</label>
+              <input
+                type="email"
+                name="contact[email]"
+                id="FooterEmail-{{ section.id }}"
+                class="footer__input"
+                value="{{ form.email }}"
+                placeholder="{{ input_placeholder | escape }}"
+                autocomplete="email"
+                autocapitalize="off"
+                spellcheck="false"
+                inputmode="email"
+                required
+                {% if form.errors %}aria-invalid="true" aria-describedby="FooterError-{{ section.id }}"{% endif %}
+              >
+              <button type="submit" class="footer__submit">
+                <span class="footer__roll">
+                  <span class="footer__roll-a">{{ button_label }}</span>
+                  <span class="footer__roll-b" aria-hidden="true">{{ button_label }}</span>
+                </span>
+              </button>
+            </div>
 
-      <!-- Column 3: Support Navigation -->
-      <nav class="footer__col footer__col--support" aria-label="Support">
-        <p class="footer__col-label text-micro">Support</p>
-        <ul class="footer__links">
-          {% if section.settings.menu != blank and section.settings.menu.links.size > 0 %}
-            {% for link in section.settings.menu.links %}
-              <li><a href="{{ link.url }}" class="footer__link">{{ link.title }}</a></li>
-            {% endfor %}
-          {% else %}
-            <li><a href="{{ routes.root_url }}pages/contact" class="footer__link">Contact Us</a></li>
-            <li><a href="{{ routes.root_url }}pages/faq" class="footer__link">FAQs</a></li>
-          {% endif %}
-        </ul>
-      </nav>
+            {%- if form.errors -%}
+              <p class="footer__msg" id="FooterError-{{ section.id }}" role="alert">
+                {%- for field in form.errors -%}
+                  {{- form.errors.translated_fields[field] | capitalize }} {{ form.errors.messages[field] }}
+                {%- endfor -%}
+              </p>
+            {%- endif -%}
+          {%- endform -%}
+        </section>
 
-      <!-- Column 4: Contact on WhatsApp (Clean & Minimal) -->
-      <div class="footer__col footer__col--contact">
-        <p class="footer__col-label text-micro">Contact</p>
-        
-        {%- assign wa_raw = section.settings.whatsapp_number | default: '923131707080' | replace: '+', '' | replace: ' ', '' | replace: '-', '' -%}
-        {%- assign wa_mid = wa_raw | slice: 2, 3 -%}
-        {%- assign wa_end = wa_raw | slice: 5, 7 -%}
-        {%- if wa_raw.size == 12 -%}
-          {%- assign wa_display = '+92 ' | append: wa_mid | append: ' ' | append: wa_end -%}
-        {%- else -%}
-          {%- assign wa_display = '+' | append: wa_raw -%}
-        {%- endif -%}
-        {%- assign wa_greeting = section.settings.whatsapp_greeting | default: 'Hello ADOT, I would like assistance with an order.' -%}
+        <nav class="footer__col footer__col--collections" aria-labelledby="FooterCollections-{{ section.id }}">
+          <p class="footer__label" id="FooterCollections-{{ section.id }}">Collections</p>
+          <ul class="footer__links">
+            {%- if section.settings.collections_menu != blank and section.settings.collections_menu.links.size > 0 -%}
+              {%- for link in section.settings.collections_menu.links -%}
+                <li><a href="{{ link.url }}" class="footer__link"><span class="footer__roll"><span class="footer__roll-a">{{ link.title }}</span><span class="footer__roll-b" aria-hidden="true">{{ link.title }}</span></span></a></li>
+              {%- endfor -%}
+            {%- else -%}
+              <li><a href="{{ routes.all_products_collection_url }}?category=hoodies" class="footer__link"><span class="footer__roll"><span class="footer__roll-a">Hoodies</span><span class="footer__roll-b" aria-hidden="true">Hoodies</span></span></a></li>
+              <li><a href="{{ routes.all_products_collection_url }}?category=shirts" class="footer__link"><span class="footer__roll"><span class="footer__roll-a">Shirts</span><span class="footer__roll-b" aria-hidden="true">Shirts</span></span></a></li>
+              <li><a href="{{ routes.all_products_collection_url }}?category=trousers" class="footer__link"><span class="footer__roll"><span class="footer__roll-a">Trousers</span><span class="footer__roll-b" aria-hidden="true">Trousers</span></span></a></li>
+              <li><a href="{{ routes.all_products_collection_url }}" class="footer__link"><span class="footer__roll"><span class="footer__roll-a">All essentials</span><span class="footer__roll-b" aria-hidden="true">All essentials</span></span></a></li>
+            {%- endif -%}
+          </ul>
+        </nav>
 
-        <ul class="footer__links">
-          <li>
-            <a
-              href="https://wa.me/{{ wa_raw }}?text={{ wa_greeting | url_encode }}"
-              class="footer__whatsapp-link"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Contact us on WhatsApp at {{ wa_display }}"
-            >
-              <span class="footer__dot footer__dot--live" aria-hidden="true"></span>
-              <span>Contact on WhatsApp</span>
-            </a>
-          </li>
-          <li>
-            <a
-              href="https://wa.me/{{ wa_raw }}"
-              class="footer__whatsapp-number-link"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="WhatsApp phone number {{ wa_display }}"
-            >
-              {{ wa_display }}
-            </a>
-          </li>
-        </ul>
+        <nav class="footer__col footer__col--support" aria-labelledby="FooterSupport-{{ section.id }}">
+          <p class="footer__label" id="FooterSupport-{{ section.id }}">Support</p>
+          <ul class="footer__links">
+            {%- if section.settings.menu != blank and section.settings.menu.links.size > 0 -%}
+              {%- for link in section.settings.menu.links -%}
+                <li><a href="{{ link.url }}" class="footer__link"><span class="footer__roll"><span class="footer__roll-a">{{ link.title }}</span><span class="footer__roll-b" aria-hidden="true">{{ link.title }}</span></span></a></li>
+              {%- endfor -%}
+            {%- else -%}
+              <li><a href="{{ routes.root_url }}pages/contact" class="footer__link"><span class="footer__roll"><span class="footer__roll-a">Contact us</span><span class="footer__roll-b" aria-hidden="true">Contact us</span></span></a></li>
+              <li><a href="{{ routes.root_url }}pages/faq" class="footer__link"><span class="footer__roll"><span class="footer__roll-a">FAQs</span><span class="footer__roll-b" aria-hidden="true">FAQs</span></span></a></li>
+            {%- endif -%}
+          </ul>
+        </nav>
+
+        <div class="footer__col footer__col--contact">
+          <p class="footer__label">Contact</p>
+
+          <p
+            class="footer__status"
+            data-footer-status
+            data-tz="{{ tz }}"
+            data-open-hour="{{ open_h }}"
+            data-close-hour="{{ close_h }}"
+            data-label-open="Replying now"
+            data-label-closed="Back at {{ open_label }}:00"
+          >
+            <span class="footer__pulse" aria-hidden="true"></span>
+            <span data-footer-status-text>WhatsApp support</span>
+          </p>
+
+          <ul class="footer__links">
+            <li>
+              <a
+                href="https://wa.me/{{ wa_raw }}?text={{ wa_greeting | url_encode }}"
+                class="footer__link footer__link--cta"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Chat with us on WhatsApp, opens in a new tab"
+              >
+                <span class="footer__roll"><span class="footer__roll-a">Chat on WhatsApp</span><span class="footer__roll-b" aria-hidden="true">Chat on WhatsApp</span></span>
+              </a>
+            </li>
+            <li>
+              <button type="button" class="footer__copy" data-footer-copy="+{{ wa_raw }}" aria-label="Copy phone number {{ wa_display }}">
+                <span class="footer__roll">
+                  <span class="footer__roll-a">{{ wa_display }}</span>
+                  <span class="footer__roll-b" aria-hidden="true"><span class="footer__copy-hint">Copy number</span><span class="footer__copy-done">Copied</span></span>
+                </span>
+              </button>
+            </li>
+          </ul>
+        </div>
       </div>
 
-    </div>
+      {%- comment %} 3 · Utility row {% endcomment -%}
+      <div class="footer__utility">
+        <p class="footer__copyright">&copy; {{ 'now' | date: '%Y' }} {{ shop.name }}. All rights reserved.</p>
 
-    <!-- TIER 3: Monolithic ADOT Horizon Wordmark Tier (Nestled Lower for Balance) -->
-    <div class="footer__horizon" aria-hidden="true">
-      {%- assign horizon_badge_1 = section.settings.horizon_badge_1 | default: 'ARCHITECTURAL ESSENTIALS' -%}
-      {%- assign horizon_badge_2 = section.settings.horizon_badge_2 | default: 'SARGODHA' -%}
-      {%- if horizon_badge_1 != blank or horizon_badge_2 != blank -%}
-        <div class="footer__horizon-meta">
-          {%- if horizon_badge_1 != blank -%}
-            <span class="text-micro footer__horizon-badge">{{ horizon_badge_1 }}</span>
-          {%- endif -%}
-          {%- if horizon_badge_2 != blank -%}
-            <span class="text-micro footer__horizon-badge">{{ horizon_badge_2 }}</span>
-          {%- endif -%}
+        {%- if shop.policies.size > 0 -%}
+          <ul class="footer__legal" aria-label="Policies">
+            {%- for policy in shop.policies -%}
+              <li><a href="{{ policy.url }}" class="footer__mini">{{ policy.title }}</a></li>
+            {%- endfor -%}
+          </ul>
+        {%- endif -%}
+
+        {%- if social != blank and social.links.size > 0 -%}
+          <ul class="footer__social" aria-label="Social">
+            {%- for link in social.links -%}
+              <li><a href="{{ link.url }}" class="footer__mini" target="_blank" rel="noopener noreferrer">{{ link.title }}</a></li>
+            {%- endfor -%}
+          </ul>
+        {%- endif -%}
+
+        <button type="button" class="footer__top" data-footer-top aria-label="Back to top">
+          <span class="footer__arrow" aria-hidden="true">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 13V1M7 1L1.5 6.5M7 1L12.5 6.5" stroke="currentColor" stroke-width="1.25" stroke-linecap="square"/></svg>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 13V1M7 1L1.5 6.5M7 1L12.5 6.5" stroke="currentColor" stroke-width="1.25" stroke-linecap="square"/></svg>
+          </span>
+        </button>
+      </div>
+
+      {%- comment %} 4 · Wordmark (decorative) {% endcomment -%}
+      <div class="footer__horizon-wrap" aria-hidden="true">
+        {%- if badge_1 != blank or badge_2 != blank -%}
+          <div class="footer__meta">
+            <span>{{ badge_1 }}</span>
+            <span>{{ badge_2 }}</span>
+          </div>
+        {%- endif -%}
+        <div class="footer__horizon">
+          <p class="footer__wordmark"><span class="footer__wm-text" data-wm-text>
+            {%- for char in wordmark_chars -%}
+              {%- if char == ' ' -%}
+                <span class="footer__char footer__char--space">&nbsp;</span>
+              {%- else -%}
+                <span class="footer__char"><span class="footer__char-in" style="--i: {{ forloop.index0 }}">{{ char }}</span></span>
+              {%- endif -%}
+            {%- endfor -%}
+          </span></p>
         </div>
-      {%- endif -%}
-      <p class="footer__wordmark">{{ section.settings.wordmark_text | default: shop.name | default: 'ADOT' }}</p>
+      </div>
+
+      <p class="visually-hidden" role="status" data-footer-live></p>
     </div>
 
-    <!-- TIER 4: Baseline Utility Bar (No Separating Border Line) -->
-    <div class="footer__bottom">
-      <p class="footer__copyright text-micro">
-        &copy; {{ 'now' | date: '%Y' }} {{ shop.name }}. All rights reserved.
-      </p>
-
-      <button type="button" class="footer__top" data-footer-top aria-label="Scroll back to top">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-          <path d="M7 13V1M7 1L1.5 6.5M7 1L12.5 6.5" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <span class="visually-hidden">Back to top</span>
-      </button>
-    </div>
-
-  </footer>
+    <div class="footer__scrim" aria-hidden="true"></div>
+  </div>
 </div>
 
 {% stylesheet %}
-  /* ==========================================================================
-     Curtain Reveal Structural Physics
-     ========================================================================== */
+  /* ======================================================================
+     0 · Scope, tokens, resets (everything lives under .footer-reveal)
+     ====================================================================== */
   #MainContent {
     position: relative;
     z-index: 2;
@@ -199,512 +262,942 @@
   }
 
   .footer-reveal {
+    --f-bg: var(--color-surface-dark, #111111);
+    --f-fg: var(--color-text-inverse, #ffffff);
+    --f-fg-2: color-mix(in srgb, var(--f-fg) 72%, transparent);
+    --f-fg-3: color-mix(in srgb, var(--f-fg) 56%, transparent);
+    --f-fg-4: color-mix(in srgb, var(--f-fg) 44%, transparent);
+    --f-rule: var(--color-border-dark, #262626);
+    --f-live: #22c55e;
+    --f-alert: #ff8a7a;
+    --f-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --f-io: cubic-bezier(0.65, 0, 0.35, 1);
+    --f-pad: var(--page-margin, 1rem);
+    --f-gap: var(--space-md, 2rem);
+    --f-wm-rest: 0.1;       /* ghost opacity of the wordmark at rest */
+    --wm-em: 2.62;          /* text width in em, measured by JS */
+    --wm-ar: 3.45;          /* aspect ratio of the wordmark box, set by JS */
+    --reveal: 1;            /* 0 → 1 while the curtain opens, set by JS */
+
     position: relative;
     width: 100%;
-    background-color: var(--color-surface-dark);
-    box-sizing: border-box;
+    background: var(--f-bg);
+    color: var(--f-fg);
+    color-scheme: dark;
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
+  .footer-reveal *,
+  .footer-reveal *::before,
+  .footer-reveal *::after { box-sizing: border-box; }
+
+  .footer-reveal ::selection { background: var(--f-fg); color: var(--f-bg); }
+
+  :where(.footer-reveal) :where(ul, p, h2) { margin: 0; padding: 0; }
+  :where(.footer-reveal) :where(ul) { list-style: none; }
+  :where(.footer-reveal) :where(a) { color: inherit; text-decoration: none; }
+
+  .footer-reveal :focus-visible { outline: 1px solid var(--f-fg); outline-offset: 4px; }
+  .footer-reveal .footer__input:focus-visible { outline: none; }
+
+  /* ======================================================================
+     1 · Layout, mobile first (normal document flow)
+     ====================================================================== */
   .footer-reveal .footer {
     position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    gap: var(--space-md);
-    background-color: var(--color-surface-dark);
-    color: var(--color-text-inverse);
-    padding: var(--space-md) var(--page-margin) max(var(--space-md), env(safe-area-inset-bottom));
     overflow: hidden;
-    box-sizing: border-box;
+    background: var(--f-bg);
+    color: var(--f-fg);
     -webkit-tap-highlight-color: transparent;
   }
 
-  /* Desktop Viewport Cinematic Curtain Reveal */
-  @media (min-width: 990px) and (min-height: 700px) {
-    .footer-reveal:not([data-static]) {
-      min-height: 100svh;
-      clip-path: inset(0);
-    }
-
-    .footer-reveal:not([data-static]) .footer {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      min-height: 100svh;
-      z-index: 1;
-    }
-  }
-
-  /* ==========================================================================
-     Tier 1: Marquee Brand Philosophy Ticker
-     ========================================================================== */
-  .footer__marquee {
+  .footer__inner {
     position: relative;
-    z-index: 1;
-    overflow: hidden;
-    border-block: 1px solid var(--color-border-dark);
-    padding-block: 0.875rem;
-    margin-inline: calc(var(--page-margin) * -1);
-    background: color-mix(in srgb, var(--color-white) 1.5%, transparent);
-  }
-
-  .footer__marquee-track {
     display: flex;
-    width: max-content;
-    animation: footer-marquee 36s linear infinite;
+    flex-direction: column;
+    gap: var(--f-gap);
+    padding: var(--space-md) var(--f-pad) calc(var(--space-sm) + env(safe-area-inset-bottom));
   }
 
-  .footer__marquee-group {
-    display: flex;
-    align-items: center;
-    gap: var(--space-md);
-    padding-inline: var(--space-md);
-  }
+  .footer__inner > * { flex-shrink: 0; }
 
-  .footer__marquee-word {
-    font-family: var(--font-body);
-    font-size: var(--font-size-micro);
-    font-weight: 500;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    white-space: nowrap;
-    color: color-mix(in srgb, var(--color-text-inverse) 65%, transparent);
-  }
-
-  .footer__dot {
-    width: 4px;
-    height: 4px;
-    flex-shrink: 0;
-    border-radius: 50%;
-    background-color: var(--color-text-inverse);
-    opacity: 0.35;
-  }
-
-  /* ==========================================================================
-     Tier 2: 4-Column Balanced Architectural Grid (Mobile: 2-Column Responsive)
-     ========================================================================== */
-  .footer__body {
-    position: relative;
-    z-index: 1;
+  /* Principles strip */
+  .footer__principles {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem var(--space-sm);
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--f-rule);
+  }
+
+  .footer__principle {
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    font-weight: 450;
+    color: var(--f-fg-2);
+  }
+
+  /* Body grid */
+  .footer__body {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-md) var(--space-sm);
     align-items: start;
-    padding-top: var(--space-xs);
-  }
-
-  .footer__col--newsletter {
-    grid-column: 1 / -1;
-    max-width: 32rem;
-  }
-
-  .footer__col--contact {
-    grid-column: 1 / -1;
-  }
-
-  @media (min-width: 990px) {
-    .footer__body {
-      grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.9fr) minmax(0, 0.9fr) minmax(0, 1.1fr);
-      gap: var(--space-md) var(--space-lg);
-      align-items: start;
-      padding-top: clamp(4rem, 10vh, 7.5rem);
-    }
-
-    .footer__col--newsletter,
-    .footer__col--contact {
-      grid-column: auto;
-    }
   }
 
   .footer__col {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    min-width: 0;
   }
 
-  .footer__eyebrow {
-    margin: 0 0 0.5rem;
-    color: color-mix(in srgb, var(--color-text-inverse) 55%, transparent);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
+  .footer__col--newsletter,
+  .footer__col--contact { grid-column: 1 / -1; }
+
+  .footer__col--newsletter { width: 100%; max-width: 32rem; }
+
+  .footer__label {
+    margin-bottom: 0.75rem;
+    font-size: 0.8125rem;
+    line-height: 1.2;
     font-weight: 500;
+    letter-spacing: 0.005em;
+    color: var(--f-fg-3);
   }
 
+  /* ======================================================================
+     2 · Newsletter
+     ====================================================================== */
   .footer__heading {
-    margin: 0 0 0.5rem;
+    margin-bottom: 0.875rem;
     font-family: var(--font-display);
-    font-size: clamp(1.5rem, 2.4vw, 2.25rem);
+    font-size: clamp(2.25rem, 0.8rem + 2.6vw, 3.5rem);
     font-weight: 500;
-    line-height: 1.15;
-    letter-spacing: -0.025em;
-    color: var(--color-text-inverse);
+    line-height: 1.02;
+    letter-spacing: -0.035em;
     text-wrap: balance;
   }
 
   .footer__tagline {
-    margin: 0 0 1.25rem;
     max-width: 34ch;
-    font-family: var(--font-body);
-    font-size: var(--font-size-caption);
+    margin-bottom: 1.75rem;
+    font-size: 0.9375rem;
     line-height: 1.5;
-    color: color-mix(in srgb, var(--color-text-inverse) 65%, transparent);
+    color: var(--f-fg-3);
     text-wrap: pretty;
   }
 
   .footer__form {
+    display: grid;
     width: 100%;
-    max-width: 25rem;
+    max-width: 30rem;
   }
 
-  .footer__input-group {
+  .footer__heading + .footer__form { margin-top: 0.875rem; }
+
+  .footer__success,
+  .footer__field { grid-area: 1 / 1; }
+
+  .footer__msg {
+    grid-area: 2 / 1;
+    margin-top: 0.75rem;
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    color: var(--f-alert);
+  }
+
+  .footer__field {
+    position: relative;
     display: flex;
-    border: 1px solid var(--color-border-dark);
-    background-color: color-mix(in srgb, var(--color-white) 3%, transparent);
-    transition: border-color 160ms var(--ease-out), background-color 160ms var(--ease-out);
+    align-items: stretch;
+    border-bottom: 1px solid var(--f-rule);
+    transition: opacity 320ms var(--f-expo), transform 600ms var(--f-expo), visibility 0s linear 0s;
   }
 
-  .footer__input-group:focus-within {
-    border-color: color-mix(in srgb, var(--color-text-inverse) 45%, transparent);
-    background-color: color-mix(in srgb, var(--color-white) 6%, transparent);
+  .footer__field::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 -1px 0;
+    height: 1px;
+    background: var(--f-fg);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 700ms var(--f-expo);
   }
+
+  .footer__field:focus-within::after { transform: scaleX(1); }
 
   .footer__input {
-    flex: 1;
+    flex: 1 1 auto;
     min-width: 0;
-    min-height: 48px;
-    padding: 0 1rem;
+    min-height: 3.5rem;
+    padding: 0;
     border: 0;
+    border-radius: 0;
     background: transparent;
-    color: var(--color-text-inverse);
-    font-family: var(--font-body);
-    font-size: 1rem; /* 16px minimum prevents iOS Safari auto-zoom */
+    color: var(--f-fg);
+    font-family: var(--font-display);
+    font-size: 1.25rem; /* 20px: never triggers iOS zoom */
+    font-weight: 500;
+    letter-spacing: -0.015em;
     outline: none;
+    -webkit-appearance: none;
+    appearance: none;
   }
 
-  .footer__input::placeholder {
-    color: color-mix(in srgb, var(--color-text-inverse) 40%, transparent);
+  .footer__input::placeholder { color: var(--f-fg-4); transition: color 300ms var(--f-expo); }
+  .footer__input:focus::placeholder { color: color-mix(in srgb, var(--f-fg) 22%, transparent); }
+
+  .footer__input:-webkit-autofill,
+  .footer__input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--f-fg);
+    caret-color: var(--f-fg);
+    box-shadow: 0 0 0 100px var(--f-bg) inset;
+    transition: background-color 9999s ease-out;
   }
 
   .footer__submit {
+    flex: none;
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    min-width: 48px;
-    min-height: 48px;
-    padding: 0 1rem;
+    min-height: 3.5rem;
+    padding: 0 0 0 1.25rem;
     border: 0;
-    border-radius: var(--radius-none);
-    background-color: var(--color-white);
-    color: var(--color-surface-dark);
+    background: transparent;
+    color: var(--f-fg);
+    font-family: var(--font-body);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    line-height: 1;
     cursor: pointer;
     touch-action: manipulation;
-    transition: transform 160ms var(--ease-out), background-color 160ms var(--ease-out);
+    transition: opacity 240ms var(--f-expo), transform 240ms var(--f-expo);
   }
 
-  .footer__submit svg {
-    transition: transform 160ms var(--ease-out);
-  }
+  .footer__submit:active { transform: scale(0.96); }
 
-  .footer__submit:active {
-    transform: scale(0.96);
-  }
+  .footer__form[data-state='loading'] .footer__submit { opacity: 0.4; pointer-events: none; }
 
+  /* Success state: shares the grid cell with the field, so no layout jump */
   .footer__success {
-    margin: 0.5rem 0 0;
-    color: var(--color-text-inverse);
-  }
-
-  .footer__col-label {
-    margin: 0 0 0.875rem;
-    color: color-mix(in srgb, var(--color-text-inverse) 50%, transparent);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    font-weight: 500;
-  }
-
-  .footer__links {
     display: flex;
-    flex-direction: column;
-    gap: 0.125rem;
-    margin: 0;
-    padding: 0;
-    list-style: none;
+    align-items: center;
+    gap: 0.875rem;
+    min-height: 3.5rem;
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 500;
+    letter-spacing: -0.015em;
+    opacity: 0;
+    visibility: hidden;
+    transform: translate3d(0, 10px, 0);
+    transition: opacity 320ms var(--f-expo), transform 600ms var(--f-expo), visibility 0s linear 320ms;
   }
+
+  .footer__success[data-visible] {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition-delay: 180ms, 180ms, 0s;
+  }
+
+  .footer__success[data-visible] ~ .footer__field {
+    opacity: 0;
+    visibility: hidden;
+    transform: translate3d(0, -10px, 0);
+    pointer-events: none;
+    transition-delay: 0s, 0s, 320ms;
+  }
+
+  .footer__check { flex: none; }
+
+  .footer__check path {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    transition: stroke-dashoffset 600ms var(--f-expo) 380ms;
+  }
+
+  .footer__success[data-visible] .footer__check path { stroke-dashoffset: 0; }
+
+  /* ======================================================================
+     3 · Link columns + text-roll
+     ====================================================================== */
+  .footer__links { display: flex; flex-direction: column; }
 
   .footer__link {
     position: relative;
     display: inline-flex;
     align-items: center;
-    min-height: 42px; /* Apple 44px friendly touch target */
-    color: color-mix(in srgb, var(--color-text-inverse) 75%, transparent);
-    font-family: var(--font-body);
-    font-size: var(--font-size-caption);
-    font-weight: 450;
-    letter-spacing: 0.02em;
-    text-decoration: none;
+    min-height: 2.75rem; /* 44px tap target */
+    color: var(--f-fg-2);
+    font-family: var(--font-display);
+    font-size: clamp(1rem, 0.8rem + 0.45vw, 1.125rem);
+    font-weight: 500;
+    letter-spacing: -0.01em;
     touch-action: manipulation;
-    transition: color 160ms var(--ease-out);
+    transition: color 300ms var(--f-expo);
   }
 
-  .footer__link::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    bottom: 6px;
-    width: 100%;
-    height: 1px;
-    background-color: currentColor;
-    transform: scaleX(0);
-    transform-origin: left center;
-    transition: transform 200ms var(--ease-out);
-  }
+  .footer__link--cta { color: var(--f-fg); }
 
-  /* Clean Minimalist WhatsApp Link */
-  .footer__whatsapp-link {
+  .footer__roll {
     position: relative;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    min-height: 42px;
-    color: var(--color-text-inverse);
-    font-family: var(--font-body);
-    font-size: var(--font-size-caption);
-    font-weight: 450;
-    letter-spacing: 0.02em;
-    text-decoration: none;
-    touch-action: manipulation;
-    transition: color 160ms var(--ease-out);
+    display: block;
+    overflow: hidden;
+    line-height: 1.35;
   }
 
-  .footer__whatsapp-link::after {
-    content: '';
+  .footer__roll-a,
+  .footer__roll-b {
+    display: block;
+    transition: transform 600ms var(--f-expo);
+  }
+
+  .footer__roll-b {
     position: absolute;
-    left: 0;
-    bottom: 6px;
-    width: 100%;
-    height: 1px;
-    background-color: currentColor;
-    transform: scaleX(0);
-    transform-origin: left center;
-    transition: transform 200ms var(--ease-out);
+    inset: 0;
+    transform: translate3d(0, 115%, 0);
   }
 
-  .footer__whatsapp-number-link {
+  .footer__link:focus-visible .footer__roll-a,
+  .footer__submit:focus-visible .footer__roll-a,
+  .footer__copy[data-copied] .footer__roll-a { transform: translate3d(0, -115%, 0); }
+
+  .footer__link:focus-visible .footer__roll-b,
+  .footer__submit:focus-visible .footer__roll-b,
+  .footer__copy[data-copied] .footer__roll-b { transform: none; }
+
+  /* Contact column */
+  .footer__status {
     display: inline-flex;
     align-items: center;
-    min-height: 36px;
-    color: color-mix(in srgb, var(--color-text-inverse) 60%, transparent);
-    font-family: var(--font-body);
-    font-size: var(--font-size-caption);
-    font-variant-numeric: tabular-nums;
-    text-decoration: none;
-    letter-spacing: 0.02em;
-    touch-action: manipulation;
-    transition: color 160ms var(--ease-out);
+    gap: 0.625rem;
+    min-height: 2rem;
+    margin-bottom: 0.125rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--f-fg-3);
   }
 
-  .footer__dot--live {
+  .footer__pulse {
+    position: relative;
+    flex: none;
     width: 6px;
     height: 6px;
-    flex-shrink: 0;
     border-radius: 50%;
-    background-color: #22c55e;
-    opacity: 1;
-    box-shadow: 0 0 6px rgba(34, 197, 94, 0.6);
+    background: var(--f-fg-4);
   }
 
-  /* ==========================================================================
-     Tier 3: Monolithic ADOT Horizon Wordmark Tier (Nestled Lower for Balance)
-     ========================================================================== */
-  .footer__horizon {
-    position: relative;
-    z-index: 0;
-    display: flex;
-    flex-direction: column;
+  .footer__status[data-open='true'] { color: var(--f-fg-2); }
+  .footer__status[data-open='true'] .footer__pulse { background: var(--f-live); }
+
+  .footer__status[data-open='true'] .footer__pulse::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: var(--f-live);
+    animation: f-pulse 2600ms cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+
+  .footer__copy {
+    display: inline-flex;
     align-items: center;
-    width: 100%;
-    margin-top: auto; /* Pushes ADOT down to ground the layout */
-    padding-top: clamp(1.5rem, 4vh, 3rem);
-    padding-bottom: 0;
-    user-select: none;
+    min-height: 2.5rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--f-fg-3);
+    font-family: var(--font-body);
+    font-size: 0.9375rem;
+    font-weight: 450;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.01em;
+    cursor: copy;
+    touch-action: manipulation;
+    transition: color 300ms var(--f-expo);
   }
 
-  @media (max-width: 989px) {
-    .footer__horizon {
-      margin-top: var(--space-lg);
-      padding-top: 0;
-    }
-  }
+  .footer__copy-done { display: none; }
+  .footer__copy[data-copied] .footer__copy-done { display: inline; }
+  .footer__copy[data-copied] .footer__copy-hint { display: none; }
+  .footer__copy[data-copied] { color: var(--f-fg); }
 
-  .footer__horizon-meta {
-    display: flex;
+  /* ======================================================================
+     4 · Utility row (legal, social, back to top)
+     ====================================================================== */
+  .footer__utility {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas: 'social top' 'copy copy' 'legal legal';
     align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    margin-bottom: 0.35rem;
-    color: color-mix(in srgb, var(--color-text-inverse) 38%, transparent);
-    font-size: clamp(0.625rem, 2.2vw, 0.75rem);
-  }
-
-  .footer__horizon-badge {
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    font-weight: 500;
-  }
-
-  .footer__wordmark {
-    margin: 0;
-    font-family: var(--font-display);
-    font-size: clamp(3.75rem, 20vw, 15rem);
-    font-weight: 700;
-    line-height: 0.78; /* Tight baseline grounds the letters */
-    letter-spacing: -0.02em;
-    text-transform: uppercase;
-    text-align: center;
-    white-space: nowrap;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.035) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    pointer-events: none;
-    transition: opacity 250ms var(--ease-out);
-  }
-
-  /* ==========================================================================
-     Tier 4: Baseline Utility Bar (No Separating Border Line)
-     ========================================================================== */
-  .footer__bottom {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-sm);
-    padding-top: var(--space-xs);
-    padding-bottom: 0;
-    border-top: 0; /* Clean borderless flow beneath ADOT */
+    column-gap: var(--space-sm);
   }
 
   .footer__copyright {
-    margin: 0;
-    color: color-mix(in srgb, var(--color-text-inverse) 50%, transparent);
+    grid-area: copy;
+    font-size: 0.8125rem;
+    color: var(--f-fg-3);
   }
 
-  .footer__top {
+  .footer__legal,
+  .footer__social {
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: 1.25rem;
+  }
+
+  .footer__legal { grid-area: legal; }
+  .footer__social { grid-area: social; }
+
+  .footer__mini {
+    position: relative;
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    border: 1px solid var(--color-border-dark);
-    border-radius: var(--radius-none);
+    min-height: 2.75rem;
+    font-size: 0.8125rem;
+    font-weight: 450;
+    color: var(--f-fg-3);
+    transition: color 300ms var(--f-expo);
+  }
+
+  .footer__social .footer__mini { color: var(--f-fg-2); }
+
+  .footer__mini::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0.75rem;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: right center;
+    transition: transform 500ms var(--f-expo);
+  }
+
+  .footer__mini:focus-visible::after { transform: scaleX(1); transform-origin: left center; }
+
+  .footer__top {
+    grid-area: top;
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    border: 1px solid var(--f-rule);
+    border-radius: var(--radius-none, 0);
     background: transparent;
-    color: var(--color-text-inverse);
+    color: var(--f-fg);
+    overflow: hidden;
     cursor: pointer;
     touch-action: manipulation;
-    transition:
-      background-color 160ms var(--ease-out),
-      color 160ms var(--ease-out),
-      transform 160ms var(--ease-out);
+    transition: color 400ms var(--f-expo), border-color 400ms var(--f-expo), transform 240ms var(--f-expo);
   }
 
-  .footer__top svg {
-    transition: transform 160ms var(--ease-out);
+  .footer__top::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--f-fg);
+    transform: translate3d(0, 101%, 0);
+    transition: transform 600ms var(--f-expo);
   }
 
-  .footer__top:active {
-    transform: scale(0.96);
+  .footer__top:active { transform: scale(0.94); }
+
+  .footer__arrow {
+    position: relative;
+    z-index: 1;
+    display: block;
+    width: 14px;
+    height: 14px;
+    overflow: hidden;
   }
 
-  /* ==========================================================================
-     Hover & Interaction Physics (Fine Pointer Devices)
-     ========================================================================== */
+  .footer__arrow svg {
+    position: absolute;
+    inset: 0;
+    transition: transform 600ms var(--f-expo);
+  }
+
+  .footer__arrow svg:last-child { transform: translate3d(0, 160%, 0); }
+
+  .footer__top:focus-visible { color: var(--f-bg); border-color: var(--f-fg); }
+  .footer__top:focus-visible::before { transform: none; }
+  .footer__top:focus-visible .footer__arrow svg:first-child { transform: translate3d(0, -160%, 0); }
+  .footer__top:focus-visible .footer__arrow svg:last-child { transform: none; }
+
+  /* ======================================================================
+     5 · Wordmark (the one loud element)
+     ====================================================================== */
+  .footer__horizon-wrap {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .footer__meta {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    margin-bottom: 0.625rem;
+    font-size: 0.8125rem;
+    line-height: 1.2;
+    color: var(--f-fg-4);
+  }
+
+  .footer__horizon {
+    container-type: inline-size;
+    flex: 0 1 auto;
+    width: 100%;
+    min-height: 0;
+    aspect-ratio: var(--wm-ar);
+    overflow: hidden;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .footer__wordmark {
+    display: block;
+    font-family: var(--font-display);
+    font-size: calc(100cqw / var(--wm-em));
+    font-weight: 700;
+    line-height: 0.74; /* = cap height of Inter Tight, so caps fill the box */
+    letter-spacing: -0.03em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .footer__wm-text {
+    display: inline-block;
+    padding-inline-end: 0.04em;
+  }
+
+  .footer__char {
+    display: inline-block;
+    vertical-align: top;
+    padding-bottom: 0.04em;
+    margin-bottom: -0.04em;
+    clip-path: inset(-0.05em -0.2em 0 -0.2em); /* masks the bottom only, so tight tracking never clips glyph sides */
+    color: rgb(255 255 255 / var(--f-wm-rest));
+    transition: color 1800ms var(--f-expo);
+  }
+
+  .footer__char--space { width: 0.28em; color: transparent; }
+  .footer__char-in { display: inline-block; }
+
+  /* The one orchestrated moment: letters rise, flash white, decay to ghost */
+  .footer-reveal[data-motion]:not(.is-in) .footer__char-in { transform: translate3d(0, 120%, 0); }
+
+  .footer-reveal[data-motion].is-in .footer__char-in {
+    animation: f-rise 1500ms var(--f-expo) backwards, f-ink 3200ms var(--f-io) backwards;
+    animation-delay: calc(var(--i, 0) * 120ms + 200ms);
+  }
+
+  /* Scroll-driven depth, desktop curtain only (set via JS: --reveal) */
+  .footer__scrim {
+    display: none;
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    background: #000;
+    opacity: calc((1 - var(--reveal)) * 0.6);
+    pointer-events: none;
+  }
+
+  /* ======================================================================
+     6 · Desktop
+     ====================================================================== */
+  @media (min-width: 990px) {
+    .footer__inner { padding-top: clamp(1.5rem, 4svh, 2.5rem); }
+
+    .footer__principles {
+      grid-auto-flow: column;
+      grid-template-columns: none;
+      grid-auto-columns: minmax(0, 1fr);
+      gap: 0 var(--space-md);
+      padding-bottom: 1.125rem;
+    }
+
+    .footer__body {
+      grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr));
+      column-gap: var(--space-md);
+      padding-top: var(--space-sm);
+    }
+
+    .footer__col--newsletter,
+    .footer__col--contact { grid-column: auto; }
+
+    .footer__link { min-height: 2.125rem; }
+    .footer__copy { min-height: 2rem; }
+
+    .footer__utility {
+      grid-template-columns: auto 1fr auto auto;
+      grid-template-areas: 'copy legal social top';
+      column-gap: var(--space-md);
+    }
+  }
+
+  /* Curtain mode: footer is fixed and exactly one screen tall */
+  @media (min-width: 990px) and (min-height: 720px) {
+    .footer-reveal:not([data-static]) {
+      height: 100svh;
+      clip-path: inset(0);
+    }
+
+    .footer-reveal:not([data-static]) .footer {
+      position: fixed;
+      inset: auto 0 0 0;
+      z-index: 1;
+      height: 100svh;
+    }
+
+    .footer-reveal:not([data-static]) .footer__inner {
+      --f-gap: clamp(1rem, 2.6svh, 2rem);
+      height: 100svh;
+      /* If your header stays visible at the end of the page, set --footer-top-clearance: var(--header-height) */
+      padding-top: calc(clamp(1.5rem, 3.5svh, 2.5rem) + var(--footer-top-clearance, 0px));
+      padding-bottom: 0;
+      transform: translate3d(0, calc((1 - var(--reveal)) * 8svh), 0);
+      will-change: transform;
+    }
+
+    .footer-reveal:not([data-static]) .footer__body { flex: 1 0 auto; align-content: center; }
+    .footer-reveal:not([data-static]) .footer__horizon-wrap { flex: 0 1 auto; min-height: 0; }
+    .footer-reveal:not([data-static]) .footer__scrim { display: block; }
+  }
+
+  /* Short desktop screens: drop the tagline so the wordmark keeps its presence */
+  @media (min-width: 990px) and (min-height: 720px) and (max-height: 799px) {
+    .footer-reveal:not([data-static]) .footer__tagline { display: none; }
+  }
+
+  /* ======================================================================
+     7 · Hover (fine pointers only)
+     ====================================================================== */
   @media (hover: hover) and (pointer: fine) {
-    .footer__marquee:hover .footer__marquee-track {
-      animation-play-state: paused;
-    }
-
-    .footer__submit:hover svg {
-      transform: translateX(3px);
-    }
-
     .footer__link:hover,
-    .footer__whatsapp-link:hover,
-    .footer__whatsapp-number-link:hover {
-      color: var(--color-text-inverse);
-    }
+    .footer__mini:hover,
+    .footer__copy:hover { color: var(--f-fg); }
 
-    .footer__link:hover::after,
-    .footer__link:focus-visible::after,
-    .footer__whatsapp-link:hover::after,
-    .footer__whatsapp-link:focus-visible::after {
-      transform: scaleX(1);
-    }
+    .footer__link:hover .footer__roll-a,
+    .footer__submit:hover .footer__roll-a,
+    .footer__copy:hover .footer__roll-a { transform: translate3d(0, -115%, 0); }
 
-    .footer__top:hover {
-      background-color: var(--color-white);
-      color: var(--color-surface-dark);
-    }
+    .footer__link:hover .footer__roll-b,
+    .footer__submit:hover .footer__roll-b,
+    .footer__copy:hover .footer__roll-b { transform: none; }
 
-    .footer__top:hover svg {
-      transform: translateY(-3px);
-    }
+    /* Focus the list: dim siblings while one is hovered */
+    .footer__links:hover .footer__link:not(:hover) { color: var(--f-fg-4); }
+
+    .footer__mini:hover::after { transform: scaleX(1); transform-origin: left center; }
+
+    .footer__top:hover { color: var(--f-bg); border-color: var(--f-fg); }
+    .footer__top:hover::before { transform: none; }
+    .footer__top:hover .footer__arrow svg:first-child { transform: translate3d(0, -160%, 0); }
+    .footer__top:hover .footer__arrow svg:last-child { transform: none; }
+
+    /* Ink trail: snaps to white, bleeds back slowly */
+    .footer__char:hover { color: var(--f-fg); transition-duration: 120ms; }
   }
 
-  /* ==========================================================================
-     Reduced Motion Fallbacks
-     ========================================================================== */
+  @media (hover: none) {
+    .footer__link:active,
+    .footer__mini:active { opacity: 0.6; }
+  }
+
+  /* ======================================================================
+     8 · Keyframes
+     ====================================================================== */
+  @keyframes f-rise { from { transform: translate3d(0, 120%, 0); } }
+  @keyframes f-ink { from { color: var(--f-fg); } }
+  @keyframes f-pulse {
+    from { transform: scale(1); opacity: 0.5; }
+    to { transform: scale(3.4); opacity: 0; }
+  }
+
+  /* ======================================================================
+     9 · Reduced motion
+     ====================================================================== */
   @media (prefers-reduced-motion: reduce) {
-    .footer__marquee-track {
-      animation: none;
-      flex-wrap: wrap;
-      width: auto;
-      justify-content: center;
+    .footer-reveal *,
+    .footer-reveal *::before,
+    .footer-reveal *::after {
+      animation: none !important;
+      transition-duration: 0.01ms !important;
+      transition-delay: 0s !important;
     }
-  }
-
-  @keyframes footer-marquee {
-    from { transform: translateX(0); }
-    to { transform: translateX(-50%); }
   }
 {% endstylesheet %}
 
 {% javascript %}
   (function () {
-    // Back to top smooth scroll
-    if (!window.__adotFooterTop) {
-      window.__adotFooterTop = true;
-      document.addEventListener('click', function (event) {
-        var button = event.target.closest('[data-footer-top]');
-        if (!button) return;
-        var reduce = false;
-        try { reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
-        window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
-      });
+    if (window.__adotFooterV2) return;
+    window.__adotFooterV2 = true;
+
+    var mqReduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+    // Keep this identical to the curtain media query in the stylesheet
+    var mqCurtain = window.matchMedia('(min-width: 990px) and (min-height: 720px)');
+
+    function clamp(n, lo, hi) { return Math.min(hi, Math.max(lo, n)); }
+    function onChange(mq, fn) {
+      if (mq.addEventListener) mq.addEventListener('change', fn);
+      else if (mq.addListener) mq.addListener(fn);
     }
 
-    // Curtain reveal height synchronization to prevent short screen clipping
-    function syncCurtainHeight() {
-      var reveal = document.getElementById('FooterReveal');
-      if (!reveal) return;
-      var footer = reveal.querySelector('.footer');
-      if (!footer) return;
+    /* ---------------------------------------------------------------
+       1 · Reveal trigger + curtain depth (--reveal 0 → 1)
+       --------------------------------------------------------------- */
+    function initReveal(root) {
+      var visible = false, queued = false, live = false;
 
-      var reduce = false;
-      try { reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
-      var isDesktop = window.innerWidth >= 990;
-      var isTallEnough = window.innerHeight >= 700;
+      function frame() {
+        queued = false;
+        var rect = root.getBoundingClientRect();
+        var vh = window.innerHeight;
+        var p = clamp((vh - rect.top) / Math.min(rect.height || vh, vh), 0, 1);
+        root.style.setProperty('--reveal', p.toFixed(3));
+      }
 
-      if (isDesktop && isTallEnough && !reduce && !reveal.hasAttribute('data-static')) {
-        reveal.style.height = footer.offsetHeight + 'px';
-      } else {
-        reveal.style.height = 'auto';
+      function onScroll() {
+        if (visible && !queued) { queued = true; requestAnimationFrame(frame); }
+      }
+
+      function sync() {
+        var want = mqCurtain.matches && !mqReduce.matches && !root.hasAttribute('data-static');
+        if (want && !live) {
+          live = true;
+          window.addEventListener('scroll', onScroll, { passive: true });
+          window.addEventListener('resize', onScroll);
+          frame();
+        } else if (!want && live) {
+          live = false;
+          window.removeEventListener('scroll', onScroll);
+          window.removeEventListener('resize', onScroll);
+          root.style.setProperty('--reveal', '1');
+        }
+      }
+
+      onChange(mqCurtain, sync);
+      onChange(mqReduce, sync);
+      sync();
+
+      if (!('IntersectionObserver' in window)) { root.classList.add('is-in'); return; }
+
+      new IntersectionObserver(function (entries) {
+        var e = entries[entries.length - 1];
+        visible = e.isIntersecting;
+        if (visible) {
+          onScroll();
+          if (e.intersectionRatio >= 0.12) root.classList.add('is-in');
+        }
+      }, { threshold: [0, 0.12] }).observe(root);
+    }
+
+    /* ---------------------------------------------------------------
+       2 · Fit the wordmark edge to edge
+       Measures the text width in em once fonts are ready. CSS does the rest.
+       --------------------------------------------------------------- */
+    function initWordmark(root) {
+      var text = root.querySelector('[data-wm-text]');
+      if (!text) return;
+
+      function measure() {
+        var fs = parseFloat(getComputedStyle(text).fontSize);
+        var w = text.getBoundingClientRect().width;
+        if (!fs || !w) return;
+        var em = w / fs;
+        root.style.setProperty('--wm-em', em.toFixed(4));
+        root.style.setProperty('--wm-ar', (em / 0.76).toFixed(4));
+      }
+
+      measure();
+      if (document.fonts) {
+        if (document.fonts.ready) document.fonts.ready.then(measure);
+        if (document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', measure);
       }
     }
 
-    window.addEventListener('resize', syncCurtainHeight);
-    window.addEventListener('DOMContentLoaded', syncCurtainHeight);
-    setTimeout(syncCurtainHeight, 200);
+    /* ---------------------------------------------------------------
+       3 · Support status (open / closed) from theme settings
+       --------------------------------------------------------------- */
+    function zoned(tz) {
+      try {
+        var parts = new Intl.DateTimeFormat('en-GB', {
+          timeZone: tz || undefined, hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+        }).formatToParts(new Date());
+        var out = {};
+        parts.forEach(function (p) {
+          if (p.type === 'hour' || p.type === 'minute') out[p.type] = parseInt(p.value, 10);
+        });
+        return { h: out.hour % 24, m: out.minute };
+      } catch (e) { return null; }
+    }
+
+    function tick() {
+      var nodes = document.querySelectorAll('[data-footer-status]');
+      for (var i = 0; i < nodes.length; i++) {
+        var el = nodes[i];
+        var t = zoned(el.getAttribute('data-tz'));
+        var o = parseInt(el.getAttribute('data-open-hour'), 10);
+        var c = parseInt(el.getAttribute('data-close-hour'), 10);
+        if (!t || isNaN(o) || isNaN(c)) continue;
+        var open = o <= c ? (t.h >= o && t.h < c) : (t.h >= o || t.h < c);
+        el.setAttribute('data-open', open ? 'true' : 'false');
+        var label = el.querySelector('[data-footer-status-text]');
+        if (label) label.textContent = el.getAttribute(open ? 'data-label-open' : 'data-label-closed');
+      }
+    }
+
+    var ticking = false;
+    function startTicker() {
+      if (ticking) return;
+      ticking = true;
+      (function schedule() {
+        setTimeout(function () {
+          if (!document.hidden) tick();
+          schedule();
+        }, (61 - new Date().getSeconds()) * 1000);
+      })();
+      document.addEventListener('visibilitychange', function () { if (!document.hidden) tick(); });
+    }
+
+    /* ---------------------------------------------------------------
+       4 · Newsletter without leaving the page
+       Verify once in DevTools: after a successful POST the final response URL contains
+       customer_posted=true. If anything else happens we fall back to the normal submit,
+       so the worst case is the old behaviour. To disable, delete initForm.
+       --------------------------------------------------------------- */
+    function initForm(root) {
+      var form = root.querySelector('.footer__form');
+      if (!form) return;
+      var ok = form.querySelector('.footer__success');
+      var live = root.querySelector('[data-footer-live]');
+      var busy = false;
+
+      form.addEventListener('submit', function (e) {
+        if (busy) { e.preventDefault(); return; }
+        if (!window.fetch || !form.checkValidity()) return;
+
+        e.preventDefault();
+        busy = true;
+        form.setAttribute('data-state', 'loading');
+        form.setAttribute('aria-busy', 'true');
+
+        fetch(form.action, { method: 'POST', body: new FormData(form), credentials: 'same-origin' })
+          .then(function (res) {
+            if (/customer_posted=true/.test(res.url || '')) {
+              form.setAttribute('data-state', 'success');
+              form.removeAttribute('aria-busy');
+              if (ok) ok.setAttribute('data-visible', '');
+              if (live) live.textContent = ok ? ok.textContent.trim() : '';
+            } else {
+              form.submit(); // captcha challenge, validation error, anything unexpected
+            }
+          })
+          .catch(function () { form.submit(); });
+      });
+    }
+
+    /* ---------------------------------------------------------------
+       5 · Copy number + eased back-to-top (delegated)
+       --------------------------------------------------------------- */
+    function copyNumber(btn) {
+      var text = btn.getAttribute('data-footer-copy');
+      var live = document.querySelector('[data-footer-live]');
+
+      function done() {
+        btn.setAttribute('data-copied', '');
+        if (live) live.textContent = 'Phone number copied';
+        clearTimeout(btn.__adotT);
+        btn.__adotT = setTimeout(function () {
+          btn.removeAttribute('data-copied');
+          if (live) live.textContent = '';
+        }, 1800);
+      }
+
+      function fallback() {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;pointer-events:none';
+        document.body.appendChild(ta);
+        ta.select();
+        try { if (document.execCommand('copy')) done(); } catch (e) {}
+        document.body.removeChild(ta);
+      }
+
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(done, fallback);
+      } else {
+        fallback();
+      }
+    }
+
+    var cancelScroll = false;
+    ['wheel', 'touchstart', 'keydown'].forEach(function (name) {
+      window.addEventListener(name, function () { cancelScroll = true; }, { passive: true });
+    });
+
+    function toTop() {
+      var start = window.pageYOffset || document.documentElement.scrollTop;
+      if (!start) return;
+      if (mqReduce.matches) { window.scrollTo(0, 0); return; }
+
+      var html = document.documentElement;
+      var prev = html.style.scrollBehavior;
+      html.style.scrollBehavior = 'auto';
+      var duration = clamp(Math.sqrt(start) * 40, 700, 1600);
+      var t0 = performance.now();
+      cancelScroll = false;
+
+      function ease(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+
+      function step(now) {
+        var t = clamp((now - t0) / duration, 0, 1);
+        window.scrollTo(0, Math.round(start * (1 - ease(t))));
+        if (t < 1 && !cancelScroll) requestAnimationFrame(step);
+        else html.style.scrollBehavior = prev;
+      }
+      requestAnimationFrame(step);
+    }
+
+    document.addEventListener('click', function (e) {
+      if (e.target.closest('[data-footer-top]')) { toTop(); return; }
+      var copy = e.target.closest('[data-footer-copy]');
+      if (copy) copyNumber(copy);
+    });
+
+    /* ---------------------------------------------------------------
+       Boot (also re-runs inside the theme editor)
+       --------------------------------------------------------------- */
+    function boot(scope) {
+      var roots = (scope || document).querySelectorAll('[data-footer-reveal]');
+      for (var i = 0; i < roots.length; i++) {
+        var root = roots[i];
+        if (root.__adotFooter) continue;
+        root.__adotFooter = true;
+        initReveal(root);
+        initWordmark(root);
+        initForm(root);
+      }
+      tick();
+      startTicker();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function () { boot(); });
+    } else {
+      boot();
+    }
+    document.addEventListener('shopify:section:load', function (e) { boot(e.target); });
   })();
 {% endjavascript %}
 
@@ -713,61 +1206,74 @@
   "name": "Footer",
   "tag": "footer",
   "settings": [
+    { "type": "header", "content": "Newsletter" },
     {
       "type": "text",
       "id": "eyebrow",
-      "label": "Eyebrow",
-      "default": "Newsletter"
+      "label": "Small label above heading",
+      "info": "Optional. Leave empty for a cleaner look."
     },
     {
       "type": "text",
       "id": "heading",
       "label": "Heading",
-      "default": "Stay updated."
+      "default": "First access to every drop."
     },
     {
       "type": "textarea",
       "id": "tagline",
-      "label": "Brand Tagline",
+      "label": "Tagline",
       "default": "New drops and private releases."
     },
     {
       "type": "text",
-      "id": "wordmark_text",
-      "label": "Brand Horizon Wordmark",
-      "default": "ADOT",
-      "info": "Display typography spanning the horizon above the baseline utility row."
+      "id": "placeholder",
+      "label": "Input placeholder",
+      "default": "Email address"
     },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "Subscribe"
+    },
+    {
+      "type": "text",
+      "id": "success_text",
+      "label": "Success message",
+      "default": "You're subscribed."
+    },
+
+    { "type": "header", "content": "Promises strip" },
     {
       "type": "text",
       "id": "marquee_text",
-      "label": "Marquee text",
+      "label": "Promises",
+      "info": "Separate each promise with a middle dot ( · ). Shown as a quiet static row.",
       "default": "Heavyweight essentials · Cash on delivery · Easy exchange · Made to last"
     },
-    {
-      "type": "text",
-      "id": "horizon_badge_1",
-      "label": "Horizon badge (left)",
-      "default": "ARCHITECTURAL ESSENTIALS"
-    },
-    {
-      "type": "text",
-      "id": "horizon_badge_2",
-      "label": "Horizon badge (right)",
-      "default": "SARGODHA"
-    },
+
+    { "type": "header", "content": "Navigation" },
     {
       "type": "link_list",
       "id": "collections_menu",
       "label": "Collections menu",
-      "info": "Optional. Falls back to Hoodies, Shirts, Trousers, All Essentials when empty."
+      "info": "Optional. Falls back to Hoodies, Shirts, Trousers, All essentials when empty."
     },
     {
       "type": "link_list",
       "id": "menu",
-      "label": "Pages menu",
+      "label": "Support menu",
       "default": "footer"
     },
+    {
+      "type": "link_list",
+      "id": "social_menu",
+      "label": "Social links",
+      "info": "Optional. Add Instagram, TikTok, etc. Policies (Privacy, Refunds, Terms) are listed automatically."
+    },
+
+    { "type": "header", "content": "WhatsApp and support hours" },
     {
       "type": "text",
       "id": "whatsapp_number",
@@ -781,6 +1287,52 @@
       "label": "WhatsApp greeting message",
       "default": "Hello ADOT, I would like assistance with an order.",
       "info": "Pre-filled text sent with the WhatsApp chat link."
+    },
+    {
+      "type": "range",
+      "id": "support_open",
+      "label": "Support opens (hour, 24h)",
+      "min": 0,
+      "max": 23,
+      "step": 1,
+      "default": 10
+    },
+    {
+      "type": "range",
+      "id": "support_close",
+      "label": "Support closes (hour, 24h)",
+      "min": 1,
+      "max": 24,
+      "step": 1,
+      "default": 22
+    },
+    {
+      "type": "text",
+      "id": "timezone",
+      "label": "Support timezone",
+      "default": "Asia/Karachi",
+      "info": "IANA name, e.g. Asia/Karachi"
+    },
+
+    { "type": "header", "content": "Wordmark" },
+    {
+      "type": "text",
+      "id": "wordmark_text",
+      "label": "Wordmark",
+      "default": "ADOT",
+      "info": "Fitted edge to edge automatically. Short words work best."
+    },
+    {
+      "type": "text",
+      "id": "horizon_badge_1",
+      "label": "Line above wordmark (left)",
+      "default": "Architectural essentials"
+    },
+    {
+      "type": "text",
+      "id": "horizon_badge_2",
+      "label": "Line above wordmark (right)",
+      "default": "Sargodha"
     }
   ]
 }
