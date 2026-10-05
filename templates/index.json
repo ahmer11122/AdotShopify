@@ -150,12 +150,13 @@
         "card_6"
       ],
       "settings": {
-        "eyebrow": "",
+        "eyebrow": "On the rail",
         "heading": "Clean Cuts. Quality Fabrics.",
         "caption": "",
         "button_label": "Shop All Pieces",
         "button_link": "/collections/all",
-        "background_color": "#FFFFFF",
+        "whatsapp_number": "923131707080",
+        "background_color": "#F4F2EE",
         "text_color": "#111111"
       }
     }

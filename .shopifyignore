@@ -17,6 +17,7 @@
 
 # Docs and local-only
 *.md
+/interactive-gallery.liquid
 PRD.md
 design.md
 PREVIEW_GUIDE.md

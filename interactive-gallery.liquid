@@ -72,30 +72,6 @@
               if front == blank and p != blank
                 assign front = p.featured_image
               endif
-              assign front_file = ''
-              if front == blank
-                assign title_key = title | downcase
-                if title_key contains 'trouser' or title_key contains 'pant'
-                  assign front_file = 'adot-rail-trouser-front.png'
-                elsif title_key contains 'hoodie' or title_key contains 'sweat'
-                  assign front_file = 'adot-rail-hoodie-front.png'
-                elsif title_key contains 'shirt'
-                  assign front_file = 'adot-rail-shirt-front.png'
-                else
-                  assign front_slot = forloop.index0 | modulo: 3
-                  if front_slot == 0
-                    assign front_file = 'adot-rail-hoodie-front.png'
-                  elsif front_slot == 1
-                    assign front_file = 'adot-rail-shirt-front.png'
-                  else
-                    assign front_file = 'adot-rail-trouser-front.png'
-                  endif
-                endif
-              endif
-              assign side_file = ''
-              if side == blank and front_file != blank
-                assign side_file = front_file | replace: '-front.png', '-side.png'
-              endif
               assign num = forloop.index
               if num < 10
                 assign num = num | prepend: '0'
@@ -119,12 +95,25 @@
                 data-sub="{{ sub | escape }}"
                 data-price="{{ price | escape }}"
                 data-num="{{ num }}"
-                {% if front != blank %}data-front="{{ front | image_url: width: 1400 }}"{% elsif front_file != blank %}data-front="{{ front_file | asset_url }}"{% endif %}
+                {% if front != blank %}data-front="{{ front | image_url: width: 1400 }}"{% endif %}
                 {% if back != blank %}data-back="{{ back | image_url: width: 1400 }}"{% endif %}
-                {% if side != blank %}data-side="{{ side | image_url: width: 1400 }}"{% elsif side_file != blank %}data-side="{{ side_file | asset_url }}"{% endif %}
+                {% if side != blank %}data-side="{{ side | image_url: width: 1400 }}"{% endif %}
               >
                 <span class="hrail__swing">
                   <span class="hrail__turn">
+                    {% if side != blank %}
+                      {{
+                        side
+                        | image_url: width: 900
+                        | image_tag:
+                          loading: 'lazy',
+                          widths: '300, 450, 600, 900',
+                          sizes: '(min-width: 750px) 380px, 75vw',
+                          class: 'hrail__img hrail__img--side',
+                          alt: '',
+                          draggable: 'false'
+                      }}
+                    {% endif %}
                     {% if front != blank %}
                       {{
                         front
@@ -137,43 +126,10 @@
                           alt: alt,
                           draggable: 'false'
                       }}
-                    {% elsif front_file != blank %}
-                      <img
-                        class="hrail__img hrail__img--front"
-                        src="{{ front_file | asset_url }}"
-                        alt="{{ alt | escape }}"
-                        width="1600"
-                        height="2000"
-                        loading="lazy"
-                        draggable="false"
-                      >
                     {% else %}
                       <span class="hrail__ph">{{ title }}</span>
                     {% endif %}
                   </span>
-                  {% if side != blank %}
-                    {{
-                      side
-                      | image_url: width: 900
-                      | image_tag:
-                        loading: 'lazy',
-                        widths: '300, 450, 600, 900',
-                        sizes: '(min-width: 750px) 380px, 75vw',
-                        class: 'hrail__img hrail__img--side',
-                        alt: '',
-                        draggable: 'false'
-                    }}
-                  {% elsif side_file != blank %}
-                    <img
-                      class="hrail__img hrail__img--side"
-                      src="{{ side_file | asset_url }}"
-                      alt=""
-                      width="1600"
-                      height="2000"
-                      loading="lazy"
-                      draggable="false"
-                    >
-                  {% endif %}
                 </span>
                 <span class="hrail__hit" aria-hidden="true"></span>
               </a>
@@ -210,10 +166,10 @@
         <div class="hrail-ql__stage">
           <div class="hrail-ql__garment" data-ql-garment>
             <div class="hrail-ql__spin" data-ql-spin>
-              <img class="hrail-ql__face hrail-ql__face--front" data-ql-front alt="" width="1600" height="2000" draggable="false">
-              <img class="hrail-ql__face hrail-ql__face--back" data-ql-back alt="" width="1600" height="2000" draggable="false">
+              <img class="hrail-ql__face hrail-ql__face--front" data-ql-front alt="" draggable="false">
+              <img class="hrail-ql__face hrail-ql__face--back" data-ql-back alt="" draggable="false">
             </div>
-            <img class="hrail-ql__side" data-ql-side alt="" width="1600" height="2000" aria-hidden="true" draggable="false">
+            <img class="hrail-ql__side" data-ql-side alt="" aria-hidden="true" draggable="false">
           </div>
         </div>
         <div class="hrail-ql__info" data-ql-info>
@@ -416,12 +372,6 @@
     -webkit-tap-highlight-color: transparent;
   }
 
-  /* Theme links fade on hover. That would dim a piece as it turns. */
-  .hrail a:hover,
-  .hrail a:focus {
-    opacity: 1;
-  }
-
   .hrail__swing,
   .hrail__turn {
     position: absolute;
@@ -441,11 +391,6 @@
     user-select: none;
     -webkit-user-drag: none;
     pointer-events: none;
-  }
-
-  /* Side view sits outside the 3D turn, so at rest it faces the camera. */
-  .hrail__img--side {
-    transform-origin: 50% 0;
   }
 
   .hrail__ph {

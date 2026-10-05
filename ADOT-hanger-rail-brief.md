@@ -1,3 +1,550 @@
+# ADOT Hanger Rail — Build Brief
+
+A clothing rail for the ADOT Shopify store. Pieces hang on hangers. Hover (or swipe on mobile) and a piece swings to face you. Click it and it lifts into a quick look that you can spin.
+
+This replaces the "Lookbook Flow" section (`sections/interactive-gallery.liquid`).
+
+**Who reads this:** an AI coding agent. Follow the steps in order. Do not improvise. The code in Appendix A is already written and tested. Your job is to place it, connect the content, and check it.
+
+---
+
+## 0. Quick start (do these 6 steps)
+
+1. Commit the old `sections/interactive-gallery.liquid` to git, so you can go back. Do **not** leave a backup copy inside `sections/` (it would show up in the theme editor).
+2. Replace the whole content of `sections/interactive-gallery.liquid` with **Appendix A**. Paste it exactly.
+3. Check the theme tokens in section 7. Map any names that are different in this theme.
+4. Run Theme Check. Fix real errors only.
+5. Add the images (section 8). Fill the blocks (section 9).
+6. Go through the checklist in section 10.
+
+### Golden rules (do not break these)
+
+1. **Keep the file name** `sections/interactive-gallery.liquid`. The homepage template points to it by name.
+2. **Keep these setting ids:** `eyebrow`, `heading`, `caption`, `button_label`, `button_link`, `background_color`, `text_color`. **Keep block type `card`** and its ids `image`, `title`, `subtitle`, `link`. Then the old saved content keeps working.
+3. **Animate only `transform` and `opacity`.** Never animate width, height, top or left.
+4. **No `position: sticky`, no pinned sections, no scroll-jacking.** (A past sticky attempt on the hero glitched.)
+5. **No libraries.** No GSAP, no jQuery, no React.
+6. **One file.** Liquid, CSS (`{% stylesheet %}`), JS (`<script>`) and schema stay in this one section file.
+7. **Do not "improve" the JS.** If something looks wrong, read section 11 first.
+8. **Do not change the tuning numbers** (section 6) unless asked.
+
+---
+
+## 1. Goal
+
+Make the "lookbook" feel like a real shop rail. It must look calm, clean and expensive on desktop and on mobile. The memorable thing is one move: **a piece turns from side-on to facing you.** Everything else stays quiet.
+
+## 2. What the reference video does
+
+Reference: Molimao demo (clothing rail).
+
+- Warm off-white page. A thin metal rod with small end caps.
+- 10 pieces hang from it, all turned sideways, so each looks like a thin sliver.
+- Hover one: it swings to face you and grows. The pieces next to it slide aside.
+- Under the rail: the piece name, a hint line ("Hover to turn. Click to explore."), and a pill button.
+- Click: the page blurs. The piece lifts to the centre on a thin thread. You see name, small line, counter (`01 / 10`), a Front / Back switch, a shop link, and Close.
+- Front / Back turns the piece through its side.
+- An orange marquee strip at the bottom. **We do not copy this.**
+
+## 3. Our version: what is better
+
+| Reference | Ours |
+|---|---|
+| The turn jumps from one piece to the next | Spring motion. Slight overshoot. Neighbours lean and swing back like real hangers. |
+| Front / Back button only | Drag the piece to spin it. Prev / Next inside the quick look. Arrow keys. |
+| No clear mobile idea | **Swipe the rail.** Hangers slide along the rod like on a real rack. The piece in the centre faces you. Tap to open. |
+| Mouse only | Keyboard works. Screen readers get the product name. Reduced motion is respected. |
+| Appears with no moment | One intro: the rod draws across, then pieces drop onto it. |
+| Flat light | A soft pool of light follows the open piece. |
+| No shopping info | Price, "View product" button, optional WhatsApp order button. |
+| Hover can flicker when the layout moves | Hit testing is "sticky": the open piece stays open while the mouse is still on it. |
+
+Taste rules for this section:
+- Spend the boldness in one place (the turn). Keep the rest quiet.
+- No numbered badges, no gradient washes, no cards. No arrows on buttons.
+- The theme's own fonts and colours are used. Do not add a new font.
+
+---
+
+## 4. Behaviour spec
+
+### 4.1 Two modes (the JS picks one by itself)
+
+| Mode | When | How it works |
+|---|---|---|
+| `rail` | Mouse + screen at least 750px wide + enough room (gap between hangers at least 54px) | Pieces sit on a fixed rod. Hover turns one. |
+| `scroll` | Touch devices, small screens, or too many pieces for the width | Native horizontal swipe with snap. The rod stays still. Pieces slide along it. The piece in the middle faces you. |
+
+The mode is set as `data-mode="rail"` or `data-mode="scroll"` on the section. It re-checks when the window resizes.
+
+### 4.2 Desktop (`rail` mode)
+
+- At rest every piece is turned about 84° (side-on). A piece at rest shows its **side image**. If there is no side image, the front image is turned in 3D instead.
+- Move the mouse over the rail. The nearest piece turns to face you. Its neighbours move apart. The total width stays the same.
+- The open piece tilts a little toward the mouse (up to 7° left/right, 3.5° up/down).
+- A soft light follows the open piece.
+- The label under the rail swaps with a short slide-up (name, small line, price). The counter at top right shows `01`, `02`, …
+- Leave the rail: after 140 ms everything swings back to rest.
+- **Auto-demo:** about 2 seconds after the section shows on screen, pieces turn one by one. It stops at the first mouse move, key press or click. It runs at most 7 times. It can be switched off in the settings.
+- **Idle sway:** all pieces move a tiny bit (about 0.5°), each on its own timing. Can be switched off.
+- Click a piece (or press Enter on it): quick look opens. Ctrl/Cmd/Shift/middle click still opens the product link normally.
+
+### 4.3 Mobile (`scroll` mode)
+
+- The rod fills the screen width and does not move. Pieces slide along it.
+- The centre piece faces you and is large. The pieces beside it are side-on slivers, and they peek in from both edges.
+- Swiping snaps one piece at a time to the centre.
+- Tap the centre piece: quick look. Tap a side piece: it slides to the centre first.
+- The hint under the rail changes to "Swipe the rail. Tap to explore."
+- The "Shop All Pieces" button is full width.
+
+### 4.4 Quick look (the `<dialog>`)
+
+- Opens with the real `<dialog>` element and `showModal()`. This gives focus trap, Esc to close and an inert page.
+- **Opening motion:** the piece flies from its place on the rail to the centre (position and size, one smooth move). The background blurs in. A thin thread draws down from the top to the hook. Name, line, buttons slide up one after another.
+- **Content:** counter with Prev / Next, name, fabric line + price, Front / Back switch (hidden if there is no back image), "View product" button, optional "Order on WhatsApp".
+- **Spin:** drag the piece left or right to turn it. On release it snaps to front or back. While it turns edge-on, the side image shows.
+- **Prev / Next:** old piece slides out, new one slides in. Left / Right arrow keys do the same.
+- **Close:** Close button, Esc, or click the blurred background. The piece flies back to its place on the rail. Focus returns to the piece that was opened.
+- The page behind does not scroll while it is open.
+- A safety timer makes sure it always closes, even if an animation fails.
+
+### 4.5 Keyboard and screen readers
+
+- Only one piece is in the tab order (roving tabindex). Left / Right / Home / End move between pieces.
+- Focusing a piece opens it in the rail (same as hover) and announces its name in a hidden live region.
+- Every piece is a real link `<a href>`. With JS off it still works as a plain swipe list of front images.
+- Visible focus ring on every control.
+
+### 4.6 Reduced motion
+
+If the person asks for reduced motion: no springs, no sway, no auto-demo, no intro, no flying piece. Pieces switch instantly. The quick look just appears and disappears.
+
+### 4.7 Edge cases already handled
+
+- 1 to 12 pieces (schema limit is 12). With few pieces the rod gets shorter so the gaps do not look empty.
+- A piece with no side image: front image is turned in 3D.
+- A piece with no back image: the Back switch is hidden and dragging only wiggles a little.
+- A piece with no front image: a dashed placeholder box shows its name.
+- Piece with no product picked: uses the typed name and the link field.
+- Several copies of this section on one page.
+- Theme editor: selecting a block previews that piece.
+
+---
+
+## 5. Motion spec
+
+| What | Time / feel | Notes |
+|---|---|---|
+| Turn to face you | Spring. Stiffness 170, damping 20. About 4% overshoot. | Pieces swing a tiny bit past front and settle. |
+| Neighbours step aside | Same spring as the turn | Layout is computed every frame. No CSS transition. |
+| Sway / lean | Spring. Stiffness 60, damping 7 | A piece leans away from the way it moves, then swings back 2 to 3 times. Max 5°. |
+| Idle sway | Sine wave, 0.55°, slow, each piece offset | Off if the setting is off. |
+| Tilt to mouse | Smooth follow, about 100 ms | Open piece only. |
+| Spotlight | Follows with ease, fades in about 150 ms | Soft white radial gradient. |
+| Label text swap | 460 ms, `cubic-bezier(0.2, 0.85, 0.2, 1)` | Slides up inside a clipped line. |
+| Intro: rod | 900 ms, draws left to right | Once, when the section is 25% visible. |
+| Intro: pieces | 1000 ms each, 55 ms apart, start after 250 ms | Drop 26px and swing 2.5° into place. |
+| Quick look: fly in | 780 ms, `cubic-bezier(0.2, 0.85, 0.2, 1)` | Uses a FLIP move (position + scale). |
+| Quick look: thread | 700 ms | Draws from the top. |
+| Quick look: info | 640 ms each, 70 ms apart, start after 180 ms | Slide up 16px and fade in. |
+| Quick look: fly out | 540 ms, `cubic-bezier(0.55, 0, 0.7, 0.3)` | Back to the rail position. |
+| Spin (front / back) | Spring. Stiffness 130, damping 17 | Drag speed adds a little throw. |
+| Prev / Next | 200 ms out, 480 ms in | Slides 56px sideways. |
+
+Performance rules:
+- Only `transform` and `opacity`. The animation loop runs only while the section is on screen, and it stops by itself when nothing moves (unless idle sway is on).
+- No `filter` or `box-shadow` is animated.
+- Images use `loading="lazy"` and `srcset`. The quick look loads the big image only when opened, and warms the next and previous pieces.
+
+---
+
+## 6. How the layout works (so you understand the code)
+
+Do not rewrite this. It is here so you can read the code.
+
+Names: `N` pieces, `P` gap between hanger centres, `F` visible width of a piece facing you, `a_i` how much piece `i` faces you (0 = side-on, 1 = facing).
+
+1. **Size.** Every piece sits in a 4:5 box. Height is `--hr-h`. Width is 0.8 × height. `F` = box width × 0.78 (`FILL`).
+2. **Rail mode.** The rod width is `(N − 1) × P + F`, but never more than the stage width. `P = (rod width − F) / (N − 1)`, with a maximum of 132 px (`MAX_PITCH`). If `P` would be under 54 px (`MIN_PITCH`), switch to scroll mode.
+3. **Neighbours step aside.** For a piece `i`:
+   `shift_i = (F − P) / 2 × (sum of a_j for j before i − sum of a_j for j after i)`
+   The open piece grows evenly to both sides. The pieces on each side move out by half the extra width. Nothing overflows the rod, because there is spare room at both ends of the rod (half of `F − P`).
+4. **Turn.** `rotateY = (1 − a) × 84°` (`REST_TURN`). Scale goes from 0.92 to 1. If a side image exists, front and side images cross-fade between 50% and 90% of the turn.
+5. **Hit test (rail mode).** If the mouse is still within ±0.52 × F of the open piece centre, that piece stays open. Otherwise the nearest piece centre wins. This stops flicker.
+6. **Scroll mode.** `a_i` comes from how close the piece is to the middle: `smoothstep(1 − distance / P)`. The sum of all `a` stays 1.
+7. **Snap points must not move.** In scroll mode the moving transform is on an inner wrapper (`.hrail__slide`), never on the `<li>`. Scroll-snap reads the transformed box, so moving the `<li>` would break the snap points. **Do not move this transform to the `<li>`.**
+
+### Tuning knobs (JS, top of the script)
+
+| Name | Default | Does |
+|---|---|---|
+| `FILL` | 0.78 | Visible garment width ÷ image width |
+| `MAX_PITCH` | 132 | Widest gap between hangers on desktop (px) |
+| `MIN_PITCH` | 54 | Below this gap, switch to swipe mode (px) |
+| `REST_TURN` | 84 | How far pieces are turned at rest (degrees) |
+| `SPRING_K`, `SPRING_C` | 170, 20 | Turn spring: stiffness, damping |
+| `SWAY_K`, `SWAY_C` | 60, 7 | Sway spring. Lower `SWAY_C` = more wobble |
+
+---
+
+## 7. Theme integration
+
+### 7.1 Section settings
+
+| Id | Type | Default | Note |
+|---|---|---|---|
+| `eyebrow` | text | On the rail | Empty = hidden |
+| `heading` | text | Clean Cuts. Quality Fabrics. | Same as before |
+| `caption` | textarea | empty | |
+| `idle_title` | text | Pick a piece | Shown when nothing is open |
+| `hint_hover` | text | Hover to turn. Click to explore. | Desktop |
+| `hint_touch` | text | Swipe the rail. Tap to explore. | Mobile |
+| `button_label`, `button_link` | text, url | Shop All Pieces | Empty label = no button |
+| `show_price` | checkbox | on | Needs a product on the piece |
+| `view_label` | text | View product | Quick look main button |
+| `whatsapp_number` | text | empty | Country code, digits only (example `923001234567`). Empty = no WhatsApp button |
+| `idle_sway` | checkbox | on | |
+| `attract_mode` | checkbox | on | Auto-demo on desktop |
+| `rail_height` | range 320–560 | 480 | Max piece height on desktop (px) |
+| `background_color` | color | #F4F2EE | Warm off-white works best for the light pool |
+| `text_color` | color | #111111 | |
+
+### 7.2 Block: type `card` ("Piece"), max 12
+
+| Id | Type | Note |
+|---|---|---|
+| `product` | product | Gives name, link and price |
+| `image` | image | **Front** cutout (PNG, transparent) |
+| `image_side` | image | Optional. Side view |
+| `image_back` | image | Optional. Back view. Turns on the Back switch |
+| `title` | text | Empty = product title |
+| `subtitle` | text | Small line, for example the fabric |
+| `link` | url | Empty = product link |
+
+Each colour of a product is its own product in this store. So **one piece on the rail = one product page.** There are no colour swatches anywhere in this section.
+
+If `image` is empty but a product is picked, the product's main image is used. It is not a cutout, so it will look wrong. Always add cutouts.
+
+### 7.3 Theme tokens used (all have fallbacks)
+
+| Token | Used for | If the theme uses another name |
+|---|---|---|
+| `--font-display` | headings, names | replace in the `{% stylesheet %}` block |
+| `--color-border` | top border | same |
+| `--color-text-subtle`, `--color-text-muted` | small grey text | same |
+| `--color-focus` | focus ring | same |
+| `.btn`, `.btn-outline` | the "Shop All Pieces" button | same |
+| `.text-micro` | eyebrow, hint, counter | same |
+
+### 7.4 Things to check in the theme
+
+- A global `dialog { ... }` rule in the theme CSS can break the quick look. The section sets its own size, so remove or narrow the global rule if needed.
+- A sticky header does not matter. The quick look sits in the browser top layer, above everything.
+- The old homepage section may have more than 12 blocks. The new limit is 12. If so, remove the extras in the theme editor.
+
+---
+
+## 8. Images
+
+This is the part that makes or breaks the look. The code is ready. The images must be right.
+
+### 8.1 What to make (per product)
+
+| Image | Needed? | What it is |
+|---|---|---|
+| **Front** | Required | Garment on a hanger, seen straight from the front |
+| **Side** | Strongly recommended | The same garment, same hanger, seen exactly from its left side |
+| **Back** | Recommended | Straight from the back. Turns on the Back switch |
+
+| Level | Images per piece | Result |
+|---|---|---|
+| A | Front only | Works. Pieces turn in 3D like a thin card. Looks flat. |
+| B | Front + side | Real look at rest. **Best value.** |
+| C | Front + side + back | Full quick look with Front / Back and spin |
+
+For 10 pieces at level C you need 30 images.
+
+### 8.2 Image rules (every image in the set must match)
+
+- **Size:** 1600 × 2000 px. Ratio 4:5 (portrait).
+- **Format:** PNG with a **transparent background**.
+- **Hanger:** the **same** slim dark-walnut wooden hanger with a brushed-brass hook, in every image.
+- **Hook position:** the hook loop is exactly centred left-to-right. The **middle of the loop is 4% from the top edge** (80 px). The code puts the rod at that height. If the hook is not there, the hooks will float or sink.
+- **Garment:** centred. At least 6% empty space on the left and right. The longest piece should end at about 85% of the height (1700 px).
+- **Scale:** the same pixels-per-cm for every piece. A T-shirt must look shorter than a hoodie. Do not stretch pieces to fill the box.
+- **Light:** soft, even, from the front-left. Same in every image. No shadow baked on the background. No floor.
+- **Side image:** it must be a real side view (the garment turned 90°), with the same hook position and the same top edge as the front image. It is **not** a squashed front image.
+- **No people.** No mannequin, no hands, no face.
+- **File size:** under about 900 KB each. Compress with Squoosh or TinyPNG. Shopify serves WebP to browsers by itself.
+- **File names:** `adot-rail-{product-handle}-front.png`, `-side.png`, `-back.png`.
+
+### 8.3 Two ways to get the images
+
+**Way 1: AI from your original photos (fast).** Use the prompts below.
+
+**Way 2: shoot the real garment (most true).**
+Hang the garment on the same wooden hanger on a plain wall or a door. Use a phone on a tripod at chest height, in soft window light. Take 3 shots: front, side, back. Then remove the background. Use AI only to clean up (see prompt 8.6). This is the safest way for prints and small logos.
+
+You can mix both ways.
+
+### 8.4 What to give the AI
+
+For each product, upload:
+1. The clearest **front photo** (flat lay, on a hanger, or on a person).
+2. The **back photo**, if you have one.
+3. A **close-up** of any print, logo or label.
+
+Use **one image tool for the whole set**, so the hanger and light stay the same. Pick a tool that accepts reference photos and keeps small details (for example Gemini image editing, GPT image, Flux Kontext, or Seedream, or a newer one).
+
+### 8.5 Prompts
+
+Replace anything in `[brackets]`. Always paste the **MASTER STYLE** block first.
+
+#### MASTER STYLE (paste first in every prompt)
+
+```
+You are making a product image for a clothing website.
+Use the attached photo(s) as the ONLY truth for the garment.
+
+Keep the garment exactly the same: colour, fabric look, stitching, collar,
+cuffs, hem, pockets, zips, buttons, label, logo and print (same size, same
+place, same spelling). Do not redesign it. Do not add anything. Do not
+remove anything.
+
+The garment hangs on a slim dark-walnut wooden hanger with a small
+brushed-brass hook. Use the same hanger in every image of this set.
+
+Look: realistic studio photo, soft even daylight from the front-left,
+gentle natural fabric drape with a few small real folds. Clean and calm.
+No harsh shadows.
+
+No person, no mannequin, no body, no hands.
+
+Background: plain flat light grey (#E6E6E6). No floor, no wall, no
+gradient, no shadow on the background.
+
+Frame: portrait 4:5 (1600 x 2000 px). The hook is exactly centred left to
+right. The middle of the hook loop is 4% down from the top edge. The
+garment is centred, with about 6% empty space on the left and right.
+Show the real size of the garment compared with other garments: do not
+stretch it to fill the frame.
+```
+
+#### PROMPT 1: FRONT
+
+```
+[MASTER STYLE]
+
+View: straight-on front view, camera at chest height. The garment faces the
+camera. Sleeves hang naturally.
+Match the front of the garment in the attached photo exactly, including
+where the print or logo sits.
+Make one image only.
+
+Garment: [for example: black polo, white trim on the collar, "NORTH" print
+on the chest].
+```
+
+#### PROMPT 2: SIDE (use the approved FRONT image as image 2)
+
+```
+[MASTER STYLE]
+
+Attached image 1: the original photo of the garment.
+Attached image 2: the approved front image of this same garment on this same
+hanger. Match the hanger, light, scale and hook position of image 2.
+
+View: turn the whole hanger and garment exactly 90 degrees, so we see the
+LEFT SIDE of the garment. It looks narrow, like a profile. Show the side
+seam, the sleeve hanging in front of the body, the collar or hood shape and
+the curve of the hem. The wooden hanger is seen from its thin edge, with the
+hook on top.
+
+Same height, same scale and same top edge as image 2.
+This must look like a real side view. Do not squash the front view.
+Make one image only.
+```
+
+#### PROMPT 3: BACK (use the approved FRONT image as image 2)
+
+```
+[MASTER STYLE]
+
+Attached image 1: the original photo(s) of the garment, including the back
+if available.
+Attached image 2: the approved front image. Match the hanger, light, scale
+and hook position of image 2.
+
+View: straight-on back view, the garment turned 180 degrees on the hanger.
+Show the back exactly as in the original photo.
+If there is no back photo: keep the back plain. Do not invent a print or
+a logo.
+Make one image only.
+```
+
+#### PROMPT 4: if the only photo shows a person wearing it
+
+```
+[MASTER STYLE]
+
+The attached photo shows a person wearing the garment. Make a product photo
+of ONLY the garment, hanging on the wooden hanger. Remove the person
+completely. Rebuild the parts that were hidden (the inside of the neck, the
+back of the collar, the underside of the sleeves) in a natural way that
+matches the fabric. Keep every detail of the visible garment the same.
+View: straight-on front view.
+```
+
+#### PROMPT 5: fix one detail only (when the AI gets a print wrong)
+
+```
+Attached image 1: the image to fix. Attached image 2: a close-up of the
+real print.
+Change ONLY the [print on the chest]. Make it match image 2 exactly: same
+letters, same spelling, same size, same place.
+Keep everything else in image 1 unchanged: hanger, garment shape, colour,
+light, framing.
+```
+
+#### PROMPT 6: clean up a real photo (Way 2)
+
+```
+Attached: a real photo of the garment on a hanger.
+Clean it for a website. Keep the garment exactly as it is (do not change
+the print, colour, shape or fabric). Only: remove the background and make
+it plain flat light grey (#E6E6E6), soften harsh shadows, and lightly
+smooth messy wrinkles. Do not redraw the garment.
+Keep the framing: hook centred, loop middle 4% from the top, portrait 4:5.
+```
+
+### 8.6 Work order (do it in this order)
+
+1. Pick **one hero piece**. Make its FRONT (prompt 1). Check it. Repeat until the hanger, light and framing are right. This approved image is your style anchor.
+2. For every other piece, make the FRONT again. Attach the approved hero front as an extra reference ("match the hanger and light of this image").
+3. For every piece, make the SIDE (prompt 2) and the BACK (prompt 3) from that piece's approved front.
+4. Remove the background (see 8.7).
+5. Place each cutout on a transparent **1600 × 2000 px** canvas (Canva, Photoshop or Photopea). Check hook position and scale (see 8.8). Fix by nudging the garment on the canvas. Most AI tools do not give an exact size, so this step is needed.
+6. Compress. Name the files. Upload to Shopify (Content > Files), then pick them in each block.
+
+### 8.7 Making the background transparent
+
+- If the tool can output a transparent PNG, add "transparent background (alpha)" to the prompt.
+- If not, use the grey background, then remove it with Photoroom, remove.bg, Photoshop "Remove Background", or the background remover in Canva.
+- White and cream garments can blend into light grey. For those, ask for a **mid-grey (#9A9A9A)** background instead, then remove it.
+- After removing: view the image on a **light** background (#F4F2EE) and on a **dark** one (#111). Remove any grey halo around the edges.
+
+### 8.8 Image check (do this for every image)
+
+- [ ] Print, logo, label: zoom to 200%. Same letters, same spelling, same place as the real garment.
+- [ ] Colour matches the real garment. Hold your phone next to the screen to compare.
+- [ ] No extra pocket, button, drawstring, seam or tag. Nothing missing.
+- [ ] Both sleeves match. The collar is correct.
+- [ ] Same hanger in every image of the set.
+- [ ] Hook loop is centred, and its middle is about 4% from the top (allow ±1.5%).
+- [ ] Scale is right: a T-shirt is shorter than a hoodie.
+- [ ] The side image is a real side view. It has the same top edge as the front.
+- [ ] The back has no invented print.
+- [ ] No person, no mannequin, no hands, no odd text.
+- [ ] Edges are clean on light and dark backgrounds.
+- [ ] File is under about 900 KB.
+
+**Be honest with customers.** AI can quietly change a logo, a colour or a stitch. A wrong image means returns and angry messages. If the AI keeps failing on one piece, use Way 2 (real photo) for that piece.
+
+---
+
+## 9. Filling the content
+
+1. In the theme editor, open the homepage. Select the section. Add or edit "Piece" blocks. 5 to 12 pieces is best. 8 to 10 looks great.
+2. For each block: pick the **product**, then add **front**, **side** and **back** images. Leave `title` and `link` empty to use the product's own.
+3. Order: the auto-demo starts at about one third along the rail. Put a best seller there. Mix dark and light pieces side by side for rhythm.
+4. Set `whatsapp_number` if you want the WhatsApp button. Leave it empty to hide it.
+5. Old blocks (from "Lookbook Flow") carry over. Their old images are probably normal photos with a background, so replace them with cutouts.
+
+---
+
+## 10. QA checklist
+
+**Desktop (mouse)**
+- [ ] On first view the rod draws, then pieces drop on. Then the auto-demo runs. It stops when you move the mouse.
+- [ ] Hover turns the nearest piece. Neighbours move aside. No jumping when you sweep slowly across the open piece.
+- [ ] Moving from piece to piece feels smooth. Neighbours lean and settle.
+- [ ] First and last pieces stay inside the rod when open.
+- [ ] Mouse leaves: everything swings back to rest.
+- [ ] Click opens the quick look. The piece flies to the centre. Thread, text and buttons appear.
+- [ ] Front / Back works. Dragging spins the piece and it snaps to front or back.
+- [ ] Prev / Next and arrow keys work. Esc, Close and clicking the background all close it. The piece flies back. Focus returns to that piece.
+- [ ] Page behind does not scroll while it is open.
+- [ ] Ctrl/Cmd + click opens the product link in a new tab.
+
+**Mobile (real phone if you can)**
+- [ ] Rod fills the width. The centre piece faces you. Side pieces peek in from the edges.
+- [ ] Swipe snaps one piece at a time. Vertical page scroll still works when you scroll past the rail.
+- [ ] Tap centre = quick look. Tap a side piece = it moves to the centre.
+- [ ] Quick look: buttons are full width and easy to tap. Nothing is cut off. Works with the browser address bar showing or hidden.
+- [ ] No sideways page scroll.
+
+**Keyboard and access**
+- [ ] Tab reaches the rail with one stop. Arrow keys move between pieces. Enter opens.
+- [ ] Focus ring is visible. Esc closes. Focus goes back to the piece.
+- [ ] With "reduce motion" on, nothing swings or flies. Everything still works.
+
+**Other**
+- [ ] No errors in the browser console.
+- [ ] Theme Check has no new errors.
+- [ ] Theme editor: select a block, it previews. Edit a setting, the section re-renders and works.
+- [ ] PageSpeed: no layout shift from the section (it has a fixed height). Images lazy load.
+
+---
+
+## 11. Knobs and troubleshooting
+
+| Problem | Fix |
+|---|---|
+| Hooks float above or sink below the rod | The hook is not at 4% in the images. Fix the images, or change `--hr-hook` in the CSS (default `calc(var(--hr-h) * 0.04)`). |
+| Pieces look too small or too big | Setting "Max piece height", or the CSS `--hr-h`. |
+| Gaps between hangers look too wide | Lower `MAX_PITCH`. |
+| Pieces look like flat cards when they turn | Add side images. |
+| Turn feels too slow or too bouncy | `SPRING_K` up = faster. `SPRING_C` up = less bounce. |
+| Too much wobble | Raise `SWAY_C`, or turn off "Gentle sway". |
+| Swipe mode starts too early or too late | `MIN_PITCH`. |
+| The visible garment looks off-centre when open | Check the image has equal space left and right. Adjust `FILL` if the garment fills a different share of the image than 78%. |
+| Section shows a plain list and nothing moves | JS did not start. The section has no `is-ready` class. Open the console and fix the error. |
+| Mobile does not swipe | An ancestor element has `overflow: hidden` with a fixed width, or `touch-action: none`. The element `.hrail__scroller` must be free to scroll. |
+| Swipe snaps to odd places | Someone moved the transform to the `<li>` in scroll mode. Put it back on `.hrail__slide` (section 6, point 7). |
+| Quick look looks wrong (wrong size, white box) | A global `dialog` rule in the theme. Narrow or remove it. |
+| WhatsApp button missing | `whatsapp_number` is empty. |
+| Prices missing | `show_price` is off, or the block has no product picked. |
+
+---
+
+## 12. What was tested (read this before you trust it)
+
+The code was run in headless Chromium with placeholder art (not your real photos):
+- Desktop 1440×900, 1024×768 and 820×700 (rail mode).
+- Mobile 390×844 with touch (swipe mode, snap, tap to open).
+- 4 pieces and 10 pieces.
+- Hover, sweep across the open piece (no flicker), click, quick look open, Front / Back, Prev / Next, drag to spin, Esc close.
+- Keyboard: Tab, arrows, Enter, Esc, focus return.
+- Reduced motion on.
+- No console errors in any run.
+
+**Not tested:** real Shopify rendering (the Liquid was checked with a Liquid engine and mock data), Safari and iOS Safari, Firefox, real phones, speed on cheap Android phones, the theme editor's block-select preview, and how the real photos look. **Test on a real phone and in Safari before launch.**
+
+## 13. Ideas for later (do not build now)
+
+- A small "cursor label" that follows the mouse on the open piece.
+- A "shop the rack" link that filters a collection by the open piece's type.
+- A photo of the garment's fabric close-up in the quick look.
+- Different rails for Men / Women or New / Best sellers (two sections).
+
+---
+
+## Appendix A — the full section file
+
+Paste this exactly as `sections/interactive-gallery.liquid`.
+
+```liquid
 {% comment %}
   Hanger Rail
   Replaces "Lookbook Flow". Keep this file name: sections/interactive-gallery.liquid
@@ -72,30 +619,6 @@
               if front == blank and p != blank
                 assign front = p.featured_image
               endif
-              assign front_file = ''
-              if front == blank
-                assign title_key = title | downcase
-                if title_key contains 'trouser' or title_key contains 'pant'
-                  assign front_file = 'adot-rail-trouser-front.png'
-                elsif title_key contains 'hoodie' or title_key contains 'sweat'
-                  assign front_file = 'adot-rail-hoodie-front.png'
-                elsif title_key contains 'shirt'
-                  assign front_file = 'adot-rail-shirt-front.png'
-                else
-                  assign front_slot = forloop.index0 | modulo: 3
-                  if front_slot == 0
-                    assign front_file = 'adot-rail-hoodie-front.png'
-                  elsif front_slot == 1
-                    assign front_file = 'adot-rail-shirt-front.png'
-                  else
-                    assign front_file = 'adot-rail-trouser-front.png'
-                  endif
-                endif
-              endif
-              assign side_file = ''
-              if side == blank and front_file != blank
-                assign side_file = front_file | replace: '-front.png', '-side.png'
-              endif
               assign num = forloop.index
               if num < 10
                 assign num = num | prepend: '0'
@@ -119,12 +642,25 @@
                 data-sub="{{ sub | escape }}"
                 data-price="{{ price | escape }}"
                 data-num="{{ num }}"
-                {% if front != blank %}data-front="{{ front | image_url: width: 1400 }}"{% elsif front_file != blank %}data-front="{{ front_file | asset_url }}"{% endif %}
+                {% if front != blank %}data-front="{{ front | image_url: width: 1400 }}"{% endif %}
                 {% if back != blank %}data-back="{{ back | image_url: width: 1400 }}"{% endif %}
-                {% if side != blank %}data-side="{{ side | image_url: width: 1400 }}"{% elsif side_file != blank %}data-side="{{ side_file | asset_url }}"{% endif %}
+                {% if side != blank %}data-side="{{ side | image_url: width: 1400 }}"{% endif %}
               >
                 <span class="hrail__swing">
                   <span class="hrail__turn">
+                    {% if side != blank %}
+                      {{
+                        side
+                        | image_url: width: 900
+                        | image_tag:
+                          loading: 'lazy',
+                          widths: '300, 450, 600, 900',
+                          sizes: '(min-width: 750px) 380px, 75vw',
+                          class: 'hrail__img hrail__img--side',
+                          alt: '',
+                          draggable: 'false'
+                      }}
+                    {% endif %}
                     {% if front != blank %}
                       {{
                         front
@@ -137,43 +673,10 @@
                           alt: alt,
                           draggable: 'false'
                       }}
-                    {% elsif front_file != blank %}
-                      <img
-                        class="hrail__img hrail__img--front"
-                        src="{{ front_file | asset_url }}"
-                        alt="{{ alt | escape }}"
-                        width="1600"
-                        height="2000"
-                        loading="lazy"
-                        draggable="false"
-                      >
                     {% else %}
                       <span class="hrail__ph">{{ title }}</span>
                     {% endif %}
                   </span>
-                  {% if side != blank %}
-                    {{
-                      side
-                      | image_url: width: 900
-                      | image_tag:
-                        loading: 'lazy',
-                        widths: '300, 450, 600, 900',
-                        sizes: '(min-width: 750px) 380px, 75vw',
-                        class: 'hrail__img hrail__img--side',
-                        alt: '',
-                        draggable: 'false'
-                    }}
-                  {% elsif side_file != blank %}
-                    <img
-                      class="hrail__img hrail__img--side"
-                      src="{{ side_file | asset_url }}"
-                      alt=""
-                      width="1600"
-                      height="2000"
-                      loading="lazy"
-                      draggable="false"
-                    >
-                  {% endif %}
                 </span>
                 <span class="hrail__hit" aria-hidden="true"></span>
               </a>
@@ -210,10 +713,10 @@
         <div class="hrail-ql__stage">
           <div class="hrail-ql__garment" data-ql-garment>
             <div class="hrail-ql__spin" data-ql-spin>
-              <img class="hrail-ql__face hrail-ql__face--front" data-ql-front alt="" width="1600" height="2000" draggable="false">
-              <img class="hrail-ql__face hrail-ql__face--back" data-ql-back alt="" width="1600" height="2000" draggable="false">
+              <img class="hrail-ql__face hrail-ql__face--front" data-ql-front alt="" draggable="false">
+              <img class="hrail-ql__face hrail-ql__face--back" data-ql-back alt="" draggable="false">
             </div>
-            <img class="hrail-ql__side" data-ql-side alt="" width="1600" height="2000" aria-hidden="true" draggable="false">
+            <img class="hrail-ql__side" data-ql-side alt="" aria-hidden="true" draggable="false">
           </div>
         </div>
         <div class="hrail-ql__info" data-ql-info>
@@ -416,12 +919,6 @@
     -webkit-tap-highlight-color: transparent;
   }
 
-  /* Theme links fade on hover. That would dim a piece as it turns. */
-  .hrail a:hover,
-  .hrail a:focus {
-    opacity: 1;
-  }
-
   .hrail__swing,
   .hrail__turn {
     position: absolute;
@@ -441,11 +938,6 @@
     user-select: none;
     -webkit-user-drag: none;
     pointer-events: none;
-  }
-
-  /* Side view sits outside the 3D turn, so at rest it faces the camera. */
-  .hrail__img--side {
-    transform-origin: 50% 0;
   }
 
   .hrail__ph {
@@ -2089,3 +2581,4 @@
   ]
 }
 {% endschema %}
+```

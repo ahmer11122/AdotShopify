@@ -1,3 +1,115 @@
+# Hanger rail — review
+
+Live section: `sections/interactive-gallery.liquid`
+
+Original plan: `ADOT-hanger-rail-brief.md` (Appendix A is the source pasted into that section).
+
+This file is for review only. `*.md` is in `.shopifyignore`, so Shopify does not upload it.
+
+The full section, as it is on disk, is at the bottom.
+
+## What stayed the same as the brief
+
+The motion is the brief’s tested script. These numbers were not changed:
+
+| Name | Value | What it does |
+|---|---|---|
+| `FILL` | 0.78 | How wide an open piece is, compared with its image box |
+| `MAX_PITCH` | 132 | Widest gap between hangers on desktop, in pixels |
+| `MIN_PITCH` | 54 | Below this, the rail becomes a swipe |
+| `REST_TURN` | 84 | Degrees a piece is turned when it is not open |
+| `SPRING_K` / `SPRING_C` | 170 / 20 | Turn spring |
+| `SWAY_K` / `SWAY_C` | 60 / 7 | Idle sway spring |
+
+Still true:
+
+- One section file. The old Lookbook Flow was snapshotted in git first (`647c2e4`), then replaced in the same filename so the homepage section id still works.
+- Desktop (`rail`): hover turns the nearest piece. Neighbours step aside. Click opens quick look.
+- Phone (`scroll`): native horizontal swipe. The centre piece faces you.
+- Quick look is a real `<dialog>`. Esc, focus trap, and a locked page come from that.
+- Motion is `transform` and `opacity` only. No sticky, no scroll-jacking, no animation library.
+- Ideas in brief section 13 were not built.
+- Theme colours already matched the brief (`#F4F2EE`, `#111111`, 0px radius on the shop button). Quick-look pills keep the brief’s round shape.
+- The root file `interactive-gallery.liquid` is the untouched Appendix A source. It is ignored by `.shopifyignore` and theme check so it is not uploaded as a section.
+
+## What is different, and why
+
+### 1. The side image sits outside the 3D turn
+
+**Brief.** The side photo is inside `.hrail__turn`, the element that rotates `84°` at rest. The brief says a piece at rest shows its side image, and also that pieces look like thin slivers.
+
+**What shipped.** The side `<img>` is still inside `.hrail__swing` (so it sways with the piece), but it is no longer inside `.hrail__turn`. The front image stays inside the turn. The opacity cross-fade in the script is unchanged.
+
+**Why.** A flat photo rotated 84° is about one tenth of its width. That is true for a front photo and for a side photo. On the live preview every piece was a vertical streak, and it did not read as clothing. With the side image outside the turn, rest shows the side photo facing the camera. Hover fades that photo out and rotates the front photo around to face you. The turn still uses `REST_TURN` 84. Only where the side photo lives in the markup changed.
+
+If a block has no side image, behaviour matches the brief again: the front photo is turned in 3D and looks like a thin card.
+
+### 2. Stand-in photos, used only when a block has no image
+
+**Brief.** Each block gets a real front, side, and back cutout from the merchant. The code shows a dashed placeholder when the front is empty.
+
+**What shipped.** Six homepage blocks have titles and links, and no image picked yet. Liquid then loads a theme asset by the title:
+
+| Title contains | Files |
+|---|---|
+| `trouser` or `pant` | `adot-rail-trouser-front.png`, `adot-rail-trouser-side.png` |
+| `hoodie` or `sweat` | `adot-rail-hoodie-front.png`, `adot-rail-hoodie-side.png` |
+| `shirt` | `adot-rail-shirt-front.png`, `adot-rail-shirt-side.png` |
+| anything else | cycles hoodie, shirt, trouser |
+
+`sweat` is checked before `shirt`, so “Boxy Sweatshirt” uses the hoodie. “Daily Overshirt” contains `shirt`, so it uses the shirt.
+
+A picked block image, or a product’s featured image, wins. The stand-in is not used once either of those is set. The matching side stand-in is also dropped at that point, so a real front is never paired with the wrong side. Upload a side image with the real front.
+
+There are no back images. The Front / Back switch stays hidden until a back image is set. That is level B in the brief, not level C.
+
+### 3. The stand-in hanger is a ring, not a bar across the shoulders
+
+**Brief.** Every photo uses the same slim dark-walnut hanger with a brass hook. The middle of the hook loop is 4% down the image (80px on a 1600×2000 canvas). The rod is drawn at that height.
+
+**What shipped.** The first stand-ins drew the wooden bar above the garment. The bar was wider than the shoulders, so it stuck out of the hoodie on both sides. The current stand-ins keep only a small brass ring. The neck of the ring goes into the hood, collar, or waistband. The loop is still centred at `(800, 80)`, so it meets the rod.
+
+**Why.** The preview was judged on that bar. A visible bar past the cloth reads as a hanger coming out of the garment. The motion code still expects the loop at 4%. Real product photos should follow the same rule: the wooden bar stays hidden behind the shoulders, and only the ring shows above the cloth. The prompt file covers that.
+
+These stand-ins were cut from `assets/category-hoodies.jpg`, `category-shirts.jpg`, and `category-trousers.jpg`. They are placeholders. Replace them before launch. Some front files are a little over the brief’s 900KB target. Shopify still serves them. Compress the real set.
+
+### 4. Two theme fixes the brief’s source did not include
+
+**Link hover.** `assets/base.css` sets `a:hover { opacity: 0.75 }`. That dimmed a piece as it turned. The section now sets `.hrail a:hover, .hrail a:focus { opacity: 1 }`.
+
+**Image width and height.** Theme Check requires `width` and `height` on `<img>`. The quick-look images, and the stand-in `<img>` tags, are `1600` by `2000`. The brief’s appendix left the quick-look images without those attributes.
+
+The global `dialog` rule in `assets/critical.css` was left in place. The size guide uses it. The section’s own `.hrail-ql` rules set the quick-look size.
+
+## Homepage content already filled
+
+`templates/index.json`, section `interactive_gallery`:
+
+- Eyebrow: On the rail
+- Heading: Clean Cuts. Quality Fabrics.
+- Button: Shop All Pieces → `/collections/all`
+- WhatsApp: `923131707080`
+- Background `#F4F2EE`, text `#111111`
+- Six pieces: Heavyweight Hoodie, Poplin Shirt, Twill Trouser, Daily Overshirt, Boxy Sweatshirt, Casual Shirt
+
+Omitted settings use the schema defaults (price on, idle sway on, attract mode on, rail height 480).
+
+## How to replace the stand-ins
+
+In the theme editor, on each Piece block:
+
+1. Pick the product (title and link can stay empty and will come from the product).
+2. Set **Image** to the front cutout.
+3. Set **Side image** to the side cutout. This is what shows when the piece is not open.
+4. Set **Back image** when you have one. That turns on Front / Back in quick look.
+
+Use `ADOT-hanger-rail-image-prompts.md` to make those cutouts.
+
+## Complete section code
+
+The file below is `sections/interactive-gallery.liquid` as it is on disk.
+
+```liquid
 {% comment %}
   Hanger Rail
   Replaces "Lookbook Flow". Keep this file name: sections/interactive-gallery.liquid
@@ -2089,3 +2201,5 @@
   ]
 }
 {% endschema %}
+
+```
