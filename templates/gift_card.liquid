@@ -3,71 +3,364 @@
 <!doctype html>
 <html lang="{{ request.locale.iso_code }}">
   <head>
-    {% # Inlined CSS Variables %}
-    {% render 'css-variables' %}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ shop.name }} · {{ 'gift_card.card' | t | default: 'Gift Card' }}</title>
+    <meta name="robots" content="noindex">
 
-    {% # Load and preload the critical CSS %}
-    {{ 'critical.css' | asset_url | stylesheet_tag: preload: true }}
+    <!-- Fonts -->
+    {% # theme-check-disable RemoteAsset %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    {% # theme-check-enable RemoteAsset %}
 
-    {% # Social, title, etc. %}
+    <!-- Design Tokens & CSS -->
+    {{ 'tokens.css' | asset_url | stylesheet_tag }}
+    {{ 'critical.css' | asset_url | stylesheet_tag }}
+
     {% render 'meta-tags' %}
 
-    {% style %}
-      main {
+    <style>
+      body {
+        font-family: var(--font-body);
+        color: var(--color-text);
+        background-color: var(--color-background);
+        min-height: 100svh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: clamp(1.5rem, 4vw, 3rem) 1rem;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .gift-voucher {
+        max-width: 520px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      /* Header */
+      .gift-voucher__masthead {
         text-align: center;
+        margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
       }
-      main img {
-        display: unset;
+
+      .gift-voucher__shop-name {
+        font-family: var(--font-display);
+        font-size: var(--font-size-h3);
+        font-weight: 600;
+        letter-spacing: var(--tracking-tight);
+        margin: 0 0 0.25rem 0;
       }
-    {% endstyle %}
+
+      .gift-voucher__eyebrow {
+        color: var(--color-text-subtle);
+        display: block;
+      }
+
+      /* Physical Card Frame */
+      .gift-voucher__card {
+        width: 100%;
+        aspect-ratio: 1.6 / 1;
+        background: var(--color-surface-dark);
+        color: var(--color-white);
+        border: 1px solid var(--color-border-dark);
+        padding: clamp(1.5rem, 4vw, 2.25rem);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        margin-bottom: var(--space-md);
+      }
+
+      .gift-voucher__card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+      }
+
+      .gift-voucher__logo-text {
+        font-family: var(--font-display);
+        font-size: 1.25rem;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+      }
+
+      .gift-voucher__status-badge {
+        font-size: var(--font-size-micro);
+        letter-spacing: var(--tracking-micro);
+        text-transform: uppercase;
+        padding: 0.25rem 0.6rem;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .gift-voucher__status-badge--active { color: #4ADE80; }
+      .gift-voucher__status-badge--expired { color: #F87171; }
+
+      .gift-voucher__card-body {
+        margin-top: auto;
+      }
+
+      .gift-voucher__balance-label {
+        font-size: var(--font-size-micro);
+        letter-spacing: var(--tracking-micro);
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.6);
+        display: block;
+        margin-bottom: 0.25rem;
+      }
+
+      .gift-voucher__balance {
+        font-family: var(--font-display);
+        font-size: clamp(2rem, 5vw, 3.25rem);
+        font-weight: 500;
+        letter-spacing: var(--tracking-tight);
+        line-height: 1;
+        margin: 0;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .gift-voucher__card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.15);
+      }
+
+      .gift-voucher__card-no {
+        font-family: monospace;
+        letter-spacing: 0.15em;
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      .gift-voucher__expiry {
+        font-size: var(--font-size-micro);
+        color: rgba(255, 255, 255, 0.5);
+      }
+
+      /* Code Box */
+      .gift-voucher__code-box {
+        width: 100%;
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        padding: 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: var(--space-md);
+      }
+
+      .gift-voucher__code-display {
+        font-family: monospace;
+        font-size: 1.15rem;
+        font-weight: 600;
+        letter-spacing: 0.15em;
+        color: var(--color-text);
+        user-select: all;
+      }
+
+      .gift-voucher__copy-btn {
+        background: var(--color-text);
+        color: var(--color-white);
+        border: none;
+        padding: 0.75rem 1.25rem;
+        font-size: var(--font-size-micro);
+        font-weight: 600;
+        letter-spacing: var(--tracking-micro);
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: background-color var(--transition-fast);
+        min-height: 40px;
+        flex-shrink: 0;
+      }
+
+      .gift-voucher__copy-btn:hover { background: #333333; }
+
+      /* Instructions */
+      .gift-voucher__instructions {
+        text-align: center;
+        margin-bottom: var(--space-md);
+      }
+
+      .gift-voucher__instruction-text {
+        font-size: var(--font-size-caption);
+        color: var(--color-text-muted);
+        line-height: var(--leading-normal);
+        margin: 0 0 1.25rem 0;
+      }
+
+      .gift-voucher__qr {
+        display: inline-block;
+        padding: 0.75rem;
+        background: var(--color-white);
+        border: 1px solid var(--color-border);
+        margin-bottom: 1rem;
+      }
+
+      /* Actions */
+      .gift-voucher__actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        width: 100%;
+      }
+
+      .gift-voucher__primary-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 1rem 2rem;
+        background: var(--color-text);
+        color: var(--color-white);
+        text-decoration: none;
+        font-size: var(--font-size-micro);
+        font-weight: 600;
+        letter-spacing: var(--tracking-micro);
+        text-transform: uppercase;
+        transition: background-color var(--transition-fast);
+      }
+
+      .gift-voucher__primary-btn:hover { background: #333333; }
+
+      .gift-voucher__secondary-links {
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+        margin-top: 0.5rem;
+      }
+
+      .gift-voucher__print-link {
+        color: var(--color-text-muted);
+        text-decoration: underline;
+        font-size: var(--font-size-caption);
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+      }
+
+      .gift-voucher__print-link:hover { color: var(--color-text); }
+    </style>
 
     {{ content_for_header }}
   </head>
 
   <body>
-    <main>
-      <div class="shopify-section">
-        <h1>{{ gift_card.balance | money }}</h1>
+    <main class="gift-voucher">
+      <header class="gift-voucher__masthead">
+        <h1 class="gift-voucher__shop-name">{{ shop.name }}</h1>
+        <span class="gift-voucher__eyebrow text-micro">DIGITAL GIFT CARD</span>
+      </header>
 
-        {% if gift_card.enabled == false or gift_card.expired %}
-          <p>{{ 'gift_card.expired' | t }}</p>
-        {% endif %}
-
-        {% if gift_card.expires_on %}
-          {% assign expires_on = gift_card.expires_on | date: '%B %e, %Y' %}
-          <p>
-            {{ 'gift_card.expires_on' | t: expires_on: expires_on }}
-          </p>
-        {% endif %}
-
-        <p>
-          {% if settings.logo %}
-            {{ settings.logo | image_url: width: 300 | image_tag: alt: shop.name }}
+      <!-- Luxury Card Frame -->
+      <div class="gift-voucher__card">
+        <div class="gift-voucher__card-header">
+          <span class="gift-voucher__logo-text">ADOT</span>
+          {% if gift_card.enabled == false or gift_card.expired %}
+            <span class="gift-voucher__status-badge gift-voucher__status-badge--expired">Inactive</span>
           {% else %}
-            <img
-              src="{{ 'gift-card/card.svg' | shopify_asset_url }}"
-              alt="{{ 'gift_card.card' | t }}"
-              width="300"
-              height="200"
-            >
+            <span class="gift-voucher__status-badge gift-voucher__status-badge--active">Active</span>
           {% endif %}
+        </div>
+
+        <div class="gift-voucher__card-body">
+          <span class="gift-voucher__balance-label">CARD BALANCE</span>
+          <h2 class="gift-voucher__balance">{{ gift_card.balance | money_with_currency }}</h2>
+        </div>
+
+        <div class="gift-voucher__card-footer">
+          <span class="gift-voucher__card-no">•••• •••• •••• {{ gift_card.code | slice: -4, 4 }}</span>
+          {% if gift_card.expires_on %}
+            <span class="gift-voucher__expiry">EXPIRES {{ gift_card.expires_on | date: '%d/%m/%Y' }}</span>
+          {% else %}
+            <span class="gift-voucher__expiry">NO EXPIRY DATE</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Code Box with Copy Button -->
+      <div class="gift-voucher__code-box">
+        <span class="gift-voucher__code-display" id="GiftCardCode">{{ gift_card.code | format_code }}</span>
+        <button type="button" class="gift-voucher__copy-btn" id="CopyGiftCardBtn" data-code="{{ gift_card.code }}">
+          Copy Code
+        </button>
+      </div>
+
+      <!-- Instructions & In-Store QR -->
+      <div class="gift-voucher__instructions">
+        <p class="gift-voucher__instruction-text">
+          Use this code at checkout to pay for your order. If shopping in store, show this QR code at checkout.
         </p>
 
-        <h2>{{ shop.name }}</h2>
-        <p>{{ 'gift_card.use_at_checkout' | t }}</p>
-        <p>{{ gift_card.code | format_code }}</p>
+        <!-- QR Code -->
+        <div class="gift-voucher__qr" id="qr-code"></div>
 
         {% if gift_card.pass_url %}
-          <a href="{{ gift_card.pass_url }}">
-            <img
-              src="{{ 'gift-card/add-to-apple-wallet.svg' | shopify_asset_url }}"
-              alt="{{ 'gift_card.add_to_apple_wallet' | t }}"
-              width="200"
-              height="60"
-            >
-          </a>
+          <div class="gift-voucher__apple-wallet">
+            <a href="{{ gift_card.pass_url }}">
+              <img
+                src="{{ 'gift-card/add-to-apple-wallet.svg' | shopify_asset_url }}"
+                alt="{{ 'gift_card.add_to_apple_wallet' | t | default: 'Add to Apple Wallet' }}"
+                width="140"
+                height="44"
+                loading="lazy"
+              >
+            </a>
+          </div>
         {% endif %}
       </div>
+
+      <!-- Actions -->
+      <div class="gift-voucher__actions">
+        <a href="{{ shop.url }}?discount={{ gift_card.code }}" class="gift-voucher__primary-btn">
+          Start Shopping →
+        </a>
+
+        <div class="gift-voucher__secondary-links">
+          <button type="button" onclick="window.print()" class="gift-voucher__print-link">
+            Print Gift Card
+          </button>
+        </div>
+      </div>
     </main>
+
+    <!-- QR Code & Copy Script -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const qrContainer = document.getElementById('qr-code');
+        if (qrContainer && typeof QRCode !== 'undefined') {
+          new QRCode(qrContainer, {
+            text: '{{ gift_card.qr_identifier }}',
+            width: 120,
+            height: 120
+          });
+        }
+
+        const copyBtn = document.getElementById('CopyGiftCardBtn');
+        if (copyBtn) {
+          copyBtn.addEventListener('click', function() {
+            const code = this.getAttribute('data-code');
+            if (navigator.clipboard) {
+              navigator.clipboard.writeText(code).then(() => {
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = 'Copied!';
+                setTimeout(() => { copyBtn.textContent = originalText; }, 2000);
+              });
+            }
+          });
+        }
+      });
+    </script>
   </body>
 </html>

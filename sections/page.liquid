@@ -1,17 +1,315 @@
 {% comment %}
-  This section is used in the page template to render store pages like About us
-  or Contact us.
-
-  https://shopify.dev/docs/storefronts/themes/architecture/templates/page
+  Editorial Page Template
+  - Simple breadcrumb navigation
+  - Easy to read 720px width
+  - Clean typography for headings, lists, tables, and links
+  - Helpful support card at the bottom
 {% endcomment %}
 
-<h1>{{ page.title }}</h1>
+<div class="page-editorial container">
+  <!-- Breadcrumbs -->
+  <nav class="page-editorial__breadcrumb text-micro" aria-label="Breadcrumb">
+    <a href="{{ routes.root_url }}">Home</a>
+    <span class="page-editorial__breadcrumb-sep" aria-hidden="true">/</span>
+    <span class="page-editorial__breadcrumb-current" aria-current="page">{{ page.title }}</span>
+  </nav>
 
-{{ page.content }}
+  <!-- Page Header -->
+  <header class="page-editorial__header">
+    <h1 class="page-editorial__title">{{ page.title }}</h1>
+  </header>
+
+  <!-- Page Content -->
+  <article class="page-editorial__content rte">
+    {{ page.content }}
+  </article>
+
+  <!-- Help Section -->
+  {% if section.settings.show_support_strip %}
+    <footer class="page-editorial__footer">
+      <div class="page-editorial__support-card">
+        <div class="page-editorial__support-info">
+          <span class="text-micro page-editorial__support-eyebrow">NEED HELP?</span>
+          <h2 class="page-editorial__support-heading">Have a question? We are here to help.</h2>
+          <p class="page-editorial__support-text">For questions about fabrics, sizing, or delivery, please reach out to our team.</p>
+        </div>
+        <div class="page-editorial__support-actions">
+          {% if section.settings.support_whatsapp != blank %}
+            <a
+              href="https://wa.me/{{ section.settings.support_whatsapp | remove: '+' | remove: ' ' }}?text=Hello%20ADOT,%20I%20have%20a%20question%20about%20{{ page.title | url_encode }}"
+              target="_blank"
+              rel="noopener"
+              class="page-editorial__btn page-editorial__btn--primary"
+            >
+              Chat on WhatsApp
+            </a>
+          {% endif %}
+          <a href="{{ routes.all_products_collection_url }}" class="page-editorial__btn page-editorial__btn--outline">
+            View All Products
+          </a>
+        </div>
+      </div>
+    </footer>
+  {% endif %}
+</div>
+
+{% stylesheet %}
+  .page-editorial {
+    padding-top: clamp(1.5rem, 3vw, 2.5rem);
+    padding-bottom: clamp(4rem, 8vw, 7rem);
+  }
+
+  /* Breadcrumb */
+  .page-editorial__breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-text-subtle);
+    margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
+  }
+
+  .page-editorial__breadcrumb a {
+    color: var(--color-text-subtle);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+  }
+
+  .page-editorial__breadcrumb a:hover {
+    color: var(--color-text);
+  }
+
+  .page-editorial__breadcrumb-sep {
+    opacity: 0.4;
+  }
+
+  .page-editorial__breadcrumb-current {
+    color: var(--color-text);
+  }
+
+  /* Header */
+  .page-editorial__header {
+    max-width: 760px;
+    margin-bottom: clamp(2rem, 4vw, 3rem);
+    padding-bottom: clamp(1.25rem, 2vw, 1.75rem);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .page-editorial__title {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4.5vw, 3.25rem);
+    font-weight: 500;
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-tight);
+    color: var(--color-text);
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  /* Reading Column */
+  .page-editorial__content.rte {
+    max-width: 720px;
+    font-family: var(--font-body);
+    font-size: var(--font-size-body);
+    line-height: 1.7;
+    color: var(--color-text);
+  }
+
+  .page-editorial__content.rte > p:first-of-type {
+    font-size: 1.125rem;
+    line-height: 1.65;
+    color: var(--color-text);
+    margin-bottom: 1.75rem;
+  }
+
+  .page-editorial__content.rte h2 {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 2.5vw, 2rem);
+    font-weight: 600;
+    letter-spacing: var(--tracking-tight);
+    margin-top: 3rem;
+    margin-bottom: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border-subtle);
+  }
+
+  .page-editorial__content.rte h3 {
+    font-family: var(--font-display);
+    font-size: var(--font-size-h3);
+    font-weight: 600;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .page-editorial__content.rte p {
+    margin-bottom: 1.5rem;
+    text-wrap: pretty;
+  }
+
+  .page-editorial__content.rte ul,
+  .page-editorial__content.rte ol {
+    padding-left: 1.25rem;
+    margin-bottom: 1.75rem;
+  }
+
+  .page-editorial__content.rte li {
+    margin-bottom: 0.5rem;
+  }
+
+  .page-editorial__content.rte a {
+    color: var(--color-text);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-color: var(--color-border-strong);
+    transition: text-decoration-color var(--transition-fast);
+  }
+
+  .page-editorial__content.rte a:hover {
+    text-decoration-color: var(--color-text);
+  }
+
+  .page-editorial__content.rte blockquote {
+    border-left: 2px solid var(--color-text);
+    padding: 1rem 0 1rem 1.5rem;
+    margin: 2rem 0;
+    font-style: italic;
+    color: var(--color-text-muted);
+    background: var(--color-surface);
+  }
+
+  .page-editorial__content.rte table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 2rem 0;
+    font-size: var(--font-size-caption);
+  }
+
+  .page-editorial__content.rte th,
+  .page-editorial__content.rte td {
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--color-border);
+    text-align: left;
+  }
+
+  .page-editorial__content.rte th {
+    font-family: var(--font-body);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-micro);
+    font-size: var(--font-size-micro);
+    color: var(--color-text-subtle);
+    background-color: var(--color-surface);
+  }
+
+  .page-editorial__content.rte img {
+    max-width: 100%;
+    height: auto;
+    margin-block: 2rem;
+    border-radius: var(--radius-none);
+  }
+
+  /* Support Card */
+  .page-editorial__footer {
+    max-width: 720px;
+    margin-top: clamp(3rem, 6vw, 4.5rem);
+    padding-top: clamp(2rem, 3vw, 2.5rem);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .page-editorial__support-card {
+    background: var(--color-surface);
+    padding: clamp(1.5rem, 3vw, 2rem);
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .page-editorial__support-eyebrow {
+    color: var(--color-text-subtle);
+    display: block;
+    margin-bottom: 0.35rem;
+  }
+
+  .page-editorial__support-heading {
+    font-family: var(--font-display);
+    font-size: var(--font-size-h3);
+    font-weight: 500;
+    letter-spacing: var(--tracking-tight);
+    margin: 0 0 0.35rem 0;
+  }
+
+  .page-editorial__support-text {
+    font-size: var(--font-size-caption);
+    color: var(--color-text-muted);
+    margin: 0;
+    line-height: var(--leading-normal);
+  }
+
+  .page-editorial__support-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding-top: 0.25rem;
+  }
+
+  .page-editorial__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.85rem 1.5rem;
+    font-family: var(--font-body);
+    font-size: var(--font-size-micro);
+    font-weight: 600;
+    letter-spacing: var(--tracking-micro);
+    text-transform: uppercase;
+    text-decoration: none;
+    border-radius: var(--radius-none);
+    transition: background-color var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+
+  .page-editorial__btn:active {
+    transform: scale(0.98);
+  }
+
+  .page-editorial__btn--primary {
+    background: var(--color-text);
+    color: var(--color-white);
+    border: 1px solid var(--color-text);
+  }
+
+  .page-editorial__btn--primary:hover {
+    background: #333333;
+    border-color: #333333;
+  }
+
+  .page-editorial__btn--outline {
+    background: transparent;
+    color: var(--color-text);
+    border: 1px solid var(--color-border-strong);
+  }
+
+  .page-editorial__btn--outline:hover {
+    border-color: var(--color-text);
+  }
+{% endstylesheet %}
 
 {% schema %}
 {
   "name": "t:general.page",
-  "settings": []
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_support_strip",
+      "label": "Show support card at bottom",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "support_whatsapp",
+      "label": "Support WhatsApp number",
+      "default": "923131707080"
+    }
+  ]
 }
 {% endschema %}
