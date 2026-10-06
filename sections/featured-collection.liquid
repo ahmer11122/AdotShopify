@@ -1,6 +1,6 @@
 {% comment %}
-  New Arrivals. Clean symmetrical editorial product grid.
-  - Top header: Eyebrow + Heading on left, View All on right
+  New Arrivals. Clean symmetrical editorial product grid with matching Category Tiles header typography.
+  - Top header: Eyebrow with decorative line & counter (08) + Display Heading with word masks + View All
   - Desktop: 4 crisp, symmetrical columns
   - Tablet: 3 columns
   - Mobile: 2 compact columns (or 1 column via theme settings)
@@ -49,13 +49,23 @@
 
   <div class="featured-collection__header">
     <div class="featured-collection__title-group">
-      {% if section.settings.eyebrow != blank %}
-        <p class="featured-collection__eyebrow text-micro">{{ section.settings.eyebrow }}</p>
+      {% if section.settings.eyebrow != blank or shown_count > 0 %}
+        <p class="featured-collection__eyebrow text-micro">
+          {%- if section.settings.eyebrow != blank -%}
+            <span>{{ section.settings.eyebrow }}</span>
+          {%- endif -%}
+          {% if shown_count > 0 %}
+            <span class="featured-collection__count" aria-hidden="true">({{ shown_count | prepend: '00' | slice: -2, 2 }})</span>
+          {% endif %}
+        </p>
       {% endif %}
 
       {% if section.settings.heading != blank %}
         <h2 class="featured-collection__heading">
-          <span class="featured-collection__heading-inner">{{ section.settings.heading }}</span>
+          {%- assign heading_words = section.settings.heading | split: ' ' -%}
+          {%- for word in heading_words -%}
+            <span class="featured-collection__word"><span class="featured-collection__word-i" style="--i: {{ forloop.index0 }}">{{ word | escape }}</span></span>{% unless forloop.last %} {% endunless %}
+          {%- endfor -%}
         </h2>
       {% endif %}
     </div>
@@ -138,14 +148,15 @@
     opacity: 1;
   }
 
-  /* ---------- Header ---------- */
+  /* ---------- Editorial Header (Matching Category Tiles) ---------- */
   .featured-collection__header {
     display: flex;
     flex-wrap: wrap;
     align-items: flex-end;
     justify-content: space-between;
     gap: var(--space-sm, 1rem);
-    margin-bottom: clamp(2rem, 4vw, 3rem);
+    margin-bottom: clamp(2rem, 4.5vw, 4.5rem);
+    text-align: left;
   }
 
   .featured-collection__title-group {
@@ -153,28 +164,47 @@
   }
 
   .featured-collection__eyebrow {
-    color: var(--color-text-subtle, #6B6B6B);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    margin: 0 0 0.5rem 0;
-    font-size: 0.6875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0 0 1rem;
+    color: var(--color-text-muted);
     font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .featured-collection__eyebrow > span:first-child:not(:only-child)::after {
+    content: '';
+    display: inline-block;
+    width: 2.5rem;
+    height: 1px;
+    margin-left: 0.75rem;
+    vertical-align: middle;
+    background: currentColor;
+    opacity: 0.4;
   }
 
   .featured-collection__heading {
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 7.2vw, 6.5rem);
+    font-weight: 500;
+    line-height: 0.98;
+    letter-spacing: -0.04em;
     margin: 0;
-    overflow: hidden;
     color: var(--color-text);
-    font-family: var(--font-display, var(--font-body));
-    font-size: clamp(2rem, 4.5vw, 3.25rem);
-    font-weight: 400;
-    line-height: 1.05;
-    letter-spacing: -0.03em;
     text-wrap: balance;
   }
 
-  .featured-collection__heading-inner {
-    display: block;
+  .featured-collection__word {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: top;
+    padding-block: 0.06em 0.14em;
+    margin-block: -0.06em -0.14em;
+  }
+
+  .featured-collection__word-i {
+    display: inline-block;
   }
 
   .featured-collection__view-all {
@@ -295,32 +325,32 @@
 
   /* ---------- Entry Scroll Animation ---------- */
   @media (prefers-reduced-motion: no-preference) {
-    .featured-collection[data-reveal="pending"] .featured-collection__header:not(.is-in) .featured-collection__heading-inner {
-      transform: translateY(108%);
-    }
-
     .featured-collection[data-reveal="pending"] .featured-collection__header:not(.is-in) .featured-collection__eyebrow,
     .featured-collection[data-reveal="pending"] .featured-collection__header:not(.is-in) .featured-collection__view-all-label {
       opacity: 0;
-      transform: translateY(6px);
+      transform: translateY(8px);
+    }
+
+    .featured-collection[data-reveal="pending"] .featured-collection__header:not(.is-in) .featured-collection__word-i {
+      transform: translateY(115%);
     }
 
     .featured-collection[data-reveal="pending"] .featured-collection__header:not(.is-in) .featured-collection__view-all {
       pointer-events: none;
     }
 
-    .featured-collection[data-reveal="pending"] .featured-collection__header.is-in .featured-collection__heading-inner {
-      transform: translateY(0);
-      transition: transform 900ms cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
     .featured-collection[data-reveal="pending"] .featured-collection__header.is-in .featured-collection__eyebrow,
     .featured-collection[data-reveal="pending"] .featured-collection__header.is-in .featured-collection__view-all-label {
       opacity: 1;
-      transform: translateY(0);
+      transform: none;
       transition:
-        opacity 600ms var(--ease-out, ease) 180ms,
-        transform 600ms var(--ease-out, ease) 180ms;
+        opacity 560ms var(--ease-out, ease),
+        transform 560ms var(--ease-out, ease);
+    }
+
+    .featured-collection[data-reveal="pending"] .featured-collection__header.is-in .featured-collection__word-i {
+      transform: none;
+      transition: transform 900ms cubic-bezier(0.16, 1, 0.3, 1) calc(var(--i, 0) * 80ms);
     }
 
     .featured-collection[data-reveal="pending"] .featured-collection__header.is-in .featured-collection__view-all {
