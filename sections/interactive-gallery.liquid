@@ -43,11 +43,23 @@
     <header class="hrail__head">
       <div class="hrail__head-row">
         <div class="hrail__head-text">
-          {% if section.settings.eyebrow != blank %}
-            <p class="text-micro hrail__eyebrow">{{ section.settings.eyebrow }}</p>
+          {% if section.settings.eyebrow != blank or total > 0 %}
+            <p class="text-micro hrail__eyebrow">
+              {% if section.settings.eyebrow != blank %}
+                <span>{{ section.settings.eyebrow }}</span>
+              {% endif %}
+              {% if total > 0 %}
+                <span class="hrail__count" aria-hidden="true">({{ total_label }})</span>
+              {% endif %}
+            </p>
           {% endif %}
           {% if section.settings.heading != blank %}
-            <h2 id="HRailHeading-{{ section.id }}" class="hrail__heading">{{ section.settings.heading }}</h2>
+            <h2 id="HRailHeading-{{ section.id }}" class="hrail__heading">
+              {%- assign hrail_words = section.settings.heading | split: ' ' -%}
+              {%- for word in hrail_words -%}
+                <span class="hrail__word"><span class="hrail__word-i" style="--i: {{ forloop.index0 }}">{{ word | escape }}</span></span>{% unless forloop.last %} {% endunless %}
+              {%- endfor -%}
+            </h2>
           {% endif %}
         </div>
       </div>
@@ -330,6 +342,7 @@
   .hrail__head {
     width: min(1320px, 100% - 2 * var(--hr-gutter));
     margin-inline: auto;
+    margin-bottom: clamp(2rem, 4.5vw, 4rem);
   }
 
   .hrail__head-row {
@@ -340,27 +353,54 @@
   }
 
   .hrail__eyebrow {
-    margin: 0 0 0.6rem;
-    color: var(--color-text-subtle, rgba(0, 0, 0, 0.5));
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0 0 1rem;
+    color: var(--color-text-muted, rgba(0, 0, 0, 0.55));
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .hrail__eyebrow > span:first-child:not(:only-child)::after {
+    content: '';
+    display: inline-block;
+    width: 2.5rem;
+    height: 1px;
+    margin-left: 0.75rem;
+    vertical-align: middle;
+    background: currentColor;
+    opacity: 0.4;
   }
 
   .hrail__heading {
     margin: 0;
-    font-family: var(--font-display, inherit);
-    font-size: clamp(1.75rem, 3.2vw, 2.75rem);
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 7.2vw, 6.5rem);
     font-weight: 500;
-    line-height: 1.08;
-    letter-spacing: -0.025em;
+    line-height: 0.98;
+    letter-spacing: -0.04em;
+    color: var(--hr-ink, var(--color-text));
     text-wrap: balance;
   }
 
+  .hrail__word {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: top;
+    padding-block: 0.06em 0.14em;
+    margin-block: -0.06em -0.14em;
+  }
+
+  .hrail__word-i {
+    display: inline-block;
+  }
+
   .hrail__caption {
-    margin: 0.75rem 0 0;
+    margin: 1.25rem 0 0;
     max-width: 44ch;
     color: var(--color-text-muted, rgba(0, 0, 0, 0.62));
+    font-size: clamp(0.875rem, 1.1vw, 1rem);
     line-height: 1.5;
   }
 
