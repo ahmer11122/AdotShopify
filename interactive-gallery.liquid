@@ -207,7 +207,7 @@
       </div>
     </div>
 
-    <div class="hrail__dots" data-hr-dots aria-hidden="true"></div>
+    <div class="hrail__dots" data-hr-dots></div>
 
     <div class="hrail__label">
       <p class="hrail__name"><span class="hrail__mask"><span data-hr-name>{{ idle_title }}</span></span></p>
@@ -692,7 +692,7 @@
     visibility: hidden;
   }
 
-  /* ---------- Dots (phone) ---------- */
+  /* ---------- Piece index (phone and touch tablet) ---------- */
   .hrail__dots {
     display: none;
   }
@@ -700,22 +700,39 @@
   .hrail.is-ready[data-mode='scroll'] .hrail__dots {
     display: flex;
     justify-content: center;
-    gap: 6px;
-    margin-top: 0.9rem;
+    align-items: center;
+    width: min(1320px, 100% - 2 * var(--hr-gutter));
+    margin: 1.15rem auto 0;
   }
 
-  .hrail__dots i {
-    width: 6px;
-    height: 6px;
-    border-radius: 6px;
+  .hrail__dot {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    appearance: none;
+  }
+
+  .hrail__dot::before {
+    content: '';
+    width: 5px;
+    height: 5px;
     background: currentColor;
-    opacity: 0.22;
-    transition: width 260ms var(--hr-ease), opacity 260ms ease;
+    opacity: 0.28;
+    transition: width 260ms var(--hr-ease), height 260ms var(--hr-ease), opacity 260ms ease;
   }
 
-  .hrail__dots i.is-on {
-    width: 20px;
-    opacity: 0.85;
+  .hrail__dot.is-on::before {
+    width: 18px;
+    height: 2px;
+    opacity: 1;
   }
 
   /* ---------- Label under the rail ---------- */
@@ -782,6 +799,22 @@
 
   .hrail__hint.is-quiet {
     opacity: 0;
+  }
+
+  /* The upward pull is for the desktop rail. On the carousel it lands the
+     cloth line on top of the piece index. */
+  .hrail.is-ready[data-mode='scroll'] .hrail__label {
+    gap: 0.2rem;
+    min-height: 0;
+    margin-top: 0.15rem;
+  }
+
+  .hrail.is-ready[data-mode='scroll'] .hrail__hint {
+    display: none;
+  }
+
+  .hrail.is-ready[data-mode='scroll'] .hrail__meta {
+    min-height: 0;
   }
 
   .hrail__foot {
@@ -1376,7 +1409,7 @@
       opacity: 1 !important;
       transform: none !important;
     }
-    .hrail__dots i,
+    .hrail__dot,
     .hrail-ql__hang,
     .hrail-ql__photo,
     .hrail-ql__thumb,
@@ -1493,7 +1526,22 @@
         this.userActed = false;
 
         if (this.dotsEl) {
-          for (var d = 0; d < this.n; d++) this.dotsEl.appendChild(document.createElement('i'));
+          for (var d = 0; d < this.n; d++) {
+            var dot = document.createElement('button');
+            dot.type = 'button';
+            dot.className = 'hrail__dot';
+            dot.setAttribute('aria-label', this.items[d].data.title || 'Piece ' + (d + 1));
+            this.dotsEl.appendChild(dot);
+          }
+          this.dotsEl.addEventListener('click', function (e) {
+            var btn = e.target.closest('.hrail__dot');
+            if (!btn || !self.dotsEl.contains(btn)) return;
+            var i = Array.prototype.indexOf.call(self.dotsEl.children, btn);
+            if (i < 0 || self.mode !== 'scroll') return;
+            self.userAct();
+            self.setRoving(i);
+            self.scrollToIndex(i);
+          });
         }
 
         this.initQuickLook();
@@ -2046,7 +2094,10 @@
         });
         if (this.dotsEl) {
           Array.prototype.forEach.call(this.dotsEl.children, function (dot, k) {
-            dot.classList.toggle('is-on', k === (idx < 0 ? 0 : idx));
+            var on = k === (idx < 0 ? 0 : idx);
+            dot.classList.toggle('is-on', on);
+            if (on) dot.setAttribute('aria-current', 'true');
+            else dot.removeAttribute('aria-current');
           });
         }
         this.swap(this.nameEl, it ? it.data.title : this.idleTitle);
