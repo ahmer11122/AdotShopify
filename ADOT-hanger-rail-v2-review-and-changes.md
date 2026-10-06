@@ -1,0 +1,3349 @@
+# ADOT Hanger Rail — Review and v2 Changes
+
+This file has two jobs:
+
+1. It tells you what I think of the live section (good and bad).
+2. It gives an AI coding agent exact steps and the full new code (Appendix A) to make it better.
+
+**Who reads this:** an AI coding agent. Follow section 9 in order. The code in Appendix A is already written and tested. Paste it. Do not rewrite it.
+
+Live store checked: the 3 screenshots from the dev store (rest, hover, quick look), plus the agent's review notes (the file that lists what it changed).
+
+---
+
+## 1. Short verdict
+
+| Area | Verdict | What we do |
+|---|---|---|
+| The turn (side-on to front) | **Good.** Smooth, and the stand-in photos look real. | Keep. Add small polish (section 4). |
+| Rod, hooks, light pool | **Good idea. Small fixes.** The rod did not line up with the heading. Pieces look "pinned" to the rod. | Rod now spans the full width. Image rules updated (section 7). |
+| Text on the page | **Too much, and too generic.** | Shorter, simpler text (section 3). |
+| Quick look (explore) | **Works, but too small and too plain.** Buttons blinked away when you switched pieces. Thread did not touch the ring. | Full redesign (section 5). |
+| Phone | **Not good enough.** | New clean carousel on phones, and a setting to hide the section on phones (section 6). |
+| Stand-in photos | **Fine for now. Heavy.** Trouser "side" photo looked like a front view. | Fixed the trouser. Compress all (section 7.4). |
+
+---
+
+## 2. What I saw in your screenshots
+
+Screenshot 1 (rest):
+1. The rod is shorter than the heading area. The heading starts at the left edge, the rod starts further in. The `01 — 06` counter sits at the far right, past the end of the rod. Nothing lines up.
+2. The text under the rail is big: "PICK A PIECE" looks like a product name, but it is an instruction. Then a second instruction line below it.
+3. There is about 150px of empty space between the longest piece (the trouser) and the text. The photos only fill about 70% of the image height.
+4. The trouser at rest looks wide, like a front view. Real trousers on a hanger are thin from the side.
+5. Pieces touch the rod with only a small brass ring. There is no neck between the rod and the collar, so they look pinned to the rod, not hanging.
+
+Screenshot 2 (hover):
+6. The turn and the soft light look good. Neighbours step aside well.
+7. No price shows. The link in the corner goes to `/collections/all`. That means the pieces have no product picked. Without a product there is no price, no size, no real link.
+8. The label says "Classic Layer" (the fabric line) but nothing says what to do next except the all-caps hint.
+
+Screenshot 3 (quick look):
+9. The piece is small. About 30% of the screen height. A lot of empty space around it.
+10. The thread stops about 20px above the ring. They should touch. (Reason: the ring sits 4% down inside the image, but the thread stopped at a fixed height.)
+11. The buttons are round pills. The "Shop All" button on the page is square. They do not match the theme.
+12. There is only one view of the piece. No second photo, no size.
+
+From the code (not visible in screenshots):
+13. **Buttons blinking when you switch pieces:** every time you pressed Next or Previous, the code played the "open" animation again on everything: arrows, counter, buttons. They went to invisible and slid back in over about 0.8 seconds. That is wrong. Buttons you are pressing must never move. (Fixed, section 5.4.)
+
+---
+
+## 3. Text: what to keep, change, remove
+
+### 3.1 The heading
+
+"Clean Cuts. Quality Fabrics." is a slogan. It does not say what this section is. It was the heading of the old lookbook. A shopper needs to know: "this is where I can look at your clothes."
+
+**Use:** `The Essentials`
+**Caption (one short line):** `Hoodies, shirts and trousers for every day.`
+
+Other easy options if you do not like it: `Shop the Rack`, `Pick Your Piece`.
+You can still use "Clean Cuts. Quality Fabrics." in another place, for example the About page.
+
+### 3.2 Every text on the section
+
+| Where | Now | New | Why |
+|---|---|---|---|
+| Small label above heading | On the rail | **(remove)** | Nobody searches for "the rail". It adds noise. |
+| Heading | Clean Cuts. Quality Fabrics. | **The Essentials** | Says what it is. Two easy words. |
+| Caption | (none) | **Hoodies, shirts and trousers for every day.** | One line. Says what you will find. |
+| Counter `01 — 06` (top right) | shown | **(remove)** | Not useful on desktop. On phone we use dots. |
+| Text under rail when nothing is open | PICK A PIECE | **(empty)** | It looked like a product name. The hint is enough. |
+| Hint, desktop | HOVER TO TURN. CLICK TO EXPLORE. | **Hover a piece to turn it.** | Short. Normal letters, not all caps. It fades away after the first time a visitor opens a piece. |
+| Hint, phone | SWIPE THE RAIL. TAP TO EXPLORE. | **Swipe to browse. Tap a piece to open.** | Same idea. |
+| Piece name | DAILY OVERSHIRT | keep | Good. |
+| Fabric line | Classic Layer | keep | Good. |
+| Price | (missing) | **show** | Needs a product on every piece. |
+| Button under rail | SHOP ALL PIECES | **Shop All** | Shorter. |
+| Quick look: counter | 04 / 06 | keep | Useful there. |
+| Quick look: main button | View product | keep (or "Add to cart" if you turn that on) | |
+| Quick look: WhatsApp | Order on WhatsApp | keep. Now includes the size. | Your customers use it. |
+| Quick look: Front / Back | switch | now small photos on the left | Same job, plus more photos. |
+
+### 3.3 Where the text lives (important)
+
+The agent already wrote the old text into `templates/index.json` (section `interactive_gallery`). Changing the schema defaults will **not** change a saved value. You must edit `index.json` (or the theme editor). See section 9, step 3.
+
+---
+
+## 4. The rail: hanger, hover and smoothness
+
+### 4.1 Review
+
+| Part | Verdict |
+|---|---|
+| Turn spring and neighbours stepping aside | Good. Keep the numbers. |
+| Soft light pool behind the open piece | Good. It gives depth. |
+| Side photo outside the 3D turn (the agent's change) | **Agree.** A flat photo turned 84° is a thin streak. The side photo is the right answer. |
+| Stand-in trouser side photo | **Disagree.** It looks like a front view. v2 skips the side photo for trousers, so the front photo is turned and becomes a thin sliver, like a real trouser. |
+| Rod only as wide as the pieces | Changed. The rod now spans the full width, so its ends line up with the heading and button. |
+| Brass ring touching the collar | Needs a short neck (image rule, section 7). |
+| Hanger sways from the top edge of the photo | Changed. It now swings from the hook ring (4% down). |
+| Pieces lean the same way they move | Changed. Real hangers trail behind the move. v2 leans them the other way. |
+
+### 4.2 Smoothness: what v2 adds
+
+1. **Hover intent.** If the mouse crosses the rail fast, pieces do not flash open one by one. The rail waits about 90 ms until the mouse slows down. (Moving onto the rail from outside is still instant.)
+2. **Images are decoded early.** After the section appears, every rail image is decoded one by one in the background. The first hover no longer stutters.
+3. **Real swing point.** Swing is pivoted at the hook ring.
+4. **Trailing lean.** Pieces lean behind the move, then swing back.
+5. **Idle sway only on desktop.** On phones it only moves while you swipe. Saves battery.
+6. **Softer blur** behind the quick look (16px, was 22px). Cheaper for phones.
+7. **Controls stay still** while you switch pieces in the quick look.
+
+### 4.3 More smoothness you can add later (not built)
+
+- **Compress the images.** This is the biggest win. See section 7.4.
+- A soft shadow on the wall behind the open piece. Use `filter: drop-shadow` on the **open piece only**. Test on a mid-range Android first. Remove it if the frame rate drops.
+- If a real phone is slow in the quick look, replace the blur with a plain solid background (`backdrop-filter: none`).
+
+---
+
+## 5. Quick look (explore): the new design
+
+### 5.1 Desktop layout
+
+- Left: small photo buttons (front, back, product photos). Next to them the big hanging piece on its thread, with Previous / Next arrows on both sides.
+- Right: counter, name, price + fabric line, short text (optional), sizes, buttons.
+- The piece is now about 70% of the screen height (was about 58%).
+- The thread now reaches the ring exactly.
+
+### 5.2 What the visitor can do
+
+- **Spin the piece** (drag it left or right). It snaps to front or back.
+- **See product photos.** The photo buttons on the left come from the product's own Shopify photos (up to 5). No extra work. If the piece has no product, only front/back show.
+- **Pick a size.** Sold-out sizes are crossed out. The choice is remembered when you switch pieces and come back.
+- **Order.**
+  - Default: "View product" (opens the product page with the chosen size).
+  - Optional: turn on "Add to cart" in the settings. It adds the chosen size without leaving the page.
+  - "Order on WhatsApp" now includes the size in the message.
+
+### 5.3 Switching pieces (the swing)
+
+When you press Next or Previous, the old piece swings away on its hanger (turns side-on and slides out) and the new piece swings in. It is the same "turn" move as on the rail, so the whole thing feels like one idea. Only the **text that changes** fades. Arrows, thumbnails and buttons never move.
+
+### 5.4 Your question: "when I switch clothes, the buttons disappear and come back. Is that right?"
+
+**No, that was wrong.** The agent reused the opening animation for every switch. v2 plays the opening animation only when the quick look opens. When you switch pieces, only the name, price, fabric line, sizes and the piece itself animate. The test checks that the opacity of the arrows and buttons stays at 1 the whole time.
+
+### 5.5 Buttons and layout: other changes
+
+- Square buttons, small capital letters. Same style as "Shop All" on the page. (They use the theme token `--radius-sm`.)
+- Buttons are full width in the info column.
+- Keyboard: Left / Right arrows change the piece. Inside the size row or the photo row, Left / Right move between those buttons instead.
+- After a switch, keyboard focus stays on a working button (a bug I found and fixed in testing).
+- The close button no longer gets a black focus box when the quick look opens. The dialog itself takes the focus.
+
+---
+
+## 6. Phone
+
+### 6.1 What was wrong
+
+The desktop idea (a full rack with side-on slivers) does not fit a 390px screen:
+- Pieces were only about 55px apart, so the hanger bars overlapped each other.
+- Slivers were cut in half at the screen edges. It looked messy.
+- The 3D turn is too small to enjoy on a phone.
+- In the quick look on phones, the buttons were narrow and the size buttons could sit under the bottom bar.
+
+### 6.2 What v2 does on phones
+
+**The rail becomes a clean carousel.**
+- One big piece in the middle, front view. The next pieces peek in from the edges, smaller and lighter.
+- Swipe to move. It snaps to one piece at a time.
+- A thin rod line at the top and a swing while you swipe (the hangers trail behind your finger).
+- Dots under the rail show where you are. Name, price and fabric line below. One full-width "Shop All" button.
+- Tap the middle piece to open the quick look. Tap a peeking piece to bring it to the middle.
+
+**The quick look on phones** is one clean column:
+- Piece on top (about 40% of the screen height), small photo buttons under it.
+- Name, price + fabric line, sizes.
+- The buttons sit in a bar at the bottom of the screen, full width, always visible.
+- The short text and counter are hidden on phones so the sizes always show.
+- On very short phones (height under 700px) the piece is a bit smaller. Tested at 360 × 640.
+
+### 6.3 If you still do not like it on phones
+
+New setting **On phones**:
+- `Clean carousel (recommended)`
+- `Hide this section on phones` — the whole section is hidden below 750px wide. (If you do this, put another simple section in its place, for example a normal product grid.)
+
+Touch tablets (iPad) also get the carousel.
+
+---
+
+## 7. Images
+
+### 7.1 What changed in the rules
+
+| Rule | Before | Now |
+|---|---|---|
+| Hanger | Visible walnut hanger | The wooden hanger is hidden inside the garment. Only a short brass **neck** and a small **hook ring** show above the collar. (This is what the agent's stand-ins already do, and it looks clean.) |
+| Ring position | middle of the ring 4% from the top | **Same.** (80 px on 2000.) The code puts the rod and the swing point here. |
+| Collar / shoulder line | not set | **About 10% from the top** (200 px). That gives about 6% of neck between the ring and the cloth, so the piece looks like it hangs. |
+| How much of the image the longest piece fills | about 85% | **About 90%** of the height. At the moment the photos fill about 70%, which leaves empty space on the page. |
+| Side photo | any side view | **Exactly 90° turned.** The hook ring must be directly above the middle of the shoulder seam, in the middle of the picture. |
+| Trousers | side photo | **No side photo.** The code turns the front photo. It becomes a thin sliver like real trousers. |
+
+Keep everything else from the first brief: 1600 × 2000 px, PNG, transparent background, same light in every image, no person, no mannequin.
+
+### 7.2 Set `FILL` after the real photos arrive
+
+`FILL` (top of the script, default `0.78`) = how wide the **widest** piece is when facing you, divided by the image width.
+Open the hoodie front photo (the widest piece). Measure the cloth from sleeve to sleeve. Divide by the image width. Put the number in `FILL`.
+If it is too small, an open piece overlaps its neighbours. If it is too big, there is a big gap around the open piece.
+
+### 7.3 AI prompts (v2)
+
+Paste the MASTER STYLE first in every prompt. Use one image tool for the whole set.
+
+**MASTER STYLE v2**
+
+```
+You are making a product image for a clothing website.
+Use the attached photo(s) as the ONLY truth for the garment.
+
+Keep the garment exactly the same: colour, fabric look, stitching, collar,
+cuffs, hem, pockets, zips, buttons, label, logo and print (same size, same
+place, same spelling). Do not redesign it. Do not add anything. Do not
+remove anything.
+
+The garment hangs from a slim brass hook. The wooden hanger is hidden
+inside the garment. Above the collar we see only a short slim brass neck
+and a small round hook ring.
+
+Look: realistic studio photo, soft even daylight from the front-left,
+gentle natural fabric drape with a few small real folds. Clean and calm.
+No harsh shadows.
+
+No person, no mannequin, no body, no hands.
+
+Background: plain flat light grey (#E6E6E6). No floor, no wall, no
+gradient, no shadow on the background.
+
+Frame: portrait 4:5 (1600 x 2000 px). The hook ring is exactly centred left
+to right. The middle of the ring is 4% down from the top edge (80 px).
+The top of the collar or shoulder line is about 10% down (200 px).
+The garment is centred. The longest piece fills about 90% of the height.
+Other pieces keep their real size compared with it: do not stretch a short
+piece to fill the frame.
+```
+
+**PROMPT 1: FRONT**
+
+```
+[MASTER STYLE v2]
+
+View: straight-on front view, camera at chest height. The garment faces the
+camera. Sleeves hang naturally.
+Match the front of the garment in the attached photo exactly, including
+where the print or logo sits.
+Make one image only.
+
+Garment: [for example: black polo, white trim on the collar, "NORTH" print
+on the chest].
+```
+
+**PROMPT 2: SIDE** (attach the approved FRONT image as image 2). Not needed for trousers.
+
+```
+[MASTER STYLE v2]
+
+Attached image 1: the original photo of the garment.
+Attached image 2: the approved front image of this same garment. Match the
+hook, light, scale and top edge of image 2.
+
+View: turn the whole garment exactly 90 degrees, so we see the LEFT SIDE.
+It looks narrow, like a profile. Show the side seam, the sleeve hanging in
+front of the body, the collar or hood shape and the curve of the hem.
+The hook ring must sit directly above the middle of the shoulder seam, in
+the middle of the picture.
+Same height, same scale and same top edge as image 2.
+This must look like a real side view. Do not squash the front view.
+Make one image only.
+```
+
+**PROMPT 3: BACK** (attach the approved FRONT image as image 2)
+
+```
+[MASTER STYLE v2]
+
+Attached image 1: the original photo(s) of the garment, including the back
+if available.
+Attached image 2: the approved front image. Match the hook, light, scale and
+top edge of image 2.
+
+View: straight-on back view, the garment turned 180 degrees.
+Show the back exactly as in the original photo.
+If there is no back photo: keep the back plain. Do not invent a print or a
+logo.
+Make one image only.
+```
+
+**PROMPT 4: TROUSERS, FRONT**
+
+```
+[MASTER STYLE v2]
+
+The trousers hang straight from the waistband on two small clips. The clips
+and the bar are hidden behind the waistband. The waistband top is about 10%
+down from the top edge. The legs hang straight down to about 90% of the
+height. Keep the pleats, creases, belt loops, pockets and the real colour
+exactly as in the attached photo.
+View: straight-on front view.
+Make one image only.
+```
+
+**PROMPT 5: the only photo shows a person wearing it**
+
+```
+[MASTER STYLE v2]
+
+The attached photo shows a person wearing the garment. Make a product photo
+of ONLY the garment, hanging from the brass hook. Remove the person
+completely. Rebuild the hidden parts (inside of the neck, back of the
+collar, underside of the sleeves) in a natural way that matches the fabric.
+Keep every detail of the visible garment the same.
+View: straight-on front view.
+```
+
+**PROMPT 6: fix one detail only**
+
+```
+Attached image 1: the image to fix. Attached image 2: a close-up of the
+real print.
+Change ONLY the [print on the chest]. Make it match image 2 exactly: same
+letters, same spelling, same size, same place.
+Keep everything else in image 1 unchanged: hook, garment shape, colour,
+light, framing.
+```
+
+**PROMPT 7: clean up a real photo**
+
+```
+Attached: a real photo of the garment hanging.
+Clean it for a website. Keep the garment exactly as it is (do not change
+the print, colour, shape or fabric). Only: remove the background and make
+it plain flat light grey (#E6E6E6), soften harsh shadows, and lightly
+smooth messy wrinkles. Do not redraw the garment.
+Keep the framing: hook ring centred, ring middle 4% from the top, collar
+about 10% from the top, portrait 4:5.
+```
+
+Also update `ADOT-hanger-rail-image-prompts.md` with this section. Where the two files differ, **this file wins**.
+
+### 7.4 Make the images light (this helps smoothness more than any code)
+
+- The stand-in photos are 1600 × 2000 PNG files and are used at full size. One image is about 12 million pixels when decoded. With 12 pieces and 2 images each, that is a lot of memory on a phone.
+- Re-export every **stand-in** at **900 × 1125 px**, same file names. Keep them under about 250 KB each. (They are only placeholders.)
+- Real photos picked in the theme editor are already served at 900 px in the rail and 1400 px in the quick look by Shopify. Just keep the uploaded files under about 900 KB.
+
+### 7.5 Image check (every image)
+
+- [ ] Print, logo, label: zoom to 200%. Same letters, same place as the real garment.
+- [ ] Colour matches the real garment.
+- [ ] No extra pocket, button, seam or tag. Nothing missing.
+- [ ] Hook ring centred. Ring middle about 4% from the top (±1.5%).
+- [ ] Collar or shoulder line about 10% from the top.
+- [ ] Longest piece about 90% of the height. A T-shirt is shorter than a hoodie.
+- [ ] Side image is a real 90° side view, with the ring above the shoulder seam.
+- [ ] Back has no invented print.
+- [ ] Edges are clean on a light background (#F4F2EE) and a dark one (#111). No grey halo.
+- [ ] File under about 900 KB.
+
+AI can quietly change a logo, a colour or a stitch. A wrong image means returns. If the AI keeps failing on one piece, shoot that piece yourself.
+
+---
+
+## 8. Settings (what is new or changed)
+
+| Id | Type | Default | Note |
+|---|---|---|---|
+| `eyebrow` | text | empty | Was "On the rail". |
+| `heading` | text | The Essentials | |
+| `caption` | textarea | Hoodies, shirts and trousers for every day. | |
+| `idle_title` | text | empty | |
+| `hint_hover` | text | Hover a piece to turn it. | |
+| `hint_touch` | text | Swipe to browse. Tap a piece to open. | |
+| `button_label` | text | Shop All | |
+| `show_price` | checkbox | on | Needs a product on the piece. |
+| `show_sizes` | checkbox | on | **New.** Needs a product. |
+| `show_photos` | checkbox | on | **New.** Product photos as extra views. |
+| `show_description` | checkbox | off | **New.** Short text (22 words) in the quick look. |
+| `quick_add` | checkbox | off | **New.** "Add to cart" button. |
+| `add_label` | text | Add to cart | **New.** |
+| `view_label` | text | View product | Used when Add to cart is off. |
+| `whatsapp_number` | text | empty | Unchanged. |
+| `idle_sway` | checkbox | on | Desktop only now. |
+| `attract_mode` | checkbox | on | |
+| `mobile_layout` | select | carousel | **New.** `carousel` or `hide`. |
+| `label_pull` | range 0–160 | 0 | **New.** Moves the text under the rail up. Use about 60–80 while the stand-in photos are in (they only fill 70% of the image). Set to 0 when the real photos fill 90%. |
+| `rail_height`, `background_color`, `text_color` | | | Unchanged. |
+
+Block settings are the same as before. Each piece should have a **product** picked.
+
+Same ids as before are kept: `eyebrow`, `heading`, `caption`, `button_label`, `button_link`, `background_color`, `text_color`, block type `card`, and `image`, `title`, `subtitle`, `link`.
+
+---
+
+## 9. Steps for the coding agent
+
+Do these in order.
+
+1. **Commit** the current state to git.
+2. **Replace** `sections/interactive-gallery.liquid` with **Appendix A**. Paste exactly. Also replace the root-level reference copy `interactive-gallery.liquid` with the same content, so both match. (The root copy stays ignored by `.shopifyignore` and Theme Check, as before.)
+3. **Edit `templates/index.json`.** In the `interactive_gallery` section `settings`, set:
+
+   ```json
+   "eyebrow": "",
+   "heading": "The Essentials",
+   "caption": "Hoodies, shirts and trousers for every day.",
+   "idle_title": "",
+   "hint_hover": "Hover a piece to turn it.",
+   "hint_touch": "Swipe to browse. Tap a piece to open.",
+   "button_label": "Shop All",
+   "mobile_layout": "carousel",
+   "label_pull": 70
+   ```
+
+   Keep the existing `whatsapp_number`, `background_color`, `text_color`, `button_link`. `label_pull` of 70 is for the stand-in photos. Set it to 0 when real photos are in.
+4. **Pick a real product on every piece.** Ask the owner for the product handles, or do it in the theme editor. In `index.json` the block setting is `"product": "<handle>"`. Without a product there is no price, no sizes, no photos, and the link goes to `/collections/all`.
+5. **Compress the stand-in images** in `assets/` (`adot-rail-hoodie|shirt|trouser-front|side.png`). 900 × 1125 px, under about 250 KB each. Keep the file names. The trouser side file is no longer used.
+6. **Run Theme Check.** Fix real errors only.
+7. **Check two global CSS rules** (the section already works around them): `a:hover { opacity: .75 }` in `assets/base.css` (the section resets it for its own links) and the global `dialog` rule in `assets/critical.css` (leave it; the size guide needs it).
+8. **Cart hook (only if `quick_add` is on).** Find how the header cart count updates. Put `data-cart-count` on the element that shows the number (the header shows `[0]`; the code keeps the brackets). If the theme has a cart drawer, open it inside `afterAdd()` in the script. This is the only place to edit.
+9. **Update** `ADOT-hanger-rail-image-prompts.md` from section 7.3.
+10. **Test** with the checklist below. Test on a real phone.
+11. **Commit.**
+
+### Do not break these
+
+- Keep the file name and the setting ids (section 8).
+- Animate only `transform` and `opacity`. No `position: sticky`. No libraries.
+- In swipe mode the moving transform stays on `.hrail__slide`, never on the `<li>` (scroll-snap breaks).
+- Do not play the opening animation again when the visitor switches pieces. Only the changed text fades.
+- Do not change the tuning numbers at the top of the script unless asked.
+
+### Test checklist
+
+**Desktop**
+- [ ] Rod spans the full width. Ends line up with the heading and the button.
+- [ ] Hover turns a piece. Crossing the rail fast does not flash every piece.
+- [ ] Open piece, name, price and fabric line show under the rail. The hint fades after the first quick look.
+- [ ] Click: the piece flies to the centre. The thread touches the ring.
+- [ ] Photo buttons on the left work. Front/Back works. Dragging the piece spins it.
+- [ ] Next / Previous: the piece swings away and the next swings in. **Arrows, photo buttons and the main buttons stay visible the whole time.**
+- [ ] A chosen size is still chosen when you come back to the piece.
+- [ ] WhatsApp message includes the size. "View product" link ends with `?variant=…`.
+- [ ] Sold-out sizes are crossed out and cannot be picked.
+- [ ] Esc, Close and clicking the background all close it. The piece flies home. Focus returns to the piece.
+- [ ] Left / Right arrow keys change the piece (and move inside the size row when focus is there).
+
+**Phone (real device)**
+- [ ] One piece in the middle, the next ones peek in. Swipe snaps one at a time. Dots update.
+- [ ] Tap a peeking piece: it moves to the middle. Tap the middle piece: quick look opens.
+- [ ] Quick look: piece centred, sizes visible without scrolling, buttons full width at the bottom.
+- [ ] No sideways page scroll. Vertical page scroll still works past the rail.
+- [ ] Works with the browser address bar visible or hidden.
+- [ ] Try `On phones: Hide` once, then set it back.
+
+**Other**
+- [ ] No console errors. Theme Check clean.
+- [ ] Reduce motion on: nothing swings or flies, everything still works.
+- [ ] Theme editor: selecting a piece previews it.
+
+---
+
+## 10. What was tested
+
+Run in headless Chromium with placeholder art (not your real photos), against the real new code:
+
+- Desktop 1440×900, 1024×768, 1 piece, 10 pieces.
+- Phone 390×844 and 360×640 with touch: carousel snap, dots, tap a neighbour, open, sizes, photos, next, close.
+- Hover, quick look open and close, thread meets the ring (measured: both at 106px), controls stay at full opacity while switching pieces (measured), photo views, spin to back, size remembered, WhatsApp message with size, `?variant=` link.
+- Add to cart with a **fake** cart server: no size shows "Pick a size" and makes no call; with a size it posts the right variant and updates a `[3]`-style counter.
+- Sold-out size, reduced motion, "Hide on phones".
+- Your live setup (no images, no product) renders with the stand-in photos, trousers without a side photo.
+- No console errors in any run.
+
+**Not tested:** real Shopify (Liquid was checked with a Liquid engine and mock data), Safari and iPhone, Firefox, real phones, speed on cheap Android, a real finger swipe (the browser test could not make a real touch swipe, only scroll by code; native scroll-snap does the swipe), the theme's own cart count or drawer, how the real product photos look, the theme editor preview. **Test on a real iPhone and a real Android phone before launch.**
+
+## 11. Ideas for later (not built)
+
+- Show the quick look as a bottom sheet on phones.
+- A "shop the rack" link that opens a collection filtered by the open piece's type.
+- A fabric close-up as one of the views.
+- A second rail for "New" and "Best sellers".
+
+---
+
+## Appendix A — the full section file
+
+Paste this exactly as `sections/interactive-gallery.liquid`.
+
+```liquid
+{% comment %}
+  Hanger Rail  (v2)
+  Replaces "Lookbook Flow". Keep this file name: sections/interactive-gallery.liquid
+  Same setting ids and same block type ("card") as before, so saved content keeps working.
+
+  Idea: a clothing rail. Every piece hangs turned sideways. Hover (desktop) or swipe (mobile)
+  and the piece swings to face you. Click it and it lifts into a quick look.
+  Quick look: spin the piece, see product photos, pick a size, order.
+  Phone: a clean one-piece-at-a-time carousel (no side-on slivers). Setting "On phones" can hide the section.
+  Stand-in photos are used only when a piece has no image. Trousers get no stand-in side photo,
+  so the front photo is turned in 3D (a thin sliver, like real trousers on a hanger).
+  Motion uses transform and opacity only. No sticky, no scroll-jacking.
+{% endcomment %}
+
+{% liquid
+  assign total = section.blocks.size
+  assign total_label = total
+  if total < 10
+    assign total_label = total | prepend: '0'
+  endif
+  assign wa_number = section.settings.whatsapp_number | strip | remove: '+' | remove: ' ' | remove: '-'
+  assign idle_title = section.settings.idle_title
+%}
+
+<section
+  class="hrail{% if section.settings.mobile_layout == 'hide' %} hrail--hide-mobile{% endif %}"
+  data-section-id="{{ section.id }}"
+  style="--hr-bg: {{ section.settings.background_color }}; --hr-ink: {{ section.settings.text_color }}; --hr-h-max: {{ section.settings.rail_height }}px; --hr-pull: {{ section.settings.label_pull }}px;"
+  aria-labelledby="HRailHeading-{{ section.id }}"
+>
+  <hanger-rail
+    class="hrail__root"
+    data-wa="{{ wa_number }}"
+    data-idle-title="{{ idle_title | escape }}"
+    data-hint-hover="{{ section.settings.hint_hover | escape }}"
+    data-hint-touch="{{ section.settings.hint_touch | escape }}"
+    data-sway="{{ section.settings.idle_sway }}"
+    data-attract="{{ section.settings.attract_mode }}"
+    data-show-sizes="{{ section.settings.show_sizes }}"
+    data-quick-add="{{ section.settings.quick_add }}"
+    data-add-label="{{ section.settings.add_label | escape }}"
+  >
+    <header class="hrail__head">
+      <div class="hrail__head-row">
+        <div class="hrail__head-text">
+          {% if section.settings.eyebrow != blank %}
+            <p class="text-micro hrail__eyebrow">{{ section.settings.eyebrow }}</p>
+          {% endif %}
+          {% if section.settings.heading != blank %}
+            <h2 id="HRailHeading-{{ section.id }}" class="hrail__heading">{{ section.settings.heading }}</h2>
+          {% endif %}
+        </div>
+      </div>
+      {% if section.settings.caption != blank %}
+        <p class="hrail__caption">{{ section.settings.caption }}</p>
+      {% endif %}
+    </header>
+
+    <div class="hrail__stage" data-hr-stage>
+      <div class="hrail__rod" data-hr-rod aria-hidden="true"></div>
+      <div class="hrail__spot" data-hr-spot aria-hidden="true"></div>
+      <div class="hrail__scroller" data-hr-scroller>
+        <ul class="hrail__track" role="list" data-hr-track>
+          {% for block in section.blocks %}
+            {% liquid
+              assign p = block.settings.product
+              assign title = block.settings.title | default: p.title | default: 'Piece'
+              assign sub = block.settings.subtitle
+              assign url = block.settings.link | default: p.url | default: routes.all_products_collection_url
+              assign front = block.settings.image
+              assign side = block.settings.image_side
+              assign back = block.settings.image_back
+              if front == blank and p != blank
+                assign front = p.featured_image
+              endif
+              assign title_key = title | downcase
+              assign front_file = ''
+              if front == blank
+                if title_key contains 'trouser' or title_key contains 'pant'
+                  assign front_file = 'adot-rail-trouser-front.png'
+                elsif title_key contains 'hoodie' or title_key contains 'sweat'
+                  assign front_file = 'adot-rail-hoodie-front.png'
+                elsif title_key contains 'shirt'
+                  assign front_file = 'adot-rail-shirt-front.png'
+                else
+                  assign front_slot = forloop.index0 | modulo: 3
+                  if front_slot == 0
+                    assign front_file = 'adot-rail-hoodie-front.png'
+                  elsif front_slot == 1
+                    assign front_file = 'adot-rail-shirt-front.png'
+                  else
+                    assign front_file = 'adot-rail-trouser-front.png'
+                  endif
+                endif
+              endif
+              assign side_file = ''
+              if side == blank and front_file != blank
+                assign side_file = front_file | replace: '-front.png', '-side.png'
+              endif
+              if front_file contains 'trouser'
+                assign side_file = ''
+              endif
+              assign num = forloop.index
+              if num < 10
+                assign num = num | prepend: '0'
+              endif
+              assign price = ''
+              if p != blank and section.settings.show_price
+                assign price = p.price | money_without_trailing_zeros
+              endif
+              assign desc = ''
+              if p != blank and section.settings.show_description
+                assign desc = p.description | replace: '</p>', ' </p>' | replace: '<br>', ' ' | replace: '<br />', ' ' | replace: '<br/>', ' ' | strip_html | strip_newlines | truncatewords: 22
+              endif
+              assign alt = title
+              if sub != blank
+                assign alt = title | append: ', ' | append: sub
+              endif
+            %}
+            {%- capture photos -%}
+              {%- if p != blank and section.settings.show_photos -%}
+                {%- for img in p.images limit: 5 -%}{{ img | image_url: width: 1200 | escape }}{%- unless forloop.last -%}|{%- endunless -%}{%- endfor -%}
+              {%- endif -%}
+            {%- endcapture -%}
+            {%- capture variants -%}
+              {%- if p != blank -%}
+                {%- for v in p.variants -%}{{ v.id }}~{{ v.title | escape }}~{{ v.available }}{%- unless forloop.last -%}|{%- endunless -%}{%- endfor -%}
+              {%- endif -%}
+            {%- endcapture -%}
+            <li class="hrail__item" style="--i: {{ forloop.index0 }}" data-hr-item {{ block.shopify_attributes }}>
+              <span class="hrail__slide">
+              <a
+                class="hrail__link"
+                href="{{ url }}"
+                aria-label="{{ alt | escape }}"
+                data-title="{{ title | escape }}"
+                data-sub="{{ sub | escape }}"
+                data-price="{{ price | escape }}"
+                data-desc="{{ desc | escape }}"
+                data-num="{{ num }}"
+                data-photos="{{ photos }}"
+                data-variants="{{ variants }}"
+                {% if front != blank %}data-front="{{ front | image_url: width: 1400 }}"{% elsif front_file != blank %}data-front="{{ front_file | asset_url }}"{% endif %}
+                {% if back != blank %}data-back="{{ back | image_url: width: 1400 }}"{% endif %}
+                {% if side != blank %}data-side="{{ side | image_url: width: 1400 }}"{% elsif side_file != blank %}data-side="{{ side_file | asset_url }}"{% endif %}
+              >
+                <span class="hrail__swing">
+                  <span class="hrail__turn">
+                    {% if front != blank %}
+                      {{
+                        front
+                        | image_url: width: 900
+                        | image_tag:
+                          loading: 'lazy',
+                          widths: '300, 450, 600, 900',
+                          sizes: '(min-width: 750px) 380px, 75vw',
+                          class: 'hrail__img hrail__img--front',
+                          alt: alt,
+                          draggable: 'false'
+                      }}
+                    {% elsif front_file != blank %}
+                      <img
+                        class="hrail__img hrail__img--front"
+                        src="{{ front_file | asset_url }}"
+                        alt="{{ alt | escape }}"
+                        width="1600"
+                        height="2000"
+                        loading="lazy"
+                        decoding="async"
+                        draggable="false"
+                      >
+                    {% else %}
+                      <span class="hrail__ph">{{ title }}</span>
+                    {% endif %}
+                  </span>
+                  {% if side != blank %}
+                    {{
+                      side
+                      | image_url: width: 900
+                      | image_tag:
+                        loading: 'lazy',
+                        widths: '300, 450, 600, 900',
+                        sizes: '(min-width: 750px) 380px, 75vw',
+                        class: 'hrail__img hrail__img--side',
+                        alt: '',
+                        draggable: 'false'
+                    }}
+                  {% elsif side_file != blank %}
+                    <img
+                      class="hrail__img hrail__img--side"
+                      src="{{ side_file | asset_url }}"
+                      alt=""
+                      width="1600"
+                      height="2000"
+                      loading="lazy"
+                      decoding="async"
+                      draggable="false"
+                    >
+                  {% endif %}
+                </span>
+                <span class="hrail__hit" aria-hidden="true"></span>
+              </a>
+              </span>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    <div class="hrail__dots" data-hr-dots aria-hidden="true"></div>
+
+    <div class="hrail__label">
+      <p class="hrail__name"><span class="hrail__mask"><span data-hr-name>{{ idle_title }}</span></span></p>
+      <p class="hrail__meta"><span data-hr-sub></span><span data-hr-price></span></p>
+      <p class="text-micro hrail__hint" data-hr-hint>{{ section.settings.hint_hover }}</p>
+      <p class="hrail__sr" aria-live="polite" data-hr-live></p>
+    </div>
+
+    {% if section.settings.button_label != blank %}
+      <div class="hrail__foot">
+        <a class="btn btn-outline hrail__cta" href="{{ section.settings.button_link | default: routes.all_products_collection_url }}">
+          <span>{{ section.settings.button_label }}</span>
+        </a>
+      </div>
+    {% endif %}
+
+    <dialog class="hrail-ql" data-ql aria-label="Quick look">
+      <div class="hrail-ql__wall" data-ql-wall></div>
+      <button type="button" class="hrail-ql__close" data-ql-close>
+        <span>Close</span>
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2 2L10 10M10 2L2 10" stroke-linecap="round"/></svg>
+      </button>
+      <div class="hrail-ql__layout">
+        <div class="hrail-ql__show">
+          <div class="hrail-ql__thumbs" data-ql-thumbs data-rv role="group" aria-label="Views" hidden></div>
+          <div class="hrail-ql__stage">
+            <div class="hrail-ql__thread" data-ql-thread aria-hidden="true"></div>
+            <button type="button" class="hrail-ql__arrow hrail-ql__arrow--prev" data-ql-prev data-rv aria-label="Previous piece">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M9 2L4 7L9 12" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="hrail-ql__garment" data-ql-garment>
+              <div class="hrail-ql__hang" data-ql-hang>
+                <div class="hrail-ql__spin" data-ql-spin>
+                  <img class="hrail-ql__face hrail-ql__face--front" data-ql-front alt="" width="1600" height="2000" draggable="false">
+                  <img class="hrail-ql__face hrail-ql__face--back" data-ql-back alt="" width="1600" height="2000" draggable="false">
+                </div>
+                <img class="hrail-ql__side" data-ql-side alt="" width="1600" height="2000" aria-hidden="true" draggable="false">
+              </div>
+              <img class="hrail-ql__photo" data-ql-photo alt="" width="1200" height="1500" draggable="false">
+            </div>
+            <button type="button" class="hrail-ql__arrow hrail-ql__arrow--next" data-ql-next data-rv aria-label="Next piece">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M5 2L10 7L5 12" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="hrail-ql__info" data-ql-info>
+          <p class="text-micro hrail-ql__count" data-rv><span data-sw><span data-ql-num>01</span> / {{ total_label }}</span></p>
+          <h3 class="hrail-ql__name" data-rv data-sw data-ql-name></h3>
+          <div class="hrail-ql__meta" data-rv>
+            <p class="hrail-ql__price" data-sw data-ql-price></p>
+            <p class="hrail-ql__sub" data-sw data-ql-sub></p>
+          </div>
+          <p class="hrail-ql__desc" data-rv data-sw data-ql-desc></p>
+          <div class="hrail-ql__sizes" data-rv data-ql-sizes hidden>
+            <p class="text-micro hrail-ql__label"><span>Size</span><span class="hrail-ql__note" data-ql-note aria-live="polite"></span></p>
+            <div class="hrail-ql__chips" data-ql-chips role="group" aria-label="Size" data-sw></div>
+          </div>
+          <div class="hrail-ql__cta" data-rv>
+            <button type="button" class="hrail-btn hrail-btn--solid" data-ql-add hidden>
+              <span data-ql-add-label>{{ section.settings.add_label | default: 'Add to cart' }}</span>
+            </button>
+            <a class="hrail-btn hrail-btn--solid" data-ql-view href="{{ routes.all_products_collection_url }}">
+              <span>{{ section.settings.view_label | default: 'View product' }}</span>
+            </a>
+            {% if wa_number != blank %}
+              <a class="hrail-btn hrail-btn--ghost" data-ql-wa href="https://wa.me/{{ wa_number }}" target="_blank" rel="noopener">Order on WhatsApp</a>
+            {% endif %}
+            <a class="hrail-ql__more" data-ql-more href="{{ routes.all_products_collection_url }}" hidden>View full details</a>
+          </div>
+        </div>
+      </div>
+    </dialog>
+  </hanger-rail>
+</section>
+
+{% stylesheet %}
+  /* ---------- Hanger Rail: base ---------- */
+  .hrail {
+    --hr-h: clamp(300px, 47svh, var(--hr-h-max, 480px));
+    --hr-hook: calc(var(--hr-h) * 0.04); /* hook loop centre = 4% down the image */
+    --hr-gutter: clamp(1rem, 4vw, 3rem);
+    --hr-pitch: min(64vw, 320px);
+    --hr-ease: cubic-bezier(0.2, 0.85, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    background: var(--hr-bg, var(--color-background, #f4f2ee));
+    color: var(--hr-ink, var(--color-text, #111));
+    padding-block: clamp(2.5rem, 6vw, 5rem) clamp(2.5rem, 5vw, 4.5rem);
+    border-top: 1px solid var(--color-border, rgba(0, 0, 0, 0.08));
+  }
+
+  @media (max-width: 749px) {
+    .hrail {
+      --hr-h: min(88vw, 440px);
+    }
+    .hrail--hide-mobile {
+      display: none;
+    }
+  }
+
+  .hrail *,
+  .hrail *::before,
+  .hrail *::after {
+    box-sizing: border-box;
+  }
+
+  .hrail__sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* ---------- Header ---------- */
+  .hrail__head {
+    width: min(1320px, 100% - 2 * var(--hr-gutter));
+    margin-inline: auto;
+  }
+
+  .hrail__head-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .hrail__eyebrow {
+    margin: 0 0 0.6rem;
+    color: var(--color-text-subtle, rgba(0, 0, 0, 0.5));
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-size: 0.7rem;
+  }
+
+  .hrail__heading {
+    margin: 0;
+    font-family: var(--font-display, inherit);
+    font-size: clamp(1.75rem, 3.2vw, 2.75rem);
+    font-weight: 500;
+    line-height: 1.08;
+    letter-spacing: -0.025em;
+    text-wrap: balance;
+  }
+
+  .hrail__caption {
+    margin: 0.75rem 0 0;
+    max-width: 44ch;
+    color: var(--color-text-muted, rgba(0, 0, 0, 0.62));
+    line-height: 1.5;
+  }
+
+
+
+
+  /* ---------- Stage ---------- */
+  .hrail__stage {
+    position: relative;
+    width: min(1320px, 100% - 2 * var(--hr-gutter));
+    height: calc(var(--hr-h) + 10px);
+    margin: clamp(1.5rem, 4vw, 3rem) auto 0;
+  }
+
+  @media (max-width: 749px) {
+    .hrail__stage {
+      width: 100%;
+    }
+  }
+
+  .hrail__scroller {
+    position: relative;
+    height: 100%;
+  }
+
+  .hrail__track {
+    position: relative;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Before JS: a plain swipe list of front images. It still works. */
+  .hrail:not(.is-ready) .hrail__scroller {
+    overflow-x: auto;
+  }
+  .hrail:not(.is-ready) .hrail__track {
+    display: flex;
+    gap: 12px;
+    width: max-content;
+  }
+  .hrail:not(.is-ready) .hrail__item {
+    position: relative;
+    flex: 0 0 min(60vw, 300px);
+  }
+  .hrail:not(.is-ready) .hrail__img--side {
+    display: none;
+  }
+
+  .hrail__item {
+    position: relative;
+    height: var(--hr-h);
+    margin: 0;
+    padding: 0;
+  }
+
+  .hrail__slide {
+    position: absolute;
+    inset: 0;
+    display: block;
+  }
+
+  .hrail__link {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    display: block;
+    width: calc(var(--hr-h) * 0.8);
+    height: var(--hr-h);
+    margin-left: calc(var(--hr-h) * -0.4);
+    color: inherit;
+    text-decoration: none;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Theme links fade on hover. That would dim a piece as it turns. */
+  .hrail a:hover,
+  .hrail a:focus {
+    opacity: 1;
+  }
+
+  .hrail [hidden] {
+    display: none !important;
+  }
+
+  .hrail__swing,
+  .hrail__turn {
+    position: absolute;
+    inset: 0;
+    display: block;
+    transform-origin: 50% 0;
+  }
+
+  /* A real hanger swings from the hook, not from the top edge of the photo. */
+  .hrail__swing {
+    transform-origin: 50% 4%;
+  }
+
+  /* Side view sits outside the 3D turn, so at rest it faces the camera. */
+  .hrail__img--side {
+    transform-origin: 50% 0;
+  }
+
+  .hrail__img {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: 50% 0;
+    user-select: none;
+    -webkit-user-drag: none;
+    pointer-events: none;
+  }
+
+  .hrail__ph {
+    position: absolute;
+    inset: 12% 8% auto;
+    padding: 2rem 1rem;
+    border: 1px dashed currentColor;
+    text-align: center;
+    font-size: 0.75rem;
+    opacity: 0.5;
+  }
+
+  .hrail__hit {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: var(--hw, 100%);
+    transform: translateX(-50%);
+  }
+
+  .hrail:not(.is-ready) .hrail__hit {
+    display: none;
+  }
+
+  .hrail__link:focus-visible .hrail__hit {
+    outline: 2px solid var(--color-focus, currentColor);
+    outline-offset: 4px;
+    border-radius: 4px;
+  }
+
+  /* ---------- Mode: rail (desktop, mouse) ---------- */
+  .hrail.is-ready[data-mode='rail'] .hrail__track {
+    width: var(--hr-track-w, 100%);
+    margin-inline: auto;
+  }
+
+  .hrail.is-ready[data-mode='rail'] .hrail__item {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: var(--hr-pitch);
+    will-change: transform;
+  }
+
+  .hrail.is-ready[data-mode='rail'] .hrail__hit {
+    pointer-events: auto;
+    cursor: pointer;
+  }
+
+  .hrail.is-ready[data-mode='rail'] .hrail__link {
+    pointer-events: none;
+  }
+
+  /* ---------- Mode: scroll (touch, small screens) ---------- */
+  .hrail.is-ready[data-mode='scroll'] .hrail__scroller {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    padding-inline: calc(50% - var(--hr-pitch) / 2);
+    box-sizing: border-box;
+  }
+
+  .hrail.is-ready[data-mode='scroll'] .hrail__scroller::-webkit-scrollbar {
+    display: none;
+  }
+
+  .hrail.is-ready[data-mode='scroll'] .hrail__track {
+    display: flex;
+    width: max-content;
+  }
+
+  .hrail.is-ready[data-mode='scroll'] .hrail__item {
+    flex: 0 0 var(--hr-pitch);
+    width: var(--hr-pitch);
+    scroll-snap-align: center;
+  }
+
+  .hrail.is-ready[data-mode='scroll'] .hrail__slide {
+    will-change: transform;
+  }
+
+  .hrail.is-ready[data-mode='scroll'] .hrail__link {
+    pointer-events: none;
+  }
+
+  /* Phone / touch: one piece at a time, front view. No side-on slivers. */
+  .hrail.is-ready[data-mode='scroll'] .hrail__img--side {
+    display: none;
+  }
+
+  .hrail.is-ready[data-mode='scroll'] .hrail__rod {
+    height: 3px;
+    top: calc(var(--hr-hook) - 1.5px);
+    box-shadow: none;
+  }
+
+  .hrail.is-ready[data-mode='scroll'] .hrail__hit {
+    pointer-events: auto;
+  }
+
+  /* ---------- The rod ---------- */
+  .hrail__rod {
+    display: none;
+    position: absolute;
+    top: calc(var(--hr-hook) - 3px);
+    height: 6px;
+    border-radius: 6px;
+    background: linear-gradient(180deg, #fbfaf8 0%, #d3d1cc 40%, #8d8b86 100%);
+    box-shadow: 0 10px 14px -8px rgba(0, 0, 0, 0.35);
+    transform-origin: left center;
+    pointer-events: none;
+  }
+
+  .hrail__rod::before,
+  .hrail__rod::after {
+    content: '';
+    position: absolute;
+    top: -7px;
+    width: 8px;
+    height: 20px;
+    border-radius: 3px;
+    background: linear-gradient(90deg, #dedcd7, #98968f);
+    box-shadow: 0 6px 8px -4px rgba(0, 0, 0, 0.3);
+  }
+  .hrail__rod::before {
+    left: -4px;
+  }
+  .hrail__rod::after {
+    right: -4px;
+  }
+
+  .hrail.is-ready .hrail__rod {
+    display: block;
+  }
+
+  .hrail.is-ready[data-mode='rail'] .hrail__rod {
+    left: 0;
+    width: 100%;
+  }
+
+  .hrail.is-ready[data-mode='scroll'] .hrail__rod {
+    left: 0;
+    width: 100%;
+    border-radius: 0;
+  }
+  .hrail.is-ready[data-mode='scroll'] .hrail__rod::before,
+  .hrail.is-ready[data-mode='scroll'] .hrail__rod::after {
+    display: none;
+  }
+
+  /* ---------- Spotlight (a soft pool of light behind the active piece) ---------- */
+  .hrail__spot {
+    position: absolute;
+    top: -6%;
+    left: 0;
+    width: calc(var(--hr-h) * 1.25);
+    height: calc(var(--hr-h) * 1.35);
+    margin-left: calc(var(--hr-h) * -0.625);
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0));
+    opacity: 0;
+    pointer-events: none;
+    will-change: transform, opacity;
+  }
+
+  .hrail.is-ready[data-mode='scroll'] .hrail__spot {
+    left: 50%;
+    opacity: 1;
+  }
+
+  /* ---------- Intro: rod draws, pieces drop on ---------- */
+  .hrail.is-ready:not(.is-in) .hrail__link {
+    opacity: 0;
+  }
+
+  .hrail.is-ready:not(.is-in) .hrail__rod {
+    transform: scaleX(0);
+  }
+
+  .hrail.is-ready.is-in .hrail__rod {
+    animation: hrail-rod 0.9s var(--hr-ease) both;
+  }
+
+  .hrail.is-ready.is-in .hrail__link {
+    animation: hrail-drop 1s var(--hr-ease) both;
+    animation-delay: calc(0.25s + var(--i) * 55ms);
+  }
+
+  @keyframes hrail-rod {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+
+  @keyframes hrail-drop {
+    from {
+      opacity: 0;
+      transform: translateY(-26px) rotate(2.5deg);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .hrail__item.is-lifted .hrail__link {
+    visibility: hidden;
+  }
+
+  /* ---------- Dots (phone) ---------- */
+  .hrail__dots {
+    display: none;
+  }
+
+  .hrail.is-ready[data-mode='scroll'] .hrail__dots {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 0.9rem;
+  }
+
+  .hrail__dots i {
+    width: 6px;
+    height: 6px;
+    border-radius: 6px;
+    background: currentColor;
+    opacity: 0.22;
+    transition: width 260ms var(--hr-ease), opacity 260ms ease;
+  }
+
+  .hrail__dots i.is-on {
+    width: 20px;
+    opacity: 0.85;
+  }
+
+  /* ---------- Label under the rail ---------- */
+  .hrail__label {
+    display: grid;
+    justify-items: center;
+    gap: 0.35rem;
+    width: min(1320px, 100% - 2 * var(--hr-gutter));
+    min-height: 4.6rem;
+    margin: calc(clamp(0.75rem, 2vw, 1.25rem) - var(--hr-pull, 0px)) auto 0;
+    text-align: center;
+  }
+
+  .hrail__name {
+    margin: 0;
+    font-family: var(--font-display, inherit);
+    font-size: clamp(1rem, 0.6vw + 0.85rem, 1.3rem);
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .hrail__mask {
+    display: block;
+    overflow: hidden;
+    padding-block: 0.12em;
+  }
+
+  .hrail__mask > span {
+    display: block;
+  }
+
+  .hrail__meta {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    min-height: 1.3em;
+    margin: 0;
+    overflow: hidden;
+    color: var(--color-text-muted, rgba(0, 0, 0, 0.62));
+    font-size: 0.875rem;
+  }
+
+  .hrail__meta > span {
+    display: inline-block;
+  }
+
+  .hrail__meta > span:empty {
+    display: none;
+  }
+
+  .hrail__meta > span:not(:empty) + span:not(:empty) {
+    margin-left: 1.1rem;
+    color: var(--hr-ink, #111);
+  }
+
+  .hrail__hint {
+    transition: opacity 600ms ease;
+    margin: 0;
+    color: var(--color-text-subtle, rgba(0, 0, 0, 0.5));
+    letter-spacing: 0.04em;
+    font-size: 0.8rem;
+  }
+
+  .hrail__hint.is-quiet {
+    opacity: 0;
+  }
+
+  .hrail__foot {
+    display: flex;
+    justify-content: center;
+    margin-top: 1.25rem;
+  }
+
+  .hrail__cta {
+    gap: 0.5rem;
+  }
+
+  @media (max-width: 749px) {
+    .hrail__foot {
+      padding-inline: var(--hr-gutter);
+    }
+    .hrail__cta {
+      flex: 1 1 auto;
+      justify-content: center;
+      min-height: 48px;
+    }
+  }
+
+  /* ---------- Quick look (dialog) ---------- */
+  html.hrail-lock {
+    overflow: hidden;
+  }
+
+  .hrail-ql {
+    --ql-top: clamp(48px, 9svh, 96px);
+    --ql-h: min(70svh, 700px);
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: hidden;
+    background: transparent;
+    color: var(--hr-ink, #111);
+  }
+
+  .hrail-ql:not([open]) {
+    display: none;
+  }
+
+  .hrail-ql:focus {
+    outline: none;
+  }
+
+  .hrail-ql::backdrop {
+    background: transparent;
+  }
+
+  .hrail-ql__wall {
+    position: absolute;
+    inset: 0;
+    background: color-mix(in srgb, var(--hr-bg, #f4f2ee) 90%, transparent);
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+  }
+
+  .hrail-ql__layout {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 400px);
+    align-items: start;
+    align-content: start;
+    column-gap: clamp(2rem, 5vw, 5rem);
+    width: min(1240px, 100%);
+    height: 100%;
+    margin-inline: auto;
+    padding: var(--ql-top) var(--hr-gutter) clamp(1rem, 3svh, 2rem);
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  /* left side: thumbnails + the hanging piece */
+  .hrail-ql__show {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 1rem;
+    min-width: 0;
+  }
+
+  .hrail-ql__thumbs {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .hrail-ql__thumb {
+    display: block;
+    width: 60px;
+    aspect-ratio: 4 / 5;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm, 0);
+    background: color-mix(in srgb, var(--hr-ink, #111) 5%, transparent);
+    opacity: 0.55;
+    cursor: pointer;
+    transition: opacity 200ms ease, border-color 200ms ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .hrail-ql__thumb[aria-pressed='true'] {
+    opacity: 1;
+    border-color: var(--hr-ink, #111);
+  }
+
+  .hrail-ql__thumb img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 20%;
+    pointer-events: none;
+  }
+
+  .hrail-ql__thumb.is-cut img {
+    object-fit: contain;
+    object-position: 50% 0;
+  }
+
+  .hrail-ql__stage {
+    position: relative;
+    display: flex;
+    flex: 0 1 auto;
+    justify-content: center;
+    width: calc(var(--ql-h) * 0.8 + 112px);
+    max-width: 100%;
+    height: var(--ql-h);
+  }
+
+  /* the thread from the ceiling to the hook ring (ring sits 4% down the image) */
+  .hrail-ql__thread {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% - var(--ql-h) * 0.04);
+    width: 1px;
+    height: 100vh;
+    background: color-mix(in srgb, var(--hr-ink, #111) 38%, transparent);
+    transform-origin: top;
+    transition: opacity 300ms ease;
+    pointer-events: none;
+  }
+
+  .hrail-ql.is-photo-view .hrail-ql__thread {
+    opacity: 0;
+  }
+
+  .hrail-ql__arrow,
+  .hrail-ql__close,
+  .hrail-ql__chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .hrail-ql__arrow {
+    position: absolute;
+    top: calc(var(--ql-h) * 0.5 - 22px);
+    z-index: 2;
+    width: 44px;
+    height: 44px;
+    border: 1px solid color-mix(in srgb, var(--hr-ink, #111) 18%, transparent);
+    border-radius: var(--radius-sm, 0);
+    background: color-mix(in srgb, var(--hr-bg, #f4f2ee) 70%, transparent);
+    color: var(--hr-ink, #111);
+    transition: background-color 160ms ease, transform 160ms var(--hr-ease);
+  }
+
+  .hrail-ql__arrow--prev {
+    left: 0;
+  }
+
+  .hrail-ql__arrow--next {
+    right: 0;
+  }
+
+  .hrail-ql__arrow:active {
+    transform: scale(0.94);
+  }
+
+  .hrail-ql__garment {
+    position: relative;
+    height: var(--ql-h);
+    aspect-ratio: 4 / 5;
+    perspective: 1500px;
+    transform-origin: 50% 0;
+    touch-action: pan-y;
+    cursor: grab;
+    user-select: none;
+  }
+
+  .hrail-ql__garment:active {
+    cursor: grabbing;
+  }
+
+  .hrail-ql__hang {
+    position: absolute;
+    inset: 0;
+    transition: opacity 320ms ease;
+  }
+
+  .hrail-ql__spin {
+    position: absolute;
+    inset: 0;
+    transform-origin: 50% 0;
+    transform-style: preserve-3d;
+  }
+
+  .hrail-ql__face,
+  .hrail-ql__side {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: 50% 0;
+    pointer-events: none;
+    -webkit-user-drag: none;
+  }
+
+  .hrail-ql__face {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .hrail-ql__face--back {
+    transform: rotateY(180deg);
+  }
+
+  .hrail-ql__side {
+    opacity: 0;
+  }
+
+  /* product photo view (cross-fades over the hanging piece) */
+  .hrail-ql__photo {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 20%;
+    opacity: 0;
+    transition: opacity 320ms ease;
+    pointer-events: none;
+    -webkit-user-drag: none;
+  }
+
+  .hrail-ql__garment.is-photo .hrail-ql__hang {
+    opacity: 0;
+  }
+
+  .hrail-ql__garment.is-photo .hrail-ql__photo {
+    opacity: 1;
+  }
+
+  /* right side: text and buttons. These never leave the screen while you switch pieces. */
+  .hrail-ql__info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    align-self: center;
+    gap: 0.6rem;
+    min-width: 0;
+    text-align: left;
+  }
+
+  .hrail-ql__count {
+    margin: 0 0 0.4rem;
+    color: var(--color-text-subtle, rgba(0, 0, 0, 0.5));
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+  }
+
+  .hrail-ql__name {
+    margin: 0;
+    font-family: var(--font-display, inherit);
+    font-size: clamp(1.4rem, 1.4vw + 0.9rem, 2rem);
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    line-height: 1.12;
+    text-wrap: balance;
+  }
+
+  .hrail-ql__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.15rem 1rem;
+  }
+
+  .hrail-ql__price {
+    min-height: 1.4em;
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 500;
+  }
+
+  .hrail-ql__sub {
+    min-height: 1.4em;
+    margin: 0;
+    color: var(--color-text-muted, rgba(0, 0, 0, 0.62));
+    font-size: 0.9rem;
+  }
+
+  .hrail-ql__desc {
+    max-width: 38ch;
+    margin: 0.2rem 0 0;
+    color: var(--color-text-muted, rgba(0, 0, 0, 0.62));
+    font-size: 0.9rem;
+    line-height: 1.55;
+  }
+
+  .hrail-ql__desc:empty,
+  .hrail-ql__price:empty,
+  .hrail-ql__sub:empty {
+    display: none;
+  }
+
+  .hrail-ql__sizes {
+    width: 100%;
+    margin-top: 0.6rem;
+  }
+
+  .hrail-ql__label {
+    display: flex;
+    gap: 0.9rem;
+    margin: 0 0 0.55rem;
+    color: var(--color-text-subtle, rgba(0, 0, 0, 0.5));
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+  }
+
+  .hrail-ql__note {
+    color: var(--hr-ink, #111);
+    letter-spacing: 0.04em;
+    text-transform: none;
+  }
+
+  .hrail-ql__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .hrail-ql__chip {
+    min-width: 52px;
+    min-height: 46px;
+    padding: 0 0.9rem;
+    border: 1px solid color-mix(in srgb, var(--hr-ink, #111) 24%, transparent);
+    border-radius: var(--radius-sm, 0);
+    background: transparent;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease;
+  }
+
+  .hrail-ql__chip[aria-pressed='true'] {
+    border-color: var(--hr-ink, #111);
+    background: var(--hr-ink, #111);
+    color: var(--hr-bg, #fff);
+  }
+
+  .hrail-ql__chip.is-out {
+    opacity: 0.4;
+    text-decoration: line-through;
+    cursor: not-allowed;
+  }
+
+  .hrail-ql__chips.is-shaking {
+    animation: hrail-shake 420ms var(--hr-ease);
+  }
+
+  @keyframes hrail-shake {
+    20% { transform: translateX(-6px); }
+    45% { transform: translateX(5px); }
+    70% { transform: translateX(-3px); }
+    100% { transform: none; }
+  }
+
+  .hrail-ql__cta {
+    display: grid;
+    gap: 0.6rem;
+    width: 100%;
+    margin-top: 0.9rem;
+  }
+
+  .hrail-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    min-height: 52px;
+    padding: 0 1.75rem;
+    border: 1px solid var(--hr-ink, #111);
+    border-radius: var(--radius-sm, 0);
+    font: inherit;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 180ms ease, color 180ms ease, transform 160ms var(--hr-ease);
+  }
+
+  .hrail-btn--solid {
+    background: var(--hr-ink, #111);
+    color: var(--hr-bg, #fff);
+  }
+
+  .hrail-btn--ghost {
+    background: transparent;
+    color: var(--hr-ink, #111);
+  }
+
+  .hrail-btn:disabled {
+    opacity: 0.55;
+    cursor: default;
+  }
+
+  .hrail-btn:active {
+    transform: scale(0.99);
+  }
+
+  .hrail-ql__more {
+    justify-self: start;
+    color: var(--hr-ink, #111);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: underline;
+    text-underline-offset: 5px;
+  }
+
+  .hrail-ql__close {
+    position: absolute;
+    top: max(1rem, env(safe-area-inset-top));
+    right: 1rem;
+    z-index: 3;
+    min-height: 44px;
+    padding-inline: 0.75rem;
+    border: 0;
+    background: transparent;
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+  }
+
+  .hrail-ql :focus-visible {
+    outline: 2px solid var(--color-focus, currentColor);
+    outline-offset: 3px;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .hrail-btn--solid:hover {
+      background: transparent;
+      color: var(--hr-ink, #111);
+    }
+    .hrail-btn--ghost:hover {
+      background: var(--hr-ink, #111);
+      color: var(--hr-bg, #fff);
+    }
+    .hrail-ql__arrow:hover {
+      background: color-mix(in srgb, var(--hr-ink, #111) 10%, transparent);
+    }
+    .hrail-ql__thumb:hover {
+      opacity: 1;
+    }
+    .hrail-ql__chip:not(.is-out):hover {
+      border-color: var(--hr-ink, #111);
+    }
+  }
+
+  /* phone: piece on top, thumbnails under it, text below, buttons stay at the bottom */
+  @media (max-width: 749px) {
+    .hrail-ql {
+      --ql-top: clamp(40px, 6svh, 56px);
+      --ql-h: min(40svh, 100vw);
+    }
+    .hrail-ql__layout {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      width: 100%;
+      padding: var(--ql-top) 0 0;
+    }
+    /* keep the phone view short so the sizes and buttons are on screen without scrolling */
+    .hrail-ql__desc,
+    .hrail-ql__count {
+      display: none;
+    }
+    .hrail-ql__info {
+      gap: 0.45rem;
+    }
+    .hrail-ql__sizes {
+      margin-top: 0.35rem;
+    }
+    .hrail-ql__chip {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+    .hrail-btn {
+      min-height: 48px;
+    }
+    .hrail-ql__show {
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .hrail-ql__stage {
+      order: 1;
+      width: 100%;
+    }
+    .hrail-ql__thumbs {
+      order: 2;
+      flex-direction: row;
+      justify-content: center;
+    }
+    .hrail-ql__thumb {
+      width: 48px;
+    }
+    .hrail-ql__arrow {
+      width: 40px;
+      height: 40px;
+      top: calc(var(--ql-h) * 0.5 - 20px);
+    }
+    .hrail-ql__arrow--prev {
+      left: 6px;
+    }
+    .hrail-ql__arrow--next {
+      right: 6px;
+    }
+    .hrail-ql__info {
+      flex: 1 1 auto;
+      align-self: stretch;
+      align-items: stretch;
+      padding: 1rem var(--hr-gutter) 0;
+    }
+    .hrail-ql__more {
+      justify-self: center;
+    }
+    .hrail-ql__cta {
+      position: sticky;
+      bottom: 0;
+      margin: auto calc(-1 * var(--hr-gutter)) 0;
+      width: auto;
+      padding: 0.75rem var(--hr-gutter) calc(0.75rem + env(safe-area-inset-bottom));
+      background: color-mix(in srgb, var(--hr-bg, #f4f2ee) 94%, transparent);
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
+    }
+  }
+
+  /* short phones (for example 360 x 640): make the piece a bit smaller so sizes stay above the buttons */
+  @media (max-width: 749px) and (max-height: 700px) {
+    .hrail-ql {
+      --ql-h: min(33svh, 100vw);
+    }
+    .hrail-ql__thumb {
+      width: 40px;
+    }
+  }
+
+  /* ---------- Reduced motion ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    .hrail.is-ready .hrail__link,
+    .hrail.is-ready .hrail__rod {
+      animation: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+    }
+    .hrail__dots i,
+    .hrail-ql__hang,
+    .hrail-ql__photo,
+    .hrail-ql__thumb,
+    .hrail-ql__chip,
+    .hrail-ql__arrow,
+    .hrail-btn,
+    .hrail__hint {
+      transition: none;
+    }
+    .hrail-ql__chips.is-shaking {
+      animation: none;
+    }
+  }
+{% endstylesheet %}
+
+<script>
+  (function () {
+    if (customElements.get('hanger-rail')) return;
+
+    // ----- Tuning knobs (safe to change) -----
+    var FILL = 0.78; // visible garment width / image canvas width
+    var MAX_PITCH = 132; // px: widest gap between hangers on desktop
+    var MIN_PITCH = 54; // px: below this, switch to swipe mode
+    var REST_TURN = 84; // deg: how far a hanger is turned at rest
+    var SPRING_K = 170; // turn spring: stiffness
+    var SPRING_C = 20; // turn spring: damping
+    var SWAY_K = 60; // sway spring: stiffness
+    var SWAY_C = 7; // sway spring: damping (low = more wobble)
+    var EASE = 'cubic-bezier(0.2, 0.85, 0.2, 1)';
+
+    function clamp(v, a, b) {
+      return Math.min(b, Math.max(a, v));
+    }
+    function lerp(a, b, t) {
+      return a + (b - a) * t;
+    }
+    function smooth(e0, e1, x) {
+      var t = clamp((x - e0) / (e1 - e0), 0, 1);
+      return t * t * (3 - 2 * t);
+    }
+    function pad2(n) {
+      return n < 10 ? '0' + n : String(n);
+    }
+
+    class HangerRail extends HTMLElement {
+      connectedCallback() {
+        if (this._ready) return;
+        var self = this;
+        var $ = function (s) {
+          return self.querySelector(s);
+        };
+
+        this.section = this.closest('.hrail');
+        this.stage = $('[data-hr-stage]');
+        this.scroller = $('[data-hr-scroller]');
+        this.track = $('[data-hr-track]');
+        this.spot = $('[data-hr-spot]');
+        this.nowEl = $('[data-hr-now]');
+        this.nameEl = $('[data-hr-name]');
+        this.subEl = $('[data-hr-sub]');
+        this.priceEl = $('[data-hr-price]');
+        this.hintEl = $('[data-hr-hint]');
+        this.dotsEl = $('[data-hr-dots]');
+        this.liveEl = $('[data-hr-live]');
+
+        var lis = this.querySelectorAll('[data-hr-item]');
+        this.n = lis.length;
+        if (!this.n || !this.stage || !this.section) return;
+        this._ready = true;
+
+        this.items = Array.prototype.map.call(lis, function (li) {
+          var link = li.querySelector('.hrail__link');
+          return {
+            el: li,
+            link: link,
+            slide: li.querySelector('.hrail__slide'),
+            hit: li.querySelector('.hrail__hit'),
+            swing: li.querySelector('.hrail__swing'),
+            turn: li.querySelector('.hrail__turn'),
+            front: li.querySelector('.hrail__img--front'),
+            side: li.querySelector('.hrail__img--side'),
+            data: link ? link.dataset : {},
+            a: 0, v: 0, // turn amount (0 = side on, 1 = facing you) and its speed
+            ang: 0, angV: 0, // sway angle and its speed
+            tx: 0, ptx: null, // x position now and last frame
+            tiltX: 0, tiltY: 0,
+            z: -1, fo: -1, so: -1, hw: -1, op: -1 // cached style values to skip useless writes
+          };
+        });
+
+        this.idleTitle = this.dataset.idleTitle || '';
+        this.hintHover = this.dataset.hintHover || '';
+        this.hintTouch = this.dataset.hintTouch || '';
+        this.swayOn = this.dataset.sway !== 'false';
+        this.attractOn = this.dataset.attract !== 'false';
+        this.wa = this.dataset.wa || '';
+
+        this.reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+        this.fine = window.matchMedia('(hover: hover) and (pointer: fine) and (min-width: 750px)');
+
+        this.mode = '';
+        this.target = -1; // which piece is turned to face you (rail mode)
+        this.active = -2; // which piece the label shows
+        this.cur = 0; // keyboard focus index
+        this.visible = false;
+        this.scrolling = false;
+        this.introDone = false;
+        this.ptr = null;
+        this.raf = 0;
+        this.last = 0;
+        this.spotX = 0;
+        this.spotO = 0;
+        this.attractCount = 0;
+        this.userActed = false;
+
+        if (this.dotsEl) {
+          for (var d = 0; d < this.n; d++) this.dotsEl.appendChild(document.createElement('i'));
+        }
+
+        this.initQuickLook();
+        this.bind();
+
+        this.items.forEach(function (it, i) {
+          if (it.link) it.link.tabIndex = i === 0 ? 0 : -1;
+        });
+
+        try {
+          if (sessionStorage.getItem('hrail-seen')) {
+            this.hintQuiet = true;
+            if (this.hintEl) this.hintEl.classList.add('is-quiet');
+          }
+        } catch (e) {}
+
+        this.section.classList.add('is-ready');
+        this.chooseMode();
+        this.onActive(-1);
+        this.tick(performance.now());
+      }
+
+      disconnectedCallback() {
+        if (this.raf) cancelAnimationFrame(this.raf);
+        clearTimeout(this.leaveT);
+        clearTimeout(this.intentT);
+        clearTimeout(this.attractT);
+        clearTimeout(this.scrollT);
+        if (this.ro) this.ro.disconnect();
+        if (this.io) this.io.disconnect();
+        if (this.fine) this.fine.removeEventListener('change', this._onMq);
+        if (this.reduce) this.reduce.removeEventListener('change', this._onMq);
+        document.removeEventListener('shopify:block:select', this._onSelect);
+        document.removeEventListener('shopify:block:deselect', this._onDeselect);
+        document.documentElement.classList.remove('hrail-lock');
+      }
+
+      // ---------- events ----------
+      bind() {
+        var self = this;
+
+        this.stage.addEventListener('pointermove', function (e) {
+          if (self.mode !== 'rail' || e.pointerType === 'touch' || self.qlOpen) return;
+          var r = self.stage.getBoundingClientRect();
+          self.ptr = { x: e.clientX - r.left, y: e.clientY - r.top };
+          self.userAct();
+          clearTimeout(self.leaveT);
+          var inside = self.ptr.x >= self.trackLeft - 24 && self.ptr.x <= self.trackLeft + self.trackW + 24;
+          var want = inside ? self.hitTest(self.ptr.x) : -1;
+          // how fast is the pointer moving? (px per ms)
+          var tnow = performance.now();
+          var spd = 0;
+          if (self.lastPtr) spd = Math.abs(self.ptr.x - self.lastPtr.x) / Math.max(1, tnow - self.lastPtr.t);
+          self.lastPtr = { x: self.ptr.x, t: tnow };
+          clearTimeout(self.intentT);
+          if (want >= 0 && self.target >= 0 && want !== self.target && spd > 1.2) {
+            // moving fast across the rail: wait until the pointer slows down
+            self.intentT = setTimeout(function () {
+              if (self.ptr) self.setTarget(self.hitTest(self.ptr.x));
+            }, 90);
+          } else {
+            self.setTarget(want);
+          }
+          self.request();
+        });
+
+        this.stage.addEventListener('pointerleave', function (e) {
+          if (self.mode !== 'rail' || e.pointerType === 'touch' || self.qlOpen) return;
+          self.ptr = null;
+          self.lastPtr = null;
+          clearTimeout(self.intentT);
+          clearTimeout(self.leaveT);
+          self.leaveT = setTimeout(function () {
+            if (!self.focusInside()) self.setTarget(-1);
+          }, 140);
+        });
+
+        this.track.addEventListener('click', function (e) {
+          var link = e.target.closest('.hrail__link');
+          if (!link) return;
+          if (e.defaultPrevented || e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+          var i = self.indexOfLink(link);
+          if (i < 0) return;
+          e.preventDefault();
+          self.userAct();
+          if (self.mode === 'scroll' && self.items[i].a < 0.6) {
+            self.scrollToIndex(i);
+            return;
+          }
+          self.openQL(i);
+        });
+
+        this.track.addEventListener('focusin', function (e) {
+          var link = e.target.closest('.hrail__link');
+          var i = link ? self.indexOfLink(link) : -1;
+          if (i < 0) return;
+          self.setRoving(i);
+          if (self.mode === 'rail') self.setTarget(i);
+          else if (self.items[i].a < 0.6) self.scrollToIndex(i);
+          if (self.liveEl) self.liveEl.textContent = self.items[i].data.title || '';
+        });
+
+        this.track.addEventListener('focusout', function () {
+          if (self.mode === 'rail' && !self.ptr) {
+            setTimeout(function () {
+              if (!self.focusInside() && !self.qlOpen) self.setTarget(-1);
+            }, 0);
+          }
+        });
+
+        this.track.addEventListener('keydown', function (e) {
+          var i = self.cur;
+          if (e.key === 'ArrowRight') i = Math.min(self.n - 1, i + 1);
+          else if (e.key === 'ArrowLeft') i = Math.max(0, i - 1);
+          else if (e.key === 'Home') i = 0;
+          else if (e.key === 'End') i = self.n - 1;
+          else return;
+          e.preventDefault();
+          self.userAct();
+          self.setRoving(i);
+          self.items[i].link.focus({ preventScroll: true });
+        });
+
+        this.scroller.addEventListener(
+          'scroll',
+          function () {
+            if (self.mode !== 'scroll') return;
+            self.scrolling = true;
+            clearTimeout(self.scrollT);
+            self.scrollT = setTimeout(function () {
+              self.scrolling = false;
+              self.request();
+            }, 140);
+            self.request();
+          },
+          { passive: true }
+        );
+
+        this.ro = new ResizeObserver(function () {
+          self.chooseMode();
+          self.request();
+        });
+        this.ro.observe(this.stage);
+
+        this.io = new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (en) {
+              self.visible = en.isIntersecting;
+              if (self.visible) {
+                self.playIntro();
+                self.request();
+                self.startAttract();
+                self.warm();
+              } else {
+                clearTimeout(self.attractT);
+              }
+            });
+          },
+          { threshold: 0.25 }
+        );
+        this.io.observe(this.section);
+
+        this._onMq = function () {
+          self.chooseMode();
+          self.request();
+        };
+        this.fine.addEventListener('change', this._onMq);
+        this.reduce.addEventListener('change', this._onMq);
+
+        // Shopify theme editor: select a block to preview it
+        this._onSelect = function (e) {
+          var li = e.target && e.target.closest ? e.target.closest('[data-hr-item]') : null;
+          if (!li || !self.contains(li)) return;
+          var i = Array.prototype.indexOf.call(self.track.children, li);
+          if (i < 0) return;
+          self.userAct();
+          if (self.mode === 'rail') self.setTarget(i);
+          else self.scrollToIndex(i);
+        };
+        this._onDeselect = function () {
+          if (self.mode === 'rail') self.setTarget(-1);
+        };
+        document.addEventListener('shopify:block:select', this._onSelect);
+        document.addEventListener('shopify:block:deselect', this._onDeselect);
+      }
+
+      indexOfLink(link) {
+        for (var i = 0; i < this.n; i++) if (this.items[i].link === link) return i;
+        return -1;
+      }
+
+      focusInside() {
+        return this.track.contains(document.activeElement) && document.activeElement.matches(':focus-visible');
+      }
+
+      setRoving(i) {
+        this.cur = i;
+        this.items.forEach(function (it, k) {
+          if (it.link) it.link.tabIndex = k === i ? 0 : -1;
+        });
+      }
+
+      userAct() {
+        if (this.userActed) return;
+        this.userActed = true;
+        clearTimeout(this.attractT);
+        if (this.attractRunning) {
+          this.attractRunning = false;
+          this.setTarget(-1);
+        }
+      }
+
+      // ---------- mode + measuring ----------
+      chooseMode() {
+        var want = this.fine.matches ? 'rail' : 'scroll';
+        if (want !== this.mode) {
+          this.mode = want;
+          this.section.setAttribute('data-mode', want);
+          this.items.forEach(function (it) {
+            it.a = 0;
+            it.v = 0;
+            it.ptx = null;
+            it.el.style.transform = '';
+            if (it.slide) {
+              it.slide.style.transform = '';
+              it.slide.style.opacity = '';
+              it.op = -1;
+            }
+          });
+          if (want === 'scroll') {
+            this.target = -1;
+            if (this.spot) {
+              this.spot.style.transform = '';
+              this.spot.style.opacity = '';
+            }
+            this.spotO = 0;
+          }
+        }
+        this.measure();
+        if (this.mode === 'rail' && this.P < MIN_PITCH) {
+          this.mode = 'scroll';
+          this.section.setAttribute('data-mode', 'scroll');
+          this.target = -1;
+          this.measure();
+        }
+        this.setHint();
+      }
+
+      measure() {
+        var it0 = this.items[0];
+        var Wc = it0.link.offsetWidth;
+        this.F = Wc * FILL;
+        var W = this.stage.clientWidth;
+        if (this.mode === 'rail') {
+          var maxTrack = (this.n - 1) * MAX_PITCH + this.F;
+          var track = Math.min(W - 24, maxTrack);
+          this.P = this.n > 1 ? (track - this.F) / (this.n - 1) : this.F;
+          this.trackW = track;
+          this.trackLeft = (W - track) / 2;
+          this.M = (this.F - this.P) / 2;
+          this.section.style.setProperty('--hr-pitch', this.P.toFixed(2) + 'px');
+          this.section.style.setProperty('--hr-track-w', track.toFixed(2) + 'px');
+        } else {
+          this.section.style.removeProperty('--hr-pitch');
+          this.section.style.removeProperty('--hr-track-w');
+          this.P = it0.el.getBoundingClientRect().width || 60;
+          this.padStart = parseFloat(getComputedStyle(this.scroller).paddingLeft) || 0;
+        }
+        this.half = this.mode === 'scroll' ? 0 : (this.F - this.P) / 2;
+        this.H = it0.link.offsetHeight;
+      }
+
+      setHint() {
+        if (!this.hintEl) return;
+        var t = this.mode === 'rail' ? this.hintHover : this.hintTouch;
+        if (t) this.hintEl.textContent = t;
+      }
+
+      scrollToIndex(i) {
+        if (this.mode !== 'scroll') return;
+        this.scroller.scrollTo({ left: i * this.P, behavior: this.reduce.matches ? 'auto' : 'smooth' });
+      }
+
+      // ---------- targeting (rail mode) ----------
+      setTarget(i) {
+        if (i === this.target) return;
+        this.target = i;
+        this.request();
+      }
+
+      centerOf(i) {
+        return this.trackLeft + this.items[i].tx + this.P / 2;
+      }
+
+      hitTest(x) {
+        var cur = this.target;
+        // Stay on the open piece while the pointer is still over it. Stops flicker.
+        if (cur >= 0 && Math.abs(x - this.centerOf(cur)) <= this.F * 0.52) return cur;
+        var best = 0;
+        var bd = 1e9;
+        for (var i = 0; i < this.n; i++) {
+          var d = Math.abs(x - this.centerOf(i));
+          if (d < bd) {
+            bd = d;
+            best = i;
+          }
+        }
+        return best;
+      }
+
+      // Decode every rail image once, one by one, while the page is calm.
+      warm() {
+        if (this.warmed) return;
+        this.warmed = true;
+        var imgs = [];
+        this.items.forEach(function (it) {
+          if (it.front) imgs.push(it.front);
+          if (it.side) imgs.push(it.side);
+        });
+        var k = 0;
+        var next = function () {
+          var img = imgs[k++];
+          if (!img) return;
+          var done = new Promise(function (res) {
+            setTimeout(res, 900);
+          });
+          var dec = img.decode ? img.decode() : Promise.resolve();
+          Promise.race([dec, done]).then(
+            function () {
+              setTimeout(next, 70);
+            },
+            function () {
+              setTimeout(next, 70);
+            }
+          );
+        };
+        setTimeout(next, 600);
+      }
+
+      // ---------- intro + attract ----------
+      playIntro() {
+        if (this.introDone) return;
+        this.introDone = true;
+        this.section.classList.add('is-in');
+      }
+
+      startAttract() {
+        var self = this;
+        if (!this.attractOn || this.userActed || this.reduce.matches || this.mode !== 'rail') return;
+        if (this.attractT || this.attractRunning) return;
+        var idx = Math.floor(this.n / 3);
+        var step = function () {
+          self.attractT = 0;
+          if (self.userActed || self.mode !== 'rail' || self.attractCount >= 7) return;
+          if (!self.visible) return;
+          self.attractRunning = true;
+          self.attractCount++;
+          self.setTarget(idx % self.n);
+          idx += 2;
+          self.attractT = setTimeout(function () {
+            if (self.userActed) return;
+            self.setTarget(-1);
+            self.attractT = setTimeout(step, 650);
+          }, 1900);
+        };
+        this.attractT = setTimeout(step, 1900);
+      }
+
+      // ---------- animation loop ----------
+      request() {
+        if (this.raf) return;
+        var self = this;
+        this.last = 0;
+        this.raf = requestAnimationFrame(function (t) {
+          self.tick(t);
+        });
+      }
+
+      tick(now) {
+        this.raf = 0;
+        var self = this;
+        var dt = this.last ? Math.min(0.034, (now - this.last) / 1000) : 0.016;
+        if (dt < 0.001) dt = 0.001;
+        this.last = now;
+        var reduce = this.reduce.matches;
+        var animating = false;
+        var n = this.n;
+        var items = this.items;
+        var i, it;
+
+        // 1) how far each piece is turned toward you
+        if (this.mode === 'rail') {
+          for (i = 0; i < n; i++) {
+            it = items[i];
+            var tg = i === this.target ? 1 : 0;
+            if (reduce) {
+              it.a = tg;
+              it.v = 0;
+            } else {
+              it.v += ((tg - it.a) * SPRING_K - it.v * SPRING_C) * dt;
+              it.a += it.v * dt;
+              if (Math.abs(tg - it.a) < 0.0008 && Math.abs(it.v) < 0.01) {
+                it.a = tg;
+                it.v = 0;
+              } else animating = true;
+            }
+          }
+        } else {
+          var cx = this.scroller.scrollLeft + this.scroller.clientWidth / 2;
+          for (i = 0; i < n; i++) {
+            var dx = this.padStart + (i + 0.5) * this.P - cx;
+            items[i].a = smooth(0, 1, 1 - Math.abs(dx) / this.P);
+          }
+          if (this.scrolling) animating = true;
+        }
+
+        // 2) layout: the open piece grows, neighbours step aside
+        var total = 0;
+        for (i = 0; i < n; i++) total += clamp(items[i].a, 0, 1.08);
+        var before = 0;
+        var best = -1;
+        var bestA = 0.5;
+        var swayIdle = this.swayOn && this.mode === 'rail';
+        var isScroll = this.mode === 'scroll';
+        var vxScroll = 0;
+        if (isScroll) {
+          var sl = this.scroller.scrollLeft;
+          vxScroll = this.lastSL === undefined ? 0 : -(sl - this.lastSL) / dt;
+          this.lastSL = sl;
+        }
+
+        for (i = 0; i < n; i++) {
+          it = items[i];
+          var ac = clamp(it.a, 0, 1.08);
+          var after = total - before - ac;
+          var shift = this.half * (before - after);
+          before += ac;
+          var tx = (this.mode === 'rail' ? this.M + i * this.P : 0) + shift;
+          if (it.a > bestA) {
+            bestA = it.a;
+            best = i;
+          }
+
+          // sway: pieces lean away from the way they move, then swing back
+          var vx = isScroll ? vxScroll : it.ptx === null ? 0 : (tx - it.ptx) / dt;
+          it.ptx = tx;
+          it.tx = tx;
+          if (reduce) {
+            it.ang = 0;
+            it.angV = 0;
+          } else {
+            // hangers trail behind the move, like real ones on a rod
+            var lean = clamp(vx * (isScroll ? 0.0035 : 0.0055), isScroll ? -4 : -5, isScroll ? 4 : 5);
+            var idle = swayIdle ? Math.sin((now / 1000) * 0.85 + i * 0.9) * 0.55 : 0;
+            it.angV += ((lean + idle - it.ang) * SWAY_K - it.angV * SWAY_C) * dt;
+            it.ang += it.angV * dt;
+            if (swayIdle) animating = true;
+            else if (Math.abs(it.angV) > 0.02 || Math.abs(lean - it.ang) > 0.02) animating = true;
+          }
+
+          // tilt toward the pointer (only the open piece)
+          var tiltYt = 0;
+          var tiltXt = 0;
+          if (this.mode === 'rail' && this.ptr && i === this.target && !reduce) {
+            tiltYt = clamp((this.ptr.x - this.centerOf(i)) / (this.F / 2), -1, 1) * 7;
+            tiltXt = clamp((this.ptr.y - this.H / 2) / (this.H / 2), -1, 1) * -3.5;
+          }
+          var k = Math.min(1, dt * 9);
+          it.tiltY += (tiltYt - it.tiltY) * k;
+          it.tiltX += (tiltXt - it.tiltX) * k;
+          if (Math.abs(tiltYt - it.tiltY) > 0.02 || Math.abs(tiltXt - it.tiltX) > 0.02) animating = true;
+
+          // write to the page
+          // rail mode moves the <li>. Swipe mode moves the inner slide, so scroll-snap points never move.
+          (this.mode === 'rail' ? it.el : it.slide).style.transform = 'translate3d(' + tx.toFixed(2) + 'px,0,0)';
+          if (it.swing) it.swing.style.transform = 'rotate(' + it.ang.toFixed(3) + 'deg)';
+
+          // rail: turn side-on / face-on. Phone carousel: no turn, the centre piece is bigger and clearer.
+          var turn = isScroll ? 0 : clamp(1 - it.a, -0.1, 1);
+          var theta = isScroll ? 0 : turn * REST_TURN + it.tiltY;
+          var s = lerp(isScroll ? 0.84 : 0.92, 1, clamp(it.a, 0, 1));
+          if (it.turn) {
+            it.turn.style.transform =
+              'perspective(1200px) rotateX(' + it.tiltX.toFixed(2) + 'deg) rotateY(' + theta.toFixed(2) + 'deg) scale(' + s.toFixed(4) + ')';
+          }
+
+          var fo = 1;
+          var so = 0;
+          if (it.side && !isScroll) {
+            so = smooth(0.5, 0.82, turn);
+            fo = 1 - smooth(0.66, 0.92, turn);
+          }
+          if (isScroll && it.slide) {
+            var op = lerp(0.45, 1, clamp(it.a, 0, 1));
+            if (Math.abs(op - it.op) > 0.004) {
+              it.slide.style.opacity = op.toFixed(3);
+              it.op = op;
+            }
+          }
+          if (it.front && Math.abs(fo - it.fo) > 0.002) {
+            it.front.style.opacity = fo.toFixed(3);
+            it.fo = fo;
+          }
+          if (it.side && Math.abs(so - it.so) > 0.002) {
+            it.side.style.opacity = so.toFixed(3);
+            it.so = so;
+          }
+
+          var z = it.a > 0.45 ? 5 : 1;
+          if (z !== it.z) {
+            it.el.style.zIndex = z;
+            it.z = z;
+          }
+
+          var hw = isScroll ? Math.round(this.P * 0.92) : Math.round(lerp(Math.max(this.P * 0.78, 30), this.F, clamp(it.a, 0, 1)));
+          if (it.hit && hw !== it.hw) {
+            it.hit.style.setProperty('--hw', hw + 'px');
+            it.hw = hw;
+          }
+        }
+
+        // 3) spotlight follows the open piece
+        if (this.mode === 'rail' && this.spot) {
+          var sx = this.spotX;
+          var so2 = 0;
+          if (this.target >= 0) {
+            var cxs = this.centerOf(this.target);
+            sx = this.spotO < 0.05 ? cxs : this.spotX + (cxs - this.spotX) * Math.min(1, dt * 7);
+            so2 = 1;
+          }
+          this.spotX = sx;
+          this.spotO += (so2 - this.spotO) * Math.min(1, dt * 6);
+          this.spot.style.transform = 'translate3d(' + sx.toFixed(1) + 'px,0,0)';
+          this.spot.style.opacity = this.spotO.toFixed(3);
+          if (Math.abs(so2 - this.spotO) > 0.01 || Math.abs((this.target >= 0 ? this.centerOf(this.target) : sx) - sx) > 0.5) animating = true;
+        }
+
+        // 4) which piece is the label talking about?
+        var act = this.mode === 'rail' ? this.target : best;
+        if (act !== this.active) this.onActive(act);
+
+        if (animating && this.visible) this.request();
+      }
+
+      onActive(idx) {
+        this.active = idx;
+        var it = idx >= 0 ? this.items[idx] : null;
+        this.items.forEach(function (o, k) {
+          o.el.classList.toggle('is-active', k === idx);
+        });
+        if (this.dotsEl) {
+          Array.prototype.forEach.call(this.dotsEl.children, function (dot, k) {
+            dot.classList.toggle('is-on', k === (idx < 0 ? 0 : idx));
+          });
+        }
+        this.swap(this.nameEl, it ? it.data.title : this.idleTitle);
+        this.swap(this.subEl, it ? it.data.sub : '');
+        this.swap(this.priceEl, it ? it.data.price : '');
+      }
+
+      swap(el, text) {
+        if (!el) return;
+        text = text || '';
+        if (el.textContent === text) return;
+        el.textContent = text;
+        if (this.reduce.matches || !text) return;
+        el.animate(
+          [
+            { transform: 'translateY(110%)', opacity: 0 },
+            { transform: 'translateY(0)', opacity: 1 }
+          ],
+          { duration: 460, easing: EASE }
+        );
+      }
+
+      // =====================================================
+      // Quick look
+      // =====================================================
+      initQuickLook() {
+        var self = this;
+        var $ = function (s) {
+          return self.querySelector(s);
+        };
+        this.ql = $('[data-ql]');
+        if (!this.ql) return;
+        this.qWall = $('[data-ql-wall]');
+        this.qThread = $('[data-ql-thread]');
+        this.qGarment = $('[data-ql-garment]');
+        this.qSpin = $('[data-ql-spin]');
+        this.qFront = $('[data-ql-front]');
+        this.qBack = $('[data-ql-back]');
+        this.qSide = $('[data-ql-side]');
+        this.qPhoto = $('[data-ql-photo]');
+        this.qThumbs = $('[data-ql-thumbs]');
+        this.qNum = $('[data-ql-num]');
+        this.qName = $('[data-ql-name]');
+        this.qPrice = $('[data-ql-price]');
+        this.qSub = $('[data-ql-sub]');
+        this.qDesc = $('[data-ql-desc]');
+        this.qSizes = $('[data-ql-sizes]');
+        this.qChips = $('[data-ql-chips]');
+        this.qNote = $('[data-ql-note]');
+        this.qView = $('[data-ql-view]');
+        this.qAdd = $('[data-ql-add]');
+        this.qAddLabel = $('[data-ql-add-label]');
+        this.qWa = $('[data-ql-wa]');
+        this.qMore = $('[data-ql-more]');
+        this.qInfo = $('[data-ql-info]');
+        this.qClose = $('[data-ql-close]');
+        this.qPrev = $('[data-ql-prev]');
+        this.qNext = $('[data-ql-next]');
+        // things that fade in/out when the quick look opens/closes (never on piece change)
+        this.qFades = [this.qInfo, this.qThumbs, this.qPrev, this.qNext, this.qClose];
+        this.qOpen = false;
+        this.qIndex = 0;
+        this.qViews = [];
+        this.qViewIdx = 0;
+        this.showSizes = this.dataset.showSizes !== 'false';
+        this.quickAdd = this.dataset.quickAdd === 'true';
+        this.addLabel = this.dataset.addLabel || 'Add to cart';
+        this.spin = { a: 0, v: 0, t: 0, drag: false, raf: 0, last: 0, hasBack: false, hasSide: false };
+
+        // Main button: "Add to cart" (if on) or "View product". Never both.
+        this.qAdd.hidden = !this.quickAdd;
+        this.qMore.hidden = !this.quickAdd;
+        this.qView.hidden = this.quickAdd;
+        this.qAddLabel.textContent = this.addLabel;
+
+        this.qClose.addEventListener('click', function () {
+          self.closeQL();
+        });
+        this.qWall.addEventListener('click', function () {
+          self.closeQL();
+        });
+        this.ql.addEventListener('cancel', function (e) {
+          e.preventDefault();
+          self.closeQL();
+        });
+        this.qPrev.addEventListener('click', function () {
+          self.goQL(-1);
+        });
+        this.qNext.addEventListener('click', function () {
+          self.goQL(1);
+        });
+        this.ql.addEventListener('keydown', function (e) {
+          if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+          var grp = e.target.closest && e.target.closest('[data-ql-chips], [data-ql-thumbs]');
+          if (grp) {
+            // inside the size or thumbnail group: move between the buttons
+            var btns = Array.prototype.filter.call(grp.children, function (b) {
+              return !b.disabled;
+            });
+            var at = btns.indexOf(e.target.closest('button'));
+            var to = btns[at + (e.key === 'ArrowRight' ? 1 : -1)];
+            if (to) to.focus();
+            e.preventDefault();
+            return;
+          }
+          self.goQL(e.key === 'ArrowLeft' ? -1 : 1);
+        });
+        this.qThumbs.addEventListener('click', function (e) {
+          var b = e.target.closest('.hrail-ql__thumb');
+          if (b) self.setView(Number(b.dataset.view));
+        });
+        this.qChips.addEventListener('click', function (e) {
+          var b = e.target.closest('.hrail-ql__chip');
+          if (b && !b.disabled) self.selectSize(b.dataset.id);
+        });
+        this.qAdd.addEventListener('click', function () {
+          self.addToCart();
+        });
+
+        // drag the piece: spin it (hanger view) or swipe through photos (photo view)
+        var g = this.qGarment;
+        g.addEventListener('pointerdown', function (e) {
+          if (e.button > 0) return;
+          var s = self.spin;
+          s.drag = true;
+          s.sx = e.clientX;
+          s.sa = s.a;
+          s.lx = e.clientX;
+          s.lt = performance.now();
+          s.vel = 0;
+          g.setPointerCapture(e.pointerId);
+        });
+        g.addEventListener('pointermove', function (e) {
+          var s = self.spin;
+          if (!s.drag) return;
+          var now = performance.now();
+          var dtm = Math.max(1, now - s.lt);
+          s.vel = ((e.clientX - s.lx) * 0.55) / (dtm / 1000);
+          s.lx = e.clientX;
+          s.lt = now;
+          var v = self.qViews[self.qViewIdx];
+          if (v && v.kind === 'photo') return;
+          var raw = s.sa + (e.clientX - s.sx) * 0.55;
+          if (!s.hasBack) raw = clamp(raw, -28, 28);
+          s.a = raw;
+          self.setSpinDom(s.a);
+        });
+        var up = function () {
+          var s = self.spin;
+          if (!s.drag) return;
+          s.drag = false;
+          var total = s.lx - s.sx;
+          var v = self.qViews[self.qViewIdx];
+          if (v && v.kind === 'photo') {
+            if (Math.abs(total) > 50) self.setView(clamp(self.qViewIdx + (total < 0 ? 1 : -1), 0, self.qViews.length - 1));
+            return;
+          }
+          if (!s.hasBack) {
+            s.t = 0;
+            self.runSpin();
+            // no back image: a swipe left goes to the next view (a photo)
+            if (total < -70 && self.qViews.length > 1) self.setView(self.qViewIdx + 1);
+            return;
+          }
+          var proj = s.a + clamp(s.vel, -900, 900) * 0.16;
+          s.t = Math.round(proj / 180) * 180;
+          self.runSpin();
+        };
+        g.addEventListener('pointerup', up);
+        g.addEventListener('pointercancel', up);
+      }
+
+      thumbSrc(url) {
+        return /width=\d+/.test(url) ? url.replace(/width=\d+/, 'width=160') : url;
+      }
+
+      // Fill the quick look with piece i. Does not play any animation.
+      fillQL(i) {
+        var it = this.items[i];
+        var d = it.data;
+        var self = this;
+        this.qIndex = i;
+        this.qNum.textContent = pad2(i + 1);
+        this.qName.textContent = d.title || '';
+        this.qPrice.textContent = d.price || '';
+        this.qSub.textContent = d.sub || '';
+        this.qDesc.textContent = d.desc || '';
+
+        // images: show the small rail image first (already loaded), then swap to the big one
+        var small = it.front ? it.front.currentSrc || it.front.src : '';
+        var big = d.front || small;
+        this.qFront.src = small || big;
+        if (big && big !== small) {
+          var hi = new Image();
+          hi.src = big;
+          (hi.decode ? hi.decode() : Promise.resolve()).then(
+            function () {
+              if (self.qIndex === i) self.qFront.src = big;
+            },
+            function () {}
+          );
+        }
+        if (d.back) this.qBack.src = d.back;
+        else this.qBack.removeAttribute('src');
+        if (d.side) this.qSide.src = d.side;
+        else this.qSide.removeAttribute('src');
+        this.qPhoto.alt = (d.title || '') + ' photo';
+        this.spin.hasBack = !!d.back;
+        this.spin.hasSide = !!d.side;
+        this.spin.a = 0;
+        this.spin.v = 0;
+        this.spin.t = 0;
+        this.setSpinDom(0);
+
+        // views: front, back (if any), then product photos
+        var views = [{ kind: 'face', face: 'front', src: d.front || small, label: 'Front' }];
+        if (d.back) views.push({ kind: 'face', face: 'back', src: d.back, label: 'Back' });
+        (d.photos ? d.photos.split('|') : []).forEach(function (u, k) {
+          if (u) views.push({ kind: 'photo', src: u, label: 'Photo ' + (k + 1) });
+        });
+        this.qViews = views;
+        this.qThumbs.innerHTML = '';
+        views.forEach(function (v, k) {
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'hrail-ql__thumb' + (v.kind === 'face' ? ' is-cut' : '');
+          b.dataset.view = String(k);
+          b.setAttribute('aria-label', v.label);
+          b.setAttribute('aria-pressed', 'false');
+          var im = document.createElement('img');
+          im.src = self.thumbSrc(v.src || '');
+          im.alt = '';
+          im.width = 60;
+          im.height = 75;
+          im.loading = 'lazy';
+          b.appendChild(im);
+          self.qThumbs.appendChild(b);
+        });
+        this.qThumbs.hidden = views.length < 2;
+        this.qGarment.classList.remove('is-photo');
+        this.ql.classList.remove('is-photo-view');
+        this.markThumb(0);
+        this.qViewIdx = 0;
+
+        this.renderSizes(it);
+        this.updateActions(it);
+
+        // warm the neighbours
+        [-1, 1].forEach(function (dir) {
+          var nb = self.items[(i + dir + self.n) % self.n];
+          if (nb && nb.data.front) new Image().src = nb.data.front;
+        });
+      }
+
+      markThumb(idx) {
+        Array.prototype.forEach.call(this.qThumbs.children, function (b, k) {
+          b.setAttribute('aria-pressed', k === idx ? 'true' : 'false');
+        });
+      }
+
+      setView(i) {
+        var v = this.qViews[i];
+        if (!v) return;
+        var self = this;
+        this.qViewIdx = i;
+        this.markThumb(i);
+        if (v.kind === 'face') {
+          this.qGarment.classList.remove('is-photo');
+          this.ql.classList.remove('is-photo-view');
+          var wantBack = v.face === 'back';
+          var isBack = Math.cos((this.spin.t * Math.PI) / 180) < 0;
+          if (wantBack !== isBack) {
+            this.spin.t += 180;
+            this.runSpin();
+          }
+        } else {
+          var show = function () {
+            if (self.qViewIdx !== i) return;
+            self.qGarment.classList.add('is-photo');
+            self.ql.classList.add('is-photo-view');
+          };
+          this.qPhoto.src = v.src;
+          if (this.qPhoto.decode) this.qPhoto.decode().then(show, show);
+          else show();
+        }
+      }
+
+      renderSizes(it) {
+        var d = it.data;
+        var list = [];
+        if (d.variants) {
+          d.variants.split('|').forEach(function (s) {
+            var p = s.split('~');
+            if (p[0]) list.push({ id: p[0], title: p[1] || '', ok: p[2] === 'true' });
+          });
+        }
+        it.list = list;
+        var single = list.length === 1;
+        var hide = !this.showSizes || list.length === 0 || (single && /default title/i.test(list[0].title));
+        // one buyable option only: pick it for the visitor
+        var buyable = list.filter(function (v) {
+          return v.ok;
+        });
+        if (!it.size && buyable.length === 1 && (single || hide)) it.size = buyable[0].id;
+        this.qSizes.hidden = hide;
+        this.qNote.textContent = '';
+        this.qChips.innerHTML = '';
+        if (hide) return;
+        var self = this;
+        list.forEach(function (v) {
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'hrail-ql__chip' + (v.ok ? '' : ' is-out');
+          b.textContent = v.title;
+          b.dataset.id = v.id;
+          b.setAttribute('aria-pressed', it.size === v.id ? 'true' : 'false');
+          if (!v.ok) {
+            b.disabled = true;
+            b.title = 'Sold out';
+          }
+          self.qChips.appendChild(b);
+        });
+      }
+
+      selectSize(id) {
+        var it = this.items[this.qIndex];
+        it.size = it.size === id ? '' : id;
+        Array.prototype.forEach.call(this.qChips.children, function (b) {
+          b.setAttribute('aria-pressed', b.dataset.id === it.size ? 'true' : 'false');
+        });
+        this.qNote.textContent = '';
+        this.updateActions(it);
+      }
+
+      sizeTitle(it) {
+        var s = '';
+        (it.list || []).forEach(function (v) {
+          if (v.id === it.size) s = v.title;
+        });
+        return /default title/i.test(s) ? '' : s;
+      }
+
+      updateActions(it) {
+        var d = it.data;
+        var u = new URL(it.link.getAttribute('href'), window.location.href);
+        if (it.size) u.searchParams.set('variant', it.size);
+        this.qView.href = u.href;
+        this.qMore.href = u.href;
+        if (this.qWa) {
+          var abs = new URL(it.link.getAttribute('href'), window.location.href).href;
+          var sz = this.sizeTitle(it);
+          var msg = 'Hi! I want to order: ' + (d.title || '') + (sz ? ' (size ' + sz + ')' : '') + ' ' + abs;
+          this.qWa.href = 'https://wa.me/' + this.wa + '?text=' + encodeURIComponent(msg);
+        }
+        if (this.quickAdd) {
+          var any = (it.list || []).some(function (v) {
+            return v.ok;
+          });
+          var hasList = (it.list || []).length > 0;
+          this.qAdd.disabled = hasList && !any;
+          this.qAddLabel.textContent = hasList && !any ? 'Sold out' : this.addLabel;
+          // no product on this piece: fall back to the product link
+          this.qAdd.hidden = !hasList;
+          this.qView.hidden = hasList;
+          this.qMore.hidden = !hasList;
+        }
+      }
+
+      addToCart() {
+        var self = this;
+        var it = this.items[this.qIndex];
+        if (!it.size) {
+          this.qNote.textContent = 'Pick a size';
+          this.qChips.classList.remove('is-shaking');
+          void this.qChips.offsetWidth;
+          this.qChips.classList.add('is-shaking');
+          return;
+        }
+        var btn = this.qAdd;
+        if (btn.disabled) return;
+        btn.disabled = true;
+        this.qAddLabel.textContent = 'Adding...';
+        var root = (window.Shopify && window.Shopify.routes && window.Shopify.routes.root) || '/';
+        var reset = function (text, ms) {
+          self.qAddLabel.textContent = text;
+          setTimeout(function () {
+            self.qAddLabel.textContent = self.addLabel;
+            btn.disabled = false;
+          }, ms);
+        };
+        fetch(root + 'cart/add.js', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({ items: [{ id: Number(it.size), quantity: 1 }] })
+        })
+          .then(function (r) {
+            if (!r.ok) throw new Error('add failed');
+            return r.json();
+          })
+          .then(function () {
+            reset('Added', 1800);
+            self.afterAdd(root);
+          })
+          .catch(function () {
+            reset('Could not add. Try again', 2200);
+          });
+      }
+
+      // THEME HOOK: after an item is added, update the cart in the header.
+      // If this theme has a cart drawer, open it here instead.
+      afterAdd(root) {
+        document.dispatchEvent(new CustomEvent('hanger-rail:cart-add', { bubbles: true }));
+        fetch(root + 'cart.js', { headers: { Accept: 'application/json' } })
+          .then(function (r) {
+            return r.json();
+          })
+          .then(function (cart) {
+            document.querySelectorAll('[data-cart-count]').forEach(function (el) {
+              var bracket = /^\s*\[\d+\]\s*$/.test(el.textContent);
+              el.textContent = bracket ? '[' + cart.item_count + ']' : String(cart.item_count);
+            });
+          })
+          .catch(function () {});
+      }
+
+      cancelQLAnims() {
+        [this.qGarment, this.qWall, this.qThread].concat(this.qFades).forEach(function (el) {
+          if (el) {
+            el.getAnimations().forEach(function (a) {
+              a.cancel();
+            });
+          }
+        });
+        if (this.qAnim) this.qAnim.cancel();
+      }
+
+      // The first time the quick look opens, the hint is no longer needed.
+      quietHint() {
+        if (this.hintQuiet) return;
+        this.hintQuiet = true;
+        try {
+          sessionStorage.setItem('hrail-seen', '1');
+        } catch (e) {}
+        if (this.hintEl) this.hintEl.classList.add('is-quiet');
+      }
+
+      // Slide the text and controls in. Used when the quick look OPENS only.
+      revealInfo() {
+        if (this.reduce.matches) return;
+        Array.prototype.forEach.call(this.ql.querySelectorAll('[data-rv]'), function (el, k) {
+          el.animate(
+            [
+              { opacity: 0, transform: 'translateY(16px)' },
+              { opacity: 1, transform: 'none' }
+            ],
+            { duration: 640, delay: 180 + k * 60, easing: EASE, fill: 'backwards' }
+          );
+        });
+      }
+
+      // Fade only the text that changed. Buttons and arrows never move.
+      fadeIn(list) {
+        if (this.reduce.matches) return;
+        Array.prototype.forEach.call(list, function (el) {
+          el.animate(
+            [
+              { opacity: 0, transform: 'translateY(8px)' },
+              { opacity: 1, transform: 'none' }
+            ],
+            { duration: 380, easing: EASE }
+          );
+        });
+      }
+
+      flip(from, dir) {
+        var g = this.qGarment;
+        var to = g.getBoundingClientRect();
+        if (!to.width || !from.width) return Promise.resolve();
+        var s = from.height / to.height;
+        var dx = from.left + from.width / 2 - (to.left + to.width / 2);
+        var dy = from.top - to.top;
+        var frames = [{ transform: 'translate(' + dx + 'px,' + dy + 'px) scale(' + s + ')' }, { transform: 'none' }];
+        if (dir === 'out') frames.reverse();
+        var anim = g.animate(frames, {
+          duration: dir === 'in' ? 780 : 540,
+          easing: dir === 'in' ? 'cubic-bezier(0.2, 0.85, 0.2, 1)' : 'cubic-bezier(0.55, 0, 0.7, 0.3)',
+          fill: 'both'
+        });
+        return anim.finished.then(
+          function () {},
+          function () {}
+        );
+      }
+
+      openQL(i) {
+        if (!this.ql || this.qOpen) return;
+        this.qOpen = true;
+        this.qlOpener = this.items[i].link;
+        this.userAct();
+        this.quietHint();
+        this.cancelQLAnims();
+        this.fillQL(i);
+        var it = this.items[i];
+        var from = (it.front || it.turn).getBoundingClientRect();
+        document.documentElement.classList.add('hrail-lock');
+        this.ql.showModal();
+        this.ql.setAttribute('tabindex', '-1');
+        this.ql.focus({ preventScroll: true });
+        it.el.classList.add('is-lifted');
+        if (this.mode === 'rail') this.setTarget(i);
+        if (this.liveEl) this.liveEl.textContent = (it.data.title || '') + ', ' + (i + 1) + ' of ' + this.n;
+
+        if (!this.reduce.matches) {
+          this.qWall.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 420, easing: 'ease-out', fill: 'backwards' });
+          this.qThread.animate([{ transform: 'scaleY(0)' }, { transform: 'scaleY(1)' }], { duration: 700, easing: EASE, fill: 'backwards' });
+          this.flip(from, 'in');
+          this.revealInfo();
+        }
+      }
+
+      // The thumbnails and size buttons are rebuilt for every piece. Keep focus inside the dialog.
+      keepFocus(d) {
+        if (!this.ql.contains(document.activeElement) || document.activeElement === document.body) {
+          (d > 0 ? this.qNext : this.qPrev).focus({ preventScroll: true });
+        }
+      }
+
+      // Next / previous piece. The old piece swings away on its hanger, the new one swings in.
+      goQL(d) {
+        if (!this.qOpen || this.qBusy) return;
+        var self = this;
+        var next = (this.qIndex + d + this.n) % this.n;
+        this.items[this.qIndex].el.classList.remove('is-lifted');
+        this.items[next].el.classList.add('is-lifted');
+        if (this.mode === 'rail') this.setTarget(next);
+        else this.scrollToIndex(next);
+        this.setRoving(next);
+        if (this.liveEl) this.liveEl.textContent = (this.items[next].data.title || '') + ', ' + (next + 1) + ' of ' + this.n;
+
+        if (this.reduce.matches) {
+          this.fillQL(next);
+          this.keepFocus(d);
+          return;
+        }
+        this.qBusy = true;
+        var g = this.qGarment;
+        var P = 'perspective(1400px) ';
+        var out = g.animate(
+          [
+            { transform: P + 'translateX(0) rotateY(0deg)', opacity: 1 },
+            { transform: P + 'translateX(' + -d * 90 + 'px) rotateY(' + d * 68 + 'deg)', opacity: 0 }
+          ],
+          { duration: 260, easing: 'cubic-bezier(0.5, 0, 0.9, 0.5)', fill: 'forwards' }
+        );
+        var swap = function () {
+          self.fillQL(next);
+          self.keepFocus(d);
+          out.cancel();
+          self.qAnim = g.animate(
+            [
+              { transform: P + 'translateX(' + d * 90 + 'px) rotateY(' + -d * 68 + 'deg)', opacity: 0 },
+              { transform: 'none', opacity: 1 }
+            ],
+            { duration: 620, easing: EASE }
+          );
+          self.fadeIn(self.ql.querySelectorAll('[data-sw]'));
+          setTimeout(function () {
+            self.qBusy = false;
+          }, 320);
+        };
+        out.finished.then(swap, swap);
+      }
+
+      closeQL() {
+        if (!this.qOpen || this.qClosing) return;
+        var self = this;
+        this.qClosing = true;
+        var it = this.items[this.qIndex];
+        var done = function () {
+          self.cancelQLAnims();
+          self.ql.close();
+          document.documentElement.classList.remove('hrail-lock');
+          it.el.classList.remove('is-lifted');
+          self.qOpen = false;
+          self.qClosing = false;
+          self.qBusy = false;
+          var op = self.items[self.qIndex].link;
+          if (op) op.focus({ preventScroll: true });
+          if (self.mode === 'rail' && !self.ptr && !self.focusInside()) self.setTarget(-1);
+          self.request();
+        };
+        if (this.reduce.matches) {
+          done();
+          return;
+        }
+        // if we were looking at a product photo, show the hanging piece again so it can fly home
+        this.qGarment.classList.remove('is-photo');
+        this.ql.classList.remove('is-photo-view');
+        var to = (it.front || it.turn).getBoundingClientRect();
+        var onScreen = to.bottom > 0 && to.top < window.innerHeight && to.right > 0 && to.left < window.innerWidth;
+        this.qWall.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 480, delay: 120, easing: 'ease-in', fill: 'forwards' });
+        this.qThread.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 380, easing: 'ease-in', fill: 'forwards' });
+        this.qFades.forEach(function (el) {
+          el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 240, easing: 'ease-in', fill: 'forwards' });
+        });
+        var p;
+        if (onScreen) p = this.flip(to, 'out');
+        else
+          p = this.qGarment
+            .animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, fill: 'forwards' })
+            .finished.then(
+              function () {},
+              function () {}
+            );
+        // safety: always close, even if an animation never reports back
+        var finished = false;
+        var finish = function () {
+          if (finished) return;
+          finished = true;
+          done();
+        };
+        p.then(function () {
+          setTimeout(finish, 40);
+        });
+        setTimeout(finish, 1200);
+      }
+
+      // ---------- spin (front / back) ----------
+      setSpinDom(a) {
+        var s = this.spin;
+        this.qSpin.style.transform = 'rotateY(' + a.toFixed(2) + 'deg)';
+        var sn = Math.abs(Math.sin((a * Math.PI) / 180));
+        var so = s.hasSide ? smooth(0.8, 0.99, sn) : 0;
+        this.qSide.style.opacity = so.toFixed(3);
+        var fo = s.hasSide ? 1 - smooth(0.93, 0.995, sn) : 1;
+        this.qFront.style.opacity = fo.toFixed(3);
+        this.qBack.style.opacity = fo.toFixed(3);
+        // keep the Front / Back thumbnail in step with the face that is showing
+        var face = Math.cos((s.t * Math.PI) / 180) < 0 ? 'back' : 'front';
+        var cur = this.qViews && this.qViews[this.qViewIdx];
+        if (cur && cur.kind === 'face' && cur.face !== face) {
+          for (var k = 0; k < this.qViews.length; k++) {
+            if (this.qViews[k].kind === 'face' && this.qViews[k].face === face) {
+              this.qViewIdx = k;
+              this.markThumb(k);
+              break;
+            }
+          }
+        }
+      }
+
+      runSpin() {
+        var self = this;
+        var s = this.spin;
+        if (this.reduce.matches) {
+          s.a = s.t;
+          s.v = 0;
+          this.setSpinDom(s.a);
+          return;
+        }
+        if (s.raf) return;
+        s.last = 0;
+        var step = function (now) {
+          s.raf = 0;
+          if (s.drag) return;
+          var dt = s.last ? Math.min(0.034, (now - s.last) / 1000) : 0.016;
+          s.last = now;
+          s.v += ((s.t - s.a) * 130 - s.v * 17) * dt;
+          s.a += s.v * dt;
+          if (Math.abs(s.t - s.a) < 0.05 && Math.abs(s.v) < 0.5) {
+            s.a = s.t;
+            s.v = 0;
+            // keep numbers small: 360 degrees is the same view
+            var wrap = Math.round((s.t - 90) / 360) * 360;
+            s.a -= wrap;
+            s.t -= wrap;
+            self.setSpinDom(s.a);
+            return;
+          }
+          self.setSpinDom(s.a);
+          s.raf = requestAnimationFrame(step);
+        };
+        s.raf = requestAnimationFrame(step);
+      }
+    }
+
+    customElements.define('hanger-rail', HangerRail);
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Hanger Rail",
+  "tag": "section",
+  "class": "section-hanger-rail",
+  "max_blocks": 12,
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Pieces hang on a rail. Hover (or swipe on mobile) to turn a piece. Click to open a quick look. Add 5 to 12 pieces. Pick a product on every piece. Images must be transparent PNG cutouts on a hanger."
+    },
+    { "type": "header", "content": "Text" },
+    { "type": "text", "id": "eyebrow", "label": "Small label above the heading", "info": "Leave empty to hide." },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "The Essentials" },
+    { "type": "textarea", "id": "caption", "label": "Caption", "default": "Hoodies, shirts and trousers for every day." },
+    { "type": "text", "id": "idle_title", "label": "Text when nothing is selected", "info": "Leave empty to show nothing." },
+    { "type": "text", "id": "hint_hover", "label": "Hint (desktop)", "default": "Hover a piece to turn it." },
+    { "type": "text", "id": "hint_touch", "label": "Hint (mobile)", "default": "Swipe to browse. Tap a piece to open." },
+    { "type": "header", "content": "Button under the rail" },
+    { "type": "text", "id": "button_label", "label": "Button label", "default": "Shop All" },
+    { "type": "url", "id": "button_link", "label": "Button link" },
+    { "type": "header", "content": "Quick look" },
+    { "type": "checkbox", "id": "show_price", "label": "Show price", "default": true },
+    { "type": "checkbox", "id": "show_sizes", "label": "Show sizes", "default": true },
+    { "type": "checkbox", "id": "show_photos", "label": "Show the product photos as extra views", "default": true },
+    { "type": "checkbox", "id": "show_description", "label": "Show a short product description", "default": false },
+    {
+      "type": "checkbox",
+      "id": "quick_add",
+      "label": "Add to cart button",
+      "info": "Needs a product on every piece. If off, the main button opens the product page.",
+      "default": false
+    },
+    { "type": "text", "id": "add_label", "label": "Add to cart label", "default": "Add to cart" },
+    { "type": "text", "id": "view_label", "label": "Main button label (when Add to cart is off)", "default": "View product" },
+    {
+      "type": "text",
+      "id": "whatsapp_number",
+      "label": "WhatsApp number",
+      "info": "Country code, numbers only. Example: 923001234567. Leave empty to hide the WhatsApp button."
+    },
+    { "type": "header", "content": "Motion" },
+    { "type": "checkbox", "id": "idle_sway", "label": "Gentle sway on the rail (desktop)", "default": true },
+    { "type": "checkbox", "id": "attract_mode", "label": "Auto-demo on desktop (stops when the visitor moves)", "default": true },
+    {
+      "type": "select",
+      "id": "mobile_layout",
+      "label": "On phones",
+      "options": [
+        { "value": "carousel", "label": "Clean carousel (recommended)" },
+        { "value": "hide", "label": "Hide this section on phones" }
+      ],
+      "default": "carousel"
+    },
+    { "type": "header", "content": "Size and colour" },
+    { "type": "range", "id": "rail_height", "label": "Max piece height (desktop)", "min": 320, "max": 560, "step": 20, "unit": "px", "default": 480 },
+    {
+      "type": "range",
+      "id": "label_pull",
+      "label": "Move the text under the rail up",
+      "info": "Use this when the photos have empty space at the bottom.",
+      "min": 0,
+      "max": 160,
+      "step": 10,
+      "unit": "px",
+      "default": 0
+    },
+    { "type": "color", "id": "background_color", "label": "Background", "default": "#F4F2EE" },
+    { "type": "color", "id": "text_color", "label": "Text", "default": "#111111" }
+  ],
+  "blocks": [
+    {
+      "type": "card",
+      "name": "Piece",
+      "settings": [
+        { "type": "product", "id": "product", "label": "Product (gives name, price, sizes, photos, link)" },
+        { "type": "image_picker", "id": "image", "label": "Front image (transparent PNG, on hanger)" },
+        { "type": "image_picker", "id": "image_side", "label": "Side image (optional, hanging, seen from the side)" },
+        { "type": "image_picker", "id": "image_back", "label": "Back image (optional, adds a Back view)" },
+        { "type": "text", "id": "title", "label": "Name (leave empty to use the product name)", "default": "Heavyweight Hoodie" },
+        { "type": "text", "id": "subtitle", "label": "Small line (fabric or fit)", "default": "Organic Cotton" },
+        { "type": "url", "id": "link", "label": "Link (leave empty to use the product link)" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Hanger Rail",
+      "settings": {
+        "heading": "The Essentials",
+        "button_label": "Shop All"
+      },
+      "blocks": [
+        { "type": "card", "settings": { "title": "Heavyweight Hoodie", "subtitle": "Organic Cotton" } },
+        { "type": "card", "settings": { "title": "Poplin Shirt", "subtitle": "Relaxed Fit" } },
+        { "type": "card", "settings": { "title": "Twill Trouser", "subtitle": "Straight Cut" } },
+        { "type": "card", "settings": { "title": "Daily Overshirt", "subtitle": "Classic Layer" } },
+        { "type": "card", "settings": { "title": "Boxy Sweatshirt", "subtitle": "Heavy Fleece" } },
+        { "type": "card", "settings": { "title": "Casual Shirt", "subtitle": "100% Cotton" } }
+      ]
+    }
+  ]
+}
+{% endschema %}
+```

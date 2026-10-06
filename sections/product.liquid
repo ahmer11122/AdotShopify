@@ -1,9 +1,11 @@
 {% comment %}
-  Product Section (PDP Master Orchestrator)
-  - Split snippet architecture: product-gallery, product-buy-box, product-sticky-bar, size-guide
-  - JSON-LD Structured Data for Google Rich Results
-  - Sticky right column with offset for header
-  - Full schema support for WhatsApp ordering, Trust badges, and Custom Accordions
+  Product Section (PDP orchestrator) - "Plates" layout
+
+  Desktop: [ plates (sticky stack) | sticky decision panel ]
+  Mobile : [ full-bleed carousel ] then [ panel ], with a quick-size dock pinned to the bottom.
+
+  This file owns: design tokens (--pdp-*), the two-column grid, the panel overflow fade.
+  Every snippet rendered below inherits the tokens, including the <dialog> size guide.
 {% endcomment %}
 
 <!-- Google Structured Data (JSON-LD) -->
@@ -17,80 +19,213 @@
   data-section-type="product"
 >
   <div class="section-product__inner">
-    <!-- Left Column: Visual Media Gallery -->
     <div class="section-product__gallery">
-      {% render 'product-gallery', product: product %}
+      {% render 'product-gallery', product: product, section: section %}
     </div>
 
-    <!-- Right Column: Sticky Buy Box -->
-    <div class="section-product__buy-box">
+    <div class="section-product__panel" data-panel>
       {% render 'product-buy-box', product: product, section: section %}
     </div>
   </div>
 
-  <!-- Mobile Pinned Quick Add Bar -->
   {% render 'product-sticky-bar', product: product, section: section %}
-
-  <!-- Native <dialog> Size Guide Modal -->
   {% render 'size-guide' %}
 </section>
 
 <style>
   .section-product {
+    /* ------------------------------------------------------------ tokens */
+    --pdp-top: calc(var(--header-height, 80px) + 1rem);
+    --pdp-stage-h: calc(100dvh - var(--pdp-top) - 1rem);
+
+    --pdp-ink: var(--color-text, #111);
+    --pdp-ink-2: var(--color-text-muted, #555);
+    --pdp-ink-3: var(--color-text-subtle, #6b6b6b);
+    --pdp-paper: var(--color-background, #fff);
+    --pdp-sunk: var(--color-surface, #f5f5f5);
+    --pdp-line: oklch(0 0 0 / 0.1);
+    --pdp-line-2: oklch(0 0 0 / 0.24);
+    --pdp-sale: var(--color-sale, #991b1b);
+    --pdp-ok: var(--color-in-stock, #166534);
+    --pdp-btn-bg: var(--color-btn-bg, #111);
+    --pdp-btn-fg: var(--color-btn-text, #fff);
+
+    --pdp-font-display: var(--font-display, var(--font-body, system-ui, sans-serif));
+    --pdp-font: var(--font-body, system-ui, sans-serif);
+
+    /* Type scale: five tiers, nothing in between */
+    --pdp-fs-title: clamp(2.375rem, 10.4vw, 2.875rem);
+    --pdp-fs-price: 1.5rem;
+    --pdp-fs-body: 0.9375rem;
+    --pdp-fs-ui: 0.875rem;
+    --pdp-fs-small: 0.8125rem;
+
+    /* Spacing: 4px base, used in these steps only */
+    --s-1: 0.25rem;
+    --s-2: 0.5rem;
+    --s-3: 0.75rem;
+    --s-4: 1rem;
+    --s-5: 1.5rem;
+    --s-6: 2rem;
+    --s-7: 3rem;
+    --s-8: 4rem;
+
+    /* Motion */
+    --pdp-ease: var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+    --pdp-ease-io: var(--ease-in-out, cubic-bezier(0.77, 0, 0.175, 1));
+    --pdp-ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --pdp-spring: cubic-bezier(0.34, 1.35, 0.64, 1);
+
     position: relative;
-    padding-top: clamp(0.5rem, 2vw, 2rem);
+    padding-top: clamp(0.5rem, 2vw, 1.5rem);
     padding-bottom: clamp(3rem, 5vw, 5rem);
-    background-color: var(--color-background, #FFFFFF);
+    background-color: var(--pdp-paper);
+    color: var(--pdp-ink);
+  }
+
+  @supports (transition-timing-function: linear(0, 1)) {
+    .section-product {
+      --pdp-spring: linear(0, 0.009, 0.035 2.1%, 0.141, 0.281 6.7%, 0.723 12.9%, 0.938 16.7%, 1.017, 1.077, 1.121, 1.149 24.3%, 1.159, 1.163, 1.161, 1.154 29.9%, 1.129 32.8%, 1.051 39.6%, 1.017 43.1%, 0.991, 0.977 51%, 0.974 53.8%, 0.975 57.1%, 0.997 69.8%, 1.003 76.9%, 1.004 83.8%, 1);
+    }
   }
 
   .section-product__inner {
     max-width: var(--container-max, 1440px);
     margin: 0 auto;
-    padding-left: var(--page-margin, 1rem);
-    padding-right: var(--page-margin, 1rem);
+    padding-inline: var(--page-margin, 1rem);
   }
 
-  /* Desktop: fluid gallery, fixed-measure info column that stays in view */
+  /* ----------------------------------------------------------- shared bits */
+  .section-product .pdp-label {
+    font-family: var(--pdp-font);
+    font-size: var(--pdp-fs-small);
+    font-weight: 500;
+    letter-spacing: 0;
+    color: var(--pdp-ink-3);
+  }
+
+  /* Text link: underline draws out from the left on hover */
+  .section-product .pdp-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--pdp-ink);
+    font-family: var(--pdp-font);
+    font-size: var(--pdp-fs-small);
+    font-weight: 500;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    background-image: linear-gradient(currentColor, currentColor);
+    background-repeat: no-repeat;
+    background-size: 100% 1px;
+    background-position: 0 calc(50% + 0.7em);
+    transition: background-size 320ms var(--pdp-ease);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .section-product .pdp-link {
+      background-size: 0% 1px;
+    }
+
+    .section-product .pdp-link:hover,
+    .section-product .pdp-link:focus-visible {
+      background-size: 100% 1px;
+    }
+  }
+
+  .section-product :focus-visible {
+    outline: 2px solid var(--pdp-ink);
+    outline-offset: 3px;
+  }
+
+  /* Per-digit price roll (built by JS, collapses back to plain text) */
+  .section-product .odo {
+    display: inline-grid;
+    clip-path: inset(0); /* clip, not overflow: keeps the text baseline identical */
+  }
+
+  .section-product .odo > span {
+    grid-area: 1 / 1;
+    white-space: pre;
+  }
+
+  /* ------------------------------------------------------------------ desktop */
   @media (min-width: 990px) {
     .section-product__inner {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(380px, 27.5rem);
-      gap: clamp(2rem, 4.5vw, 5rem);
+      grid-template-columns: minmax(0, 1fr) clamp(25rem, 31vw, 30rem);
+      column-gap: clamp(2.5rem, 5vw, 6rem);
       align-items: start;
     }
 
-    .section-product__buy-box {
+    .section-product__panel {
       position: sticky;
-      top: calc(var(--header-height, 80px) + 1.5rem);
-      max-height: calc(100dvh - var(--header-height, 80px) - 2rem);
+      top: var(--pdp-top);
+      max-height: calc(100dvh - var(--pdp-top) - 1rem);
       overflow-y: auto;
       overscroll-behavior: contain;
       scrollbar-width: none;
-      padding-bottom: 2rem;
+      padding-bottom: var(--s-4);
     }
 
-    .section-product__buy-box::-webkit-scrollbar {
+    .section-product__panel::-webkit-scrollbar {
       display: none;
+    }
+
+    /* Tells the buyer there is more below the fold of the panel */
+    .section-product__panel[data-more] {
+      -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 3.5rem), transparent);
+      mask-image: linear-gradient(to bottom, #000 calc(100% - 3.5rem), transparent);
+    }
+
+    .section-product {
+      --pdp-fs-title: clamp(2.75rem, 3.7vw, 4.25rem);
+      --pdp-fs-price: 1.75rem;
     }
   }
 
-  /* Mobile: image first, info directly under it. */
+  /* ------------------------------------------------------------------- mobile */
   @media (max-width: 989px) {
     .section-product {
-      padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+      padding-top: 0;
+      padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
     }
 
     .section-product__inner {
       display: flex;
       flex-direction: column;
-      gap: 1.5rem;
+      gap: var(--s-5);
     }
 
-    .section-product__buy-box {
+    .section-product__panel {
       width: 100%;
     }
   }
 </style>
+
+<script>
+  (function () {
+    var panel = document.querySelector('.section-product--{{ section.id }} [data-panel]');
+    if (!panel) return;
+    var check = function () {
+      var more = panel.scrollHeight - panel.scrollTop - panel.clientHeight > 6 && panel.scrollHeight > panel.clientHeight;
+      panel.toggleAttribute('data-more', more);
+    };
+    panel.addEventListener('scroll', check, { passive: true });
+    panel.addEventListener('toggle', check, true);
+    window.addEventListener('resize', check, { passive: true });
+    if ('ResizeObserver' in window) {
+      var ro = new ResizeObserver(check);
+      ro.observe(panel);
+      if (panel.firstElementChild) ro.observe(panel.firstElementChild);
+    }
+    check();
+  })();
+</script>
 
 {% schema %}
 {
@@ -98,6 +233,62 @@
   "tag": "section",
   "class": "section-product-wrapper",
   "settings": [
+    {
+      "type": "header",
+      "content": "Gallery"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_cursor",
+      "label": "Show \"Expand\" cursor over images (desktop)",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Fit scale"
+    },
+    {
+      "type": "select",
+      "id": "fit_scale",
+      "label": "How this product fits",
+      "options": [
+        { "value": "none", "label": "Hide" },
+        { "value": "slim", "label": "Slim" },
+        { "value": "regular", "label": "Regular" },
+        { "value": "relaxed", "label": "Relaxed" },
+        { "value": "oversized", "label": "Oversized" }
+      ],
+      "default": "relaxed"
+    },
+    {
+      "type": "header",
+      "content": "Delivery estimate"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_delivery_estimate",
+      "label": "Show estimated delivery dates",
+      "default": true,
+      "info": "Counts working days (Mon to Sat) from the visitor's date."
+    },
+    {
+      "type": "range",
+      "id": "delivery_days_min",
+      "label": "Fastest delivery (working days)",
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "range",
+      "id": "delivery_days_max",
+      "label": "Slowest delivery (working days)",
+      "min": 1,
+      "max": 14,
+      "step": 1,
+      "default": 4
+    },
     {
       "type": "header",
       "content": "WhatsApp Direct Ordering"
@@ -164,6 +355,24 @@
   ],
   "blocks": [
     {
+      "type": "spec",
+      "name": "Spec row",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "Fabric"
+        },
+        {
+          "type": "text",
+          "id": "value",
+          "label": "Value",
+          "default": "Combed cotton loopback fleece"
+        }
+      ]
+    },
+    {
       "type": "accordion",
       "name": "Accordion Item",
       "settings": [
@@ -192,33 +401,21 @@
     {
       "name": "Product Page",
       "blocks": [
+        { "type": "spec", "settings": { "label": "Fabric", "value": "Combed cotton loopback fleece" } },
+        { "type": "spec", "settings": { "label": "Weight", "value": "Heavyweight" } },
+        { "type": "spec", "settings": { "label": "Construction", "value": "Pre-shrunk" } },
         {
           "type": "accordion",
           "settings": {
-            "title": "Fabric & Materials",
-            "content": "Crafted from premium heavyweight combed cotton. Breathable, durable, and pre-shrunk for zero post-wash distortion.",
-            "metafield_key": "custom.fabric"
+            "title": "Details & Care",
+            "content": "Crafted from premium heavyweight combed cotton. Machine wash cold inside-out, hang dry recommended."
           }
         },
         {
           "type": "accordion",
           "settings": {
-            "title": "Fit & Sizing",
-            "content": "Designed with a contemporary relaxed drape and dropped shoulders. Take your regular size for the intended silhouette, or size down for a closer fit."
-          }
-        },
-        {
-          "type": "accordion",
-          "settings": {
-            "title": "Nationwide Delivery & Exchanges",
+            "title": "Shipping & Returns",
             "content": "Delivered across Pakistan in 2–4 working days via express courier. Cash on Delivery supported. Easy 7-day exchange window if the fit isn't right."
-          }
-        },
-        {
-          "type": "accordion",
-          "settings": {
-            "title": "Garment Care",
-            "content": "Machine wash cold at 30°C. Wash inside-out with like colors. Do not bleach or tumble dry. Warm iron on reverse if necessary."
           }
         }
       ]

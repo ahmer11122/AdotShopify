@@ -1,9 +1,12 @@
 {% comment %}
   Related Items Section (PDP cross-sell)
-  - Four pieces, drawn first from the same collection as the current product, then from the whole catalogue
-  - Header carries a way out: a link to the full catalogue
-  - Cards rise in on scroll (CSS scroll-driven, progressive enhancement; always visible without it)
-  - 4 columns on desktop, 2 on mobile; bottom padding clears the mobile quick-add bar
+
+  - Four pieces, drawn first from the same collection as the current product, then from the whole catalogue.
+  - Desktop: 4 columns, the 2nd and 4th drop down so the row reads as a rhythm, not a table.
+    Hovering one card softens the others (fine pointer only).
+  - Mobile: one swipeable rail, the next card peeks in from the right.
+  - The heading is the loudest thing on the page below the fold. The way out ("Shop all") sits on its baseline.
+  - Bottom padding clears the mobile dock.
 {% endcomment %}
 
 {%- liquid
@@ -14,22 +17,22 @@
 -%}
 
 <section
-  class="related-items container"
+  class="pdp-more container"
   data-section-id="{{ section.id }}"
   data-section-type="related-items"
   aria-labelledby="RelatedHeading-{{ section.id }}"
 >
-  <div class="related-items__header">
-    <h2 class="related-items__heading" id="RelatedHeading-{{ section.id }}">{{ section.settings.heading | default: 'You may also like' }}</h2>
-    <a class="related-items__all" href="{{ routes.all_products_collection_url }}">
+  <header class="pdp-more__head">
+    <h2 class="pdp-more__title" id="RelatedHeading-{{ section.id }}">{{ section.settings.heading | default: 'You may also like' }}</h2>
+    <a class="pdp-more__all" href="{{ routes.all_products_collection_url }}">
       <span>Shop all</span>
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-        <path d="M1.5 8h13M14.5 8L9 2.5M14.5 8L9 13.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+        <path d="M3.5 10.5l7-7M4.5 3.5h6v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </a>
-  </div>
+  </header>
 
-  <div class="related-items__grid">
+  <div class="pdp-more__grid">
     {%- for pass in (1..2) -%}
       {%- if rendered_count >= 4 -%}{%- break -%}{%- endif -%}
       {%- if pass == 1 and primary_collection != blank -%}
@@ -46,7 +49,7 @@
           {%- continue -%}
         {%- endif -%}
 
-        <div class="related-items__item" style="--n:{{ rendered_count }}">
+        <div class="pdp-more__item">
           {% render 'product-card', product: prod_item, lazy_load: true %}
         </div>
 
@@ -60,103 +63,140 @@
 
 {% stylesheet %}
   .section-complete-the-look {
-    background-color: var(--color-background, #FFFFFF);
+    background-color: var(--color-background, #fff);
     padding-top: clamp(3rem, 6vw, 6rem);
-    padding-bottom: clamp(5.5rem, 8vw, 8rem); /* clears the mobile sticky bar */
+    padding-bottom: clamp(6rem, 8vw, 8rem); /* clears the mobile dock */
   }
 
-  .related-items {
+  .pdp-more {
     display: flex;
     flex-direction: column;
-    gap: clamp(1.5rem, 3vw, 2.5rem);
+    gap: clamp(2rem, 4vw, 3.5rem);
   }
 
-  .related-items__header {
+  .pdp-more__head {
     display: flex;
-    align-items: baseline;
+    align-items: flex-end;
     justify-content: space-between;
     gap: 1.5rem;
     padding-top: clamp(1.5rem, 3vw, 2.5rem);
     border-top: 1px solid oklch(0 0 0 / 0.1);
   }
 
-  .related-items__heading {
+  .pdp-more__title {
     margin: 0;
+    max-width: 14ch;
     font-family: var(--font-display, inherit);
-    font-size: clamp(1.5rem, 3vw, 2.25rem);
+    font-size: clamp(2.5rem, 7.5vw, 6.5rem);
     font-weight: 500;
-    line-height: 1.05;
-    letter-spacing: -0.03em;
-    color: var(--color-text, #111111);
+    line-height: 0.92;
+    letter-spacing: -0.05em;
     text-wrap: balance;
+    color: var(--color-text, #111);
   }
 
-  .related-items__all {
+  .pdp-more__all {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
     min-height: 44px;
+    padding: 0;
+    color: var(--color-text, #111);
     font-size: 0.875rem;
     font-weight: 500;
-    color: var(--color-text, #111111);
+    text-decoration: none;
     white-space: nowrap;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
+    background-image: linear-gradient(currentColor, currentColor);
+    background-repeat: no-repeat;
+    background-size: 100% 1px;
+    background-position: 0 calc(50% + 0.75em);
   }
 
-  .related-items__all svg {
-    transition: transform 240ms var(--ease-out);
+  .pdp-more__all svg {
+    transition: transform 320ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
   }
 
   @media (hover: hover) and (pointer: fine) {
-    .related-items__all:hover {
-      opacity: 1;
+    .pdp-more__all {
+      background-size: 0% 1px;
+      transition: background-size 320ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
     }
 
-    .related-items__all:hover svg {
-      transform: translateX(4px);
+    .pdp-more__all:hover {
+      background-size: 100% 1px;
+    }
+
+    .pdp-more__all:hover svg {
+      transform: translate(2px, -2px);
     }
   }
 
-  .related-items__grid {
+  .pdp-more__all:focus-visible {
+    outline: 2px solid var(--color-text, #111);
+    outline-offset: 3px;
+  }
+
+  /* Mobile: a rail with the next card peeking in */
+  .pdp-more__grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1.75rem 0.75rem;
-    touch-action: manipulation;
+    grid-auto-flow: column;
+    grid-auto-columns: 62%;
+    gap: 0.75rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    margin-inline: calc(-1 * var(--page-margin, 1rem));
+    padding-inline: var(--page-margin, 1rem);
+    scroll-padding-inline: var(--page-margin, 1rem);
+    touch-action: pan-x pan-y;
+  }
+
+  .pdp-more__grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .pdp-more__item {
+    min-width: 0;
+    scroll-snap-align: start;
   }
 
   @media (min-width: 990px) {
-    .related-items__grid {
+    .pdp-more__grid {
+      grid-auto-flow: row;
+      grid-auto-columns: auto;
       grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 2.5rem 1.5rem;
+      overflow: visible;
+      margin-inline: 0;
+      padding-inline: 0;
+      scroll-snap-type: none;
+    }
+
+    /* Rhythm: every second card steps down */
+    .pdp-more__item:nth-child(even) {
+      margin-top: clamp(2rem, 4vw, 4rem);
     }
   }
 
-  /* Cards rise as they enter the viewport; the stagger comes from the grid column. */
-  @media (prefers-reduced-motion: no-preference) {
-    @supports (animation-timeline: view()) {
-      .related-items__item {
-        animation: related-rise linear both;
-        animation-timeline: view();
-        animation-range: entry 0% entry 45%;
-      }
+  /* Soften the siblings of the card under the pointer */
+  @media (hover: hover) and (pointer: fine) {
+    .pdp-more__item {
+      transition: opacity 360ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+    }
 
-      @media (min-width: 990px) {
-        .related-items__item:nth-child(2) { animation-range: entry 4% entry 52%; }
-        .related-items__item:nth-child(3) { animation-range: entry 8% entry 59%; }
-        .related-items__item:nth-child(4) { animation-range: entry 12% entry 66%; }
-      }
+    .pdp-more__grid:has(.pdp-more__item:hover) .pdp-more__item:not(:hover) {
+      opacity: 0.45;
     }
   }
 
-  @keyframes related-rise {
-    from {
-      opacity: 0;
-      transform: translateY(28px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
+  @media (prefers-reduced-motion: reduce) {
+    .pdp-more__item,
+    .pdp-more__all,
+    .pdp-more__all svg {
+      transition-duration: 0.01ms;
     }
   }
 {% endstylesheet %}

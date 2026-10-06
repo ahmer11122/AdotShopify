@@ -3,6 +3,27 @@
     "main": {
       "type": "product",
       "blocks": {
+        "spec_fabric": {
+          "type": "spec",
+          "settings": {
+            "label": "Fabric",
+            "value": "Combed cotton loopback fleece"
+          }
+        },
+        "spec_weight": {
+          "type": "spec",
+          "settings": {
+            "label": "Weight",
+            "value": "Heavyweight"
+          }
+        },
+        "spec_construction": {
+          "type": "spec",
+          "settings": {
+            "label": "Construction",
+            "value": "Pre-shrunk"
+          }
+        },
         "details": {
           "type": "accordion",
           "settings": {
@@ -19,10 +40,18 @@
         }
       },
       "block_order": [
+        "spec_fabric",
+        "spec_weight",
+        "spec_construction",
         "details",
         "shipping"
       ],
       "settings": {
+        "show_cursor": true,
+        "fit_scale": "relaxed",
+        "show_delivery_estimate": true,
+        "delivery_days_min": 2,
+        "delivery_days_max": 4,
         "show_whatsapp_button": true,
         "whatsapp_number": "923131707080",
         "show_trust_strip": true,

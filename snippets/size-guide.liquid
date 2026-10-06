@@ -1,614 +1,1220 @@
 {% doc %}
-  Renders a native accessible <dialog> Size Guide Modal with Apple Segmented Units Toggle
-  and zero-horizontal-overflow responsive measurement tables for Hoodies, Shirts, and Trousers.
+  Size Guide
+
+  - Native <dialog>. Desktop: a sheet that slides in from the right. Mobile: a bottom sheet you can drag down to close.
+  - One data block below drives the tables AND the live measurements shown under the size ruler
+    (the buy box reads it from the JSON script tag with id AdotSizeData). Edit sizes in one place only.
+  - cm / in flips each number in place (no re-render).
+  - If the product has the size, a "Select" button on that row picks it in the buy box and closes the sheet.
+  - The row for the currently selected size is marked.
+  - AdotSizeData JSON is the JS source of truth; tables below mirror the same measurements in Liquid.
+
+  Opened by any element with [data-open-size-guide] (optionally data-size-category="hoodies|shirts|trousers").
 {% enddoc %}
 
-<dialog id="SizeGuideDialog" class="size-guide-dialog" aria-labelledby="SizeGuideTitle">
-  <div class="size-guide-dialog__content">
-    <!-- Mobile Drag Handle -->
-    <div class="size-guide-dialog__drag-handle" aria-hidden="true"></div>
+<script type="application/json" id="AdotSizeData">[{"key":"hoodies","label":"Hoodies","cols":["Chest","Length","Shoulder","Sleeve"],"note":"Boxy, relaxed drape. Fits true to size: take your regular size for an oversized silhouette.","rows":[{"size":"S","keys":["S"],"v":[116,68,54,61]},{"size":"M","keys":["M"],"v":[122,70,56,62]},{"size":"L","keys":["L"],"v":[128,72,58,63]},{"size":"XL","keys":["XL"],"v":[134,74,60,64]}]},{"key":"shirts","label":"Shirts","cols":["Chest","Length","Shoulder","Neck"],"note":"Tailored casual drape with a clean shoulder line and comfortable room through the chest.","rows":[{"size":"S","keys":["S"],"v":[108,74,48,39]},{"size":"M","keys":["M"],"v":[114,76,50,41]},{"size":"L","keys":["L"],"v":[120,78,52,43]},{"size":"XL","keys":["XL"],"v":[126,80,54,45]}]},{"key":"trousers","label":"Trousers","cols":["Waist","Inseam","Rise","Opening"],"note":"Relaxed straight leg with a tailored waistband. Order your standard waist size.","rows":[{"size":"30 (S)","keys":["30","S"],"v":[78,76,30,22]},{"size":"32 (M)","keys":["32","M"],"v":[83,77,31,23]},{"size":"34 (L)","keys":["34","L"],"v":[88,78,32,24]},{"size":"36 (XL)","keys":["36","XL"],"v":[93,79,33,25]}]}]</script>
 
-    <!-- Header Row -->
-    <div class="size-guide-dialog__header">
-      <div class="size-guide-dialog__title-wrap">
-        <h2 id="SizeGuideTitle" class="size-guide-dialog__title">SIZE GUIDE</h2>
-        <span class="size-guide-dialog__subtitle text-micro">Garment Measurements in Relaxed State</span>
+<dialog id="SizeGuideDialog" class="sg" aria-labelledby="SizeGuideTitle" data-unit="cm">
+  <div class="sg__sheet" data-sg-sheet>
+    <div class="sg__grab" data-sg-grab aria-hidden="true"><i></i></div>
+
+    <header class="sg__head" data-sg-grab>
+      <div>
+        <h2 id="SizeGuideTitle" class="sg__title">Size guide</h2>
+        <p class="sg__sub">Garment measurements, laid flat and relaxed.</p>
       </div>
-      <button type="button" class="size-guide-dialog__close" data-close-size-guide aria-label="Close size guide">
-        <svg width="15" height="15" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-          <line x1="2" y1="2" x2="16" y2="16"></line>
-          <line x1="16" y1="2" x2="2" y2="16"></line>
+      <button type="button" class="sg__close" data-close-size-guide aria-label="Close size guide">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <path d="M1.5 1.5l11 11M12.5 1.5l-11 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
       </button>
+    </header>
+
+    <div class="sg__tools">
+      <div class="sg__seg" role="tablist" aria-label="Garment type" data-seg>
+        <span class="sg__seg-ind" aria-hidden="true"></span>
+          <button
+            type="button"
+            role="tab"
+            id="SgTab-hoodies"
+            aria-controls="SgPanel-hoodies"
+            aria-selected="true"
+            tabindex="0"
+            data-tab="hoodies"
+          >Hoodies</button>
+          <button
+            type="button"
+            role="tab"
+            id="SgTab-shirts"
+            aria-controls="SgPanel-shirts"
+            aria-selected="false"
+            tabindex="-1"
+            data-tab="shirts"
+          >Shirts</button>
+          <button
+            type="button"
+            role="tab"
+            id="SgTab-trousers"
+            aria-controls="SgPanel-trousers"
+            aria-selected="false"
+            tabindex="-1"
+            data-tab="trousers"
+          >Trousers</button>
+      </div>
+
+      <div class="sg__seg" role="radiogroup" aria-label="Units" data-seg>
+        <span class="sg__seg-ind" aria-hidden="true"></span>
+        <button type="button" role="radio" aria-checked="true" tabindex="0" data-unit-btn="cm">cm</button>
+        <button type="button" role="radio" aria-checked="false" tabindex="-1" data-unit-btn="in">in</button>
+      </div>
     </div>
 
-    <!-- Integrated Controls Bar: Category Rail on Left + Segmented Unit Rail on Right -->
-    <div class="size-guide-dialog__toolbar">
-      <div class="size-guide-category-rail size-guide-dialog__tabs" role="tablist">
-        <button type="button" role="tab" aria-selected="true" class="size-guide-tab is-active" data-tab="hoodies">Hoodies</button>
-        <button type="button" role="tab" aria-selected="false" class="size-guide-tab" data-tab="shirts">Shirts</button>
-        <button type="button" role="tab" aria-selected="false" class="size-guide-tab" data-tab="trousers">Trousers</button>
-      </div>
+    <div class="sg__body">
+        <section
+          class="sg__panel"
+          id="SgPanel-hoodies"
+          role="tabpanel"
+          aria-labelledby="SgTab-hoodies"
+          data-panel="hoodies"
 
-      <div class="size-guide-unit-rail size-guide-unit-pill" role="radiogroup" aria-label="Measurement Units">
-        <button type="button" class="unit-toggle__btn unit-toggle__btn--active" data-unit="cm">CM</button>
-        <button type="button" class="unit-toggle__btn" data-unit="in">INCHES</button>
-      </div>
-    </div>
-
-    <!-- Tables Container (Zero Horizontal Scroll on Mobile) -->
-    <div class="size-guide-dialog__panels">
-      <!-- Table 1: Hoodies -->
-      <div class="size-guide-panel size-guide-panel--active" data-panel="hoodies" role="tabpanel">
-        <div class="size-guide-table-wrap">
-          <table class="size-guide-table">
+        >
+          <table class="sg__table">
             <thead>
               <tr>
-                <th class="col-size">SIZE</th>
-                <th>CHEST</th>
-                <th>LENGTH</th>
-                <th>SHOULDER</th>
-                <th>SLEEVE</th>
+                <th scope="col">Size</th>
+                  <th scope="col">
+                    Chest
+                    <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
+                  </th>
+                  <th scope="col">
+                    Length
+                    <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
+                  </th>
+                  <th scope="col">
+                    Shoulder
+                    <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
+                  </th>
+                  <th scope="col">
+                    Sleeve
+                    <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
+                  </th>
+                <td class="sg__act"></td>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td class="col-size"><strong>S</strong></td>
-                <td data-cm="116" data-in="45.7"><span class="size-val">116</span><span class="size-unit">cm</span></td>
-                <td data-cm="68" data-in="26.8"><span class="size-val">68</span><span class="size-unit">cm</span></td>
-                <td data-cm="54" data-in="21.3"><span class="size-val">54</span><span class="size-unit">cm</span></td>
-                <td data-cm="61" data-in="24.0"><span class="size-val">61</span><span class="size-unit">cm</span></td>
-              </tr>
-              <tr>
-                <td class="col-size"><strong>M</strong></td>
-                <td data-cm="122" data-in="48.0"><span class="size-val">122</span><span class="size-unit">cm</span></td>
-                <td data-cm="70" data-in="27.6"><span class="size-val">70</span><span class="size-unit">cm</span></td>
-                <td data-cm="56" data-in="22.0"><span class="size-val">56</span><span class="size-unit">cm</span></td>
-                <td data-cm="62" data-in="24.4"><span class="size-val">62</span><span class="size-unit">cm</span></td>
-              </tr>
-              <tr>
-                <td class="col-size"><strong>L</strong></td>
-                <td data-cm="128" data-in="50.4"><span class="size-val">128</span><span class="size-unit">cm</span></td>
-                <td data-cm="72" data-in="28.3"><span class="size-val">72</span><span class="size-unit">cm</span></td>
-                <td data-cm="58" data-in="22.8"><span class="size-val">58</span><span class="size-unit">cm</span></td>
-                <td data-cm="63" data-in="24.8"><span class="size-val">63</span><span class="size-unit">cm</span></td>
-              </tr>
-              <tr>
-                <td class="col-size"><strong>XL</strong></td>
-                <td data-cm="134" data-in="52.8"><span class="size-val">134</span><span class="size-unit">cm</span></td>
-                <td data-cm="74" data-in="29.1"><span class="size-val">74</span><span class="size-unit">cm</span></td>
-                <td data-cm="60" data-in="23.6"><span class="size-val">60</span><span class="size-unit">cm</span></td>
-                <td data-cm="64" data-in="25.2"><span class="size-val">64</span><span class="size-unit">cm</span></td>
-              </tr>
+                <tr class="sg__row" data-keys="S">
+                  <th scope="row"><span class="sg__size">S</span></th>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">116</span>
+                        <span class="sg__in" aria-hidden="true">45.7</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">68</span>
+                        <span class="sg__in" aria-hidden="true">26.8</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">54</span>
+                        <span class="sg__in" aria-hidden="true">21.3</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">61</span>
+                        <span class="sg__in" aria-hidden="true">24.0</span>
+                      </span>
+                    </td>
+                  <td class="sg__act">
+                    <button type="button" class="sg__pick" data-sg-pick hidden aria-label="Select size S">
+                      <span class="sg__pick-text">Select</span>
+                      <svg class="sg__pick-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <path d="M2.5 8.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+                <tr class="sg__row" data-keys="M">
+                  <th scope="row"><span class="sg__size">M</span></th>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">122</span>
+                        <span class="sg__in" aria-hidden="true">48.0</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">70</span>
+                        <span class="sg__in" aria-hidden="true">27.6</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">56</span>
+                        <span class="sg__in" aria-hidden="true">22.0</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">62</span>
+                        <span class="sg__in" aria-hidden="true">24.4</span>
+                      </span>
+                    </td>
+                  <td class="sg__act">
+                    <button type="button" class="sg__pick" data-sg-pick hidden aria-label="Select size M">
+                      <span class="sg__pick-text">Select</span>
+                      <svg class="sg__pick-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <path d="M2.5 8.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+                <tr class="sg__row" data-keys="L">
+                  <th scope="row"><span class="sg__size">L</span></th>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">128</span>
+                        <span class="sg__in" aria-hidden="true">50.4</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">72</span>
+                        <span class="sg__in" aria-hidden="true">28.3</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">58</span>
+                        <span class="sg__in" aria-hidden="true">22.8</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">63</span>
+                        <span class="sg__in" aria-hidden="true">24.8</span>
+                      </span>
+                    </td>
+                  <td class="sg__act">
+                    <button type="button" class="sg__pick" data-sg-pick hidden aria-label="Select size L">
+                      <span class="sg__pick-text">Select</span>
+                      <svg class="sg__pick-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <path d="M2.5 8.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+                <tr class="sg__row" data-keys="XL">
+                  <th scope="row"><span class="sg__size">XL</span></th>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">134</span>
+                        <span class="sg__in" aria-hidden="true">52.8</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">74</span>
+                        <span class="sg__in" aria-hidden="true">29.1</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">60</span>
+                        <span class="sg__in" aria-hidden="true">23.6</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">64</span>
+                        <span class="sg__in" aria-hidden="true">25.2</span>
+                      </span>
+                    </td>
+                  <td class="sg__act">
+                    <button type="button" class="sg__pick" data-sg-pick hidden aria-label="Select size XL">
+                      <span class="sg__pick-text">Select</span>
+                      <svg class="sg__pick-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <path d="M2.5 8.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
             </tbody>
           </table>
-        </div>
-        <div class="size-guide-footer">
-          <span class="size-guide-footer__dot"></span>
-          <p class="size-guide-footer__text text-micro">Boxy, relaxed drape. Fits true to size — select your regular size for an oversized silhouette.</p>
-        </div>
-      </div>
-
-      <!-- Table 2: Shirts -->
-      <div class="size-guide-panel" data-panel="shirts" role="tabpanel" hidden>
-        <div class="size-guide-table-wrap">
-          <table class="size-guide-table">
+          <p class="sg__note">Boxy, relaxed drape. Fits true to size: take your regular size for an oversized silhouette.</p>
+        </section>
+        <section
+          class="sg__panel"
+          id="SgPanel-shirts"
+          role="tabpanel"
+          aria-labelledby="SgTab-shirts"
+          data-panel="shirts"
+          hidden
+        >
+          <table class="sg__table">
             <thead>
               <tr>
-                <th class="col-size">SIZE</th>
-                <th>CHEST</th>
-                <th>LENGTH</th>
-                <th>SHOULDER</th>
-                <th>NECK</th>
+                <th scope="col">Size</th>
+                  <th scope="col">
+                    Chest
+                    <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
+                  </th>
+                  <th scope="col">
+                    Length
+                    <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
+                  </th>
+                  <th scope="col">
+                    Shoulder
+                    <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
+                  </th>
+                  <th scope="col">
+                    Neck
+                    <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
+                  </th>
+                <td class="sg__act"></td>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td class="col-size"><strong>S</strong></td>
-                <td data-cm="108" data-in="42.5"><span class="size-val">108</span><span class="size-unit">cm</span></td>
-                <td data-cm="74" data-in="29.1"><span class="size-val">74</span><span class="size-unit">cm</span></td>
-                <td data-cm="48" data-in="18.9"><span class="size-val">48</span><span class="size-unit">cm</span></td>
-                <td data-cm="39" data-in="15.4"><span class="size-val">39</span><span class="size-unit">cm</span></td>
-              </tr>
-              <tr>
-                <td class="col-size"><strong>M</strong></td>
-                <td data-cm="114" data-in="44.9"><span class="size-val">114</span><span class="size-unit">cm</span></td>
-                <td data-cm="76" data-in="29.9"><span class="size-val">76</span><span class="size-unit">cm</span></td>
-                <td data-cm="50" data-in="19.7"><span class="size-val">50</span><span class="size-unit">cm</span></td>
-                <td data-cm="41" data-in="16.1"><span class="size-val">41</span><span class="size-unit">cm</span></td>
-              </tr>
-              <tr>
-                <td class="col-size"><strong>L</strong></td>
-                <td data-cm="120" data-in="47.2"><span class="size-val">120</span><span class="size-unit">cm</span></td>
-                <td data-cm="78" data-in="30.7"><span class="size-val">78</span><span class="size-unit">cm</span></td>
-                <td data-cm="52" data-in="20.5"><span class="size-val">52</span><span class="size-unit">cm</span></td>
-                <td data-cm="43" data-in="16.9"><span class="size-val">43</span><span class="size-unit">cm</span></td>
-              </tr>
-              <tr>
-                <td class="col-size"><strong>XL</strong></td>
-                <td data-cm="126" data-in="49.6"><span class="size-val">126</span><span class="size-unit">cm</span></td>
-                <td data-cm="80" data-in="31.5"><span class="size-val">80</span><span class="size-unit">cm</span></td>
-                <td data-cm="54" data-in="21.3"><span class="size-val">54</span><span class="size-unit">cm</span></td>
-                <td data-cm="45" data-in="17.7"><span class="size-val">45</span><span class="size-unit">cm</span></td>
-              </tr>
+                <tr class="sg__row" data-keys="S">
+                  <th scope="row"><span class="sg__size">S</span></th>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">108</span>
+                        <span class="sg__in" aria-hidden="true">42.5</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">74</span>
+                        <span class="sg__in" aria-hidden="true">29.1</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">48</span>
+                        <span class="sg__in" aria-hidden="true">18.9</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">39</span>
+                        <span class="sg__in" aria-hidden="true">15.4</span>
+                      </span>
+                    </td>
+                  <td class="sg__act">
+                    <button type="button" class="sg__pick" data-sg-pick hidden aria-label="Select size S">
+                      <span class="sg__pick-text">Select</span>
+                      <svg class="sg__pick-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <path d="M2.5 8.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+                <tr class="sg__row" data-keys="M">
+                  <th scope="row"><span class="sg__size">M</span></th>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">114</span>
+                        <span class="sg__in" aria-hidden="true">44.9</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">76</span>
+                        <span class="sg__in" aria-hidden="true">29.9</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">50</span>
+                        <span class="sg__in" aria-hidden="true">19.7</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">41</span>
+                        <span class="sg__in" aria-hidden="true">16.1</span>
+                      </span>
+                    </td>
+                  <td class="sg__act">
+                    <button type="button" class="sg__pick" data-sg-pick hidden aria-label="Select size M">
+                      <span class="sg__pick-text">Select</span>
+                      <svg class="sg__pick-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <path d="M2.5 8.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+                <tr class="sg__row" data-keys="L">
+                  <th scope="row"><span class="sg__size">L</span></th>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">120</span>
+                        <span class="sg__in" aria-hidden="true">47.2</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">78</span>
+                        <span class="sg__in" aria-hidden="true">30.7</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">52</span>
+                        <span class="sg__in" aria-hidden="true">20.5</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">43</span>
+                        <span class="sg__in" aria-hidden="true">16.9</span>
+                      </span>
+                    </td>
+                  <td class="sg__act">
+                    <button type="button" class="sg__pick" data-sg-pick hidden aria-label="Select size L">
+                      <span class="sg__pick-text">Select</span>
+                      <svg class="sg__pick-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <path d="M2.5 8.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+                <tr class="sg__row" data-keys="XL">
+                  <th scope="row"><span class="sg__size">XL</span></th>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">126</span>
+                        <span class="sg__in" aria-hidden="true">49.6</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">80</span>
+                        <span class="sg__in" aria-hidden="true">31.5</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">54</span>
+                        <span class="sg__in" aria-hidden="true">21.3</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">45</span>
+                        <span class="sg__in" aria-hidden="true">17.7</span>
+                      </span>
+                    </td>
+                  <td class="sg__act">
+                    <button type="button" class="sg__pick" data-sg-pick hidden aria-label="Select size XL">
+                      <span class="sg__pick-text">Select</span>
+                      <svg class="sg__pick-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <path d="M2.5 8.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
             </tbody>
           </table>
-        </div>
-        <div class="size-guide-footer">
-          <span class="size-guide-footer__dot"></span>
-          <p class="size-guide-footer__text text-micro">Tailored casual drape with clean shoulder line and comfortable room through the chest.</p>
-        </div>
-      </div>
-
-      <!-- Table 3: Trousers -->
-      <div class="size-guide-panel" data-panel="trousers" role="tabpanel" hidden>
-        <div class="size-guide-table-wrap">
-          <table class="size-guide-table">
+          <p class="sg__note">Tailored casual drape with a clean shoulder line and comfortable room through the chest.</p>
+        </section>
+        <section
+          class="sg__panel"
+          id="SgPanel-trousers"
+          role="tabpanel"
+          aria-labelledby="SgTab-trousers"
+          data-panel="trousers"
+          hidden
+        >
+          <table class="sg__table">
             <thead>
               <tr>
-                <th class="col-size">SIZE</th>
-                <th>WAIST</th>
-                <th>INSEAM</th>
-                <th>RISE</th>
-                <th>OPENING</th>
+                <th scope="col">Size</th>
+                  <th scope="col">
+                    Waist
+                    <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
+                  </th>
+                  <th scope="col">
+                    Inseam
+                    <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
+                  </th>
+                  <th scope="col">
+                    Rise
+                    <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
+                  </th>
+                  <th scope="col">
+                    Opening
+                    <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
+                  </th>
+                <td class="sg__act"></td>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td class="col-size"><strong>30 (S)</strong></td>
-                <td data-cm="78" data-in="30.7"><span class="size-val">78</span><span class="size-unit">cm</span></td>
-                <td data-cm="76" data-in="29.9"><span class="size-val">76</span><span class="size-unit">cm</span></td>
-                <td data-cm="30" data-in="11.8"><span class="size-val">30</span><span class="size-unit">cm</span></td>
-                <td data-cm="22" data-in="8.7"><span class="size-val">22</span><span class="size-unit">cm</span></td>
-              </tr>
-              <tr>
-                <td class="col-size"><strong>32 (M)</strong></td>
-                <td data-cm="83" data-in="32.7"><span class="size-val">83</span><span class="size-unit">cm</span></td>
-                <td data-cm="77" data-in="30.3"><span class="size-val">77</span><span class="size-unit">cm</span></td>
-                <td data-cm="31" data-in="12.2"><span class="size-val">31</span><span class="size-unit">cm</span></td>
-                <td data-cm="23" data-in="9.1"><span class="size-val">23</span><span class="size-unit">cm</span></td>
-              </tr>
-              <tr>
-                <td class="col-size"><strong>34 (L)</strong></td>
-                <td data-cm="88" data-in="34.6"><span class="size-val">88</span><span class="size-unit">cm</span></td>
-                <td data-cm="78" data-in="30.7"><span class="size-val">78</span><span class="size-unit">cm</span></td>
-                <td data-cm="32" data-in="12.6"><span class="size-val">32</span><span class="size-unit">cm</span></td>
-                <td data-cm="24" data-in="9.4"><span class="size-val">24</span><span class="size-unit">cm</span></td>
-              </tr>
-              <tr>
-                <td class="col-size"><strong>36 (XL)</strong></td>
-                <td data-cm="93" data-in="36.6"><span class="size-val">93</span><span class="size-unit">cm</span></td>
-                <td data-cm="79" data-in="31.1"><span class="size-val">79</span><span class="size-unit">cm</span></td>
-                <td data-cm="33" data-in="13.0"><span class="size-val">33</span><span class="size-unit">cm</span></td>
-                <td data-cm="25" data-in="9.8"><span class="size-val">25</span><span class="size-unit">cm</span></td>
-              </tr>
+                <tr class="sg__row" data-keys="30|S">
+                  <th scope="row"><span class="sg__size">30 (S)</span></th>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">78</span>
+                        <span class="sg__in" aria-hidden="true">30.7</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">76</span>
+                        <span class="sg__in" aria-hidden="true">29.9</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">30</span>
+                        <span class="sg__in" aria-hidden="true">11.8</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">22</span>
+                        <span class="sg__in" aria-hidden="true">8.7</span>
+                      </span>
+                    </td>
+                  <td class="sg__act">
+                    <button type="button" class="sg__pick" data-sg-pick hidden aria-label="Select size 30 (S)">
+                      <span class="sg__pick-text">Select</span>
+                      <svg class="sg__pick-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <path d="M2.5 8.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+                <tr class="sg__row" data-keys="32|M">
+                  <th scope="row"><span class="sg__size">32 (M)</span></th>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">83</span>
+                        <span class="sg__in" aria-hidden="true">32.7</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">77</span>
+                        <span class="sg__in" aria-hidden="true">30.3</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">31</span>
+                        <span class="sg__in" aria-hidden="true">12.2</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">23</span>
+                        <span class="sg__in" aria-hidden="true">9.1</span>
+                      </span>
+                    </td>
+                  <td class="sg__act">
+                    <button type="button" class="sg__pick" data-sg-pick hidden aria-label="Select size 32 (M)">
+                      <span class="sg__pick-text">Select</span>
+                      <svg class="sg__pick-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <path d="M2.5 8.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+                <tr class="sg__row" data-keys="34|L">
+                  <th scope="row"><span class="sg__size">34 (L)</span></th>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">88</span>
+                        <span class="sg__in" aria-hidden="true">34.6</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">78</span>
+                        <span class="sg__in" aria-hidden="true">30.7</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">32</span>
+                        <span class="sg__in" aria-hidden="true">12.6</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">24</span>
+                        <span class="sg__in" aria-hidden="true">9.4</span>
+                      </span>
+                    </td>
+                  <td class="sg__act">
+                    <button type="button" class="sg__pick" data-sg-pick hidden aria-label="Select size 34 (L)">
+                      <span class="sg__pick-text">Select</span>
+                      <svg class="sg__pick-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <path d="M2.5 8.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+                <tr class="sg__row" data-keys="36|XL">
+                  <th scope="row"><span class="sg__size">36 (XL)</span></th>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">93</span>
+                        <span class="sg__in" aria-hidden="true">36.6</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">79</span>
+                        <span class="sg__in" aria-hidden="true">31.1</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">33</span>
+                        <span class="sg__in" aria-hidden="true">13.0</span>
+                      </span>
+                    </td>
+                    <td>
+                      <span class="sg__num">
+                        <span class="sg__cm">25</span>
+                        <span class="sg__in" aria-hidden="true">9.8</span>
+                      </span>
+                    </td>
+                  <td class="sg__act">
+                    <button type="button" class="sg__pick" data-sg-pick hidden aria-label="Select size 36 (XL)">
+                      <span class="sg__pick-text">Select</span>
+                      <svg class="sg__pick-icon" width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                        <path d="M2.5 8.5l3.5 3.5 7.5-8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
             </tbody>
           </table>
-        </div>
-        <div class="size-guide-footer">
-          <span class="size-guide-footer__dot"></span>
-          <p class="size-guide-footer__text text-micro">Relaxed straight leg with tailored waistband. Order true to your standard waist size.</p>
-        </div>
-      </div>
+          <p class="sg__note">Relaxed straight leg with a tailored waistband. Order your standard waist size.</p>
+        </section>
     </div>
   </div>
 </dialog>
 
 <style>
-  /* Native <dialog> Modal Architecture */
-  .size-guide-dialog {
+  /* The dialog is a full-screen transparent shell. The sheet inside is what you see. */
+  .sg {
     position: fixed;
     inset: 0;
-    margin: auto;
-    width: min(92vw, 620px);
-    max-height: 86vh;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    margin: 0;
     padding: 0;
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    border-radius: 8px;
-    background-color: #FFFFFF;
-    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.22);
+    border: 0;
+    background: transparent;
+    color: var(--pdp-ink, #111);
+    overflow: hidden;
     z-index: 9999;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
+    transition: display 520ms allow-discrete, overlay 520ms allow-discrete;
   }
 
-  .size-guide-dialog::backdrop {
-    background: rgba(0, 0, 0, 0.52);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+  .sg::backdrop {
+    background: oklch(0 0 0 / 0);
+    transition: background-color 520ms cubic-bezier(0.23, 1, 0.32, 1);
   }
 
-  .size-guide-dialog__drag-handle {
-    display: none;
+  .sg[open]::backdrop {
+    background: oklch(0 0 0 / 0.45);
   }
 
-  .size-guide-dialog__content {
-    padding: clamp(1.25rem, 3.5vw, 2rem);
+  @starting-style {
+    .sg[open]::backdrop {
+      background: oklch(0 0 0 / 0);
+    }
+  }
+
+  html:has(.sg[open]) {
+    overflow: hidden;
+  }
+
+  .sg__sheet {
+    position: absolute;
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    background: var(--pdp-paper, #fff);
+    font-family: var(--pdp-font, inherit);
+    transition: transform 560ms var(--pdp-ease-expo, cubic-bezier(0.16, 1, 0.3, 1));
+    will-change: transform;
   }
 
-  /* Header */
-  .size-guide-dialog__header {
+  .sg__sheet.is-dragging {
+    transition: none;
+  }
+
+  /* Mobile: bottom sheet */
+  @media (max-width: 989px) {
+    .sg__sheet {
+      left: 0;
+      right: 0;
+      bottom: 0;
+      max-height: 90dvh;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      transform: translateY(100%);
+    }
+
+    .sg[open] .sg__sheet {
+      transform: translateY(0);
+    }
+
+    @starting-style {
+      .sg[open] .sg__sheet {
+        transform: translateY(100%);
+      }
+    }
+  }
+
+  /* Desktop: side sheet */
+  @media (min-width: 990px) {
+    .sg__sheet {
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: min(34rem, 100%);
+      transform: translateX(100%);
+    }
+
+    .sg[open] .sg__sheet {
+      transform: translateX(0);
+    }
+
+    @starting-style {
+      .sg[open] .sg__sheet {
+        transform: translateX(100%);
+      }
+    }
+  }
+
+  .sg__grab {
+    display: none;
+    justify-content: center;
+    padding: 0.625rem 0 0;
+    touch-action: none;
+    cursor: grab;
+  }
+
+  .sg__grab i {
+    display: block;
+    width: 2.5rem;
+    height: 4px;
+    background: var(--pdp-line-2, oklch(0 0 0 / 0.24));
+  }
+
+  @media (max-width: 989px) {
+    .sg__grab {
+      display: flex;
+    }
+
+    .sg__head {
+      touch-action: none;
+    }
+  }
+
+  .sg__head {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.07);
-    padding-bottom: 1rem;
+    gap: 1rem;
+    padding: clamp(1.25rem, 3vw, 2rem) clamp(1.25rem, 3vw, 2rem) 0;
   }
 
-  .size-guide-dialog__title {
-    font-family: var(--font-display, inherit);
-    font-size: 1.35rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    line-height: 1.15;
+  .sg__title {
     margin: 0;
-    color: #111111;
+    font-family: var(--pdp-font-display, inherit);
+    font-size: clamp(1.875rem, 5vw, 2.5rem);
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: var(--pdp-ink, #111);
   }
 
-  .size-guide-dialog__subtitle {
-    font-size: 0.6875rem;
-    color: #767676;
-    letter-spacing: 0.05em;
-    margin-top: 0.25rem;
-    display: block;
+  .sg__sub {
+    margin: 0.5rem 0 0;
+    font-size: var(--pdp-fs-small, 0.8125rem);
+    color: var(--pdp-ink-3, #6b6b6b);
   }
 
-  .size-guide-dialog__close {
-    background: transparent;
-    border: none;
-    color: #111111;
+  .sg__close {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    margin: -0.5rem -0.75rem 0 0;
+    border: 0;
+    background: none;
+    color: inherit;
     cursor: pointer;
-    padding: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    transition: background-color 150ms ease, transform 100ms ease;
+    touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
+    transition: transform 200ms var(--pdp-ease, ease), opacity 160ms var(--pdp-ease, ease);
   }
 
-  .size-guide-dialog__close:hover {
-    background-color: #F3F3F3;
-  }
-
-  .size-guide-dialog__close:active {
+  .sg__close:active {
     transform: scale(0.92);
   }
 
-  /* Toolbar: Category Rail on Left + Unit Rail on Right */
-  .size-guide-dialog__toolbar {
+  @media (hover: hover) and (pointer: fine) {
+    .sg__close:hover {
+      opacity: 0.55;
+    }
+  }
+
+  /* ----- segmented controls with a sliding thumb */
+  .sg__tools {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    flex-wrap: wrap;
     gap: 0.75rem;
-    padding-bottom: 0.25rem;
+    padding: 1.25rem clamp(1.25rem, 3vw, 2rem) 0;
   }
 
-  /* Segmented Category Rail (Consistent with Collection Header & App Design) */
-  .size-guide-dialog__tabs,
-  .size-guide-category-rail {
+  .sg__seg {
+    position: relative;
     display: inline-flex;
-    align-items: center;
-    background: #F4F4F4;
     padding: 3px;
-    border-radius: 6px;
-    gap: 2px;
+    background: var(--pdp-sunk, #f5f5f5);
   }
 
-  .size-guide-tab {
-    border: none;
-    background: transparent;
-    color: #666666;
-    font-family: var(--font-body);
-    font-size: 0.75rem;
+  .sg__seg-ind {
+    position: absolute;
+    top: 3px;
+    bottom: 3px;
+    left: 0;
+    width: 0;
+    background: var(--pdp-paper, #fff);
+    box-shadow: inset 0 0 0 1px var(--pdp-line-2, oklch(0 0 0 / 0.24));
+    transition:
+      transform 420ms var(--pdp-spring, cubic-bezier(0.34, 1.35, 0.64, 1)),
+      width 420ms var(--pdp-spring, cubic-bezier(0.34, 1.35, 0.64, 1));
+  }
+
+  .sg__seg-ind.is-still {
+    transition: none;
+  }
+
+  .sg__seg button {
+    position: relative;
+    z-index: 1;
+    min-height: 2.25rem;
+    padding: 0 1rem;
+    border: 0;
+    background: none;
+    color: var(--pdp-ink-3, #6b6b6b);
+    font-family: var(--pdp-font, inherit);
+    font-size: var(--pdp-fs-ui, 0.875rem);
     font-weight: 500;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    padding: 0.42rem 0.85rem;
-    border-radius: 4px;
     cursor: pointer;
-    white-space: nowrap;
-    transition: color 150ms ease, background-color 150ms ease, box-shadow 150ms ease, transform 100ms ease;
+    touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
+    transition: color 200ms var(--pdp-ease, ease);
   }
 
-  .size-guide-tab:hover:not(.is-active) {
-    color: #111111;
+  .sg__seg button[aria-selected='true'],
+  .sg__seg button[aria-checked='true'] {
+    color: var(--pdp-ink, #111);
   }
 
-  .size-guide-tab:active {
-    transform: scale(0.96);
+  /* ----- body + table */
+  .sg__body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 1.5rem clamp(1.25rem, 3vw, 2rem) clamp(1.5rem, 3vw, 2.5rem);
   }
 
-  .size-guide-tab.is-active {
-    background: #FFFFFF;
-    color: #111111;
-    font-weight: 600;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  }
-
-  /* Segmented Unit Rail (Consistent Architectural Radius, Zero 9999px Circular Pills) */
-  .size-guide-unit-pill,
-  .size-guide-unit-rail {
-    display: inline-flex;
-    align-items: center;
-    background-color: #F4F4F4;
-    padding: 3px;
-    border-radius: 6px;
-    gap: 2px;
-    user-select: none;
-  }
-
-  .unit-toggle__btn {
-    border: none;
-    background: transparent;
-    padding: 0.42rem 0.75rem;
-    font-family: var(--font-body);
-    font-size: 0.6875rem;
-    font-weight: 500;
-    letter-spacing: 0.06em;
-    color: #666666;
-    cursor: pointer;
-    border-radius: 4px;
-    transition: color 150ms ease, background-color 150ms ease, box-shadow 150ms ease, transform 100ms ease;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .unit-toggle__btn:hover:not(.unit-toggle__btn--active) {
-    color: #111111;
-  }
-
-  .unit-toggle__btn:active {
-    transform: scale(0.96);
-  }
-
-  .unit-toggle__btn--active {
-    background-color: #FFFFFF;
-    color: #111111;
-    font-weight: 600;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  }
-
-  /* Table Panels */
-  .size-guide-panel {
-    display: none;
-  }
-
-  .size-guide-panel--active {
-    display: flex;
-    flex-direction: column;
-    gap: 0.875rem;
-  }
-
-  .size-guide-table-wrap {
+  .sg__table {
     width: 100%;
-    overflow-x: hidden; /* No horizontal scroll */
-    border: 1px solid rgba(0, 0, 0, 0.07);
-    border-radius: 6px;
-    background-color: #FFFFFF;
-  }
-
-  .size-guide-table {
-    width: 100%;
-    table-layout: fixed;
     border-collapse: collapse;
-    font-family: var(--font-body);
-    text-align: center;
-  }
-
-  .size-guide-table th {
-    padding: 11px 6px;
-    font-size: 0.6875rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #111111;
-    background-color: #F8F8F8;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.07);
-  }
-
-  .size-guide-table td {
-    padding: 12px 6px;
-    font-size: 0.8125rem;
-    color: #111111;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  }
-
-  .size-guide-table tbody tr:last-child td {
-    border-bottom: none;
-  }
-
-  .size-guide-table .col-size {
-    width: 20%;
-    text-align: center;
-    background-color: rgba(0, 0, 0, 0.015);
-  }
-
-  .size-guide-table .col-size strong {
-    font-weight: 600;
-    color: #111111;
-  }
-
-  .size-val {
     font-variant-numeric: tabular-nums;
+  }
+
+  .sg__table th {
+    padding: 0 0.5rem 0.75rem 0;
+    text-align: left;
+    vertical-align: bottom;
+    font-size: var(--pdp-fs-small, 0.8125rem);
+    font-weight: 500;
+    color: var(--pdp-ink-3, #6b6b6b);
+  }
+
+  .sg__table thead th:first-child,
+  .sg__table tbody th {
+    width: 4.5rem;
+  }
+
+  .sg__table td {
+    padding: 0 0.5rem 0 0;
+    font-size: var(--pdp-fs-body, 0.9375rem);
+    color: var(--pdp-ink, #111);
+  }
+
+  .sg__row > * {
+    height: 3.5rem;
+    border-top: 1px solid var(--pdp-line, oklch(0 0 0 / 0.1));
+    transition: background-color 200ms var(--pdp-ease, ease);
+  }
+
+  .sg__row:last-child > * {
+    border-bottom: 1px solid var(--pdp-line, oklch(0 0 0 / 0.1));
+  }
+
+  .sg__row > :first-child {
+    padding-left: 0.75rem;
+  }
+
+  .sg__table thead th:first-child {
+    padding-left: 0.75rem;
+  }
+
+  .sg__table tbody th {
+    text-align: left;
     font-weight: 500;
   }
 
-  .size-unit {
-    font-size: 0.625rem;
-    color: #767676;
-    margin-left: 2px;
+  .sg__size {
+    font-family: var(--pdp-font-display, inherit);
+    font-size: 1.25rem;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+    color: var(--pdp-ink, #111);
   }
 
   @media (hover: hover) and (pointer: fine) {
-    .size-guide-table tbody tr:hover {
-      background-color: #FAFAFA;
+    .sg__row:hover > * {
+      background: var(--pdp-sunk, #f5f5f5);
     }
   }
 
-  /* Footer Note */
-  .size-guide-footer {
-    display: flex;
+  /* The size currently selected in the buy box */
+  .sg__row.is-yours > * {
+    background: var(--pdp-sunk, #f5f5f5);
+  }
+
+  .sg__row.is-yours > :first-child {
+    box-shadow: inset 2px 0 0 var(--pdp-ink, #111);
+  }
+
+  /* cm <-> in: the old number lifts out, the new one rises in, in the same cell */
+  .sg__num,
+  .sg__unit {
+    display: inline-grid;
+    overflow: hidden;
+    vertical-align: bottom;
+  }
+
+  .sg__num > span,
+  .sg__unit > span {
+    grid-area: 1 / 1;
+    transition:
+      transform 460ms var(--pdp-ease-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+      opacity 260ms var(--pdp-ease, ease);
+  }
+
+  .sg__unit {
+    margin-left: 0.25rem;
+    font-weight: 400;
+  }
+
+  .sg[data-unit='cm'] .sg__in {
+    transform: translateY(110%);
+    opacity: 0;
+  }
+
+  .sg[data-unit='in'] .sg__cm {
+    transform: translateY(-110%);
+    opacity: 0;
+  }
+
+  .sg__act {
+    width: 1%;
+    padding-right: 0 !important;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .sg__pick {
+    display: inline-flex;
     align-items: center;
-    gap: 0.45rem;
+    justify-content: center;
+    height: 2.25rem;
+    padding: 0 0.875rem;
+    border: 0;
+    background: transparent;
+    color: var(--pdp-ink, #111);
+    box-shadow: inset 0 0 0 1px var(--pdp-line-2, oklch(0 0 0 / 0.24));
+    font-family: var(--pdp-font, inherit);
+    font-size: var(--pdp-fs-small, 0.8125rem);
+    font-weight: 500;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      background-color 200ms var(--pdp-ease, ease),
+      color 200ms var(--pdp-ease, ease),
+      box-shadow 200ms var(--pdp-ease, ease),
+      transform 160ms var(--pdp-ease, ease);
   }
 
-  .size-guide-footer__dot {
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background-color: #767676;
-    flex-shrink: 0;
+  .sg__pick[hidden] {
+    display: none;
   }
 
-  .size-guide-footer__text {
-    margin: 0;
-    color: #666666;
-    font-size: 0.6875rem;
-    line-height: 1.4;
+  .sg__pick:active {
+    transform: scale(0.95);
   }
 
-  /* Mobile Native Bottom-Sheet Presentation (< 640px) */
-  @media (max-width: 639px) {
-    .size-guide-dialog {
-      width: 100vw;
-      max-width: 100vw;
-      margin: auto auto 0 auto;
-      border-radius: 16px 16px 0 0;
-      border-bottom: none;
-      border-left: none;
-      border-right: none;
-      max-height: 88vh;
-      animation: size-guide-sheet-up 240ms cubic-bezier(0.23, 1, 0.32, 1);
+  .sg__pick-icon {
+    display: none;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .sg__pick:hover {
+      background: var(--pdp-btn-bg, #111);
+      color: var(--pdp-btn-fg, #fff);
+      box-shadow: inset 0 0 0 1px var(--pdp-btn-bg, #111);
+    }
+  }
+
+  @media (max-width: 520px) {
+    .sg__pick {
+      width: 2.25rem;
+      padding: 0;
     }
 
-    @keyframes size-guide-sheet-up {
-      from { transform: translateY(100%); }
-      to { transform: translateY(0); }
-    }
-
-    .size-guide-dialog__drag-handle {
-      display: block;
-      width: 36px;
-      height: 4px;
-      background: rgba(0, 0, 0, 0.2);
-      border-radius: 9999px;
-      margin: 0 auto 0.5rem auto;
-    }
-
-    .size-guide-dialog__content {
-      padding: 1rem 1rem 1.75rem 1rem;
-      gap: 1rem;
-    }
-
-    .size-guide-dialog__toolbar {
-      gap: 0.5rem;
-    }
-
-    .size-guide-tab {
-      padding: 5px 9px;
-      font-size: 0.6875rem;
-    }
-
-    .unit-toggle__btn {
-      padding: 4px 10px;
-      font-size: 0.625rem;
-    }
-
-    .size-guide-table th {
-      padding: 9px 3px;
-      font-size: 0.625rem;
-      letter-spacing: 0.04em;
-    }
-
-    .size-guide-table td {
-      padding: 10px 3px;
-      font-size: 0.75rem;
-    }
-
-    /* Hide redundant unit letters on tiny screens to guarantee 0 horizontal scroll */
-    .size-unit {
+    .sg__pick-text {
       display: none;
+    }
+
+    .sg__pick-icon {
+      display: block;
+    }
+
+    .sg__table th,
+    .sg__table td {
+      padding-right: 0.25rem;
+    }
+
+    .sg__table td {
+      font-size: var(--pdp-fs-ui, 0.875rem);
+    }
+  }
+
+  .sg__note {
+    max-width: 46ch;
+    margin: 1.25rem 0 0;
+    font-size: var(--pdp-fs-small, 0.8125rem);
+    line-height: 1.55;
+    color: var(--pdp-ink-2, #555);
+    text-wrap: pretty;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sg,
+    .sg::backdrop,
+    .sg__sheet,
+    .sg__seg-ind,
+    .sg__num > span,
+    .sg__unit > span {
+      transition-duration: 0.01ms;
     }
   }
 </style>
 
 <script>
-  (function() {
+  (function () {
     const dialog = document.getElementById('SizeGuideDialog');
     if (!dialog) return;
 
-    // Unit toggle logic (CM / IN) with Apple Segmented Control
-    const unitBtns = dialog.querySelectorAll('.unit-toggle__btn');
-    unitBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        unitBtns.forEach(b => b.classList.remove('unit-toggle__btn--active'));
-        btn.classList.add('unit-toggle__btn--active');
-        const unit = btn.dataset.unit;
-        dialog.querySelectorAll('[data-cm]').forEach(td => {
-          if (unit === 'in') {
-            td.innerHTML = `<span class="size-val">${td.dataset.in}</span><span class="size-unit">"</span>`;
-          } else {
-            td.innerHTML = `<span class="size-val">${td.dataset.cm}</span><span class="size-unit">cm</span>`;
-          }
+    const sheet = dialog.querySelector('[data-sg-sheet]');
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const mobile = window.matchMedia('(max-width: 989px)');
+    const tabs = [...dialog.querySelectorAll('[role="tab"]')];
+    const panels = [...dialog.querySelectorAll('.sg__panel')];
+    const unitBtns = [...dialog.querySelectorAll('[data-unit-btn]')];
+    const segs = [...dialog.querySelectorAll('[data-seg]')];
+
+    let productCat = '';
+    let yours = [];
+
+    /* ------------------------------------------------------- sliding thumbs */
+    function moveThumb(seg, still) {
+      const ind = seg.querySelector('.sg__seg-ind');
+      const on = seg.querySelector('[aria-selected="true"], [aria-checked="true"]');
+      if (!ind || !on) return;
+      if (still) ind.classList.add('is-still');
+      ind.style.width = on.offsetWidth + 'px';
+      ind.style.transform = 'translateX(' + on.offsetLeft + 'px)';
+      if (still) {
+        void ind.offsetWidth;
+        ind.classList.remove('is-still');
+      }
+    }
+
+    function moveAllThumbs(still) {
+      segs.forEach((s) => moveThumb(s, still));
+    }
+
+    /* ----------------------------------------------------------- categories */
+    function setCategory(key, animate) {
+      const target = panels.find((p) => p.dataset.panel === key) || panels[0];
+      if (!target) return;
+      tabs.forEach((t) => {
+        const on = t.dataset.tab === target.dataset.panel;
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+        t.tabIndex = on ? 0 : -1;
+      });
+      panels.forEach((p) => { p.hidden = p !== target; });
+      if (animate && !reduce.matches && target.animate) {
+        target.animate(
+          [{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'translateY(0)' }],
+          { duration: 380, easing: 'cubic-bezier(0.23, 1, 0.32, 1)' }
+        );
+      }
+      moveThumb(tabs[0].parentElement, false);
+      refreshRows();
+    }
+
+    /* ---------------------------------------------------------------- units */
+    function setUnit(unit) {
+      dialog.dataset.unit = unit;
+      unitBtns.forEach((b) => {
+        const on = b.dataset.unitBtn === unit;
+        b.setAttribute('aria-checked', on ? 'true' : 'false');
+        b.tabIndex = on ? 0 : -1;
+      });
+      dialog.querySelectorAll('.sg__in').forEach((el) => el.setAttribute('aria-hidden', unit === 'in' ? 'false' : 'true'));
+      dialog.querySelectorAll('.sg__num .sg__cm').forEach((el) => el.setAttribute('aria-hidden', unit === 'cm' ? 'false' : 'true'));
+      moveThumb(unitBtns[0].parentElement, false);
+    }
+
+    /* Arrow keys inside a segmented control */
+    function arrowNav(buttons, activate) {
+      buttons.forEach((btn) => {
+        btn.addEventListener('keydown', (e) => {
+          if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+          e.preventDefault();
+          const step = e.key === 'ArrowRight' ? 1 : -1;
+          const next = buttons[(buttons.indexOf(btn) + step + buttons.length) % buttons.length];
+          next.focus();
+          activate(next);
         });
+      });
+    }
+
+    tabs.forEach((t) => t.addEventListener('click', () => setCategory(t.dataset.tab, true)));
+    unitBtns.forEach((b) => b.addEventListener('click', () => setUnit(b.dataset.unitBtn)));
+    arrowNav(tabs, (t) => setCategory(t.dataset.tab, true));
+    arrowNav(unitBtns, (b) => setUnit(b.dataset.unitBtn));
+
+    /* ------------------------------------- rows: "your size" + select buttons */
+    function findCell(keys) {
+      return [...document.querySelectorAll('.pdp-size')].find((c) =>
+        keys.some((k) => k === String(c.dataset.optionValue).toUpperCase())
+      );
+    }
+
+    function refreshRows() {
+      panels.forEach((panel) => {
+        const isProductPanel = panel.dataset.panel === productCat;
+        panel.querySelectorAll('.sg__row').forEach((row) => {
+          const keys = row.dataset.keys.split('|').map((k) => k.toUpperCase());
+          row.classList.toggle('is-yours', isProductPanel && keys.some((k) => yours.includes(k)));
+          const pick = row.querySelector('[data-sg-pick]');
+          if (!pick) return;
+          const cell = isProductPanel ? findCell(keys) : null;
+          pick.hidden = !cell || cell.classList.contains('is-sold-out');
+          pick._cell = cell || null;
+        });
+      });
+    }
+
+    dialog.querySelectorAll('[data-sg-pick]').forEach((pick) => {
+      pick.addEventListener('click', () => {
+        if (!pick._cell) return;
+        window.dispatchEvent(new CustomEvent('pdp:select-option', { detail: { value: pick._cell.dataset.optionValue } }));
+        window.setTimeout(() => dialog.close(), reduce.matches ? 0 : 240);
       });
     });
 
-    // Tab switcher (Hoodies / Shirts / Trousers)
-    const tabBtns = dialog.querySelectorAll('.size-guide-tab');
-    const panels = dialog.querySelectorAll('.size-guide-panel');
-    tabBtns.forEach(tab => {
-      tab.addEventListener('click', () => {
-        tabBtns.forEach(t => {
-          t.classList.remove('is-active');
-          t.setAttribute('aria-selected', 'false');
-        });
-        panels.forEach(p => {
-          p.classList.remove('size-guide-panel--active');
-          p.hidden = true;
-        });
-
-        tab.classList.add('is-active');
-        tab.setAttribute('aria-selected', 'true');
-        const panel = dialog.querySelector(`[data-panel="${tab.dataset.tab}"]`);
-        if (panel) {
-          panel.classList.add('size-guide-panel--active');
-          panel.hidden = false;
-        }
-      });
+    window.addEventListener('variant:change', (e) => {
+      const variant = e.detail && e.detail.variant;
+      yours = variant ? variant.options.map((o) => String(o).toUpperCase()) : [];
+      refreshRows();
     });
 
-    // Close on backdrop click
+    /* ------------------------------------------------------------ open / close */
+    function open(trigger) {
+      productCat = (trigger && trigger.dataset.sizeCategory) || productCat || (panels[0] && panels[0].dataset.panel);
+      setCategory(productCat, false);
+      setUnit(dialog.dataset.unit || 'cm');
+      if (!dialog.open) dialog.showModal();
+      moveAllThumbs(true);
+    }
+
     dialog.addEventListener('click', (e) => {
       if (e.target === dialog) dialog.close();
     });
 
-    // Close button
-    dialog.querySelectorAll('[data-close-size-guide]').forEach(b => {
+    dialog.querySelectorAll('[data-close-size-guide]').forEach((b) => {
       b.addEventListener('click', () => dialog.close());
     });
 
-    // Global trigger listener
     document.addEventListener('click', (e) => {
       const trigger = e.target.closest('[data-open-size-guide], [data-open-size-modal]');
-      if (trigger) {
-        e.preventDefault();
-        // If trigger specifies a tab, activate it
-        const preferredTab = trigger.dataset.sizeCategory;
-        if (preferredTab) {
-          const tabBtn = dialog.querySelector(`[data-tab="${preferredTab}"]`);
-          if (tabBtn) tabBtn.click();
-        }
-        dialog.showModal();
-      }
+      if (!trigger) return;
+      e.preventDefault();
+      open(trigger);
     });
+
+    /* ------------------------------------------- mobile: drag the sheet down */
+    dialog.querySelectorAll('[data-sg-grab]').forEach((handle) => {
+      let drag = null;
+
+      handle.addEventListener('pointerdown', (e) => {
+        if (!mobile.matches || e.target.closest('button')) return;
+        drag = { y: e.clientY, dy: 0, last: e.clientY, lastT: performance.now(), v: 0 };
+        handle.setPointerCapture(e.pointerId);
+        sheet.classList.add('is-dragging');
+      });
+
+      handle.addEventListener('pointermove', (e) => {
+        if (!drag) return;
+        const now = performance.now();
+        drag.dy = Math.max(0, e.clientY - drag.y);
+        drag.v = (e.clientY - drag.last) / Math.max(1, now - drag.lastT);
+        drag.last = e.clientY;
+        drag.lastT = now;
+        sheet.style.transform = 'translateY(' + drag.dy + 'px)';
+      });
+
+      const end = () => {
+        if (!drag) return;
+        const shouldClose = drag.dy > 110 || drag.v > 0.6;
+        drag = null;
+        sheet.classList.remove('is-dragging');
+        sheet.style.transform = '';
+        if (shouldClose) dialog.close();
+      };
+      handle.addEventListener('pointerup', end);
+      handle.addEventListener('pointercancel', end);
+    });
+
+    window.addEventListener('resize', () => { if (dialog.open) moveAllThumbs(true); }, { passive: true });
   })();
 </script>

@@ -1,9 +1,14 @@
 {% doc %}
-  Product Sticky Mobile Bar
-  - Appears on mobile (< 990px) once the main Add to bag button scrolls out of view
-  - Mirrors the buy box through the `pdp:state` and `variant:change` events
-  - Safe-area aware; hides itself while a dialog or the cart drawer is open
-  - With no size chosen, the tap brings the size ruler into view and flags it
+  Product Dock (mobile, < 990px)
+
+  Pinned to the bottom once the main "Add to bag" button has scrolled away.
+  - With no size chosen, the CTA opens a size row inside the dock. Pick, and the row folds away
+    and the button becomes "Add to bag". The buyer never has to scroll back up.
+  - Mirrors the buy box through `pdp:state` and `variant:change`.
+  - Sends the choice back through `pdp:select-option`; submits through `pdp:sticky-add`.
+  - Products with more than one non-colour option skip the size row and fall back to the old behaviour
+    (the tap scrolls the buy box to the ruler and flags it).
+  - Safe-area aware. Hides itself while a dialog or the cart drawer is open.
 
   @param {product} product - The product object
   @param {section} section - The parent section
@@ -11,125 +16,283 @@
 
 {% capture sticky_price_formatted %}{% render 'money', price: product.price %}{% endcapture %}
 {%- liquid
-  assign sticky_only_default = false
+  assign dock_default = false
   if product.has_only_default_variant or product.variants.size == 1
-    assign sticky_only_default = true
+    assign dock_default = true
+  endif
+
+  assign visible_count = 0
+  assign dock_index = -1
+  for option in product.options_with_values
+    assign opt_lc = option.name | downcase
+    unless opt_lc contains 'color' or opt_lc contains 'colour'
+      assign visible_count = visible_count | plus: 1
+      assign dock_index = forloop.index0
+      assign dock_option = option
+    endunless
+  endfor
+
+  assign dock_chips = false
+  if visible_count == 1 and dock_default == false
+    assign dock_chips = true
+  endif
+
+  assign dock_cols = dock_option.values.size
+  if dock_cols > 5
+    assign dock_cols = 5
+  endif
+
+  assign type_lc = product.type | downcase
+  assign dock_cat = 'hoodies'
+  if type_lc contains 'shirt' or type_lc contains 'tee'
+    assign dock_cat = 'shirts'
+  elsif type_lc contains 'trouser' or type_lc contains 'pant' or type_lc contains 'jogger'
+    assign dock_cat = 'trousers'
   endif
 -%}
 
-<div class="product-sticky-bar" id="ProductStickyBar-{{ section.id }}" data-sticky-bar role="region" aria-label="Quick add">
-  <div class="product-sticky-bar__container">
-    <div class="product-sticky-bar__product">
-      <div class="product-sticky-bar__media">
-        {%- if product.featured_image -%}
-          {{
-            product.featured_image
-            | image_url: width: 120
-            | image_tag:
-              loading: 'lazy',
-              alt: '',
-              class: 'product-sticky-bar__img',
-              width: 48,
-              height: 64
-          }}
-        {%- endif -%}
-      </div>
+<div class="pdp-dock" id="ProductStickyBar-{{ section.id }}" data-sticky-bar role="region" aria-label="Quick add">
+  {%- if dock_chips -%}
+    <div class="pdp-dock__sizes" id="DockSizes-{{ section.id }}" data-dock-sizes inert>
+      <div class="pdp-dock__sizes-clip">
+        <div class="pdp-dock__sizes-head">
+          <span class="pdp-dock__sizes-label">{{ dock_option.name }}</span>
+          {%- if dock_option.name contains 'ize' -%}
+            <button type="button" class="pdp-link" data-open-size-guide data-size-category="{{ dock_cat }}" aria-haspopup="dialog">Size guide</button>
+          {%- endif -%}
+        </div>
 
-      <div class="product-sticky-bar__meta">
-        <span class="product-sticky-bar__title">{{ product.title }}</span>
-        <span class="product-sticky-bar__sub">
-          <span class="product-sticky-bar__price" data-sticky-price>{{ sticky_price_formatted | strip }}</span>
-          <span class="product-sticky-bar__size-label" data-sticky-size-label>{% unless sticky_only_default %}Select a size{% endunless %}</span>
-        </span>
+        <div class="pdp-dock__chips" role="radiogroup" aria-label="{{ dock_option.name }}" data-dock-chips style="--cols:{{ dock_cols }}">
+          {%- for value in dock_option.values -%}
+            {%- liquid
+              assign chip_ok = false
+              for variant in product.variants
+                if variant.options[dock_index] == value and variant.available
+                  assign chip_ok = true
+                  break
+                endif
+              endfor
+            -%}
+            <button
+              type="button"
+              role="radio"
+              aria-checked="false"
+              class="pdp-dock__chip{% unless chip_ok %} is-sold-out{% endunless %}"
+              data-dock-chip
+              data-index="{{ dock_index }}"
+              data-value="{{ value | escape }}"
+              {% unless chip_ok %}aria-disabled="true" aria-label="{{ value | escape }}, sold out"{% endunless %}
+            >{{ value }}</button>
+          {%- endfor -%}
+        </div>
       </div>
+    </div>
+  {%- endif -%}
+
+  <div class="pdp-dock__row">
+    <div class="pdp-dock__thumb">
+      {%- if product.featured_image -%}
+        {{
+          product.featured_image
+          | image_url: width: 120
+          | image_tag:
+            loading: 'lazy',
+            alt: '',
+            class: 'pdp-dock__img',
+            width: 40,
+            height: 52
+        }}
+      {%- endif -%}
+    </div>
+
+    <div class="pdp-dock__meta">
+      <span class="pdp-dock__title">{{ product.title }}</span>
+      <span class="pdp-dock__sub">
+        <span class="pdp-dock__price" data-sticky-price>{{ sticky_price_formatted | strip }}</span>
+        {%- if dock_chips -%}
+          <button
+            type="button"
+            class="pdp-dock__size"
+            data-dock-toggle
+            aria-expanded="false"
+            aria-controls="DockSizes-{{ section.id }}"
+          >
+            <span data-sticky-size-label>Select a size</span>
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
+              <path d="M2 6.5L5 3.5l3 3" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        {%- elsif dock_default == false -%}
+          <span class="pdp-dock__size-text" data-sticky-size-label>Select a size</span>
+        {%- endif -%}
+      </span>
     </div>
 
     <button
       type="button"
-      class="product-sticky-bar__cta"
+      class="pdp-dock__cta"
       id="ProductStickyCta-{{ section.id }}"
       data-sticky-cta
-      data-state="{% if sticky_only_default %}ready{% else %}needs-size{% endif %}"
+      data-state="{% if dock_default %}ready{% else %}needs-size{% endif %}"
     >
-      <span data-sticky-btn-text>{% if sticky_only_default %}Add to bag{% else %}Select a size{% endif %}</span>
+      <span data-sticky-btn-text>{% if dock_default %}Add to bag{% else %}Select a size{% endif %}</span>
     </button>
   </div>
 </div>
 
 <style>
-  .product-sticky-bar {
+  .pdp-dock {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
     z-index: 85;
-    padding: 0.75rem var(--page-margin, 1rem) max(0.75rem, env(safe-area-inset-bottom, 0px));
-    background: rgb(255 255 255 / 0.82);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    backdrop-filter: blur(20px) saturate(180%);
-    border-top: 1px solid oklch(0 0 0 / 0.08);
+    padding: 0 var(--page-margin, 1rem) max(0.75rem, env(safe-area-inset-bottom, 0px));
+    background: var(--pdp-paper, #fff);
+    border-top: 1px solid var(--pdp-line, oklch(0 0 0 / 0.1));
     transform: translateY(100%);
     opacity: 0;
     pointer-events: none;
     transition:
-      transform 320ms var(--ease-drawer),
-      opacity 200ms var(--ease-out);
+      transform 480ms var(--pdp-ease-expo, cubic-bezier(0.16, 1, 0.3, 1)),
+      opacity 200ms var(--pdp-ease, ease);
   }
 
-  .product-sticky-bar.is-visible {
+  .pdp-dock.is-visible {
     transform: translateY(0);
     opacity: 1;
     pointer-events: auto;
   }
 
   @media (min-width: 990px) {
-    .product-sticky-bar {
+    .pdp-dock {
       display: none !important;
     }
   }
 
-  body:has(dialog[open]) .product-sticky-bar,
-  body:has(cart-drawer.is-open) .product-sticky-bar,
-  .product-sticky-bar.is-hidden {
+  body:has(dialog[open]) .pdp-dock,
+  body:has(cart-drawer.is-open) .pdp-dock,
+  .pdp-dock.is-hidden {
     transform: translateY(100%) !important;
     opacity: 0 !important;
     pointer-events: none !important;
   }
 
-  @media (prefers-reduced-transparency: reduce) {
-    .product-sticky-bar {
-      background: var(--color-background, #fff);
-      -webkit-backdrop-filter: none;
-      backdrop-filter: none;
-    }
+  /* ---- size row: folds open with a grid-rows transition, so no height maths */
+  .pdp-dock__sizes {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 460ms var(--pdp-ease-expo, cubic-bezier(0.16, 1, 0.3, 1));
   }
 
-  .product-sticky-bar__container {
+  .pdp-dock.is-open .pdp-dock__sizes {
+    grid-template-rows: 1fr;
+  }
+
+  .pdp-dock__sizes-clip {
+    min-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: opacity 240ms var(--pdp-ease, ease);
+  }
+
+  .pdp-dock.is-open .pdp-dock__sizes-clip {
+    opacity: 1;
+    transition-delay: 80ms;
+  }
+
+  .pdp-dock__sizes-head {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 0.75rem;
+    padding-top: var(--s-3, 0.75rem);
+    font-family: var(--pdp-font);
+    font-size: var(--pdp-fs-ui, 0.875rem);
+    font-weight: 600;
+    color: var(--pdp-ink, #111);
+  }
+
+  .pdp-dock__sizes-head .pdp-link {
+    min-height: 36px;
+  }
+
+  .pdp-dock__chips {
+    display: grid;
+    grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr));
+    gap: 6px;
+    padding: var(--s-2, 0.5rem) 0 var(--s-3, 0.75rem);
+  }
+
+  .pdp-dock__chip {
+    position: relative;
+    height: 2.75rem;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--pdp-line-2, oklch(0 0 0 / 0.24));
+    color: var(--pdp-ink, #111);
+    font-family: var(--pdp-font);
+    font-size: var(--pdp-fs-ui, 0.875rem);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      background-color 200ms var(--pdp-ease, ease),
+      color 200ms var(--pdp-ease, ease),
+      box-shadow 200ms var(--pdp-ease, ease),
+      transform 160ms var(--pdp-ease, ease);
+  }
+
+  .pdp-dock__chip:active:not(.is-sold-out) {
+    transform: scale(0.95);
+  }
+
+  .pdp-dock__chip.is-selected {
+    background: var(--pdp-btn-bg, #111);
+    color: var(--pdp-btn-fg, #fff);
+    box-shadow: inset 0 0 0 1px var(--pdp-btn-bg, #111);
+  }
+
+  .pdp-dock__chip.is-sold-out {
+    color: var(--pdp-ink-3, #6b6b6b);
+    box-shadow: inset 0 0 0 1px var(--pdp-line, oklch(0 0 0 / 0.1));
+    text-decoration: line-through;
+    text-decoration-thickness: 1px;
+    cursor: not-allowed;
+  }
+
+  .pdp-dock__chips.has-error .pdp-dock__chip:not(.is-sold-out):not(.is-selected) {
+    box-shadow: inset 0 0 0 1px var(--pdp-sale, #991b1b);
+  }
+
+  .pdp-dock__chips.has-error {
+    animation: pdp-nudge 340ms var(--pdp-ease, ease);
+  }
+
+  /* ---- main row */
+  .pdp-dock__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--s-3, 0.75rem);
+    padding-top: var(--s-3, 0.75rem);
     max-width: var(--container-max, 1440px);
     margin: 0 auto;
   }
 
-  .product-sticky-bar__product {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    min-width: 0;
-  }
-
-  .product-sticky-bar__media {
+  .pdp-dock__thumb {
     position: relative;
     flex-shrink: 0;
     width: 40px;
     height: 52px;
     overflow: hidden;
-    background: var(--color-surface, #f5f5f5);
+    background: var(--pdp-sunk, #f5f5f5);
   }
 
-  .product-sticky-bar__media::after {
+  .pdp-dock__thumb::after {
     content: '';
     position: absolute;
     inset: 0;
@@ -137,168 +300,279 @@
     outline-offset: -1px;
   }
 
-  .product-sticky-bar__img {
+  .pdp-dock__img {
     display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
 
-  .product-sticky-bar__meta {
+  .pdp-dock__meta {
     display: flex;
+    flex: 1;
     flex-direction: column;
     gap: 2px;
     min-width: 0;
   }
 
-  .product-sticky-bar__title {
+  .pdp-dock__title {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    font-size: 0.875rem;
+    font-family: var(--pdp-font);
+    font-size: var(--pdp-fs-ui, 0.875rem);
     font-weight: 500;
     letter-spacing: -0.005em;
-    color: var(--color-text, #111);
+    color: var(--pdp-ink, #111);
   }
 
-  .product-sticky-bar__sub {
+  .pdp-dock__sub {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 0.8125rem;
+    gap: var(--s-2, 0.5rem);
+    font-family: var(--pdp-font);
+    font-size: var(--pdp-fs-small, 0.8125rem);
     font-variant-numeric: tabular-nums;
-    color: var(--color-text-muted, #555);
+    color: var(--pdp-ink-2, #555);
   }
 
-  .product-sticky-bar__price {
+  .pdp-dock__price {
     font-weight: 500;
-    color: var(--color-text, #111);
+    color: var(--pdp-ink, #111);
   }
 
-  .product-sticky-bar__size-label:not(:empty)::before {
+  .pdp-dock__size,
+  .pdp-dock__size-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+  }
+
+  .pdp-dock__size {
+    min-height: 28px;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .pdp-dock__size::before,
+  .pdp-dock__size-text::before {
     content: '';
-    display: inline-block;
     width: 1px;
     height: 0.75em;
-    margin-right: 0.5rem;
     background: currentColor;
     opacity: 0.4;
   }
 
-  .product-sticky-bar__cta {
+  .pdp-dock__size svg {
+    transition: transform 320ms var(--pdp-ease, ease);
+    transform: rotate(180deg);
+  }
+
+  .pdp-dock.is-open .pdp-dock__size svg {
+    transform: rotate(0deg);
+  }
+
+  .pdp-dock__cta {
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     min-width: 9.5rem;
     min-height: 3rem;
-    padding: 0 1.25rem;
+    padding: 0 var(--s-5, 1.5rem);
     border: 0;
-    background: var(--color-btn-bg, #111);
-    color: var(--color-btn-text, #fff);
-    box-shadow: inset 0 0 0 1px var(--color-btn-bg, #111);
-    font-family: var(--font-body);
-    font-size: 0.875rem;
+    background: var(--pdp-btn-bg, #111);
+    color: var(--pdp-btn-fg, #fff);
+    box-shadow: inset 0 0 0 1px var(--pdp-btn-bg, #111);
+    font-family: var(--pdp-font);
+    font-size: var(--pdp-fs-ui, 0.875rem);
     font-weight: 500;
     cursor: pointer;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
     transition:
-      background-color 200ms var(--ease-out),
-      color 200ms var(--ease-out),
-      box-shadow 200ms var(--ease-out),
-      transform 160ms var(--ease-out);
+      background-color 220ms var(--pdp-ease, ease),
+      color 220ms var(--pdp-ease, ease),
+      box-shadow 220ms var(--pdp-ease, ease),
+      transform 160ms var(--pdp-ease, ease);
   }
 
-  .product-sticky-bar__cta:active {
+  .pdp-dock__cta:active {
     transform: scale(0.97);
   }
 
-  .product-sticky-bar__cta[data-state='needs-size'] {
-    background: var(--color-background, #fff);
-    color: var(--color-text, #111);
+  .pdp-dock__cta[data-state='needs-size'] {
+    background: var(--pdp-paper, #fff);
+    color: var(--pdp-ink, #111);
+    box-shadow: inset 0 0 0 1px var(--pdp-line-2, oklch(0 0 0 / 0.24));
   }
 
-  .product-sticky-bar__cta[data-state='sold-out'] {
-    background: var(--color-surface, #f5f5f5);
-    color: var(--color-text-subtle, #6b6b6b);
-    box-shadow: inset 0 0 0 1px oklch(0 0 0 / 0.1);
+  .pdp-dock__cta[data-state='sold-out'] {
+    background: var(--pdp-sunk, #f5f5f5);
+    color: var(--pdp-ink-3, #6b6b6b);
+    box-shadow: inset 0 0 0 1px var(--pdp-line, oklch(0 0 0 / 0.1));
   }
 
-  .product-sticky-bar__cta[data-state='done'] {
-    background: var(--color-in-stock, #166534);
-    box-shadow: inset 0 0 0 1px var(--color-in-stock, #166534);
+  .pdp-dock__cta[data-state='done'] {
+    background: var(--pdp-ok, #166534);
+    box-shadow: inset 0 0 0 1px var(--pdp-ok, #166534);
   }
 
-  .product-sticky-bar__cta[data-state='loading'] {
+  .pdp-dock__cta[data-state='loading'] {
     opacity: 0.7;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .product-sticky-bar {
+    .pdp-dock {
       transition-property: opacity;
+    }
+
+    .pdp-dock__sizes,
+    .pdp-dock__sizes-clip {
+      transition-duration: 0.01ms;
+    }
+
+    .pdp-dock__chips.has-error {
+      animation: none;
     }
   }
 </style>
 
 <script>
   (function () {
-    const stickyBar = document.getElementById('ProductStickyBar-{{ section.id }}');
-    if (!stickyBar) return;
+    const dock = document.getElementById('ProductStickyBar-{{ section.id }}');
+    if (!dock) return;
 
-    const stickyCta = document.getElementById('ProductStickyCta-{{ section.id }}');
-    const stickyBtnText = stickyBar.querySelector('[data-sticky-btn-text]');
-    const stickyPrice = stickyBar.querySelector('[data-sticky-price]');
-    const stickySizeLabel = stickyBar.querySelector('[data-sticky-size-label]');
-    const mainAddToCartBtn = document.getElementById('AddToCartBtn-{{ section.id }}');
+    const cta = dock.querySelector('[data-sticky-cta]');
+    const ctaText = dock.querySelector('[data-sticky-btn-text]');
+    const priceEl = dock.querySelector('[data-sticky-price]');
+    const sizeLabel = dock.querySelector('[data-sticky-size-label]');
+    const sizesEl = dock.querySelector('[data-dock-sizes]');
+    const chipsEl = dock.querySelector('[data-dock-chips]');
+    const toggle = dock.querySelector('[data-dock-toggle]');
+    const chips = [...dock.querySelectorAll('[data-dock-chip]')];
+    const mainCta = document.getElementById('AddToCartBtn-{{ section.id }}');
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-    let state = '{% if sticky_only_default %}ready{% else %}needs-size{% endif %}';
+    let state = '{% if dock_default %}ready{% else %}needs-size{% endif %}';
     let isPastButton = false;
+    let open = false;
+    let closeTimer = 0;
 
-    function updateStickyVisibility() {
-      stickyBar.classList.toggle('is-visible', isPastButton && window.scrollY >= 300);
+    function setOpen(next) {
+      open = !!next && chips.length > 0;
+      dock.classList.toggle('is-open', open);
+      if (sizesEl) sizesEl.inert = !open;
+      if (toggle) toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
     }
 
-    /* Show the bar only after the main button has left the top of the viewport */
-    if (mainAddToCartBtn && 'IntersectionObserver' in window) {
+    function swap(el, text) {
+      if (!el || el.textContent === text) return;
+      if (reduce.matches || !el.animate) {
+        el.textContent = text;
+        return;
+      }
+      el.textContent = text;
+      el.animate(
+        [{ opacity: 0, transform: 'translateY(35%)' }, { opacity: 1, transform: 'translateY(0)' }],
+        { duration: 240, easing: 'cubic-bezier(0.23, 1, 0.32, 1)' }
+      );
+    }
+
+    function updateVisibility() {
+      dock.classList.toggle('is-visible', isPastButton && window.scrollY >= 300);
+      if (!dock.classList.contains('is-visible') && open) setOpen(false);
+    }
+
+    /* Show the dock only after the main button has left the top of the viewport */
+    if (mainCta && 'IntersectionObserver' in window) {
       new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
             isPastButton = !(entry.isIntersecting || entry.boundingClientRect.top > 0);
-            updateStickyVisibility();
+            updateVisibility();
           });
         },
         { threshold: 0 }
-      ).observe(mainAddToCartBtn);
+      ).observe(mainCta);
     } else {
       window.addEventListener('scroll', () => {
         isPastButton = window.scrollY > 450;
-        updateStickyVisibility();
+        updateVisibility();
       }, { passive: true });
     }
-    window.addEventListener('scroll', updateStickyVisibility, { passive: true });
+    window.addEventListener('scroll', updateVisibility, { passive: true });
 
     /* Mirror the buy box's single CTA state */
     window.addEventListener('pdp:state', (e) => {
       const detail = e.detail || {};
       state = detail.state || state;
-      if (stickyCta) stickyCta.dataset.state = state;
-      if (stickyBtnText && detail.label) stickyBtnText.textContent = detail.label;
-      if (stickyPrice && typeof detail.cents === 'number') {
-        stickyPrice.textContent = 'Rs. ' + (detail.cents / 100).toLocaleString('en-PK', { maximumFractionDigits: 0 });
+      if (cta) cta.dataset.state = state;
+      if (detail.label) swap(ctaText, detail.label);
+      if (priceEl && typeof detail.cents === 'number') {
+        priceEl.textContent = 'Rs. ' + (detail.cents / 100).toLocaleString('en-PK', { maximumFractionDigits: 0 });
       }
     });
 
     window.addEventListener('variant:change', (e) => {
       const variant = e.detail && e.detail.variant;
-      if (variant && stickySizeLabel) stickySizeLabel.textContent = variant.title;
+      if (!variant) return;
+      if (sizeLabel) sizeLabel.textContent = variant.title;
+      chips.forEach((chip) => {
+        const on = String(variant.options[chip.dataset.index]).toUpperCase() === chip.dataset.value.toUpperCase();
+        chip.classList.toggle('is-selected', on);
+        chip.setAttribute('aria-checked', on ? 'true' : 'false');
+      });
     });
 
-    if (stickyCta) {
-      stickyCta.addEventListener('click', () => {
-        // Same path as the main button: validation, scrolling and the nudge live in one place.
+    chips.forEach((chip) => {
+      chip.addEventListener('click', () => {
+        if (chip.classList.contains('is-sold-out')) return;
+        window.dispatchEvent(new CustomEvent('pdp:select-option', {
+          detail: { index: parseInt(chip.dataset.index, 10), value: chip.dataset.value }
+        }));
+        clearTimeout(closeTimer);
+        closeTimer = setTimeout(() => setOpen(false), reduce.matches ? 0 : 300);
+      });
+    });
+
+    if (toggle) toggle.addEventListener('click', () => setOpen(!open));
+
+    function nudge() {
+      if (!chipsEl) return;
+      chipsEl.classList.remove('has-error');
+      void chipsEl.offsetWidth;
+      chipsEl.classList.add('has-error');
+    }
+
+    if (cta) {
+      cta.addEventListener('click', () => {
+        // No size yet and the dock can offer sizes: open the row, or flag it if it is already open.
+        if (state === 'needs-size' && chips.length) {
+          if (!open) setOpen(true);
+          else nudge();
+          return;
+        }
+        // Otherwise same path as the main button: validation, scrolling and the nudge live in one place.
         window.dispatchEvent(new CustomEvent('pdp:sticky-add'));
       });
     }
+
+    document.addEventListener('pointerdown', (e) => {
+      if (open && !dock.contains(e.target)) setOpen(false);
+    });
+
+    dock.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && open) {
+        setOpen(false);
+        if (toggle) toggle.focus();
+      }
+    });
   })();
 </script>
