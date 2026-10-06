@@ -16,8 +16,8 @@
         "primary_button_link": "/collections/all?category=shirts",
         "secondary_button_label": "",
         "show_category_bar": false,
-        "show_scroll_indicator": false,
-        "footer_metadata": ""
+        "show_scroll_indicator": true,
+        "footer_metadata": "Cash on Delivery · Easy Exchange"
       }
     },
     "featured_collection": {

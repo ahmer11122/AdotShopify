@@ -1,7 +1,13 @@
 {% comment %}
-  Editorial hero. Every load: the photograph eases into place, then the
-  headline wipes up and the supporting type staggers in. As the next
-  section curtains over the pinned photo, the type fades with the scroll.
+  Editorial hero. Every load: the photograph opens like a camera aperture
+  while it settles, the headline rises word by word out of a mask, then the
+  supporting type staggers in.
+
+  Scrolling is the transition: the pinned photo pushes in and dims, the type
+  defocuses and drifts up, and the next section rises over it as a curved
+  curtain that flattens as it lands (see category-tiles.liquid).
+
+  Fine pointers get a slow photographic drift and a magnetic primary button.
   Reduced motion and the theme editor show the finished frame.
   Copy stays in settings.
 {% endcomment %}
@@ -105,16 +111,17 @@
       <!-- Layered Progressive Vignette & Atmosphere Overlays -->
       <div class="hero__overlay hero__overlay--vignette" aria-hidden="true"></div>
       <div class="hero__overlay hero__overlay--tint" aria-hidden="true"></div>
+      <div class="hero__overlay hero__overlay--shade" aria-hidden="true"></div>
     </div>
 
     <!-- ==========================================================================
-         2. Type layer. Scroll-linked fade lives on this wrapper so the
+         2. Type layer. Scroll-linked defocus lives on this wrapper so the
          headline, button, and meta leave together as the next section covers them.
          ========================================================================== -->
     <div class="hero__copy">
     <div class="hero__content-wrapper container">
       <div class="hero__content">
-        
+
         <!-- Season Eyebrow & Drop Info (Clean Luxury Fashion Typography) -->
         {% if section.settings.badge_label != blank or section.settings.eyebrow != blank %}
           <div class="hero__eyebrow-wrapper">
@@ -128,10 +135,14 @@
           </div>
         {% endif %}
 
-        <!-- Inter Tight Display Headline -->
+        <!-- Inter Tight Display Headline: every word rises out of its own mask -->
         {% if section.settings.heading != blank %}
           <h1 class="hero__heading hero-title">
-            {{ section.settings.heading }}
+            {%- assign hero_words = section.settings.heading | split: ' ' -%}
+            {%- for word in hero_words -%}
+              <span class="hero__word"><span class="hero__word-i" style="--i: {{ forloop.index0 }}">{{ word | escape }}</span></span>
+              {%- unless forloop.last %} {% endunless -%}
+            {%- endfor -%}
           </h1>
         {% endif %}
 
@@ -150,7 +161,7 @@
                 href="{{ section.settings.primary_button_link | default: routes.all_products_collection_url }}"
                 class="btn btn-hero-primary"
               >
-                <span>{{ section.settings.primary_button_label }}</span>
+                <span class="btn-hero__label">{{ section.settings.primary_button_label }}</span>
                 <svg class="btn-hero__arrow" width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                   <line x1="1" y1="7" x2="13" y2="7"></line>
                   <polyline points="8 2 13 7 8 12"></polyline>
@@ -178,7 +189,7 @@
     {% if section.settings.show_category_bar or section.settings.show_scroll_indicator or section.settings.footer_metadata != blank %}
       <div class="hero__bottom-bar">
         <div class="container hero__bottom-container">
-          
+
           <!-- Category Quick Access (Desktop bar / Mobile swipeable rail) -->
           {% if section.settings.show_category_bar %}
             <div class="hero__categories-hud" role="navigation" aria-label="Hero Category Shortcuts">
@@ -205,14 +216,11 @@
             </div>
           {% endif %}
 
-          <!-- Interactive Smooth Scroll Prompt -->
+          <!-- Scroll cue: a hairline with a light that travels down it -->
           {% if section.settings.show_scroll_indicator %}
-            <a href="#MainContent" class="hero__scroll-indicator" aria-label="Scroll to browse catalogue">
-              <span class="text-micro hero__scroll-text">Discover</span>
-              <svg class="hero__scroll-arrow" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <line x1="6" y1="1" x2="6" y2="11"></line>
-                <polyline points="2 7 6 11 10 7"></polyline>
-              </svg>
+            <a href="#MainContent" class="hero__scroll-indicator" data-hero-scroll aria-label="Scroll to browse catalogue">
+              <span class="hero__scroll-line" aria-hidden="true"></span>
+              <span class="text-micro hero__scroll-text">Scroll</span>
             </a>
           {% endif %}
 
@@ -240,8 +248,11 @@
     position: relative;
     width: 100%;
     margin-bottom: 0;
-    --hero-settle-from: 1.032;
-    --hero-recede: -8px;
+    /* The photo opens from a framed aperture while zooming out to its resting scale. */
+    --hero-aperture: 7svh 6vw;
+    --hero-settle-from: 1.16;
+    --hero-rest-scale: 1;
+    --hero-push: 1.14;
   }
 
   .hero--full {
@@ -303,20 +314,14 @@
     object-fit: cover;
     object-position: center;
     transform-origin: center center;
+    scale: var(--hero-rest-scale, 1);
     display: block;
-  }
-
-  @media (prefers-reduced-motion: no-preference) {
-    .hero[data-state="assemble"] .hero__image,
-    .hero[data-state="assemble"] .hero__video {
-      animation: heroSettle 2000ms var(--ease-in-out) both;
-    }
   }
 
   @media (min-width: 750px) {
     .hero {
-      --hero-settle-from: 1.058;
-      --hero-recede: -12px;
+      --hero-aperture: 12svh 22vw;
+      --hero-settle-from: 1.24;
     }
 
     .hero__image,
@@ -326,16 +331,21 @@
     }
   }
 
-  @media (min-width: 750px) and (prefers-reduced-motion: no-preference) {
-    .hero[data-state="assemble"] .hero__image,
-    .hero[data-state="assemble"] .hero__video {
-      animation-duration: 2600ms;
-    }
-  }
-
   @media (max-width: 749px) {
     .hero__image {
       object-position: center center;
+    }
+  }
+
+  /* Fine pointers get a slow photographic drift, so the photo rests slightly
+     oversized and never shows an edge while it moves. */
+  @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+    .hero {
+      --hero-rest-scale: 1.05;
+    }
+
+    .hero__picture {
+      transition: translate 1400ms var(--ease-out);
     }
   }
 
@@ -361,8 +371,15 @@
     background-color: rgba(21, 21, 21, var(--hero-overlay-opacity, 0.2));
   }
 
+  /* Dims the photograph as the next section rises over it. Scroll-driven only. */
+  .hero__overlay--shade {
+    z-index: 3;
+    background-color: var(--color-surface-dark);
+    opacity: 0;
+  }
+
   /* ==========================================================================
-     Content Layer & Typographic Hierarchy (better-typography & better-layout)
+     Content Layer & Typographic Hierarchy
      ========================================================================== */
   .hero__copy {
     position: relative;
@@ -448,7 +465,20 @@
     font-weight: 600;
   }
 
+  /* Each word owns a mask. The padding gives descenders and tall caps room so
+     the clip never shaves a glyph, and the negative margin hands it back. */
+  .hero__word {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: top;
+    padding-block: 0.08em 0.14em;
+    margin-block: -0.08em -0.14em;
+  }
 
+  .hero__word-i {
+    display: inline-block;
+    transform-origin: 0 100%;
+  }
 
   /* Subheading */
   .hero__subheading {
@@ -461,7 +491,7 @@
     text-wrap: pretty;
   }
 
-  /* Action Cluster & Tactile Buttons (better-ui & emil-design-eng) */
+  /* Action Cluster & Tactile Buttons */
   .hero__actions {
     display: flex;
     align-items: center;
@@ -471,6 +501,9 @@
   }
 
   .btn-hero-primary {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
     background-color: var(--color-white);
     color: var(--color-text);
     border: 1px solid var(--color-white);
@@ -489,11 +522,21 @@
     -webkit-user-select: none;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
-    transition: background-color var(--transition-fast),
-                color var(--transition-fast),
-                border-color var(--transition-fast),
-                transform 160ms var(--ease-out);
+    transition: color 220ms ease,
+                transform 160ms var(--ease-out),
+                translate 420ms var(--ease-out);
     min-height: 48px;
+  }
+
+  /* Ink fill: a dark panel wipes up behind the label. */
+  .btn-hero-primary::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-color: var(--color-surface-dark);
+    clip-path: inset(100% 0 0 0);
+    transition: clip-path 420ms var(--ease-out);
   }
 
   .btn-hero-primary:active {
@@ -502,10 +545,11 @@
 
   @media (hover: hover) and (pointer: fine) {
     .btn-hero-primary:hover {
-      background-color: var(--color-surface);
-      color: var(--color-text);
-      border-color: var(--color-surface);
+      color: var(--color-white);
       opacity: 1;
+    }
+    .btn-hero-primary:hover::before {
+      clip-path: inset(0 0 0 0);
     }
     .btn-hero-primary:hover .btn-hero__arrow {
       transform: translateX(4px);
@@ -513,7 +557,7 @@
   }
 
   .btn-hero__arrow {
-    transition: transform 160ms var(--ease-out);
+    transition: transform 200ms var(--ease-out);
   }
 
   .btn-hero-secondary {
@@ -558,18 +602,38 @@
   }
 
   /* ==========================================================================
-     Floating Bottom Category HUD (Desktop & Mobile Adaptive)
+     Floating Bottom HUD (Desktop & Mobile Adaptive)
      ========================================================================== */
   .hero__bottom-bar {
     position: relative;
     z-index: 5;
     width: 100%;
-    border-top: 1px solid rgba(255, 255, 255, 0.12);
-    background: linear-gradient(to top, rgba(18, 18, 18, 0.6) 0%, rgba(18, 18, 18, 0.15) 100%);
-    backdrop-filter: blur(20px) saturate(140%);
-    -webkit-backdrop-filter: blur(20px) saturate(140%);
-    padding-block: 0.85rem;
-    padding-bottom: max(0.85rem, env(safe-area-inset-bottom, 0px));
+    padding-block: 1rem;
+    padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Hairline that fades out at both ends instead of a boxed glass strip. */
+  .hero__bottom-bar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: var(--space-sm);
+    right: var(--space-sm);
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      rgba(255, 255, 255, 0.34),
+      rgba(255, 255, 255, 0.1) 60%,
+      rgba(255, 255, 255, 0)
+    );
+    transform-origin: left center;
+  }
+
+  @media (min-width: 750px) {
+    .hero__bottom-bar::before {
+      left: var(--space-md);
+      right: var(--space-md);
+    }
   }
 
   .hero__bottom-container {
@@ -644,13 +708,14 @@
   .hero__scroll-indicator {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    color: rgba(255, 255, 255, 0.75);
+    gap: 0.75rem;
+    min-height: 44px;
+    color: rgba(255, 255, 255, 0.78);
     text-decoration: none;
     user-select: none;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
-    transition: color var(--transition-fast);
+    transition: color var(--transition-fast), transform 160ms var(--ease-out);
   }
 
   @media (hover: hover) and (pointer: fine) {
@@ -664,63 +729,126 @@
     transform: scale(0.97);
   }
 
-  .hero__scroll-arrow {
-    animation: heroCue 2.6s var(--ease-in-out) infinite;
+  .hero__scroll-line {
+    position: relative;
+    display: block;
+    width: 1px;
+    height: 36px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.26);
+  }
+
+  .hero__scroll-line::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--color-white);
+    transform: translateY(-100%);
+    animation: heroLine 2.4s var(--ease-in-out) infinite;
   }
 
   .hero__meta-stamp {
-    color: rgba(255, 255, 255, 0.65);
+    color: rgba(255, 255, 255, 0.7);
     font-variant-numeric: tabular-nums;
     margin-inline-start: auto;
+    text-align: right;
   }
 
-  /* Every load: photo settles, headline wipes up, supporting type staggers. */
+  /* ==========================================================================
+     Load sequence: aperture opens, photo settles, headline rises word by word,
+     then the supporting type and HUD stagger in. Base styles stay finished, so
+     when the animations are gone the frame is already correct.
+     ========================================================================== */
   @media (prefers-reduced-motion: no-preference) {
+    .hero[data-state="assemble"] .hero__media {
+      animation: heroAperture 1500ms var(--ease-in-out) both;
+    }
+
+    .hero[data-state="assemble"] .hero__image,
+    .hero[data-state="assemble"] .hero__video {
+      animation: heroSettle 1900ms var(--ease-out) both;
+    }
+
+    .hero[data-state="assemble"] .hero__word-i {
+      animation: heroWord 1000ms var(--ease-out) both;
+      animation-delay: calc(620ms + var(--i, 0) * 70ms);
+    }
+
     .hero[data-state="assemble"] .hero__eyebrow-wrapper,
     .hero[data-state="assemble"] .hero__subheading,
     .hero[data-state="assemble"] .hero__actions,
-    .hero[data-state="assemble"] .hero__bottom-bar {
-      animation: heroFadeInUp 640ms var(--ease-out) both;
+    .hero[data-state="assemble"] .hero__bottom-container {
+      animation: heroFadeInUp 720ms var(--ease-out) both;
     }
 
-    .hero[data-state="assemble"] .hero__heading {
-      animation: heroMask 1100ms var(--ease-out) both;
+    .hero[data-state="assemble"] .hero__bottom-bar::before {
+      animation: heroHairline 1400ms var(--ease-out) 900ms both;
     }
 
-    .hero[data-state="assemble"] .hero__eyebrow-wrapper { animation-delay: 480ms; }
-    .hero[data-state="assemble"] .hero__heading { animation-delay: 560ms; }
-    .hero[data-state="assemble"] .hero__subheading { animation-delay: 640ms; }
-    .hero[data-state="assemble"] .hero__actions { animation-delay: 720ms; }
-    .hero[data-state="assemble"] .hero__bottom-bar { animation-delay: 800ms; }
+    .hero[data-state="assemble"] .hero__eyebrow-wrapper { animation-delay: 520ms; }
+    .hero[data-state="assemble"] .hero__subheading { animation-delay: 1000ms; }
+    .hero[data-state="assemble"] .hero__actions { animation-delay: 1120ms; }
+    .hero[data-state="assemble"] .hero__bottom-container { animation-delay: 1300ms; }
   }
 
-  /* Type yields as the next section curtains over the pinned photograph.
-     Linear because the scroll position is the timeline. */
+  /* ==========================================================================
+     Scroll is the transition. The next section curtains up over the pinned
+     photograph, so the hero answers: photo pushes in and dims, type defocuses
+     and drifts away. Linear, because the scroll position is the timeline.
+     ========================================================================== */
   @supports (animation-timeline: scroll()) {
-    .hero__copy {
-      animation: heroRecedeFade linear both;
-      animation-timeline: scroll(root);
-      animation-range: 5vh 16vh;
-    }
-  }
+    @media (prefers-reduced-motion: no-preference) {
+      .hero__picture {
+        animation: heroPush linear both;
+        animation-timeline: scroll(root);
+        animation-range: 0px 100svh;
+      }
 
-  @media (prefers-reduced-motion: no-preference) {
-    @supports (animation-timeline: scroll()) {
+      .hero__overlay--shade {
+        animation: heroShade linear both;
+        animation-timeline: scroll(root);
+        animation-range: 0px 100svh;
+      }
+
       .hero__copy {
-        animation-name: heroRecede;
+        animation: heroRecede linear both;
+        animation-timeline: scroll(root);
+        animation-range: 0px 58svh;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .hero__copy {
+        animation: heroRecedeFade linear both;
+        animation-timeline: scroll(root);
+        animation-range: 5svh 16svh;
       }
     }
   }
 
+  @keyframes heroAperture {
+    from { clip-path: inset(var(--hero-aperture)); }
+    to { clip-path: inset(0 0 0 0); }
+  }
+
   @keyframes heroSettle {
-    from { transform: scale(var(--hero-settle-from, 1.028)); }
-    to { transform: scale(1); }
+    from { scale: var(--hero-settle-from, 1.16); }
+    to { scale: var(--hero-rest-scale, 1); }
+  }
+
+  @keyframes heroWord {
+    from {
+      transform: translateY(112%) rotate(4deg);
+    }
+    to {
+      transform: translateY(0) rotate(0deg);
+    }
   }
 
   @keyframes heroFadeInUp {
     from {
       opacity: 0;
-      transform: translateY(8px);
+      transform: translateY(10px);
     }
     to {
       opacity: 1;
@@ -728,9 +856,33 @@
     }
   }
 
-  @keyframes heroMask {
-    from { clip-path: inset(100% 0 0 0); }
-    to { clip-path: inset(0 0 0 0); }
+  @keyframes heroHairline {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+  }
+
+  @keyframes heroPush {
+    to { scale: var(--hero-push, 1.14); }
+  }
+
+  @keyframes heroShade {
+    to { opacity: 0.62; }
+  }
+
+  @keyframes heroRecede {
+    0% {
+      opacity: 1;
+      transform: translateY(0);
+      filter: blur(0);
+      visibility: visible;
+    }
+    99% { visibility: visible; }
+    100% {
+      opacity: 0;
+      transform: translateY(-7svh);
+      filter: blur(8px);
+      visibility: hidden;
+    }
   }
 
   @keyframes heroRecedeFade {
@@ -739,33 +891,14 @@
     100% { opacity: 0; visibility: hidden; }
   }
 
-  @keyframes heroRecede {
-    0% {
-      opacity: 1;
-      transform: translateY(0);
-      visibility: visible;
-    }
-    99% { visibility: visible; }
-    100% {
-      opacity: 0;
-      transform: translateY(var(--hero-recede, -8px));
-      visibility: hidden;
-    }
-  }
-
-  @keyframes heroCue {
-    0%, 100% {
-      opacity: 0.5;
-      transform: translateY(0);
-    }
-    50% {
-      opacity: 1;
-      transform: translateY(3px);
-    }
+  @keyframes heroLine {
+    0% { transform: translateY(-100%); }
+    55% { transform: translateY(0); }
+    100% { transform: translateY(100%); }
   }
 
   /* ==========================================================================
-     Mobile & Tablet Responsive Optimizations (mobile-native skill)
+     Mobile & Tablet Responsive Optimizations
      ========================================================================== */
   @media (max-width: 749px) {
     .hero__overlay--vignette {
@@ -780,7 +913,7 @@
 
     .hero__content-wrapper {
       padding-top: calc(var(--header-height) + var(--space-md));
-      padding-bottom: max(var(--space-lg), calc(env(safe-area-inset-bottom, 0px) + var(--space-md)));
+      padding-bottom: var(--space-md);
     }
 
     .hero__content {
@@ -810,31 +943,32 @@
     .btn-hero-primary,
     .btn-hero-secondary {
       width: 100%;
+      justify-content: center;
       text-align: center;
       padding-block: 0.875rem;
     }
 
     .hero__bottom-bar {
-      padding-block: 0.65rem;
-      padding-bottom: max(0.65rem, env(safe-area-inset-bottom, 0px));
+      padding-block: 0.25rem;
+      padding-bottom: max(0.25rem, env(safe-area-inset-bottom, 0px));
     }
 
     .hero__bottom-container {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.5rem;
+      gap: var(--space-sm);
     }
 
     .hero__hud-label,
-    .hero__hud-sep,
-    .hero__scroll-indicator {
+    .hero__hud-sep {
       display: none;
+    }
+
+    .hero__scroll-line {
+      height: 28px;
     }
 
     .hero__meta-stamp {
       display: block;
-      width: 100%;
-      text-align: right;
+      font-size: 0.6875rem;
     }
 
     /* Swipeable category pill rail for mobile */
@@ -868,37 +1002,113 @@
     }
   }
 
+  /* Reduced motion keeps the finished frame, and drops every transform. */
   @media (prefers-reduced-motion: reduce) {
+    .hero__media,
     .hero__image,
     .hero__video,
+    .hero__word-i,
     .hero__eyebrow-wrapper,
-    .hero__heading,
     .hero__subheading,
     .hero__actions,
-    .hero__bottom-bar,
-    .hero__scroll-arrow {
+    .hero__bottom-container,
+    .hero__bottom-bar::before,
+    .hero__scroll-line::after {
       animation: none;
       clip-path: none;
       transform: none;
+    }
+
+    .hero__scroll-line::after {
+      transform: translateY(0);
+      opacity: 0.6;
+    }
+
+    .btn-hero-primary::before {
+      transition: none;
     }
   }
 {% endstylesheet %}
 
 {% javascript %}
   (function () {
-    if (!customElements.get('editorial-hero')) {
-      customElements.define(
-        'editorial-hero',
-        class extends HTMLElement {
-          connectedCallback() {
-            if (this.getAttribute('data-state') !== 'assemble') return;
-            this.addEventListener('animationend', (event) => {
-              if (event.animationName === 'heroSettle') this.setAttribute('data-state', 'settled');
-            });
+    if (customElements.get('editorial-hero')) return;
+
+    customElements.define(
+      'editorial-hero',
+      class extends HTMLElement {
+        connectedCallback() {
+          this.onScrollCue = this.onScrollCue.bind(this);
+          this.onMove = this.onMove.bind(this);
+          this.onLeave = this.onLeave.bind(this);
+          this.onButtonMove = this.onButtonMove.bind(this);
+          this.onButtonLeave = this.onButtonLeave.bind(this);
+
+          // The scroll cue always works, motion or not: it jumps to the next section.
+          this.cue = this.querySelector('[data-hero-scroll]');
+          if (this.cue) this.cue.addEventListener('click', this.onScrollCue);
+
+          const fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+          const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          const design = !!(window.Shopify && window.Shopify.designMode);
+          if (!fine || reduce || design) return;
+
+          // Slow photographic drift. Decorative, so it springs rather than tracks.
+          this.picture = this.querySelector('.hero__picture');
+          if (this.picture) {
+            this.addEventListener('pointermove', this.onMove, { passive: true });
+            this.addEventListener('pointerleave', this.onLeave, { passive: true });
+          }
+
+          // Magnetic primary button: it leans toward the pointer, a few pixels only.
+          this.button = this.querySelector('.btn-hero-primary');
+          if (this.button) {
+            this.button.addEventListener('pointermove', this.onButtonMove, { passive: true });
+            this.button.addEventListener('pointerleave', this.onButtonLeave, { passive: true });
           }
         }
-      );
-    }
+
+        disconnectedCallback() {
+          if (this.cue) this.cue.removeEventListener('click', this.onScrollCue);
+          this.removeEventListener('pointermove', this.onMove);
+          this.removeEventListener('pointerleave', this.onLeave);
+          if (this.button) {
+            this.button.removeEventListener('pointermove', this.onButtonMove);
+            this.button.removeEventListener('pointerleave', this.onButtonLeave);
+          }
+        }
+
+        onScrollCue(event) {
+          const wrapper = this.closest('.shopify-section');
+          const next = wrapper && wrapper.nextElementSibling;
+          if (!next) return;
+          event.preventDefault();
+          next.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        onMove(event) {
+          const x = (event.clientX / window.innerWidth - 0.5) * 2;
+          const y = (event.clientY / window.innerHeight - 0.5) * 2;
+          this.picture.style.translate = (x * -14).toFixed(1) + 'px ' + (y * -8).toFixed(1) + 'px';
+        }
+
+        onLeave() {
+          this.picture.style.translate = '';
+        }
+
+        onButtonMove(event) {
+          const rect = this.button.getBoundingClientRect();
+          const dx = event.clientX - (rect.left + rect.width / 2);
+          const dy = event.clientY - (rect.top + rect.height / 2);
+          const clamp = (v) => Math.max(-6, Math.min(6, v));
+          this.button.style.translate = clamp(dx * 0.14).toFixed(1) + 'px ' + clamp(dy * 0.2).toFixed(1) + 'px';
+        }
+
+        onButtonLeave() {
+          this.button.style.translate = '';
+        }
+      }
+    );
   })();
 {% endjavascript %}
 

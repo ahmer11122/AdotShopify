@@ -1,12 +1,19 @@
 {% comment %}
-  Editorial category showcase. The sheet itself is the scroll over the hero.
-  The heading wipes up once it has scrolled into the lower third, not
-  while it is still a sliver over the hero. Each garment settles the
-  same way, and on a phone each one waits until you reach it. Fine pointers get a
-  short lift. Reduced motion shows everything immediately.
+  Editorial category showcase. The sheet rises over the pinned hero as a
+  curved curtain that flattens as it lands (rule lives in this stylesheet).
+
+  Desktop: three tall cards on an editorial stagger. Each opens bottom-up
+  like a shutter, its photo settles from a zoom, and a cursor lens follows
+  the pointer across the grid. Neighbours dim while one is in focus.
+
+  Mobile: the cards stack like a deck. Each one pins under the header while
+  the next slides over it, and the card underneath steps back and dims.
+
+  Fine pointers get the lens and hover. Reduced motion shows everything
+  immediately. Copy stays in settings.
 {% endcomment %}
 
-<section class="category-tiles container" data-section-id="{{ section.id }}">
+<category-showcase class="category-tiles container" data-section-id="{{ section.id }}" data-cursor-label="Shop">
   {% # theme-check-disable ParserBlockingScript %}
   <script>
     (function (el) {
@@ -20,14 +27,26 @@
   {% # theme-check-enable ParserBlockingScript %}
   {% if section.settings.heading != blank %}
     <div class="category-tiles__header">
-      <h2 class="category-tiles__heading">{{ section.settings.heading }}</h2>
+      <p class="category-tiles__eyebrow text-micro">
+        {%- if section.settings.eyebrow != blank -%}
+          <span>{{ section.settings.eyebrow }}</span>
+        {%- endif -%}
+        <span class="category-tiles__count" aria-hidden="true">({{ section.blocks.size | prepend: '00' | slice: -2, 2 }})</span>
+      </p>
+      <h2 class="category-tiles__heading">
+        {%- assign heading_words = section.settings.heading | split: ' ' -%}
+        {%- for word in heading_words -%}
+          <span class="category-tiles__word"><span class="category-tiles__word-i" style="--i: {{ forloop.index0 }}">{{ word | escape }}</span></span>
+          {%- unless forloop.last %} {% endunless -%}
+        {%- endfor -%}
+      </h2>
     </div>
   {% endif %}
 
   <div class="category-tiles__track" role="region" aria-label="{{ section.settings.heading | default: 'Shop by Category' }}">
     {% for block in section.blocks %}
       {%- assign fallback_jpg = 'category-' | append: block.settings.title | downcase | append: '.jpg' -%}
-      <div class="category-tile" {{ block.shopify_attributes }}>
+      <div class="category-tile" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
         <a
           href="{{ block.settings.link | default: routes.all_products_collection_url }}"
           class="category-tile__link"
@@ -44,7 +63,7 @@
                     loading: 'lazy',
                     widths: '400, 600, 800, 1200',
                     sizes: '(min-width: 750px) 33vw, 100vw',
-                    class: 'category-tile__image category-tile__image--transparent',
+                    class: 'category-tile__image category-tile__image--custom',
                     alt: block.settings.image.alt | default: block.settings.title | escape
                 }}
               {% else %}
@@ -54,7 +73,7 @@
                   width="896"
                   height="1200"
                   loading="lazy"
-                  class="category-tile__image category-tile__image--transparent"
+                  class="category-tile__image category-tile__image--asset"
                   onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';"
                 >
                 <div class="category-tile__placeholder" style="display: none;">
@@ -63,16 +82,28 @@
                 </div>
               {% endif %}
             </div>
-          </div>
 
-          <!-- Centered Metadata Block (Unified pure canvas blend on mobile & desktop) -->
-          <div class="category-tile__meta">
-            <h3 class="category-tile__title">{{ block.settings.title }}</h3>
-            <div class="category-tile__action">
-              <span class="category-tile__cta">
-                <span>Shop All</span>
-                <svg class="category-tile__arrow" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                  <path d="M1 7H13M13 7L7.5 1.5M13 7L7.5 12.5" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/>
+            <span class="category-tile__dim" aria-hidden="true"></span>
+            <span class="category-tile__fade" aria-hidden="true"></span>
+
+            <span class="category-tile__index text-micro" aria-hidden="true">
+              {{ forloop.index | prepend: '00' | slice: -2, 2 }}<span class="category-tile__index-total"> / {{ forloop.length | prepend: '00' | slice: -2, 2 }}</span>
+            </span>
+
+            <div class="category-tile__meta">
+              <div class="category-tile__text">
+                <h3 class="category-tile__title"><span class="category-tile__title-mask"><span class="category-tile__title-i">{{ block.settings.title }}</span></span></h3>
+                <span class="category-tile__cta">
+                  <span>Shop All</span>
+                </span>
+              </div>
+
+              <span class="category-tile__badge" aria-hidden="true">
+                <svg class="category-tile__arrow category-tile__arrow--out" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M3.5 12.5L12.5 3.5M5 3.5H12.5V11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <svg class="category-tile__arrow category-tile__arrow--in" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <path d="M3.5 12.5L12.5 3.5M5 3.5H12.5V11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </span>
             </div>
@@ -97,7 +128,7 @@
             entry.target.classList.add('is-in');
             io.unobserve(entry.target);
           });
-        }, { threshold: 0, rootMargin: '0px 0px -32% 0px' });
+        }, { threshold: 0, rootMargin: '0px 0px -22% 0px' });
         nodes.forEach(function (node) { io.observe(node); });
       } catch (e) {
         el.removeAttribute('data-reveal');
@@ -105,42 +136,106 @@
     })(document.currentScript.parentElement);
   </script>
   {% # theme-check-enable ParserBlockingScript %}
-</section>
+</category-showcase>
 
 {% stylesheet %}
+  /* ==========================================================================
+     The curtain. The wrapper that rises over the pinned hero starts as a
+     shallow dome and flattens to a straight edge by the time it lands.
+     Scroll-driven, so it only exists where the browser can do that, and it is
+     flat for everyone who asked for less motion.
+     ========================================================================== */
   .section-category-tiles {
     position: relative;
     z-index: 1;
     background-color: var(--color-background);
-    box-shadow: 0 -20px 40px -10px rgba(0, 0, 0, 0.06);
-    border-top: 1px solid var(--color-border-subtle);
-    padding-top: clamp(3rem, 5vw, 4.5rem);
+    box-shadow: 0 -24px 48px -12px rgba(0, 0, 0, 0.08);
+    padding-top: clamp(3.5rem, 6vw, 6rem);
+    --curtain-arc: clamp(28px, 6vw, 92px);
+  }
+
+  @supports (animation-timeline: scroll()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .section-category-tiles {
+        animation: categoryCurtain linear both;
+        animation-timeline: scroll(root);
+        animation-range: 0px 100svh;
+      }
+    }
+  }
+
+  @keyframes categoryCurtain {
+    from {
+      border-radius: 50% 50% 0 0 / var(--curtain-arc) var(--curtain-arc) 0 0;
+    }
+    70%, to {
+      border-radius: 0;
+    }
   }
 
   .category-tiles {
     position: relative;
-    padding-bottom: var(--space-xl);
+    display: block;
+    padding-bottom: clamp(5rem, 9vw, 9rem);
     margin-bottom: 0;
-    --tile-rise: 8px;
   }
 
-  /* Editorial Header */
+  /* ==========================================================================
+     Editorial header
+     ========================================================================== */
   .category-tiles__header {
-    margin-bottom: clamp(1.75rem, 3.5vw, 3rem);
+    margin-bottom: clamp(2rem, 4.5vw, 4.5rem);
     text-align: left;
+  }
+
+  .category-tiles__eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0 0 1rem;
+    color: var(--color-text-muted);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .category-tiles__eyebrow > span:first-child:not(:only-child)::after {
+    content: '';
+    display: inline-block;
+    width: 2.5rem;
+    height: 1px;
+    margin-left: 0.75rem;
+    vertical-align: middle;
+    background: currentColor;
+    opacity: 0.4;
   }
 
   .category-tiles__heading {
     font-family: var(--font-display);
-    font-size: clamp(1.75rem, 3.5vw, 2.75rem);
-    font-weight: 400;
-    line-height: 1.12;
-    letter-spacing: -0.025em;
+    font-size: clamp(2.5rem, 7.2vw, 6.5rem);
+    font-weight: 500;
+    line-height: 0.98;
+    letter-spacing: -0.04em;
     margin: 0;
+    max-width: 12ch;
     color: var(--color-text);
+    text-wrap: balance;
   }
 
-  /* Zero-Border Tile Pedestal */
+  .category-tiles__word {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: top;
+    padding-block: 0.06em 0.14em;
+    margin-block: -0.06em -0.14em;
+  }
+
+  .category-tiles__word-i {
+    display: inline-block;
+  }
+
+  /* ==========================================================================
+     Card
+     ========================================================================== */
   .category-tile {
     position: relative;
     background: transparent;
@@ -158,7 +253,7 @@
     user-select: none;
     -webkit-user-select: none;
     -webkit-tap-highlight-color: transparent;
-    transition: transform 160ms var(--ease-out);
+    transition: transform 160ms var(--ease-out), opacity 320ms ease;
   }
 
   .category-tile__link:active {
@@ -170,25 +265,38 @@
     opacity: 1;
   }
 
-  .category-tile__media-box {
+  .category-tile__stage {
     position: relative;
     width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transform-origin: center bottom;
-    filter: drop-shadow(0 16px 26px rgba(17, 17, 17, 0.07));
-    transition: transform 280ms var(--ease-out);
+    overflow: hidden;
+    background-color: var(--color-surface);
+    isolation: isolate;
+  }
+
+  .category-tile__media-box {
+    position: absolute;
+    inset: 0;
+    transform-origin: center 40%;
+    transition: transform 900ms var(--ease-out);
   }
 
   .category-tile__image {
-    width: auto;
-    height: auto;
-    object-fit: contain;
     display: block;
-    margin: auto;
+    width: 100%;
+    height: 100%;
     background: transparent;
+  }
+
+  .category-tile__image--asset {
+    object-fit: cover;
+    object-position: center 45%;
+  }
+
+  /* Merchant uploads are usually cutouts, so they stand on the card, uncropped. */
+  .category-tile__image--custom {
+    object-fit: contain;
+    padding: 8% 6% 22%;
+    box-sizing: border-box;
   }
 
   .category-tile__placeholder {
@@ -206,49 +314,91 @@
     opacity: 0.3;
   }
 
-  .category-tile__arrow {
-    transition: transform 160ms var(--ease-out);
+  /* Keeps the type legible whatever photograph sits behind it. */
+  .category-tile__fade {
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 46%;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(to top, rgba(245, 245, 245, 0.92) 0%, rgba(245, 245, 245, 0) 100%);
   }
 
-  /* Shared Centered Editorial Typography Below Garment (Mobile & Desktop) */
+  /* Used by the mobile deck: the card underneath dims as the next one covers it. */
+  .category-tile__dim {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+    background-color: var(--color-surface-dark);
+    opacity: 0;
+  }
+
+  .category-tile__index {
+    position: absolute;
+    top: clamp(1rem, 1.6vw, 1.5rem);
+    left: clamp(1rem, 1.6vw, 1.5rem);
+    z-index: 2;
+    color: var(--color-text);
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: var(--tracking-micro);
+  }
+
+  .category-tile__index-total {
+    opacity: 0.4;
+  }
+
   .category-tile__meta {
-    margin-top: clamp(0.75rem, 2vw, 1.25rem);
+    position: absolute;
+    inset: auto 0 0 0;
+    z-index: 2;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: clamp(1rem, 1.6vw, 1.5rem);
+  }
+
+  .category-tile__text {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 0.35rem;
-    position: relative;
+    gap: 0.5rem;
+    min-width: 0;
   }
 
   .category-tile__title {
     font-family: var(--font-display);
-    font-size: clamp(1.125rem, 2.5vw, 1.25rem);
+    font-size: clamp(2rem, 3.2vw, 3.25rem);
     font-weight: 500;
-    line-height: 1.2;
-    letter-spacing: 0.04em;
+    line-height: 1;
+    letter-spacing: -0.035em;
     margin: 0;
     color: var(--color-text);
-    text-transform: uppercase;
   }
 
-  .category-tile__action {
-    margin-top: 0.15rem;
+  .category-tile__title-mask {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: top;
+    padding-block: 0.06em 0.14em;
+    margin-block: -0.06em -0.14em;
+  }
+
+  .category-tile__title-i {
+    display: inline-block;
   }
 
   .category-tile__cta {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
+    position: relative;
+    align-self: flex-start;
     font-family: var(--font-body);
     font-size: 0.75rem;
     font-weight: 500;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--color-text-muted);
-    position: relative;
     padding-bottom: 2px;
-    min-height: 36px;
     transition: color var(--transition-fast);
   }
 
@@ -262,179 +412,412 @@
     background-color: var(--color-text);
     transform: scaleX(0);
     transform-origin: left center;
-    transition: transform 200ms var(--ease-out);
+    transition: transform 240ms var(--ease-out);
   }
 
-  /* Heading wipes up once it has cleared the hero. Each garment settles
-     as it arrives, so a phone does not play the lower cards off screen. */
+  /* Round arrow. Two arrows share one circle: the first leaves, the second arrives. */
+  .category-tile__badge {
+    position: relative;
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 3.25rem;
+    height: 3.25rem;
+    overflow: hidden;
+    border-radius: 50%;
+    background-color: var(--color-white);
+    color: var(--color-text);
+    box-shadow: 0 0 0 1px var(--color-border-subtle);
+    transition: background-color 240ms ease, color 240ms ease;
+  }
+
+  .category-tile__arrow {
+    grid-area: 1 / 1;
+    transition: transform 420ms var(--ease-out);
+  }
+
+  .category-tile__arrow--in {
+    transform: translate(-160%, 160%);
+  }
+
+  /* Touch: the card press is the only hover there is. Arrow just confirms the tap. */
+  .category-tile__link:active .category-tile__badge {
+    background-color: var(--color-text);
+    color: var(--color-white);
+  }
+
+  /* ==========================================================================
+     Cursor lens (fine pointers, injected by <category-showcase>)
+     ========================================================================== */
+  .category-tiles__cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 6;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+    will-change: translate;
+  }
+
+  .category-tiles__cursor-lens {
+    position: absolute;
+    left: -2.75rem;
+    top: -2.75rem;
+    display: grid;
+    place-items: center;
+    width: 5.5rem;
+    height: 5.5rem;
+    border-radius: 50%;
+    background-color: var(--color-surface-dark);
+    color: var(--color-white);
+    font-family: var(--font-body);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    scale: 0.4;
+    opacity: 0;
+    transition: scale 280ms var(--ease-out), opacity 160ms ease;
+  }
+
+  .category-tiles__cursor.is-active .category-tiles__cursor-lens {
+    scale: 1;
+    opacity: 1;
+  }
+
+  /* ==========================================================================
+     Scroll reveal. Heading rises word by word; each card opens bottom-up
+     like a shutter while its photo settles from a zoom; the type follows.
+     ========================================================================== */
   @media (prefers-reduced-motion: no-preference) {
-    .category-tiles[data-reveal="pending"] .category-tiles__header:not(.is-in) .category-tiles__heading {
-      clip-path: inset(100% 0 0 0);
+    .category-tiles[data-reveal="pending"] .category-tiles__header:not(.is-in) .category-tiles__word-i {
+      transform: translateY(112%) rotate(3deg);
+      transform-origin: 0 100%;
     }
 
-    .category-tiles[data-reveal="pending"] .category-tiles__header.is-in .category-tiles__heading {
-      clip-path: inset(0 0 0 0);
-      transition: clip-path 780ms var(--ease-out);
+    .category-tiles[data-reveal="pending"] .category-tiles__header:not(.is-in) .category-tiles__eyebrow {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+
+    .category-tiles[data-reveal="pending"] .category-tiles__header.is-in .category-tiles__word-i {
+      transform: none;
+      transition: transform 1000ms var(--ease-out);
+      transition-delay: calc(120ms + var(--i, 0) * 70ms);
+    }
+
+    .category-tiles[data-reveal="pending"] .category-tiles__header.is-in .category-tiles__eyebrow {
+      opacity: 1;
+      transform: none;
+      transition: opacity 600ms var(--ease-out), transform 600ms var(--ease-out);
     }
 
     .category-tiles[data-reveal="pending"] .category-tile:not(.is-in) .category-tile__stage {
-      opacity: 0;
-      transform: translateY(var(--tile-rise, 8px));
+      clip-path: inset(100% 0 0 0);
     }
 
-    .category-tiles[data-reveal="pending"] .category-tile:not(.is-in) .category-tile__meta {
-      opacity: 0;
-      transform: translateY(6px);
+    .category-tiles[data-reveal="pending"] .category-tile:not(.is-in) .category-tile__media-box {
+      scale: 1.3;
     }
 
-    .category-tiles[data-reveal="pending"] .category-tile.is-in .category-tile__stage,
-    .category-tiles[data-reveal="pending"] .category-tile.is-in .category-tile__meta {
+    .category-tiles[data-reveal="pending"] .category-tile:not(.is-in) .category-tile__index,
+    .category-tiles[data-reveal="pending"] .category-tile:not(.is-in) .category-tile__cta,
+    .category-tiles[data-reveal="pending"] .category-tile:not(.is-in) .category-tile__badge {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+
+    .category-tiles[data-reveal="pending"] .category-tile:not(.is-in) .category-tile__title-i {
+      transform: translateY(112%) rotate(3deg);
+      transform-origin: 0 100%;
+    }
+
+    .category-tiles[data-reveal="pending"] .category-tile.is-in .category-tile__stage {
+      clip-path: inset(0 0 0 0);
+      transition: clip-path 1100ms var(--ease-out);
+      transition-delay: var(--reveal-delay, 0ms);
+    }
+
+    .category-tiles[data-reveal="pending"] .category-tile.is-in .category-tile__media-box {
+      scale: 1;
+      transition: scale 1500ms var(--ease-out), transform 900ms var(--ease-out);
+      transition-delay: var(--reveal-delay, 0ms), 0ms;
+    }
+
+    .category-tiles[data-reveal="pending"] .category-tile.is-in .category-tile__index,
+    .category-tiles[data-reveal="pending"] .category-tile.is-in .category-tile__cta,
+    .category-tiles[data-reveal="pending"] .category-tile.is-in .category-tile__badge {
       opacity: 1;
       transform: none;
-      transition:
-        opacity 560ms var(--ease-out),
-        transform 560ms var(--ease-out);
+      transition: opacity 640ms var(--ease-out), transform 640ms var(--ease-out), background-color 240ms ease, color 240ms ease;
+      transition-delay: calc(var(--reveal-delay, 0ms) + 520ms);
     }
 
-    .category-tiles[data-reveal="pending"] .category-tile.is-in .category-tile__meta {
-      transition-duration: 480ms;
-      transition-delay: 70ms;
+    .category-tiles[data-reveal="pending"] .category-tile.is-in .category-tile__title-i {
+      transform: none;
+      transition: transform 900ms var(--ease-out);
+      transition-delay: calc(var(--reveal-delay, 0ms) + 440ms);
     }
   }
 
   /* ==========================================================================
-     Mobile Layout (max-width: 749px):
-     - Pure canvas blend: NO background boxes, seamless #FFFFFF backdrop
-     - 3 stacked vertical items (1st -> 2nd -> 3rd)
-     - Compact 4:3 garment stage with centered typography below
-     - Zero swipe friction, pure native vertical scroll
+     Mobile (max-width: 749px): a deck of cards
+     Each card pins under the header, the next slides over it. Offsets stack by
+     a few pixels so the edge of every card underneath stays visible.
      ========================================================================== */
   @media (max-width: 749px) {
     .category-tiles__track {
       display: flex;
       flex-direction: column;
-      gap: clamp(2.25rem, 6vw, 3.5rem);
+      gap: 1.25rem;
       padding: 0;
       margin: 0;
     }
 
     .category-tile {
-      width: 100%;
+      position: sticky;
+      top: calc(var(--header-height) + var(--space-xs) + var(--i, 0) * 12px);
+      transform-origin: center top;
+      background-color: var(--color-background);
     }
 
     .category-tile__stage {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 4 / 3;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: transparent;
-      padding: var(--space-xs);
-      box-sizing: border-box;
-      overflow: visible;
+      aspect-ratio: 4 / 5;
     }
 
-    .category-tile__image {
-      max-width: 82%;
-      max-height: 82%;
+    .category-tile__badge {
+      width: 3rem;
+      height: 3rem;
     }
+  }
+
+  /* Deck choreography. Each card gets a view timeline, and the card before it
+     reads that timeline: as card N+1 slides up over card N, card N steps back
+     and dims. Needs scroll-driven animation + timeline-scope; without them the
+     deck simply stacks. */
+  @supports (animation-timeline: view()) and (timeline-scope: --a) {
+    @media (max-width: 749px) and (prefers-reduced-motion: no-preference) {
+      .category-tiles__track {
+        timeline-scope: --deck-2, --deck-3, --deck-4, --deck-5, --deck-6;
+      }
+
+      .category-tile:nth-child(2) { view-timeline: --deck-2 block; }
+      .category-tile:nth-child(3) { view-timeline: --deck-3 block; }
+      .category-tile:nth-child(4) { view-timeline: --deck-4 block; }
+      .category-tile:nth-child(5) { view-timeline: --deck-5 block; }
+      .category-tile:nth-child(6) { view-timeline: --deck-6 block; }
+
+      .category-tile:nth-child(1),
+      .category-tile:nth-child(2),
+      .category-tile:nth-child(3),
+      .category-tile:nth-child(4),
+      .category-tile:nth-child(5) {
+        animation: categoryDeckBack linear both;
+        animation-range: entry 55% entry 155%;
+      }
+
+      .category-tile:nth-child(1) .category-tile__dim,
+      .category-tile:nth-child(2) .category-tile__dim,
+      .category-tile:nth-child(3) .category-tile__dim,
+      .category-tile:nth-child(4) .category-tile__dim,
+      .category-tile:nth-child(5) .category-tile__dim {
+        animation: categoryDeckDim linear both;
+        animation-range: entry 55% entry 155%;
+      }
+
+      .category-tile:nth-child(1), .category-tile:nth-child(1) .category-tile__dim { animation-timeline: --deck-2; }
+      .category-tile:nth-child(2), .category-tile:nth-child(2) .category-tile__dim { animation-timeline: --deck-3; }
+      .category-tile:nth-child(3), .category-tile:nth-child(3) .category-tile__dim { animation-timeline: --deck-4; }
+      .category-tile:nth-child(4), .category-tile:nth-child(4) .category-tile__dim { animation-timeline: --deck-5; }
+      .category-tile:nth-child(5), .category-tile:nth-child(5) .category-tile__dim { animation-timeline: --deck-6; }
+    }
+  }
+
+  @keyframes categoryDeckBack {
+    to { scale: 0.93; }
+  }
+
+  @keyframes categoryDeckDim {
+    to { opacity: 0.32; }
   }
 
   /* ==========================================================================
-     Desktop Layout (min-width: 750px):
-     - 3-column floating showcase
-     - 3:4 pedestal with pure canvas blend
-     - Centered title and Shop All link underneath
-     - Tactile levitation micro-interaction
+     Desktop (min-width: 750px): staggered three-up
      ========================================================================== */
   @media (min-width: 750px) {
-    .category-tiles {
-      --tile-rise: 12px;
-    }
-
-    .category-tile:nth-child(1) { --reveal-delay: 80ms; }
-    .category-tile:nth-child(2) { --reveal-delay: 160ms; }
-    .category-tile:nth-child(3) { --reveal-delay: 240ms; }
-    .category-tile:nth-child(4) { --reveal-delay: 320ms; }
-    .category-tile:nth-child(5) { --reveal-delay: 400ms; }
-    .category-tile:nth-child(6) { --reveal-delay: 480ms; }
-
     .category-tiles__track {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: clamp(2rem, 3.5vw, 4.5rem);
+      align-items: start;
+      gap: clamp(1.25rem, 2.4vw, 2.5rem);
+    }
+
+    .category-tile:nth-child(1) { --reveal-delay: 0ms; --drift: 36px; }
+    .category-tile:nth-child(2) { --reveal-delay: 140ms; --drift: -36px; }
+    .category-tile:nth-child(3) { --reveal-delay: 280ms; --drift: 36px; }
+    .category-tile:nth-child(4) { --reveal-delay: 420ms; --drift: -36px; }
+    .category-tile:nth-child(5) { --reveal-delay: 560ms; --drift: 36px; }
+    .category-tile:nth-child(6) { --reveal-delay: 700ms; --drift: -36px; }
+
+    /* Editorial stagger: the middle card sits lower. */
+    .category-tile:nth-child(3n + 2) {
+      margin-top: clamp(3rem, 7vw, 7rem);
     }
 
     .category-tile__stage {
-      position: relative;
-      width: 100%;
       aspect-ratio: 3 / 4;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: transparent;
-      padding: var(--space-xs) var(--space-sm);
-      box-sizing: border-box;
-      overflow: visible;
     }
 
-    .category-tile__image {
-      max-width: 92%;
-      max-height: 92%;
+    .category-tile__dim {
+      display: none;
     }
+  }
 
-    @media (hover: hover) and (pointer: fine) {
-      .category-tile:hover .category-tile__media-box,
-      .category-tile__link:focus-visible .category-tile__media-box {
-        transform: translateY(-8px) scale(1.02);
-      }
-
-      .category-tile:hover .category-tile__arrow,
-      .category-tile__link:focus-visible .category-tile__arrow {
-        transform: translateX(5px);
-        transition-delay: 40ms;
-      }
-
-      .category-tile:hover .category-tile__cta,
-      .category-tile__link:focus-visible .category-tile__cta {
-        color: var(--color-text);
-      }
-
-      .category-tile:hover .category-tile__cta::after,
-      .category-tile__link:focus-visible .category-tile__cta::after {
-        transform: scaleX(1);
+  /* Differential drift: neighbouring cards travel at different speeds, which is
+     what makes the row feel like it has depth. Linear, tied to scroll. */
+  @supports (animation-timeline: view()) {
+    @media (min-width: 750px) and (prefers-reduced-motion: no-preference) {
+      .category-tile {
+        animation: categoryDrift linear both;
+        animation-timeline: view();
+        animation-range: cover 0% cover 100%;
       }
     }
   }
 
-  @media (min-width: 750px) and (prefers-reduced-motion: no-preference) {
-    .category-tiles[data-reveal="pending"] .category-tile.is-in .category-tile__stage {
-      transition-delay: var(--reveal-delay, 0ms);
+  @keyframes categoryDrift {
+    from { translate: 0 var(--drift, 0px); }
+    to { translate: 0 calc(var(--drift, 0px) * -1); }
+  }
+
+  @media (min-width: 750px) and (hover: hover) and (pointer: fine) {
+    .category-tile__link:hover .category-tile__media-box,
+    .category-tile__link:focus-visible .category-tile__media-box {
+      transform: scale(1.06);
     }
 
-    .category-tiles[data-reveal="pending"] .category-tile.is-in .category-tile__meta {
-      transition-delay: calc(var(--reveal-delay, 0ms) + 70ms);
+    /* Focus the one under the pointer, quiet the rest. */
+    .category-tiles__track:has(.category-tile__link:hover) .category-tile__link:not(:hover) {
+      opacity: 0.45;
+    }
+
+    .category-tile__link:hover .category-tile__cta,
+    .category-tile__link:focus-visible .category-tile__cta {
+      color: var(--color-text);
+    }
+
+    .category-tile__link:hover .category-tile__cta::after,
+    .category-tile__link:focus-visible .category-tile__cta::after {
+      transform: scaleX(1);
+    }
+
+    .category-tile__link:hover .category-tile__badge,
+    .category-tile__link:focus-visible .category-tile__badge {
+      background-color: var(--color-text);
+      color: var(--color-white);
+    }
+
+    .category-tile__link:hover .category-tile__arrow--out,
+    .category-tile__link:focus-visible .category-tile__arrow--out {
+      transform: translate(160%, -160%);
+    }
+
+    .category-tile__link:hover .category-tile__arrow--in,
+    .category-tile__link:focus-visible .category-tile__arrow--in {
+      transform: translate(0, 0);
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .category-tile:hover .category-tile__media-box,
-    .category-tile:hover .category-tile__arrow {
-      transform: none;
-    }
-
-    .category-tile:hover .category-tile__cta::after {
-      transform: scaleX(0);
-    }
-
     .category-tile__media-box,
     .category-tile__arrow,
     .category-tile__cta::after {
       transition: none;
     }
+
+    .category-tiles__cursor {
+      display: none;
+    }
   }
 {% endstylesheet %}
+
+{% javascript %}
+  (function () {
+    if (customElements.get('category-showcase')) return;
+
+    customElements.define(
+      'category-showcase',
+      class extends HTMLElement {
+        connectedCallback() {
+          const fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+          const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          const design = !!(window.Shopify && window.Shopify.designMode);
+          if (!fine || reduce || design || window.innerWidth < 750) return;
+
+          this.raf = 0;
+          this.x = 0;
+          this.y = 0;
+          this.tx = 0;
+          this.ty = 0;
+          this.placed = false;
+          this.tick = this.tick.bind(this);
+          this.onMove = this.onMove.bind(this);
+          this.onLeave = this.onLeave.bind(this);
+
+          // Decorative lens that trails the pointer. Springs, because it has no job
+          // beyond feeling alive; the real affordance (the link) is untouched.
+          this.cursor = document.createElement('span');
+          this.cursor.className = 'category-tiles__cursor';
+          this.cursor.setAttribute('aria-hidden', 'true');
+          const lens = document.createElement('span');
+          lens.className = 'category-tiles__cursor-lens';
+          lens.textContent = this.dataset.cursorLabel || 'Shop';
+          this.cursor.appendChild(lens);
+          this.appendChild(this.cursor);
+
+          this.addEventListener('pointermove', this.onMove, { passive: true });
+          this.addEventListener('pointerleave', this.onLeave, { passive: true });
+        }
+
+        disconnectedCallback() {
+          cancelAnimationFrame(this.raf);
+          this.removeEventListener('pointermove', this.onMove);
+          this.removeEventListener('pointerleave', this.onLeave);
+        }
+
+        onMove(event) {
+          this.tx = event.clientX;
+          this.ty = event.clientY;
+          if (!this.placed) {
+            // First contact: appear under the pointer instead of flying in from the corner.
+            this.x = this.tx;
+            this.y = this.ty;
+            this.placed = true;
+          }
+          const over = event.target.closest && event.target.closest('.category-tile__link');
+          this.cursor.classList.toggle('is-active', !!over);
+          if (!this.raf) this.raf = requestAnimationFrame(this.tick);
+        }
+
+        onLeave() {
+          this.cursor.classList.remove('is-active');
+        }
+
+        tick() {
+          this.x += (this.tx - this.x) * 0.2;
+          this.y += (this.ty - this.y) * 0.2;
+          this.cursor.style.translate = this.x.toFixed(1) + 'px ' + this.y.toFixed(1) + 'px';
+          if (Math.abs(this.tx - this.x) > 0.2 || Math.abs(this.ty - this.y) > 0.2) {
+            this.raf = requestAnimationFrame(this.tick);
+          } else {
+            this.raf = 0;
+          }
+        }
+      }
+    );
+  })();
+{% endjavascript %}
 
 {% schema %}
 {
@@ -443,6 +826,12 @@
   "class": "section-category-tiles",
   "max_blocks": 6,
   "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "The Essentials"
+    },
     {
       "type": "text",
       "id": "heading",
