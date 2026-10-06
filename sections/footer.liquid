@@ -318,7 +318,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--f-gap);
-    padding: var(--space-md) var(--f-pad) calc(var(--space-sm) + env(safe-area-inset-bottom));
+    padding: clamp(1.25rem, 3.5vw, 2rem) var(--f-pad) calc(var(--space-sm) + env(safe-area-inset-bottom));
   }
 
   .footer__inner > * { flex-shrink: 0; }
@@ -426,20 +426,25 @@
 
   .footer__field:focus-within::after { transform: scaleX(1); }
 
-  .footer__input {
+  .footer__input,
+  input.footer__input,
+  input[type="email"].footer__input {
     flex: 1 1 auto;
     min-width: 0;
-    min-height: 3.5rem;
-    padding: 0;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    color: var(--f-fg);
+    width: 0;
+    min-height: 3.25rem;
+    padding: 0 0.5rem 0 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    color: var(--f-fg) !important;
     font-family: var(--font-display);
-    font-size: 1.25rem; /* 20px: never triggers iOS zoom */
+    font-size: clamp(1rem, 0.9rem + 0.4vw, 1.15rem);
     font-weight: 500;
     letter-spacing: -0.015em;
-    outline: none;
+    outline: none !important;
+    box-shadow: none !important;
     -webkit-appearance: none;
     appearance: none;
   }
@@ -456,19 +461,21 @@
   }
 
   .footer__submit {
-    flex: none;
+    flex: 0 0 auto;
     display: inline-flex;
     align-items: center;
-    min-height: 3.5rem;
-    padding: 0 0 0 1.25rem;
+    justify-content: center;
+    min-height: 3.25rem;
+    padding: 0 0 0 0.75rem;
     border: 0;
     background: transparent;
     color: var(--f-fg);
     font-family: var(--font-body);
-    font-size: 0.9375rem;
+    font-size: 0.875rem;
     font-weight: 500;
     line-height: 1;
     cursor: pointer;
+    white-space: nowrap;
     touch-action: manipulation;
     transition: opacity 240ms var(--f-expo), transform 240ms var(--f-expo);
   }
