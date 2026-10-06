@@ -62,13 +62,7 @@
             rel="noopener noreferrer"
             aria-label="{{ p4_title }} - {{ p4_desc }} (opens WhatsApp chat)"
           >
-            <span class="trust-strip__index" aria-hidden="true">
-              04
-              <span class="trust-strip__live" aria-hidden="true">
-                <span class="trust-strip__live-dot"></span>
-                Live
-              </span>
-            </span>
+            <span class="trust-strip__index" aria-hidden="true">04</span>
             <span class="trust-strip__title">{{ p4_title }}</span>
             <span class="trust-strip__desc">
               {{ p4_desc }}
@@ -203,47 +197,6 @@
     vertical-align: -1px;
     margin-inline-start: 0.2rem;
     transition: transform 250ms var(--ease-out);
-  }
-
-  /* WhatsApp live pill */
-  .trust-strip__live {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0.2rem 0.5rem;
-    background: rgba(37, 211, 102, 0.12);
-    border: 1px solid rgba(37, 211, 102, 0.3);
-    border-radius: 9999px;
-    font-size: 0.625rem;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: #25D366;
-  }
-
-  .trust-strip--light .trust-strip__live {
-    color: #166534;
-    background: rgba(22, 101, 52, 0.08);
-    border-color: rgba(22, 101, 52, 0.28);
-  }
-
-  .trust-strip__live-dot {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: currentColor;
-    animation: trust-pulse 2.4s ease-in-out infinite;
-  }
-
-  @keyframes trust-pulse {
-    0%, 100% {
-      opacity: 1;
-      transform: scale(1);
-    }
-    50% {
-      opacity: 0.4;
-      transform: scale(0.75);
-    }
   }
 
   .trust-strip__card:focus-visible {
