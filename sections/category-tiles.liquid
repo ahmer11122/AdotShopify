@@ -36,8 +36,7 @@
       <h2 class="category-tiles__heading">
         {%- assign heading_words = section.settings.heading | split: ' ' -%}
         {%- for word in heading_words -%}
-          <span class="category-tiles__word"><span class="category-tiles__word-i" style="--i: {{ forloop.index0 }}">{{ word | escape }}</span></span>
-          {%- unless forloop.last %} {% endunless -%}
+          <span class="category-tiles__word"><span class="category-tiles__word-i" style="--i: {{ forloop.index0 }}">{{ word | escape }}</span></span>{% unless forloop.last %} {% endunless %}
         {%- endfor -%}
       </h2>
     </div>
@@ -227,6 +226,11 @@
     vertical-align: top;
     padding-block: 0.06em 0.14em;
     margin-block: -0.06em -0.14em;
+    margin-right: 0.28em;
+  }
+
+  .category-tiles__word:last-child {
+    margin-right: 0;
   }
 
   .category-tiles__word-i {

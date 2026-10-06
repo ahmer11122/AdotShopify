@@ -1,10 +1,17 @@
 {% doc %}
-  Modern Editorial Luxury Product Card Primitive
-  Crafted with:
-  - better-typography: Tabular prices, balanced line wrapping, restrained type scale.
-  - emil-design-eng: Custom cubic-bezier easing, snappy <220ms durations, :active press scale(0.96), scoped hover transitions.
-  - find-animation-opportunities: High-leverage motion (film-strip image slide, tactile button depression, floating glass quick-add).
-  - apple-design: Translucent frosted glassmorphism (backdrop-filter: blur(16px)), direct manipulation, zero clutter, 44px touch targets.
+  ADOT product card. One card for every grid, rail and cross-sell.
+
+  Image first, type second. A 3:4 frame, a quiet caption, and nothing else until the
+  shopper reaches for it.
+
+  Motion
+  - Pointer: a second photograph rises into the frame like a curtain from the bottom edge.
+    With three photographs the pointer's horizontal position chooses between the two
+    hidden ones. A single-photograph product gets a slow, small push-in instead.
+    A flush size bar rises from the bottom edge.
+  - Touch: the frame presses in under the finger. The plus opens a size sheet that can be
+    dragged down to dismiss.
+  - Only transform, opacity and clip-path are animated. Reduced motion removes the movement.
 
   @param {product} [product] - The product object
   @param {string} [title] - Fallback title if product is nil
@@ -17,7 +24,8 @@
   @param {string} [spec] - Technical fabric / fit fact (optional)
   @param {boolean} [available] - Fallback availability
   @param {boolean} [lazy_load] - Whether to lazy load images (default: true)
-  @param {boolean} [show_vendor] - Whether to show category or vendor
+  @param {boolean} [show_vendor] - Whether to show the spec / category line
+  @param {string} [image_sizes] - Optional `sizes` attribute so a section can describe how wide its cards render
   @param {string} [class] - Optional additional CSS classes
 {% enddoc %}
 
@@ -28,6 +36,9 @@
   if lazy_load == nil
     assign lazy_load = true
   endif
+
+  assign card_sizes = image_sizes | default: '(min-width: 990px) 25vw, (min-width: 750px) 33vw, 50vw'
+  assign frame_count = 0
 
   if product
     assign card_title = product.title
@@ -45,6 +56,7 @@
     if product.featured_image
       assign image_src = product.featured_image | image_url: width: 750
     endif
+    assign frame_count = product.images.size | at_most: 3
 
     assign size_option = product.options_by_name['Size']
     assign has_sizes = false
@@ -67,6 +79,12 @@
     if secondary_image_src != blank
       assign has_secondary_image = true
     endif
+    if image_src != blank
+      assign frame_count = 1
+      if has_secondary_image
+        assign frame_count = 2
+      endif
+    endif
     assign has_sizes = false
     assign fallback_variant_id = variant_id | default: fallback_product.selected_or_first_available_variant.id
   endif
@@ -86,31 +104,46 @@
     assign image_loading = 'eager'
     assign image_fetch = 'high'
   endif
+
+  capture card_price_prop
+    render 'money', price: card_price
+  endcapture
 %}
 
 <div
   class="product-card {{ class }} {% unless is_available %}product-card--sold-out{% endunless %}"
   data-product-card
   data-category="{{ card_category | default: product.type | downcase }}"
+  data-frames="{{ frame_count }}"
 >
-  <!-- Media Frame with Fixed 3:4 Aspect Ratio (Zero-CLS) -->
   <div class="product-card__media-wrapper">
-    <a href="{{ card_url }}" class="product-card__media-link" aria-label="{{ card_title | escape }}">
-      {% if product and featured_media %}
+    {%- comment -%}
+      The photograph link is a pointer and touch target only. The title link below is the
+      keyboard and screen-reader link, so each card is one tab stop, not two.
+    {%- endcomment -%}
+    <a href="{{ card_url }}" class="product-card__media-link" tabindex="-1" aria-hidden="true">
+      {% if product and product.images.size > 0 %}
         <div class="product-card__film">
           {% for image in product.images limit: 3 %}
+            {% liquid
+              assign frame_alt = ''
+              if forloop.first
+                assign frame_alt = image.alt | default: card_title
+              endif
+            %}
             {{
               image
-              | image_url: width: 750
+              | image_url: width: 1200
               | image_tag:
                 loading: image_loading,
                 fetchpriority: image_fetch,
+                decoding: 'async',
                 width: 750,
                 height: 1000,
-                widths: '350, 500, 750',
-                sizes: '(min-width: 990px) 25vw, (min-width: 750px) 33vw, 50vw',
+                widths: '360, 540, 720, 960, 1200',
+                sizes: card_sizes,
                 class: 'product-card__image',
-                alt: image.alt | default: card_title | escape
+                alt: frame_alt | escape
             }}
             {% assign image_loading = 'lazy' %}
             {% assign image_fetch = 'auto' %}
@@ -125,15 +158,17 @@
             height="1000"
             loading="{{ image_loading }}"
             fetchpriority="{{ image_fetch }}"
+            decoding="async"
             class="product-card__image"
           >
           {% if has_secondary_image %}
             <img
               src="{{ secondary_image_src }}"
-              alt="{{ card_title | escape }}"
+              alt=""
               width="750"
               height="1000"
               loading="lazy"
+              decoding="async"
               class="product-card__image"
             >
           {% endif %}
@@ -161,22 +196,27 @@
     {% endif %}
 
     {% if is_available %}
-      <!-- Mobile Frosted Glass Quick Add Button (44px Touch Target) -->
+      <!-- Touch and tablet: a square plus in the corner opens the size sheet -->
       <button
         type="button"
         class="product-card__mobile-quick-btn"
         data-mobile-quick-trigger
+        aria-haspopup="dialog"
         aria-label="Quick add {{ card_title | escape }}"
       >
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-          <path d="M7 1V13M1 7H13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          <path d="M7 1V13M1 7H13" stroke="currentColor" stroke-width="1.4" stroke-linecap="square"/>
         </svg>
       </button>
 
-      <!-- Desktop Floating Frosted Glass Quick-Add Size Rail (Reveals on Hover) -->
-      <div class="product-card__desktop-action-bar" aria-label="Quick add sizes">
+      <!-- Pointer: a flush size bar rises from the bottom edge of the photograph -->
+      <div
+        class="product-card__desktop-action-bar {% unless product and has_sizes %}product-card__desktop-action-bar--single{% endunless %}"
+        role="group"
+        aria-label="Quick add sizes"
+      >
+        <span class="product-card__quick-label" aria-hidden="true">Add</span>
         <div class="product-card__quick-size-pills">
-          {% capture card_price_prop %}{% render 'money', price: card_price %}{% endcapture %}
           {% if product and has_sizes %}
             {% for variant in product.variants %}
               <form method="post" action="{{ routes.cart_add_url }}" class="product-card__quick-form">
@@ -211,45 +251,44 @@
                 data-variant-title="Add"
                 title="Add to bag"
               >
-                Add
+                Add to bag
               </button>
             </form>
           {% elsif fallback_variant_id != blank %}
-            <form method="post" action="{{ routes.cart_add_url }}" class="product-card__quick-form">
-              <input type="hidden" name="id" value="{{ fallback_variant_id }}">
-              <input type="hidden" name="quantity" value="1">
-              <input type="hidden" name="properties[_adot_title]" value="{{ card_title | escape }}">
-              <input type="hidden" name="properties[_adot_image]" value="{{ image_src }}">
-              <input type="hidden" name="properties[_adot_price]" value="{{ card_price_prop | strip }}">
-              <button
-                type="submit"
-                class="product-card__size-pill"
-                data-variant-title="Add"
-                title="Add to bag"
-              >
-                Add
-              </button>
-            </form>
+            {% assign demo_sizes = 'S,M,L,XL' | split: ',' %}
+            {% for sz in demo_sizes %}
+              <form method="post" action="{{ routes.cart_add_url }}" class="product-card__quick-form">
+                <input type="hidden" name="id" value="{{ fallback_variant_id }}">
+                <input type="hidden" name="quantity" value="1">
+                <input type="hidden" name="properties[_adot_title]" value="{{ card_title | escape }}">
+                <input type="hidden" name="properties[_adot_image]" value="{{ image_src }}">
+                <input type="hidden" name="properties[_adot_price]" value="{{ card_price_prop | strip }}">
+                <input type="hidden" name="properties[Size]" value="{{ sz }}">
+                <button
+                  type="submit"
+                  class="product-card__size-pill"
+                  data-variant-title="{{ sz }}"
+                  title="Add size {{ sz }}"
+                >
+                  {{ sz }}
+                </button>
+              </form>
+            {% endfor %}
           {% endif %}
         </div>
       </div>
     {% endif %}
   </div>
 
-  <!-- Editorial Card Content Below Photography -->
   <div class="product-card__content">
-    {% if show_vendor and card_spec != blank %}
-      <div class="product-card__spec text-micro">{{ card_spec }}</div>
-    {% endif %}
-
-    <!-- Product Title (Restrained Inter 500, Balanced Line Wrapping) -->
     <h3 class="product-card__title">
-      <a href="{{ card_url }}" class="product-card__title-link">
-        {{ card_title }}
-      </a>
+      <a href="{{ card_url }}" class="product-card__title-link">{{ card_title }}</a>
     </h3>
 
-    <!-- Meta Row: Tabular Price -->
+    {% if show_vendor and card_spec != blank %}
+      <p class="product-card__spec">{{ card_spec }}</p>
+    {% endif %}
+
     <div class="product-card__meta-row">
       <div class="product-card__price">
         {% if product %}
@@ -273,292 +312,496 @@
 
 {% stylesheet %}
   /* ==========================================================================
-     Product Card Primitive — Quiet Luxury Architecture
+     ADOT product card
      ========================================================================== */
+  .product-card,
+  .mobile-quick-sheet {
+    --pc-ink: var(--color-text, #111111);
+    --pc-ink-soft: var(--color-text-subtle, #6b6b6b);
+    --pc-paper: var(--color-background, #ffffff);
+    --pc-sheet: var(--color-surface, #f5f5f5);
+    --pc-sale: var(--color-sale, #991b1b);
+    --pc-hairline: rgba(17, 17, 17, 0.12);
+    --pc-out: var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+    --pc-wipe: cubic-bezier(0.6, 0, 0.1, 1);
+  }
+
   .product-card {
+    position: relative;
     display: flex;
     flex-direction: column;
-    position: relative;
     width: 100%;
-    background-color: transparent;
-  }
-
-  .product-card--sold-out .product-card__image {
-    opacity: 0.65;
-    filter: grayscale(30%);
-  }
-
-  /* Fixed 3:4 Aspect Ratio Container (Zero Layout Shift) */
-  .product-card__media-wrapper {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 3 / 4;
-    overflow: hidden;
-    background-color: var(--color-surface, #F5F5F5);
-    box-sizing: border-box;
-    border-radius: var(--radius-none, 0px);
-  }
-
-  .product-card__media-link {
-    display: block;
-    width: 100%;
-    height: 100%;
-    text-decoration: none;
+    min-width: 0;
+    background: transparent;
     -webkit-tap-highlight-color: transparent;
   }
 
-  .product-card__film {
-    display: flex;
-    height: 100%;
+  /* Global themes often dim links on hover. The card handles its own states. */
+  .product-card a:hover,
+  .product-card a:focus-visible {
+    opacity: 1;
+  }
+
+  .product-card :focus-visible {
+    outline: 2px solid var(--pc-ink);
+    outline-offset: 3px;
+  }
+
+  /* ---------- Photograph ---------- */
+  .product-card__media-wrapper {
+    position: relative;
     width: 100%;
-    transform: translateX(calc(var(--i, 0) * -100%));
-    transition: transform 640ms var(--ease-in-out);
+    aspect-ratio: var(--pc-ratio, 3 / 4);
+    overflow: hidden;
+    isolation: isolate;
+    background-color: var(--pc-sheet);
+    border-radius: var(--radius-none, 0);
+  }
+
+  .product-card__media-link {
+    position: absolute;
+    inset: 0;
+    display: block;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 240ms var(--pc-out);
+  }
+
+  /* Touch feedback: the frame presses in under the finger */
+  .product-card__media-link:active {
+    transform: scale(0.985);
+  }
+
+  .product-card__film {
+    position: absolute;
+    inset: 0;
+    transform-origin: 50% 100%;
   }
 
   .product-card__image {
-    flex: 0 0 100%;
-    width: 100%;
-    min-width: 100%;
-    height: 100%;
-    object-fit: cover;
+    position: absolute;
+    inset: 0;
     display: block;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    object-fit: cover;
+  }
+
+  /* Photographs two and three wait below the frame and rise like a curtain */
+  .product-card__image:nth-child(n + 2) {
+    clip-path: inset(100% 0 0 0);
+    transform: scale(1.06);
+    transition:
+      clip-path 460ms var(--pc-wipe),
+      transform 460ms var(--pc-wipe);
+  }
+
+  .product-card[data-frame="1"] .product-card__image:nth-child(2),
+  .product-card[data-frame="2"] .product-card__image:nth-child(-n + 3) {
+    clip-path: inset(0 0 0 0);
+    transform: scale(1);
+    transition-duration: 680ms, 1300ms;
+    transition-timing-function: var(--pc-wipe), var(--pc-out);
+  }
+
+  /* One photograph only: a slow, small push-in so hover is never dead */
+  @media (hover: hover) and (pointer: fine) {
+    .product-card__image:only-child {
+      transition: transform 1400ms var(--pc-out);
+    }
+
+    .product-card__media-wrapper:hover .product-card__image:only-child {
+      transform: scale(1.035);
+    }
+  }
+
+  .product-card--sold-out .product-card__film {
+    opacity: 0.6;
+    filter: grayscale(0.35);
   }
 
   .product-card__placeholder {
-    width: 100%;
-    height: 100%;
+    position: absolute;
+    inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: var(--color-surface, #F5F5F5);
+    background-color: var(--pc-sheet);
   }
 
   .product-card__placeholder svg {
     width: 40%;
     height: 40%;
-    fill: var(--color-text-subtle);
+    fill: var(--pc-ink-soft);
     opacity: 0.3;
   }
 
+  /* ---------- Badges ---------- */
   .product-card__badges {
     position: absolute;
-    top: var(--space-xs);
-    inset-inline-start: var(--space-xs);
-    z-index: 4;
+    top: 0.5rem;
+    inset-inline-start: 0.5rem;
+    z-index: 3;
     display: flex;
     pointer-events: none;
   }
 
   .product-card__badge {
     display: inline-flex;
-    align-items: baseline;
-    gap: 0.4rem;
-    padding: 0.35rem 0.45rem;
-    border-radius: var(--radius-none);
+    align-items: center;
+    gap: 0.45rem;
+    min-height: 1.625rem;
+    padding: 0 0.55rem;
+    background-color: var(--pc-paper);
+    color: var(--pc-ink);
     font-family: var(--font-body);
-    font-size: var(--font-size-micro);
+    font-size: 0.75rem;
     font-weight: 500;
-    letter-spacing: var(--tracking-micro);
+    letter-spacing: 0.01em;
     line-height: 1;
-    text-transform: uppercase;
     user-select: none;
     -webkit-user-select: none;
   }
 
-  .product-card__badge--sale {
-    background-color: var(--color-white);
-    color: var(--color-text);
-    box-shadow: 0 0 0 1px var(--color-border-subtle);
-  }
-
   .product-card__badge-pct {
-    color: var(--color-sale);
+    color: var(--pc-sale);
     font-variant-numeric: tabular-nums;
     font-weight: 600;
   }
 
   .product-card__badge--sold-out {
-    background-color: var(--color-text);
-    color: var(--color-white);
+    background-color: var(--pc-ink);
+    color: var(--pc-paper);
   }
 
-  /* ==========================================================================
-     Desktop Floating Frosted Glass Quick-Add Size Rail
-     - Glides up gracefully on card hover
-     - Exposes direct 1-click size pills
-     - Zero visual clutter when resting
-     ========================================================================== */
+  /* ---------- Size pills (shared by the bar and the sheet) ---------- */
+  .product-card__quick-form {
+    display: flex;
+    margin: 0;
+    padding: 0;
+  }
+
+  .product-card__size-pill {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 2.75rem;
+    margin: 0;
+    padding: 0 0.25rem;
+    appearance: none;
+    -webkit-appearance: none;
+    background: var(--pc-paper, #ffffff);
+    color: var(--pc-ink, #111111);
+    border: 0;
+    border-radius: 0;
+    font-family: var(--font-body);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0.01em;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      transform 160ms var(--pc-out),
+      color 0s linear 50ms;
+  }
+
+  /* The fill rises from the bottom. The label flips colour once the fill has passed it. */
+  .product-card__size-pill::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-color: var(--pc-ink, #111111);
+    transform: scaleY(0);
+    transform-origin: 50% 100%;
+    transition: transform 300ms var(--pc-out);
+  }
+
+  .product-card__size-pill:active:not(:disabled) {
+    transform: scale(0.96);
+    color: var(--pc-paper, #ffffff);
+    transition-delay: 0s, 30ms;
+  }
+
+  .product-card__size-pill:active:not(:disabled)::before,
+  .product-card__size-pill:focus-visible:not(:disabled)::before,
+  .product-card__size-pill[data-state]::before {
+    transform: scaleY(1);
+  }
+
+  .product-card__size-pill:focus-visible:not(:disabled),
+  .product-card__size-pill[data-state] {
+    color: var(--pc-paper, #ffffff);
+    transition-delay: 0s, 30ms;
+  }
+
+  .product-card__size-pill[data-state] {
+    pointer-events: none;
+  }
+
+  .product-card__size-pill[data-state="loading"] {
+    opacity: 0.85;
+  }
+
+  .product-card__size-pill:focus-visible {
+    outline: 2px solid var(--pc-paper, #ffffff);
+    outline-offset: -4px;
+  }
+
+  @media (hover: hover) {
+    .product-card__size-pill:hover:not(:disabled) {
+      color: var(--pc-paper, #ffffff);
+      transition-delay: 0s, 30ms;
+    }
+
+    .product-card__size-pill:hover:not(:disabled)::before {
+      transform: scaleY(1);
+    }
+  }
+
+  .product-card__size-pill:disabled,
+  .product-card__size-pill--sold-out {
+    color: var(--pc-ink-soft, #6b6b6b);
+    opacity: 0.55;
+    text-decoration: line-through;
+    text-decoration-thickness: 1px;
+    cursor: not-allowed;
+  }
+
+  /* ---------- Pointer: flush size bar ---------- */
   .product-card__desktop-action-bar {
     display: none;
   }
 
-  @media (hover: hover) and (min-width: 750px) {
-    .product-card__desktop-action-bar {
-      display: flex;
-      position: absolute;
-      inset: auto 8px 8px 8px;
-      z-index: 6;
-      background: rgba(255, 255, 255, 0.92);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.8);
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-      padding: 4px;
-      box-sizing: border-box;
-      opacity: 0;
-      transform: translateY(6px);
-      pointer-events: none;
-      transition:
-        transform 180ms var(--ease-out),
-        opacity 180ms var(--ease-out);
-    }
-
-    .product-card:hover .product-card__desktop-action-bar,
-    .product-card:focus-within .product-card__desktop-action-bar {
-      opacity: 1;
-      transform: translateY(0);
-      pointer-events: auto;
-    }
-
-    .product-card__quick-size-pills {
-      display: flex;
-      width: 100%;
-      gap: 4px;
-    }
-
-    .product-card__quick-form {
-      flex: 1;
-      margin: 0;
-      padding: 0;
-    }
-
-    .product-card__size-pill {
-      width: 100%;
-      height: 32px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: transparent;
-      border: 1px solid transparent;
-      color: var(--color-text, #111111);
-      font-family: var(--font-body);
-      font-size: 0.75rem;
-      font-weight: 500;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      cursor: pointer;
-      border-radius: var(--radius-none);
-      touch-action: manipulation;
-      transition:
-        background-color 140ms var(--ease-out),
-        color 140ms var(--ease-out),
-        transform 160ms var(--ease-out);
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .product-card__size-pill:hover:not(:disabled),
-    .product-card__size-pill:focus-visible:not(:disabled) {
-      background-color: var(--color-text);
-      color: var(--color-white);
-    }
-
-    .product-card__size-pill:active:not(:disabled) {
-      transform: scale(0.96);
-    }
-
-    .product-card__size-pill--sold-out,
-    .product-card__size-pill:disabled {
-      opacity: 0.3;
-      text-decoration: line-through;
-      cursor: not-allowed;
-    }
-  }
-
-  /* ==========================================================================
-     Mobile Refined Frosted Glass Quick-Add Action Button
-     - Guaranteed 44px hit target, sleek 34px visual circle
-     - Doesn't obscure garment photo like bulky black button
-     ========================================================================== */
   .product-card__mobile-quick-btn {
     position: absolute;
-    right: 8px;
-    bottom: 8px;
-    z-index: 5;
-    width: 44px;
-    height: 44px;
-    padding: 0;
-    margin: 0;
-    background: transparent;
-    border: none;
+    right: 0;
+    bottom: 0;
+    z-index: 4;
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    color: var(--pc-ink);
+    border: 0;
     cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .product-card__mobile-quick-btn::before {
-    content: '';
+    content: "";
     position: absolute;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background-color: rgba(255, 255, 255, 0.94);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    transition:
-      transform 160ms var(--ease-out),
-      background-color 160ms var(--ease-out);
+    inset: 0.375rem;
+    background-color: var(--pc-paper);
+    box-shadow: 0 0 0 1px var(--pc-hairline);
+    transition: transform 200ms var(--pc-out);
   }
 
   .product-card__mobile-quick-btn svg {
     position: relative;
-    z-index: 1;
-    color: var(--color-text, #111111);
+    transition: transform 320ms var(--pc-out);
   }
 
+  /* Touch feedback: the square shrinks, the plus turns a quarter */
   .product-card__mobile-quick-btn:active::before {
-    transform: scale(0.92);
-    background-color: var(--color-white, #FFFFFF);
+    transform: scale(0.88);
   }
 
-  @media (min-width: 750px) {
+  .product-card__mobile-quick-btn:active svg {
+    transform: rotate(90deg) scale(0.9);
+  }
+
+  .product-card__mobile-quick-btn:focus-visible {
+    outline-offset: -6px;
+  }
+
+  @media (hover: hover) and (min-width: 750px) {
     .product-card__mobile-quick-btn {
       display: none;
     }
+
+    .product-card__desktop-action-bar {
+      position: absolute;
+      inset: auto 0 0 0;
+      z-index: 5;
+      display: flex;
+      align-items: stretch;
+      gap: 1px;
+      background-color: #dcdcdc;
+      background-color: color-mix(in srgb, var(--pc-ink) 16%, var(--pc-paper));
+      transform: translateY(101%);
+      transition: transform 260ms var(--pc-out);
+    }
+
+    .product-card:hover .product-card__desktop-action-bar,
+    .product-card__media-wrapper:hover .product-card__desktop-action-bar,
+    .product-card:focus-within .product-card__desktop-action-bar {
+      transform: translateY(0);
+      transition-duration: 320ms;
+    }
+
+    /* Keyboard focus reveals the bar. A mouse click does not leave it stuck open. */
+    .product-card:has(:focus-visible) .product-card__desktop-action-bar {
+      transform: translateY(0);
+      transition-duration: 320ms;
+    }
+
+    .product-card__quick-label {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      padding: 0 0.875rem;
+      background-color: var(--pc-paper);
+      color: var(--pc-ink-soft);
+      font-family: var(--font-body);
+      font-size: 0.8125rem;
+      line-height: 1;
+    }
+
+    .product-card__desktop-action-bar--single .product-card__quick-label {
+      display: none;
+    }
+
+    .product-card__quick-size-pills {
+      flex: 1 1 0;
+      min-width: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1px;
+    }
+
+    .product-card__quick-size-pills .product-card__quick-form {
+      flex: 1 0 2.75rem;
+    }
   }
 
-  /* ==========================================================================
-     Global Mobile Quick-Add Bottom Sheet (Apple iOS / Native UX)
-     ========================================================================== */
+  /* ---------- Caption ---------- */
+  .product-card__content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1875rem;
+    padding-top: 0.875rem;
+    text-align: start;
+  }
+
+  .product-card__title {
+    margin: 0;
+    font-family: var(--font-display, var(--font-body));
+    font-size: clamp(0.9375rem, 0.86rem + 0.25vw, 1.0625rem);
+    font-weight: 500;
+    line-height: 1.25;
+    letter-spacing: -0.012em;
+    text-wrap: balance;
+  }
+
+  .product-card__title-link {
+    color: var(--pc-ink);
+    text-decoration: none;
+  }
+
+  .product-card__title-link:focus-visible {
+    outline-offset: 4px;
+  }
+
+  .product-card__spec {
+    margin: 0;
+    color: var(--pc-ink-soft);
+    font-family: var(--font-body);
+    font-size: 0.8125rem;
+    font-weight: 400;
+    line-height: 1.35;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  .product-card__meta-row {
+    display: flex;
+    align-items: baseline;
+    margin-top: 0.25rem;
+  }
+
+  .product-card__price {
+    min-width: 0;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .product-card .product-card__price .price {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1.3;
+  }
+
+  .product-card .product-card__price .price__container {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.125rem 0.625rem;
+  }
+
+  .product-card .product-card__price .price__item--regular {
+    color: var(--pc-ink);
+    font-weight: 400;
+    letter-spacing: 0;
+  }
+
+  .product-card .product-card__price .price__item--sale {
+    color: var(--pc-sale);
+    font-weight: 500;
+    letter-spacing: 0;
+  }
+
+  .product-card .product-card__price s.price__item--regular {
+    color: var(--pc-ink-soft);
+    font-size: 0.8125rem;
+    font-weight: 400;
+    text-decoration: line-through;
+    text-decoration-thickness: 1px;
+    white-space: nowrap;
+  }
+
+  .product-card--sold-out .product-card__title-link,
+  .product-card--sold-out .product-card__price .price__item {
+    color: var(--pc-ink-soft);
+  }
+
+  /* ---------- Size sheet (touch and tablet) ---------- */
   .mobile-quick-sheet {
     position: fixed;
     inset: 0;
     z-index: 1200;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
     pointer-events: none;
     visibility: hidden;
-    transition: visibility 280ms ease;
+    transition: visibility 0s linear 440ms;
   }
 
   .mobile-quick-sheet.is-active {
     pointer-events: auto;
     visibility: visible;
+    transition-delay: 0s;
   }
 
   .mobile-quick-sheet__backdrop {
-    position: fixed;
+    position: absolute;
     inset: 0;
-    background-color: rgba(0, 0, 0, 0.45);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    background-color: rgba(17, 17, 17, 0.42);
     opacity: 0;
-    transition: opacity 280ms cubic-bezier(0.16, 1, 0.3, 1);
+    transition: opacity 360ms var(--pc-out);
   }
 
   .mobile-quick-sheet.is-active .mobile-quick-sheet__backdrop {
@@ -567,569 +810,638 @@
 
   .mobile-quick-sheet__container {
     position: fixed;
-    bottom: 0;
     left: 0;
     right: 0;
+    bottom: 0;
     z-index: 2;
-    background-color: var(--color-background, #FFFFFF);
-    border-top-left-radius: 20px;
-    border-top-right-radius: 20px;
-    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.16);
-    padding: 10px 18px max(24px, env(safe-area-inset-bottom, 24px));
     width: 100%;
-    max-width: 520px;
-    margin: 0 auto;
+    max-width: 32.5rem;
+    max-height: 85vh;
+    max-height: 85dvh;
+    margin-inline: auto;
+    padding: 0.25rem 1.25rem max(1.5rem, env(safe-area-inset-bottom, 0px));
+    overflow-y: auto;
+    overscroll-behavior: contain;
     box-sizing: border-box;
-    transform: translateY(105%);
-    transition: transform 340ms cubic-bezier(0.32, 0.72, 0, 1);
-    will-change: transform;
+    background-color: var(--pc-paper);
+    box-shadow: 0 -1px 0 var(--pc-hairline), 0 -24px 48px rgba(17, 17, 17, 0.1);
+    transform: translateY(104%);
+    transition: transform 440ms cubic-bezier(0.32, 0.72, 0, 1);
+    outline: none;
   }
 
   .mobile-quick-sheet.is-active .mobile-quick-sheet__container {
     transform: translateY(0);
   }
 
+  .mobile-quick-sheet__grab {
+    touch-action: none;
+  }
+
   .mobile-quick-sheet__drag-handle-wrap {
     display: flex;
     justify-content: center;
-    padding: 4px 0 10px;
+    padding: 0.5rem 0 0.75rem;
     cursor: grab;
   }
 
   .mobile-quick-sheet__drag-handle {
-    width: 38px;
-    height: 4.5px;
-    background-color: rgba(0, 0, 0, 0.16);
-    border-radius: 999px;
+    width: 2.25rem;
+    height: 3px;
+    background-color: rgba(17, 17, 17, 0.2);
   }
 
   .mobile-quick-sheet__header {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 12px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid var(--color-border-subtle, rgba(0, 0, 0, 0.08));
-    margin-bottom: 12px;
+    gap: 0.75rem;
+    padding-bottom: 1rem;
+    margin-bottom: 1.125rem;
+    border-bottom: 1px solid var(--pc-hairline);
   }
 
   .mobile-quick-sheet__product {
     display: flex;
     align-items: center;
-    gap: 12px;
-    min-width: 0;
+    gap: 0.875rem;
     flex: 1;
+    min-width: 0;
   }
 
   .mobile-quick-sheet__thumb-wrap {
-    width: 54px;
-    height: 72px;
-    border-radius: 4px;
-    overflow: hidden;
-    background-color: var(--color-surface, #F5F5F5);
     flex-shrink: 0;
+    width: 3.5rem;
+    height: 4.6667rem;
+    overflow: hidden;
+    background-color: var(--pc-sheet);
   }
 
   .mobile-quick-sheet__thumb {
+    display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    display: block;
   }
 
   .mobile-quick-sheet__info {
-    min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 0.125rem;
+    min-width: 0;
   }
 
   .mobile-quick-sheet__title {
-    font-size: 0.9375rem;
-    font-weight: 550;
-    letter-spacing: -0.01em;
-    color: var(--color-text, #111111);
-    margin: 0;
-    line-height: 1.25;
-    overflow: hidden;
-    text-overflow: ellipsis;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
+    margin: 0;
+    overflow: hidden;
+    color: var(--pc-ink);
+    font-family: var(--font-display, var(--font-body));
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.25;
+    letter-spacing: -0.012em;
   }
 
   .mobile-quick-sheet__price {
+    color: var(--pc-ink);
     font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--color-text, #111111);
     font-variant-numeric: tabular-nums;
   }
 
+  .mobile-quick-sheet__price .price {
+    font-size: 0.875rem;
+  }
+
+  .mobile-quick-sheet__price .price__item--sale {
+    color: var(--pc-sale);
+    font-weight: 500;
+  }
+
+  .mobile-quick-sheet__price .price__item--regular {
+    font-weight: 400;
+  }
+
+  .mobile-quick-sheet__price s.price__item--regular {
+    color: var(--pc-ink-soft);
+    font-size: 0.8125rem;
+  }
+
   .mobile-quick-sheet__spec {
-    font-size: 0.6875rem;
-    color: var(--color-text-subtle, #757575);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    margin-top: 2px;
+    color: var(--pc-ink-soft);
+    font-size: 0.8125rem;
+    line-height: 1.35;
   }
 
   .mobile-quick-sheet__close {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background-color: var(--color-surface, #F5F5F5);
-    border: 1px solid var(--color-border-subtle, rgba(0, 0, 0, 0.08));
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--color-text, #111111);
-    cursor: pointer;
-    flex-shrink: 0;
+    width: 2.75rem;
+    height: 2.75rem;
+    margin: -0.25rem -0.75rem 0 0;
     padding: 0;
+    background: transparent;
+    color: var(--pc-ink);
+    border: 0;
+    cursor: pointer;
     touch-action: manipulation;
-    transition: transform 140ms ease, background-color 140ms ease;
     -webkit-tap-highlight-color: transparent;
+    transition: transform 240ms var(--pc-out);
   }
 
   .mobile-quick-sheet__close:active {
-    transform: scale(0.92);
-    background-color: var(--color-border, #E5E5E5);
+    transform: rotate(90deg) scale(0.9);
+  }
+
+  .mobile-quick-sheet__close:focus-visible,
+  .mobile-quick-sheet__sizes .product-card__size-pill:focus-visible {
+    outline: 2px solid var(--pc-ink);
+    outline-offset: 2px;
   }
 
   .mobile-quick-sheet__label-row {
     display: flex;
-    justify-content: space-between;
     align-items: baseline;
-    margin-bottom: 10px;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    font-size: 0.8125rem;
+    line-height: 1.2;
   }
 
   .mobile-quick-sheet__label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--color-text, #111111);
+    color: var(--pc-ink);
+    font-weight: 500;
   }
 
   .mobile-quick-sheet__hint {
-    font-size: 0.6875rem;
-    color: var(--color-text-subtle, #757575);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    color: var(--pc-ink-soft);
+  }
+
+  .mobile-quick-sheet.is-single .mobile-quick-sheet__label-row {
+    display: none;
   }
 
   .mobile-quick-sheet__sizes {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.5rem;
   }
 
-  .mobile-quick-sheet__sizes .product-card__quick-form {
-    margin: 0;
+  .mobile-quick-sheet.is-single .mobile-quick-sheet__sizes {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .mobile-quick-sheet__sizes .product-card__size-pill {
-    width: 100%;
-    min-height: 48px;
-    font-size: 0.875rem;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    background-color: var(--color-surface, #F8F8F8);
-    border: 1.5px solid var(--color-border, #E5E5E5);
-    border-radius: 4px;
-    color: var(--color-text, #111111);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-    transition:
-      background-color 140ms var(--ease-out),
-      color 140ms var(--ease-out),
-      border-color 140ms var(--ease-out),
-      transform 140ms var(--ease-out);
+    min-height: 3.25rem;
+    font-size: 0.9375rem;
+    box-shadow: inset 0 0 0 1px rgba(17, 17, 17, 0.22);
   }
 
   .mobile-quick-sheet__sizes .product-card__size-pill:active:not(:disabled) {
-    transform: scale(0.95);
-    background-color: var(--color-text, #111111);
-    color: var(--color-white, #FFFFFF);
-    border-color: var(--color-text, #111111);
+    box-shadow: inset 0 0 0 1px var(--pc-ink);
   }
 
-  .mobile-quick-sheet__sizes .product-card__size-pill--sold-out,
-  .mobile-quick-sheet__sizes .product-card__size-pill:disabled {
-    opacity: 0.35;
-    text-decoration: line-through;
-    background-color: transparent;
-    border-style: dashed;
-    cursor: not-allowed;
+  .mobile-quick-sheet__sizes .product-card__size-pill:disabled,
+  .mobile-quick-sheet__sizes .product-card__size-pill--sold-out {
+    box-shadow: inset 0 0 0 1px rgba(17, 17, 17, 0.12);
   }
 
-  /* ==========================================================================
-     Card Content Below Photography (Strict Visual Hierarchy)
-     ========================================================================== */
-  .product-card__content {
-    display: flex;
-    flex-direction: column;
-    padding-top: 0.75rem;
-    text-align: left;
+  /* One variant only: the sheet is a single decisive button */
+  .mobile-quick-sheet.is-single .mobile-quick-sheet__sizes .product-card__size-pill {
+    background-color: var(--pc-ink);
+    color: var(--pc-paper);
+    box-shadow: none;
+    font-size: 0.9375rem;
   }
 
-  .product-card__spec {
-    color: var(--color-text-subtle, #6B6B6B);
-    letter-spacing: 0.08em;
-    font-size: 0.6875rem;
-    text-transform: uppercase;
-    margin-bottom: 0.25rem;
+  .mobile-quick-sheet.is-single .mobile-quick-sheet__sizes .product-card__size-pill::before {
+    background-color: #000000;
   }
 
-  .product-card__title {
-    font-family: var(--font-body);
-    font-size: clamp(0.9375rem, 1.2vw, 1.0625rem);
-    font-weight: 550;
-    line-height: 1.3;
-    margin: 0 0 0.35rem 0;
-    letter-spacing: -0.015em;
-    text-wrap: balance;
-  }
-
-  .product-card__title-link {
-    color: var(--color-text);
-    text-decoration: none;
-    transition: opacity 140ms ease;
-  }
-
-  .product-card__title-link:hover,
-  .product-card__title-link:focus-visible {
-    opacity: 0.8;
-  }
-
-  .product-card__meta-row {
-    display: flex;
-    align-items: baseline;
-    margin-top: 0.125rem;
-  }
-
-  .product-card__price {
-    font-variant-numeric: tabular-nums;
-    min-width: 0;
-  }
-
-  .product-card__price .price {
-    display: flex;
-    align-items: baseline;
-    font-size: clamp(0.9375rem, 1.15vw, 1rem);
-    line-height: 1.2;
-  }
-
-  .product-card__price .price__container {
-    display: inline-flex;
-    flex-direction: row;
-    align-items: baseline;
-    gap: 0.45rem;
-    flex-wrap: wrap;
-  }
-
-  .product-card__price .price__currency {
-    font-size: 0.85em;
-    font-weight: 450;
-    opacity: 0.75;
-    margin-right: 1.5px;
-    letter-spacing: 0;
-  }
-
-  .product-card__price .price__amount {
-    font-variant-numeric: tabular-nums;
-  }
-
-  .product-card__price .price__item--sale {
-    color: var(--color-sale, #991B1B);
-    font-weight: 600;
-    letter-spacing: -0.015em;
-  }
-
-  .product-card__price .price__item--regular {
-    color: var(--color-text, #111111);
-    font-weight: 600;
-    letter-spacing: -0.015em;
-  }
-
-  .product-card__price s.price__item--regular {
-    color: var(--color-text-subtle, #8A8A8A);
-    font-weight: 400;
-    font-size: 0.8125rem;
-    text-decoration: line-through;
-    text-decoration-thickness: 1px;
+  .product-card__sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
     white-space: nowrap;
+    border: 0;
   }
-
-  .product-card--sold-out .price__item--sale {
-    color: var(--color-text);
-    font-weight: 500;
-  }
-
-
 
   @media (prefers-reduced-motion: reduce) {
-    .product-card__image,
-    .product-card__film,
-    .product-card__desktop-action-bar,
-    .mobile-quick-sheet__container,
-    .mobile-quick-sheet__backdrop,
-    .product-card__mobile-quick-btn::before,
-    .product-card__size-pill {
-      transition: none;
+    .product-card *,
+    .product-card *::before,
+    .mobile-quick-sheet,
+    .mobile-quick-sheet *,
+    .mobile-quick-sheet *::before {
+      transition-duration: 0.01ms !important;
+      transition-delay: 0s !important;
+      animation-duration: 0.01ms !important;
+    }
+
+    .product-card__image:nth-child(n + 2),
+    .product-card[data-frame="1"] .product-card__image:nth-child(2),
+    .product-card[data-frame="2"] .product-card__image:nth-child(-n + 3),
+    .product-card__media-wrapper:hover .product-card__image:only-child {
+      transform: none;
+    }
+
+    .product-card__media-link:active,
+    .product-card__mobile-quick-btn:active svg {
+      transform: none;
     }
   }
 {% endstylesheet %}
 
 <script>
-  // Delegated handler for Mobile Quick-Add Bottom Sheet & Desktop Quick-Add
+  // One delegated controller for every card on the page.
   if (!window._productCardScriptInitialized) {
     window._productCardScriptInitialized = true;
 
-    var filmFine = false;
-    var filmReduce = false;
-    try {
-      filmFine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-      filmReduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    } catch (err) {}
+    (function () {
+      var doc = document;
+      var CART_ADD_URL = '{{ routes.cart_add_url }}.js';
+      var SHEET_ID = 'MobileQuickAddSheet';
 
-    if (filmFine && !filmReduce) {
-      var filmHold = 480;
-      var filmSlide = 640;
-      var cardOf = function (node) {
-        return node && node.closest ? node.closest('[data-product-card]') : null;
-      };
-      var clearFilm = function (card) {
-        window.clearTimeout(card._filmTimer);
-      };
-      var playFilm = function (card) {
-        var film = card.querySelector('.product-card__film');
-        if (!film || film.children.length < 2) return;
-        clearFilm(card);
-        var count = film.children.length;
-        var index = 0;
-        film.style.setProperty('--i', '0');
-        var advance = function () {
-          if (index >= count - 1) return;
-          index += 1;
-          film.style.setProperty('--i', String(index));
-          card._filmTimer = window.setTimeout(advance, filmSlide + filmHold);
+      var lastTrigger = null;
+      var drag = null;
+      var dragMoved = false;
+
+      // iOS Safari only paints :active when a touchstart listener exists.
+      doc.addEventListener('touchstart', function () {}, { passive: true });
+
+      /* ------------------------------------------------------------------
+         1. Pointer: choose the photograph by horizontal position
+         ------------------------------------------------------------------ */
+      var finePointer = false;
+      try {
+        finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+      } catch (err) {}
+
+      if (finePointer) {
+        var scrub = { media: null, card: null, count: 0, x: 0, raf: 0 };
+
+        var frameAt = function () {
+          if (scrub.count === 2) return 1;
+          var rect = scrub.media.getBoundingClientRect();
+          var ratio = rect.width ? (scrub.x - rect.left) / rect.width : 0;
+          ratio = Math.min(Math.max(ratio, 0), 0.999);
+          return 1 + Math.floor(ratio * (scrub.count - 1));
         };
-        card._filmTimer = window.setTimeout(advance, filmHold);
-      };
-      var resetFilm = function (card) {
-        var film = card.querySelector('.product-card__film');
-        if (!film) return;
-        clearFilm(card);
-        var at = film.style.getPropertyValue('--i');
-        if (!at || at === '0') return;
-        film.style.setProperty('--i', '0');
-      };
-      document.addEventListener('pointerover', function (event) {
-        var card = cardOf(event.target);
-        if (!card || card === cardOf(event.relatedTarget)) return;
-        playFilm(card);
-      });
-      document.addEventListener('pointerout', function (event) {
-        var card = cardOf(event.target);
-        if (!card || card === cardOf(event.relatedTarget)) return;
-        resetFilm(card);
-      });
-    }
 
-    // Helper: Ensure Global Mobile Quick Sheet in DOM
-    var ensureQuickAddSheet = function () {
-      var sheet = document.getElementById('MobileQuickAddSheet');
-      if (!sheet) {
-        sheet = document.createElement('div');
-        sheet.id = 'MobileQuickAddSheet';
+        var paint = function () {
+          scrub.raf = 0;
+          if (!scrub.media) return;
+          var next = String(frameAt());
+          if (scrub.card.getAttribute('data-frame') !== next) {
+            scrub.card.setAttribute('data-frame', next);
+          }
+        };
+
+        var onMove = function (event) {
+          scrub.x = event.clientX;
+          if (!scrub.raf) scrub.raf = window.requestAnimationFrame(paint);
+        };
+
+        var stopScrub = function () {
+          if (!scrub.media) return;
+          scrub.media.removeEventListener('pointermove', onMove);
+          if (scrub.raf) {
+            window.cancelAnimationFrame(scrub.raf);
+            scrub.raf = 0;
+          }
+          scrub.card.removeAttribute('data-frame');
+          scrub.media = null;
+          scrub.card = null;
+        };
+
+        doc.addEventListener('pointerover', function (event) {
+          if (event.pointerType === 'touch' || !event.target.closest) return;
+          var media = event.target.closest('.product-card__media-wrapper');
+          if (!media || media === scrub.media) return;
+          stopScrub();
+          var film = media.querySelector('.product-card__film');
+          var card = media.closest('[data-product-card]');
+          if (!film || !card || film.children.length < 2) return;
+          scrub.media = media;
+          scrub.card = card;
+          scrub.count = film.children.length;
+          scrub.x = event.clientX;
+          media.addEventListener('pointermove', onMove, { passive: true });
+          paint();
+        });
+
+        doc.addEventListener('pointerout', function (event) {
+          if (!scrub.media) return;
+          if (event.relatedTarget && scrub.media.contains(event.relatedTarget)) return;
+          stopScrub();
+        });
+      }
+
+      /* ------------------------------------------------------------------
+         2. Screen-reader confirmation
+         ------------------------------------------------------------------ */
+      var announce = function (message) {
+        var live = doc.getElementById('ProductCardStatus');
+        if (!live) {
+          live = doc.createElement('div');
+          live.id = 'ProductCardStatus';
+          live.className = 'product-card__sr';
+          live.setAttribute('role', 'status');
+          live.setAttribute('aria-live', 'polite');
+          doc.body.appendChild(live);
+        }
+        live.textContent = '';
+        window.setTimeout(function () {
+          live.textContent = message;
+        }, 60);
+      };
+
+      /* ------------------------------------------------------------------
+         3. Size sheet (touch and tablet)
+         ------------------------------------------------------------------ */
+      var getSheet = function () {
+        return doc.getElementById(SHEET_ID);
+      };
+
+      var ensureSheet = function () {
+        var sheet = getSheet();
+        if (sheet) return sheet;
+
+        sheet = doc.createElement('div');
+        sheet.id = SHEET_ID;
         sheet.className = 'mobile-quick-sheet';
-        sheet.setAttribute('aria-hidden', 'true');
         sheet.setAttribute('role', 'dialog');
         sheet.setAttribute('aria-modal', 'true');
+        sheet.setAttribute('aria-labelledby', 'MobileQuickAddTitle');
+        sheet.setAttribute('aria-hidden', 'true');
         sheet.setAttribute('inert', '');
         sheet.innerHTML = [
           '<div class="mobile-quick-sheet__backdrop" data-quick-sheet-close></div>',
-          '<div class="mobile-quick-sheet__container" role="document">',
-          '  <div class="mobile-quick-sheet__drag-handle-wrap" data-quick-sheet-close>',
-          '    <div class="mobile-quick-sheet__drag-handle"></div>',
-          '  </div>',
-          '  <div class="mobile-quick-sheet__header">',
-          '    <div class="mobile-quick-sheet__product">',
-          '      <div class="mobile-quick-sheet__thumb-wrap">',
-          '        <img class="mobile-quick-sheet__thumb" src="" alt="" width="54" height="72" loading="lazy">',
-          '      </div>',
-          '      <div class="mobile-quick-sheet__info">',
-          '        <h4 class="mobile-quick-sheet__title"></h4>',
-          '        <div class="mobile-quick-sheet__price"></div>',
-          '        <div class="mobile-quick-sheet__spec text-micro"></div>',
-          '      </div>',
+          '<div class="mobile-quick-sheet__container" tabindex="-1">',
+          '  <div class="mobile-quick-sheet__grab" data-quick-sheet-grab>',
+          '    <div class="mobile-quick-sheet__drag-handle-wrap" data-quick-sheet-close>',
+          '      <div class="mobile-quick-sheet__drag-handle"></div>',
           '    </div>',
-          '    <button type="button" class="mobile-quick-sheet__close" data-quick-sheet-close aria-label="Close size sheet">',
-          '      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">',
-          '        <path d="M1 1L11 11M1 11L11 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>',
-          '      </svg>',
-          '    </button>',
+          '    <div class="mobile-quick-sheet__header">',
+          '      <div class="mobile-quick-sheet__product">',
+          '        <div class="mobile-quick-sheet__thumb-wrap">',
+          '          <img class="mobile-quick-sheet__thumb" src="" alt="" width="56" height="75" loading="lazy">',
+          '        </div>',
+          '        <div class="mobile-quick-sheet__info">',
+          '          <h2 class="mobile-quick-sheet__title" id="MobileQuickAddTitle"></h2>',
+          '          <div class="mobile-quick-sheet__price"></div>',
+          '          <div class="mobile-quick-sheet__spec"></div>',
+          '        </div>',
+          '      </div>',
+          '      <button type="button" class="mobile-quick-sheet__close" data-quick-sheet-close aria-label="Close size sheet">',
+          '        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">',
+          '          <path d="M1.5 1.5L12.5 12.5M1.5 12.5L12.5 1.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="square"/>',
+          '        </svg>',
+          '      </button>',
+          '    </div>',
           '  </div>',
           '  <div class="mobile-quick-sheet__body">',
           '    <div class="mobile-quick-sheet__label-row">',
-          '      <span class="mobile-quick-sheet__label text-micro">Select Size</span>',
-          '      <span class="mobile-quick-sheet__hint text-micro">Instant Add</span>',
+          '      <span class="mobile-quick-sheet__label">Select a size</span>',
+          '      <span class="mobile-quick-sheet__hint">Tap to add to bag</span>',
           '    </div>',
           '    <div class="mobile-quick-sheet__sizes" data-quick-sheet-sizes></div>',
           '  </div>',
           '</div>'
-        ].join('\n');
-        document.body.appendChild(sheet);
-      }
-      return sheet;
-    };
+        ].join('');
+        doc.body.appendChild(sheet);
+        // Commit the closed state so the first opening animates too.
+        sheet.getBoundingClientRect();
+        return sheet;
+      };
 
-    var closeQuickSheet = function () {
-      var sheet = document.getElementById('MobileQuickAddSheet');
-      if (sheet && sheet.classList.contains('is-active')) {
+      var closeSheet = function () {
+        var sheet = getSheet();
+        if (!sheet || !sheet.classList.contains('is-active')) return;
         sheet.classList.remove('is-active');
         sheet.setAttribute('aria-hidden', 'true');
         sheet.setAttribute('inert', '');
-        document.body.style.overflow = '';
-      }
-    };
+        doc.body.style.overflow = '';
+        if (lastTrigger && doc.contains(lastTrigger)) {
+          try { lastTrigger.focus({ preventScroll: true }); } catch (err) {}
+        }
+        lastTrigger = null;
+      };
 
-    // Open/Close Mobile Quick Add Bottom Sheet
-    document.addEventListener('click', function (e) {
-      var mobileTrigger = e.target.closest('[data-mobile-quick-trigger]');
-      if (mobileTrigger) {
-        e.preventDefault();
-        e.stopPropagation();
-        var card = mobileTrigger.closest('[data-product-card]');
+      var openSheet = function (trigger) {
+        var card = trigger.closest('[data-product-card]');
         if (!card) return;
+        var sheet = ensureSheet();
 
-        var sheet = ensureQuickAddSheet();
-        if (!sheet) return;
-
-        // Extract product card metadata
         var titleEl = card.querySelector('.product-card__title-link') || card.querySelector('.product-card__title');
         var title = titleEl ? titleEl.textContent.trim() : '';
-
         var priceEl = card.querySelector('.product-card__price');
-        var priceHTML = priceEl ? priceEl.innerHTML : '';
-
         var imgEl = card.querySelector('.product-card__image');
         var imgSrc = imgEl ? (imgEl.currentSrc || imgEl.src) : '';
-
         var specEl = card.querySelector('.product-card__spec');
         var specText = specEl ? specEl.textContent.trim() : '';
 
-        // Inject into sheet
-        var sheetTitle = sheet.querySelector('.mobile-quick-sheet__title');
-        if (sheetTitle) sheetTitle.textContent = title;
+        sheet.querySelector('.mobile-quick-sheet__title').textContent = title;
 
         var sheetPrice = sheet.querySelector('.mobile-quick-sheet__price');
-        if (sheetPrice && priceHTML) sheetPrice.innerHTML = priceHTML;
+        if (priceEl) sheetPrice.innerHTML = priceEl.innerHTML;
 
-        var sheetThumb = sheet.querySelector('.mobile-quick-sheet__thumb');
-        if (sheetThumb && imgSrc) {
-          sheetThumb.src = imgSrc;
-          sheetThumb.alt = title;
+        var thumb = sheet.querySelector('.mobile-quick-sheet__thumb');
+        if (imgSrc) {
+          thumb.src = imgSrc;
+          thumb.alt = '';
         }
 
         var sheetSpec = sheet.querySelector('.mobile-quick-sheet__spec');
-        if (sheetSpec) {
-          sheetSpec.textContent = specText;
-          sheetSpec.style.display = specText ? 'block' : 'none';
+        sheetSpec.textContent = specText;
+        sheetSpec.style.display = specText ? 'block' : 'none';
+
+        var source = card.querySelector('.product-card__quick-size-pills');
+        var target = sheet.querySelector('[data-quick-sheet-sizes]');
+        if (source && target) {
+          target.innerHTML = source.innerHTML;
+          var forms = target.querySelectorAll('.product-card__quick-form');
+          var single = forms.length === 1 && !!forms[0].querySelector('[data-variant-title="Add"]');
+          sheet.classList.toggle('is-single', single);
         }
 
-        var sizeFormsContainer = card.querySelector('.product-card__quick-size-pills');
-        var sizesTarget = sheet.querySelector('[data-quick-sheet-sizes]');
-        if (sizesTarget && sizeFormsContainer) {
-          sizesTarget.innerHTML = sizeFormsContainer.innerHTML;
-        }
-
-        // Reveal sheet
+        lastTrigger = trigger;
         sheet.classList.add('is-active');
         sheet.removeAttribute('inert');
         sheet.setAttribute('aria-hidden', 'false');
-        document.body.style.overflow = 'hidden';
-        return;
-      }
+        doc.body.style.overflow = 'hidden';
 
-      if (e.target.closest('[data-quick-sheet-close]')) {
-        e.preventDefault();
-        closeQuickSheet();
-        return;
-      }
+        var container = sheet.querySelector('.mobile-quick-sheet__container');
+        window.requestAnimationFrame(function () {
+          try { container.focus({ preventScroll: true }); } catch (err) {}
+        });
+      };
 
-      if (e.target.classList && e.target.classList.contains('mobile-quick-sheet__backdrop')) {
-        e.preventDefault();
-        closeQuickSheet();
-        return;
-      }
-    });
+      doc.addEventListener('click', function (event) {
+        var node = event.target;
+        if (!node || !node.closest) return;
 
-    // Close on Escape key
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') {
-        closeQuickSheet();
-      }
-    });
+        var trigger = node.closest('[data-mobile-quick-trigger]');
+        if (trigger) {
+          event.preventDefault();
+          event.stopPropagation();
+          openSheet(trigger);
+          return;
+        }
 
-    // Instant AJAX Add to Cart Submission with tactile feedback
-    document.addEventListener('submit', function (e) {
-      var form = e.target.closest('.product-card__quick-form');
-      if (!form) return;
-
-      e.preventDefault();
-      var btn = form.querySelector('button[type="submit"]');
-      if (!btn || btn.disabled) return;
-
-      var originalText = btn.textContent;
-      btn.textContent = '...';
-      btn.disabled = true;
-
-      var formData = new FormData(form);
-
-      fetch('{{ routes.cart_add_url }}.js', {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json'
-        },
-        body: formData
-      })
-      .then(function (res) {
-        if (!res.ok) throw new Error('Add to cart failed');
-        return res.json();
-      })
-      .then(function (item) {
-        btn.textContent = '✓';
-        btn.style.backgroundColor = 'var(--color-text, #111111)';
-        btn.style.color = '#FFFFFF';
-        btn.style.borderColor = 'var(--color-text, #111111)';
-
-        setTimeout(function () {
-          btn.textContent = originalText;
-          btn.disabled = false;
-          btn.style.backgroundColor = '';
-          btn.style.color = '';
-          btn.style.borderColor = '';
-
-          // Close mobile sheet if open
-          closeQuickSheet();
-
-          // Trigger Cart Drawer update & slide-out
-          window.dispatchEvent(new CustomEvent('cart:refresh'));
-          window.dispatchEvent(new CustomEvent('cart:open'));
-        }, 320);
-      })
-      .catch(function (err) {
-        console.error('Quick add failed:', err);
-        btn.textContent = originalText;
-        btn.disabled = false;
-        form.submit();
+        if (node.closest('[data-quick-sheet-close]')) {
+          if (dragMoved) {
+            dragMoved = false;
+            return;
+          }
+          event.preventDefault();
+          closeSheet();
+        }
       });
-    });
+
+      doc.addEventListener('keydown', function (event) {
+        var sheet = getSheet();
+        if (!sheet || !sheet.classList.contains('is-active')) return;
+
+        if (event.key === 'Escape') {
+          closeSheet();
+          return;
+        }
+        if (event.key !== 'Tab') return;
+
+        var focusable = sheet.querySelectorAll('button:not([disabled])');
+        if (!focusable.length) return;
+        var first = focusable[0];
+        var last = focusable[focusable.length - 1];
+        var container = sheet.querySelector('.mobile-quick-sheet__container');
+        var active = doc.activeElement;
+
+        if (event.shiftKey && (active === first || active === container)) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && active === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      });
+
+      window.addEventListener('pageshow', function (event) {
+        if (event.persisted) closeSheet();
+      });
+
+      /* Drag the sheet down to dismiss: transform and opacity only */
+      doc.addEventListener('pointerdown', function (event) {
+        dragMoved = false;
+        if (!event.target.closest) return;
+        var grab = event.target.closest('[data-quick-sheet-grab]');
+        if (!grab || event.target.closest('button')) return;
+        var sheet = getSheet();
+        if (!sheet || !sheet.classList.contains('is-active')) return;
+
+        var container = sheet.querySelector('.mobile-quick-sheet__container');
+        drag = {
+          id: event.pointerId,
+          startY: event.clientY,
+          lastY: event.clientY,
+          lastT: event.timeStamp,
+          velocity: 0,
+          dy: 0,
+          height: container.offsetHeight || 1,
+          container: container,
+          backdrop: sheet.querySelector('.mobile-quick-sheet__backdrop')
+        };
+        container.style.transition = 'none';
+        try { grab.setPointerCapture(event.pointerId); } catch (err) {}
+      });
+
+      doc.addEventListener('pointermove', function (event) {
+        if (!drag || event.pointerId !== drag.id) return;
+        var dy = Math.max(0, event.clientY - drag.startY);
+        if (dy > 4) dragMoved = true;
+        var dt = event.timeStamp - drag.lastT;
+        if (dt > 0) drag.velocity = (event.clientY - drag.lastY) / dt;
+        drag.lastY = event.clientY;
+        drag.lastT = event.timeStamp;
+        drag.dy = dy;
+        drag.container.style.transform = 'translateY(' + dy + 'px)';
+        drag.backdrop.style.opacity = String(Math.max(0, 1 - dy / drag.height));
+      });
+
+      var endDrag = function (event) {
+        if (!drag || (event && event.pointerId !== drag.id)) return;
+        var state = drag;
+        drag = null;
+        state.container.style.transition = '';
+        state.container.style.transform = '';
+        state.backdrop.style.opacity = '';
+        if (state.dy > state.height * 0.28 || state.velocity > 0.6) closeSheet();
+      };
+      doc.addEventListener('pointerup', endDrag);
+      doc.addEventListener('pointercancel', endDrag);
+
+      /* ------------------------------------------------------------------
+         4. Instant add to bag
+         Capture phase, so this runs before any global add-to-cart handler
+         and a card never submits twice.
+         ------------------------------------------------------------------ */
+      doc.addEventListener('submit', function (event) {
+        var form = event.target;
+        if (!form || !form.classList || !form.classList.contains('product-card__quick-form')) return;
+
+        event.preventDefault();
+        var btn = event.submitter || form.querySelector('button[type="submit"]');
+        if (!btn || btn.disabled || btn.hasAttribute('data-state')) return;
+
+        var originalText = btn.textContent;
+        var size = btn.getAttribute('data-variant-title');
+        var titleInput = form.querySelector('input[name="properties[_adot_title]"]');
+        var productTitle = titleInput ? titleInput.value : '';
+
+        btn.setAttribute('data-state', 'loading');
+        btn.setAttribute('aria-busy', 'true');
+        btn.textContent = '…';
+
+        fetch(CART_ADD_URL, {
+          method: 'POST',
+          headers: { 'Accept': 'application/json' },
+          body: new FormData(form)
+        })
+          .then(function (res) {
+            if (!res.ok) throw new Error('Add to cart failed');
+            return res.json();
+          })
+          .then(function () {
+            btn.setAttribute('data-state', 'done');
+            btn.textContent = '✓';
+            announce(productTitle + (size && size !== 'Add' ? ', size ' + size : '') + ' added to bag.');
+
+            window.setTimeout(function () {
+              btn.textContent = originalText;
+              btn.removeAttribute('data-state');
+              btn.removeAttribute('aria-busy');
+              if (btn.blur) btn.blur();
+
+              closeSheet();
+
+              window.dispatchEvent(new CustomEvent('cart:refresh'));
+              window.dispatchEvent(new CustomEvent('cart:open'));
+            }, 360);
+          })
+          .catch(function (err) {
+            console.error('Quick add failed:', err);
+            btn.textContent = originalText;
+            btn.removeAttribute('data-state');
+            btn.removeAttribute('aria-busy');
+            form.submit();
+          });
+      }, true);
+    })();
   }
 </script>

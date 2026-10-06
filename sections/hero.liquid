@@ -140,8 +140,7 @@
           <h1 class="hero__heading hero-title">
             {%- assign hero_words = section.settings.heading | split: ' ' -%}
             {%- for word in hero_words -%}
-              <span class="hero__word"><span class="hero__word-i" style="--i: {{ forloop.index0 }}">{{ word | escape }}</span></span>
-              {%- unless forloop.last %} {% endunless -%}
+              <span class="hero__word"><span class="hero__word-i" style="--i: {{ forloop.index0 }}">{{ word | escape }}</span></span>{% unless forloop.last %} {% endunless %}
             {%- endfor -%}
           </h1>
         {% endif %}
@@ -473,6 +472,11 @@
     vertical-align: top;
     padding-block: 0.08em 0.14em;
     margin-block: -0.08em -0.14em;
+    margin-right: 0.28em;
+  }
+
+  .hero__word:last-child {
+    margin-right: 0;
   }
 
   .hero__word-i {
