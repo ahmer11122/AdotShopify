@@ -297,7 +297,7 @@
     --hr-hook: calc(var(--hr-h) * 0.04); /* hook loop centre = 4% down the image */
     --hr-gutter: clamp(1rem, 4vw, 3rem);
     --hr-pitch: min(64vw, 320px);
-    --hr-ease: cubic-bezier(0.2, 0.85, 0.2, 1);
+    --hr-ease: cubic-bezier(0.23, 1, 0.32, 1);
     position: relative;
     overflow: hidden;
     background: var(--hr-bg, var(--color-background, #f4f2ee));
@@ -414,30 +414,6 @@
     margin: 0;
     padding: 0;
     list-style: none;
-  }
-
-  /* Gentle First-Look Entry Peek Nudge on mobile / touch */
-  @keyframes hrail-peek-nudge {
-    0% {
-      transform: translate3d(0, 0, 0);
-    }
-    35% {
-      transform: translate3d(-36px, 0, 0);
-    }
-    68% {
-      transform: translate3d(-6px, 0, 0);
-    }
-    85% {
-      transform: translate3d(-1px, 0, 0);
-    }
-    100% {
-      transform: translate3d(0, 0, 0);
-    }
-  }
-
-  .hrail__track--nudge {
-    animation: hrail-peek-nudge 1150ms cubic-bezier(0.25, 1, 0.5, 1) forwards;
-    will-change: transform;
   }
 
   /* Before JS: a plain swipe list of front images. It still works. */
@@ -696,41 +672,47 @@
     opacity: 1;
   }
 
-  /* ---------- Intro: rod draws, pieces drop on ---------- */
+  /* ---------- Intro: rod draws, pieces settle on with boutique splay ---------- */
   .hrail.is-ready:not(.is-in) .hrail__link {
     opacity: 0;
   }
 
   .hrail.is-ready:not(.is-in) .hrail__rod {
     transform: scaleX(0);
+    opacity: 0;
   }
 
   .hrail.is-ready.is-in .hrail__rod {
-    animation: hrail-rod 0.9s var(--hr-ease) both;
+    animation: hrail-rod 750ms var(--hr-ease) both;
   }
 
   .hrail.is-ready.is-in .hrail__link {
-    animation: hrail-drop 1s var(--hr-ease) both;
-    animation-delay: calc(0.25s + var(--i) * 55ms);
+    animation: hrail-drop 800ms var(--hr-ease) both;
+    animation-delay: calc(80ms + var(--i, 0) * 45ms);
   }
 
   @keyframes hrail-rod {
-    from {
+    0% {
       transform: scaleX(0);
+      opacity: 0;
     }
-    to {
+    100% {
       transform: scaleX(1);
+      opacity: 1;
     }
   }
 
   @keyframes hrail-drop {
-    from {
+    0% {
       opacity: 0;
-      transform: translateY(-26px) rotate(2.5deg);
+      transform: translateY(-18px) scale(0.96) rotate(-1.5deg);
     }
-    to {
+    65% {
+      transform: translateY(1.5px) scale(1.006) rotate(0.35deg);
+    }
+    100% {
       opacity: 1;
-      transform: none;
+      transform: translateY(0) scale(1) rotate(0deg);
     }
   }
 
@@ -1791,7 +1773,6 @@
       }
 
       userAct() {
-        if (this.track) this.track.classList.remove('hrail__track--nudge');
         if (this.userActed) return;
         this.userActed = true;
         clearTimeout(this.attractT);
@@ -1933,20 +1914,6 @@
         if (this.introDone) return;
         this.introDone = true;
         this.section.classList.add('is-in');
-
-        // Mobile / Touch: Gentle First-Look Peek Nudge on initial entry
-        if (this.mode !== 'rail' && !this.userActed && !this.reduce.matches && this.track) {
-          var self = this;
-          setTimeout(function () {
-            if (self.userActed || !self.track) return;
-            self.track.classList.add('hrail__track--nudge');
-            setTimeout(function () {
-              if (self.track) {
-                self.track.classList.remove('hrail__track--nudge');
-              }
-            }, 1250);
-          }, 450);
-        }
       }
 
       startAttract() {
