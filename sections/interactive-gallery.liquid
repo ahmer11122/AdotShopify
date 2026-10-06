@@ -43,14 +43,9 @@
     <header class="hrail__head">
       <div class="hrail__head-row">
         <div class="hrail__head-text">
-          {% if section.settings.eyebrow != blank or total > 0 %}
+          {% if section.settings.eyebrow != blank %}
             <p class="text-micro hrail__eyebrow">
-              {% if section.settings.eyebrow != blank %}
-                <span>{{ section.settings.eyebrow }}</span>
-              {% endif %}
-              {% if total > 0 %}
-                <span class="hrail__count" aria-hidden="true">({{ total_label }})</span>
-              {% endif %}
+              <span>{{ section.settings.eyebrow }}</span>
             </p>
           {% endif %}
           {% if section.settings.heading != blank %}
@@ -353,24 +348,11 @@
   }
 
   .hrail__eyebrow {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin: 0 0 1rem;
+    margin: 0 0 0.75rem;
     color: var(--color-text-muted, rgba(0, 0, 0, 0.55));
     font-weight: 500;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .hrail__eyebrow > span:first-child:not(:only-child)::after {
-    content: '';
-    display: inline-block;
-    width: 2.5rem;
-    height: 1px;
-    margin-left: 0.75rem;
-    vertical-align: middle;
-    background: currentColor;
-    opacity: 0.4;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
   }
 
   .hrail__heading {
