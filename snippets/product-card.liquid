@@ -58,9 +58,10 @@
     endif
     assign frame_count = product.images.size | at_most: 3
 
-    assign size_option = product.options_by_name['Size']
     assign has_sizes = false
-    if size_option and size_option.values.size > 0 and product.has_only_default_variant == false
+    if product.has_only_default_variant == false and product.variants.size > 1
+      assign has_sizes = true
+    elsif product.options_by_name['Size'] or product.options_by_name['size'] or product.options_by_name['Sizes'] or product.options_by_name['SIZE']
       assign has_sizes = true
     endif
   else
@@ -85,7 +86,7 @@
         assign frame_count = 2
       endif
     endif
-    assign has_sizes = false
+    assign has_sizes = true
     assign fallback_variant_id = variant_id | default: fallback_product.selected_or_first_available_variant.id
   endif
 
@@ -211,7 +212,7 @@
 
       <!-- Pointer: a flush size bar rises from the bottom edge of the photograph -->
       <div
-        class="product-card__desktop-action-bar {% unless product and has_sizes %}product-card__desktop-action-bar--single{% endunless %}"
+        class="product-card__desktop-action-bar {% unless has_sizes %}product-card__desktop-action-bar--single{% endunless %}"
         role="group"
         aria-label="Quick add sizes"
       >
@@ -219,6 +220,10 @@
         <div class="product-card__quick-size-pills">
           {% if product and has_sizes %}
             {% for variant in product.variants %}
+              {% assign var_label = variant.title %}
+              {% if var_label contains '/' %}
+                {% assign var_label = var_label | split: '/' | last | strip %}
+              {% endif %}
               <form method="post" action="{{ routes.cart_add_url }}" class="product-card__quick-form">
                 <input type="hidden" name="id" value="{{ variant.id }}">
                 <input type="hidden" name="quantity" value="1">
@@ -229,10 +234,10 @@
                   type="submit"
                   class="product-card__size-pill {% unless variant.available %}product-card__size-pill--sold-out{% endunless %}"
                   {% unless variant.available %}disabled aria-disabled="true"{% endunless %}
-                  data-variant-title="{{ variant.title }}"
-                  title="Add size {{ variant.title }}"
+                  data-variant-title="{{ var_label }}"
+                  title="Add size {{ var_label }}"
                 >
-                  {{ variant.title }}
+                  {{ var_label }}
                 </button>
               </form>
             {% endfor %}
