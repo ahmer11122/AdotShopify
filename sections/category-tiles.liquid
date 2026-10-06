@@ -27,12 +27,11 @@
   {% # theme-check-enable ParserBlockingScript %}
   {% if section.settings.heading != blank %}
     <div class="category-tiles__header">
-      <p class="category-tiles__eyebrow text-micro">
-        {%- if section.settings.eyebrow != blank -%}
+      {%- if section.settings.eyebrow != blank -%}
+        <p class="category-tiles__eyebrow text-micro">
           <span>{{ section.settings.eyebrow }}</span>
-        {%- endif -%}
-        <span class="category-tiles__count" aria-hidden="true">({{ section.blocks.size | prepend: '00' | slice: -2, 2 }})</span>
-      </p>
+        </p>
+      {%- endif -%}
       <h2 class="category-tiles__heading">
         {%- assign heading_words = section.settings.heading | split: ' ' -%}
         {%- for word in heading_words -%}
@@ -188,24 +187,11 @@
   }
 
   .category-tiles__eyebrow {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
     margin: 0 0 1rem;
     color: var(--color-text-muted);
     font-weight: 500;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .category-tiles__eyebrow > span:first-child:not(:only-child)::after {
-    content: '';
-    display: inline-block;
-    width: 2.5rem;
-    height: 1px;
-    margin-left: 0.75rem;
-    vertical-align: middle;
-    background: currentColor;
-    opacity: 0.4;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
   }
 
   .category-tiles__heading {

@@ -49,14 +49,9 @@
 
   <div class="featured-collection__header">
     <div class="featured-collection__title-group">
-      {% if section.settings.eyebrow != blank or shown_count > 0 %}
+      {% if section.settings.eyebrow != blank %}
         <p class="featured-collection__eyebrow text-micro">
-          {%- if section.settings.eyebrow != blank -%}
-            <span>{{ section.settings.eyebrow }}</span>
-          {%- endif -%}
-          {% if shown_count > 0 %}
-            <span class="featured-collection__count" aria-hidden="true">({{ shown_count | prepend: '00' | slice: -2, 2 }})</span>
-          {% endif %}
+          <span>{{ section.settings.eyebrow }}</span>
         </p>
       {% endif %}
 
@@ -164,24 +159,11 @@
   }
 
   .featured-collection__eyebrow {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
     margin: 0 0 1rem;
     color: var(--color-text-muted);
     font-weight: 500;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .featured-collection__eyebrow > span:first-child:not(:only-child)::after {
-    content: '';
-    display: inline-block;
-    width: 2.5rem;
-    height: 1px;
-    margin-left: 0.75rem;
-    vertical-align: middle;
-    background: currentColor;
-    opacity: 0.4;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
   }
 
   .featured-collection__heading {
