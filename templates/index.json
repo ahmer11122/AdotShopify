@@ -177,12 +177,17 @@
         "card_6"
       ],
       "settings": {
-        "eyebrow": "On the rail",
-        "heading": "Clean Cuts. Quality Fabrics.",
-        "caption": "",
-        "button_label": "Shop All Pieces",
+        "eyebrow": "",
+        "heading": "The Essentials",
+        "caption": "Hoodies, shirts and trousers for every day.",
+        "idle_title": "",
+        "hint_hover": "Hover a piece to turn it.",
+        "hint_touch": "Swipe to browse. Tap a piece to open.",
+        "button_label": "Shop All",
         "button_link": "/collections/all",
         "whatsapp_number": "923131707080",
+        "mobile_layout": "carousel",
+        "label_pull": 70,
         "background_color": "#F4F2EE",
         "text_color": "#111111"
       }
