@@ -165,21 +165,7 @@
     .section-product__panel {
       position: sticky;
       top: var(--pdp-top);
-      max-height: calc(100dvh - var(--pdp-top) - 1rem);
-      overflow-y: auto;
-      overscroll-behavior: contain;
-      scrollbar-width: none;
-      padding-bottom: var(--s-4);
-    }
-
-    .section-product__panel::-webkit-scrollbar {
-      display: none;
-    }
-
-    /* Tells the buyer there is more below the fold of the panel */
-    .section-product__panel[data-more] {
-      -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 3.5rem), transparent);
-      mask-image: linear-gradient(to bottom, #000 calc(100% - 3.5rem), transparent);
+      padding-bottom: var(--s-6);
     }
 
     .section-product {

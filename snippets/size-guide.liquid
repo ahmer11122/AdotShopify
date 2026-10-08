@@ -646,7 +646,7 @@
     flex-direction: column;
     background: var(--pdp-paper, #fff);
     font-family: var(--pdp-font, inherit);
-    transition: transform 560ms var(--pdp-ease-expo, cubic-bezier(0.16, 1, 0.3, 1));
+    transition: transform 340ms var(--pdp-ease, cubic-bezier(0.23, 1, 0.32, 1));
     will-change: transform;
   }
 
@@ -657,10 +657,12 @@
   /* Mobile: bottom sheet */
   @media (max-width: 989px) {
     .sg__sheet {
+      top: auto;
       left: 0;
       right: 0;
       bottom: 0;
-      max-height: 90dvh;
+      max-height: 85dvh;
+      border-radius: 16px 16px 0 0;
       padding-bottom: env(safe-area-inset-bottom, 0px);
       transform: translateY(100%);
     }
@@ -1164,7 +1166,9 @@
       setCategory(productCat, false);
       setUnit(dialog.dataset.unit || 'cm');
       if (!dialog.open) dialog.showModal();
-      moveAllThumbs(true);
+      requestAnimationFrame(() => {
+        moveAllThumbs(true);
+      });
     }
 
     dialog.addEventListener('click', (e) => {
