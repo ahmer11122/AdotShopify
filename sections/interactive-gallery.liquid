@@ -274,7 +274,7 @@
           </div>
           <div class="hrail-ql__cta" data-rv>
             <button type="button" class="hrail-btn hrail-btn--solid" data-ql-add hidden>
-              <span data-ql-add-label>{{ section.settings.add_label | default: 'Add to cart' }}</span>
+              <span data-ql-add-label>{{ section.settings.add_label | default: 'Add to bag' }}</span>
             </button>
             <a class="hrail-btn hrail-btn--solid" data-ql-view href="{{ routes.all_products_collection_url }}">
               <span>{{ section.settings.view_label | default: 'View product' }}</span>
@@ -2268,10 +2268,10 @@
         this.qViewIdx = 0;
         this.showSizes = this.dataset.showSizes !== 'false';
         this.quickAdd = this.dataset.quickAdd === 'true';
-        this.addLabel = this.dataset.addLabel || 'Add to cart';
+        this.addLabel = this.dataset.addLabel || 'Add to bag';
         this.spin = { a: 0, v: 0, t: 0, drag: false, raf: 0, last: 0, hasBack: false, hasSide: false };
 
-        // Main button: "Add to cart" (if on) or "View product". Never both.
+        // Main button: "Add to bag" (if on) or "View product". Never both.
         this.qAdd.hidden = !this.quickAdd;
         this.qMore.hidden = !this.quickAdd;
         this.qView.hidden = this.quickAdd;
@@ -2592,10 +2592,11 @@
             btn.disabled = false;
           }, ms);
         };
+        var variantId = Number(it.size);
         fetch(root + 'cart/add.js', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-          body: JSON.stringify({ items: [{ id: Number(it.size), quantity: 1 }] })
+          body: JSON.stringify({ items: [{ id: variantId, quantity: 1 }] })
         })
           .then(function (r) {
             if (!r.ok) throw new Error('add failed');
@@ -2603,30 +2604,38 @@
           })
           .then(function () {
             reset('Added', 1800);
-            self.afterAdd(root);
+            self.afterAdd(root, variantId);
           })
           .catch(function () {
             reset('Could not add. Try again', 2200);
           });
       }
 
-      // THEME HOOK: the header cart badge already has data-cart-count.
-      // cart:refresh redraws the drawer and the badge. cart:open shows the drawer.
-      afterAdd(root) {
+      // THEME HOOK: cart:refresh redraws the drawer + badge; closeQL({ toBag }) flies into the bag and opens it.
+      afterAdd(root, variantId) {
         document.dispatchEvent(new CustomEvent('hanger-rail:cart-add', { bubbles: true }));
-        window.dispatchEvent(new CustomEvent('cart:refresh'));
-        window.dispatchEvent(new CustomEvent('cart:open'));
-        fetch(root + 'cart.js', { headers: { Accept: 'application/json' } })
-          .then(function (r) {
-            return r.json();
-          })
-          .then(function (cart) {
-            document.querySelectorAll('[data-cart-count]').forEach(function (el) {
-              var bracket = /^\s*\[\d+\]\s*$/.test(el.textContent);
-              el.textContent = bracket ? '[' + cart.item_count + ']' : String(cart.item_count);
-            });
-          })
-          .catch(function () {});
+        var hasDrawer = !!document.querySelector('cart-drawer');
+        window.dispatchEvent(
+          new CustomEvent('cart:refresh', { detail: { variantId: variantId } })
+        );
+        if (!hasDrawer) {
+          fetch(root + 'cart.js', { headers: { Accept: 'application/json' } })
+            .then(function (r) {
+              return r.json();
+            })
+            .then(function (cart) {
+              document.querySelectorAll('[data-cart-count]').forEach(function (el) {
+                var bracket = /^\s*\[\d+\]\s*$/.test(el.textContent);
+                el.textContent = bracket ? '[' + cart.item_count + ']' : String(cart.item_count);
+              });
+            })
+            .catch(function () {});
+          return;
+        }
+        var self = this;
+        setTimeout(function () {
+          self.closeQL({ toBag: true });
+        }, 450);
       }
 
       cancelQLAnims() {
@@ -2678,7 +2687,7 @@
         });
       }
 
-      flip(from, dir) {
+      flip(from, dir, toBag) {
         var g = this.qGarment;
         var to = g.getBoundingClientRect();
         if (!to.width || !from.width) return Promise.resolve();
@@ -2687,6 +2696,33 @@
         var dy = from.top - to.top;
         var frames = [{ transform: 'translate(' + dx + 'px,' + dy + 'px) scale(' + s + ')' }, { transform: 'none' }];
         if (dir === 'out') frames.reverse();
+        if (toBag && dir === 'out') {
+          // Shrink into the bag icon (or top-right corner) and fade out.
+          var bag = document.querySelector('[data-cart-trigger]');
+          var header = document.querySelector('.header');
+          var hidden = header && header.classList.contains('header--hidden');
+          var br = bag && !hidden ? bag.getBoundingClientRect() : null;
+          var tx = br ? br.left + br.width / 2 : window.innerWidth - 28;
+          var ty = br ? br.top + br.height / 2 : 28;
+          var gx = to.left + to.width / 2;
+          var gy = to.top + to.height / 2;
+          frames = [
+            { transform: 'none', opacity: 1 },
+            {
+              transform: 'translate(' + (tx - gx) + 'px,' + (ty - gy) + 'px) scale(0.08)',
+              opacity: 0
+            }
+          ];
+          var animBag = g.animate(frames, {
+            duration: 680,
+            easing: 'cubic-bezier(0.55, 0, 0.7, 0.3)',
+            fill: 'both'
+          });
+          return animBag.finished.then(
+            function () {},
+            function () {}
+          );
+        }
         var anim = g.animate(frames, {
           duration: dir === 'in' ? 780 : 540,
           easing: dir === 'in' ? 'cubic-bezier(0.2, 0.85, 0.2, 1)' : 'cubic-bezier(0.55, 0, 0.7, 0.3)',
@@ -2777,9 +2813,11 @@
         out.finished.then(swap, swap);
       }
 
-      closeQL() {
+      closeQL(opts) {
+        opts = opts || {};
         if (!this.qOpen || this.qClosing) return;
         var self = this;
+        var toBag = !!opts.toBag;
         this.qClosing = true;
         var it = this.items[this.qIndex];
         var done = function () {
@@ -2790,8 +2828,15 @@
           self.qOpen = false;
           self.qClosing = false;
           self.qBusy = false;
-          var op = self.items[self.qIndex].link;
-          if (op) op.focus({ preventScroll: true });
+          if (toBag) {
+            var piece = self.items[self.qIndex].link;
+            var drawer = document.querySelector('cart-drawer');
+            if (drawer && piece) drawer.opener = piece;
+            window.dispatchEvent(new CustomEvent('cart:open'));
+          } else {
+            var op = self.items[self.qIndex].link;
+            if (op) op.focus({ preventScroll: true });
+          }
           if (self.mode === 'rail' && !self.ptr && !self.focusInside()) self.setTarget(-1);
           self.request();
         };
@@ -2810,7 +2855,8 @@
           el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 240, easing: 'ease-in', fill: 'forwards' });
         });
         var p;
-        if (onScreen) p = this.flip(to, 'out');
+        if (toBag) p = this.flip(to, 'out', true);
+        else if (onScreen) p = this.flip(to, 'out');
         else
           p = this.qGarment
             .animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, fill: 'forwards' })
@@ -2828,7 +2874,7 @@
         p.then(function () {
           setTimeout(finish, 40);
         });
-        setTimeout(finish, 1200);
+        setTimeout(finish, toBag ? 1400 : 1200);
       }
 
       // ---------- spin (front / back) ----------
@@ -2923,12 +2969,12 @@
     {
       "type": "checkbox",
       "id": "quick_add",
-      "label": "Add to cart button",
-      "info": "Needs a product on every piece. If off, the main button opens the product page.",
+      "label": "Add to bag button",
+      "info": "Needs a product on every piece. Keep off until the header bag drawer is verified. If off, the main button opens the product page.",
       "default": false
     },
-    { "type": "text", "id": "add_label", "label": "Add to cart label", "default": "Add to cart" },
-    { "type": "text", "id": "view_label", "label": "Main button label (when Add to cart is off)", "default": "View product" },
+    { "type": "text", "id": "add_label", "label": "Add to bag label", "default": "Add to bag" },
+    { "type": "text", "id": "view_label", "label": "Main button label (when Add to bag is off)", "default": "View product" },
     {
       "type": "text",
       "id": "whatsapp_number",

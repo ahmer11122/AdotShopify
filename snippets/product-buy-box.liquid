@@ -1781,7 +1781,8 @@
             status = 'done';
             render();
             announce('Added to bag');
-            window.dispatchEvent(new CustomEvent('cart:refresh'));
+            const variantId = Number(variantInput.value);
+            window.dispatchEvent(new CustomEvent('cart:refresh', { detail: { variantId } }));
             window.dispatchEvent(new CustomEvent('cart:open'));
             doneTimer = setTimeout(() => {
               status = 'idle';

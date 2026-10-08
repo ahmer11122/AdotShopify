@@ -41,8 +41,14 @@
         "search_tag_winter"
       ],
       "settings": {
-        "drawer_meta_text": "ADOT STUDIO \u00b7 AUTUMN / WINTER 2026",
-        "search_placeholder": "Search essentials, styles, collections..."
+        "direct_categories": true,
+        "sticky": true,
+        "drawer_meta_text": "ADOT STUDIO",
+        "search_placeholder": "Search hoodies, sweatshirts, trousers",
+        "smart_hide": true,
+        "free_shipping_threshold": 10000,
+        "cart_trust_text": "Cash on delivery|7-day exchange|Delivery in 2-4 days",
+        "whatsapp_number": "923131707080"
       }
     }
   },

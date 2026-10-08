@@ -14,6 +14,7 @@
 # Ignore internal AI rules and reference repos
 .agent/*
 .reference/*
+reference/*
 
 # Docs and local-only
 *.md

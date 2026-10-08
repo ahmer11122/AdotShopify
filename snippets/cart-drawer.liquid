@@ -1,10 +1,35 @@
 {% comment %}
-  Cart Drawer Component
-  - Slide-out luxury drawer from right edge
-  - Brand logo and minimalist title in header
-  - Real-time quantity adjustment & deletion via Shopify AJAX API
-  - Fluid spring entrance/exit motion
+  =============================================================================
+  Cart Drawer (v2)
+  Render with:
+    {% render 'cart-drawer',
+        section_id: section.id,
+        free_threshold: section.settings.free_shipping_threshold,
+        trust_text: section.settings.cart_trust_text,
+        wa_number: wa_number %}
+
+  Notes
+  - The drawer is drawn here, by Liquid. JavaScript only swaps in new HTML.
+  - Prices always come from Shopify (never from line item properties).
+  - Every row has data-* values so the JavaScript can build a WhatsApp message.
+  =============================================================================
 {% endcomment %}
+
+{% liquid
+  assign threshold_cents = free_threshold | default: 0 | times: 100
+  assign progress = 0
+  assign remaining = 0
+  if threshold_cents > 0
+    assign remaining = threshold_cents | minus: cart.total_price
+    if remaining < 0
+      assign remaining = 0
+    endif
+    assign progress = cart.total_price | times: 100 | divided_by: threshold_cents
+    if progress > 100
+      assign progress = 100
+    endif
+  endif
+%}
 
 <cart-drawer
   class="cart-drawer"
@@ -14,26 +39,18 @@
   aria-hidden="true"
   inert
   aria-label="Shopping Bag"
-  data-qty-root
   data-section-id="{{ section_id }}"
+  data-wa="{{ wa_number }}"
   data-cart-total="{{ cart.total_price }}"
   data-cart-count-value="{{ cart.item_count }}"
 >
   <div class="cart-drawer__backdrop" data-cart-close></div>
 
   <div class="cart-drawer__panel">
-    <!-- Header: Brand Logo, Title, Counter & Close Button -->
     <div class="cart-drawer__header">
       <div class="cart-drawer__header-left">
         <a href="{{ routes.root_url }}" class="cart-drawer__logo-link" aria-label="{{ shop.name }}">
-          <img
-            src="{{ 'logo.png' | asset_url }}"
-            alt="{{ shop.name }}"
-            class="cart-drawer__logo-img"
-            width="36"
-            height="39"
-            loading="lazy"
-          >
+          <img src="{{ 'logo.png' | asset_url }}" alt="{{ shop.name }}" class="cart-drawer__logo-img" width="36" height="39" loading="lazy">
         </a>
         <div class="cart-drawer__title-wrap">
           <span class="cart-drawer__title text-micro">SHOPPING BAG</span>
@@ -41,7 +58,7 @@
         </div>
       </div>
 
-      <button type="button" class="cart-drawer__close" data-cart-close aria-label="Close cart">
+      <button type="button" class="cart-drawer__close" data-cart-close aria-label="Close bag">
         <svg class="cart-drawer__close-icon" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
           <line x1="1" y1="1" x2="17" y2="17"></line>
           <line x1="17" y1="1" x2="1" y2="17"></line>
@@ -49,64 +66,75 @@
       </button>
     </div>
 
-    <!-- Scrollable Body: Cart Items or Empty State -->
+    {% if threshold_cents > 0 %}
+      <div class="cart-drawer__progress{% if remaining == 0 and cart.item_count > 0 %} is-done{% endif %}" data-cart-progress {% if cart.item_count == 0 %}hidden{% endif %}>
+        <p class="cart-drawer__progress-text text-micro" data-progress-text>
+          {%- if remaining == 0 -%}
+            You get free delivery
+          {%- else -%}
+            Add {{ remaining | money }} more for free delivery
+          {%- endif -%}
+        </p>
+        <div class="cart-drawer__bar" aria-hidden="true">
+          <span class="cart-drawer__bar-fill" data-progress-fill style="--p: {{ progress | divided_by: 100.0 }};"></span>
+        </div>
+      </div>
+    {% endif %}
+
     <div class="cart-drawer__body">
-      <!-- Items Container -->
       <div class="cart-drawer__items" data-cart-items>
         {% for item in cart.items %}
-          {% assign item_title = item.properties._adot_title | default: item.product.title %}
-          {% if item.properties._adot_image != blank %}
-            {% assign item_image = item.properties._adot_image %}
-          {% elsif item.image %}
-            {% assign item_image = item.image | image_url: width: 240 %}
-          {% else %}
-            {% assign item_image = '' %}
+          {% assign item_title = item.product.title %}
+          {% if item.properties._adot_title != blank %}
+            {% assign item_title = item.properties._adot_title %}
           {% endif %}
-          {% capture money_line %}{% render 'money', price: item.final_line_price %}{% endcapture %}
-          {% assign item_price = item.properties._adot_price | default: money_line | strip %}
-          {% assign item_size = item.properties.Size %}
-          {% assign price_is_override = false %}
-          {% if item.properties._adot_price != blank %}
-            {% assign price_is_override = true %}
+          {% assign item_variant = '' %}
+          {% if item.properties.Size != blank %}
+            {% assign item_variant = item.properties.Size %}
+          {% elsif item.product.has_only_default_variant == false %}
+            {% assign item_variant = item.variant.title %}
           {% endif %}
 
-          {% capture qty_cap %}{% render 'cart-qty-cap', variant: item.variant %}{% endcapture %}
-          {% assign qty_cap = qty_cap | strip %}
           <div
             class="cart-drawer__item"
             data-item-key="{{ item.key }}"
             data-variant-id="{{ item.variant.id }}"
-            data-unit-price="{{ item.final_price }}"
-            data-shown-qty="{{ item.quantity }}"
-            {% if qty_cap != blank %}data-qty-max="{{ qty_cap }}"{% endif %}
+            data-qty="{{ item.quantity }}"
+            data-title="{{ item_title | escape }}"
+            data-variant="{{ item_variant | escape }}"
           >
             <a href="{{ item.url }}" class="cart-drawer__item-media" tabindex="-1">
-              {% if item_image != blank %}
-                <img
-                  src="{{ item_image }}"
-                  alt="{{ item_title | escape }}"
-                  class="cart-drawer__item-img"
-                  width="80"
-                  height="106"
-                  loading="lazy"
-                >
+              {% if item.image %}
+                {{
+                  item.image
+                  | image_url: width: 240
+                  | image_tag:
+                    class: 'cart-drawer__item-img',
+                    alt: item_title,
+                    width: 80,
+                    height: 106,
+                    loading: 'lazy'
+                }}
               {% endif %}
             </a>
 
             <div class="cart-drawer__item-info">
-              <a href="{{ item.url }}" class="cart-drawer__item-title">{{ item_title | escape }}</a>
-              {% if item_size != blank %}
-                <p class="cart-drawer__item-variant text-micro">Size: {{ item_size }}</p>
-              {% elsif item.product.has_only_default_variant == false %}
-                <p class="cart-drawer__item-variant text-micro">{{ item.variant.title }}</p>
+              <a href="{{ item.url }}" class="cart-drawer__item-title">{{ item_title }}</a>
+              {% if item_variant != blank %}
+                <p class="cart-drawer__item-variant text-micro">{% if item.properties.Size != blank %}Size: {% endif %}{{ item_variant }}</p>
               {% endif %}
-              <div class="cart-drawer__item-price text-micro"{% unless price_is_override %} data-line-price{% endunless %}>{{ item_price }}</div>
+              <div class="cart-drawer__item-price text-micro" data-line-price>
+                {% if item.original_line_price > item.final_line_price %}
+                  <s class="cart-drawer__was">{{ item.original_line_price | money }}</s>
+                {% endif %}
+                {{ item.final_line_price | money }}
+              </div>
 
               <div class="cart-drawer__item-actions">
                 <div class="cart-drawer__qty">
-                  <button type="button" class="cart-drawer__qty-btn" data-qty-change="-1" data-qty-minus data-key="{{ item.key }}" aria-label="Decrease quantity">−</button>
+                  <button type="button" class="cart-drawer__qty-btn" data-qty-change="-1" data-key="{{ item.key }}" aria-label="Decrease quantity of {{ item_title | escape }}">−</button>
                   <span class="cart-drawer__qty-num text-micro" data-qty-value>{{ item.quantity }}</span>
-                  <button type="button" class="cart-drawer__qty-btn{% if qty_cap != blank and item.quantity >= qty_cap %} is-at-max{% endif %}" data-qty-change="1" data-qty-plus data-key="{{ item.key }}" aria-label="Increase quantity" {% if qty_cap != blank and item.quantity >= qty_cap %}aria-disabled="true"{% endif %}>+</button>
+                  <button type="button" class="cart-drawer__qty-btn" data-qty-change="1" data-key="{{ item.key }}" aria-label="Increase quantity of {{ item_title | escape }}">+</button>
                 </div>
                 <button type="button" class="cart-drawer__remove text-micro" data-remove-item data-key="{{ item.key }}">Remove</button>
               </div>
@@ -116,7 +144,6 @@
         {% endfor %}
       </div>
 
-      <!-- Empty Zero-State -->
       <div class="cart-drawer__empty" data-cart-empty {% if cart.item_count > 0 %}hidden{% endif %}>
         <div class="cart-drawer__empty-icon" aria-hidden="true">
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
@@ -125,34 +152,47 @@
           </svg>
         </div>
         <h3 class="cart-drawer__empty-title text-micro">YOUR BAG IS EMPTY</h3>
-        <p class="cart-drawer__empty-subtitle text-micro">Explore our latest seasonal collections and luxury essentials.</p>
+        <p class="cart-drawer__empty-subtitle text-micro">Pick a piece and it will wait for you here.</p>
 
         <div class="cart-drawer__empty-links">
           <a href="{{ routes.collections_url }}/hoodies" class="cart-drawer__empty-link text-micro" data-cart-close>Hoodies</a>
           <a href="{{ routes.collections_url }}/sweatshirts" class="cart-drawer__empty-link text-micro" data-cart-close>Sweatshirts</a>
-          <a href="{{ routes.collections_url }}/new-arrivals" class="cart-drawer__empty-link text-micro" data-cart-close>Winter Drop</a>
-          <a href="{{ routes.collections_url }}/shop-all" class="cart-drawer__empty-link cart-drawer__empty-link--primary text-micro" data-cart-close>All Essentials →</a>
+          <a href="{{ routes.collections_url }}/trousers" class="cart-drawer__empty-link text-micro" data-cart-close>Trousers</a>
+          <a href="{{ routes.all_products_collection_url }}" class="cart-drawer__empty-link cart-drawer__empty-link--primary text-micro" data-cart-close>Shop All</a>
         </div>
       </div>
     </div>
 
-    <!-- Pinned Footer: Subtotal & Checkout -->
+    <div class="cart-drawer__toast" data-cart-toast role="status" hidden>
+      <span data-toast-text></span>
+      <button type="button" class="cart-drawer__toast-undo text-micro" data-toast-undo>Undo</button>
+    </div>
+
     <div class="cart-drawer__footer" {% if cart.item_count == 0 %}hidden{% endif %}>
       <div class="cart-drawer__subtotal-row">
         <span class="cart-drawer__subtotal-label text-micro">SUBTOTAL</span>
-        <span class="cart-drawer__subtotal-val" data-cart-subtotal>{% render 'money', price: cart.total_price %}</span>
+        <span class="cart-drawer__subtotal-val" data-cart-subtotal>{{ cart.total_price | money }}</span>
       </div>
-      <p class="cart-drawer__taxes text-micro">Taxes and shipping calculated at checkout.</p>
+      <p class="cart-drawer__taxes text-micro">Delivery is added at checkout.</p>
+
+      {% assign trust_lines = trust_text | split: '|' %}
+      {% if trust_lines.size > 0 and trust_text != blank %}
+        <ul class="cart-drawer__trust" role="list">
+          {% for line in trust_lines %}
+            <li class="text-micro">{{ line | strip | escape }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
 
       <form action="{{ routes.cart_url }}" method="post" class="cart-drawer__form">
         <button type="submit" name="checkout" class="cart-drawer__checkout-btn">
           <span>CHECKOUT</span>
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <line x1="1" y1="7" x2="13" y2="7"></line>
-            <polyline points="8 2 13 7 8 12"></polyline>
-          </svg>
         </button>
       </form>
+
+      {% if wa_number != blank %}
+        <a href="https://wa.me/{{ wa_number }}" class="cart-drawer__wa text-micro" data-cart-wa target="_blank" rel="noopener" hidden>Order on WhatsApp</a>
+      {% endif %}
 
       <a href="{{ routes.cart_url }}" class="cart-drawer__view-cart text-micro">View Full Bag</a>
     </div>

@@ -44,10 +44,17 @@
       <div class="hrail__head-row">
         <div class="hrail__head-text">
           {% if section.settings.eyebrow != blank %}
-            <p class="text-micro hrail__eyebrow">{{ section.settings.eyebrow }}</p>
+            <p class="text-micro hrail__eyebrow">
+              <span>{{ section.settings.eyebrow }}</span>
+            </p>
           {% endif %}
           {% if section.settings.heading != blank %}
-            <h2 id="HRailHeading-{{ section.id }}" class="hrail__heading">{{ section.settings.heading }}</h2>
+            <h2 id="HRailHeading-{{ section.id }}" class="hrail__heading">
+              {%- assign hrail_words = section.settings.heading | split: ' ' -%}
+              {%- for word in hrail_words -%}
+                <span class="hrail__word"><span class="hrail__word-i" style="--i: {{ forloop.index0 }}">{{ word | escape }}</span></span>{% unless forloop.last %} {% endunless %}
+              {%- endfor -%}
+            </h2>
           {% endif %}
         </div>
       </div>
@@ -267,7 +274,7 @@
           </div>
           <div class="hrail-ql__cta" data-rv>
             <button type="button" class="hrail-btn hrail-btn--solid" data-ql-add hidden>
-              <span data-ql-add-label>{{ section.settings.add_label | default: 'Add to cart' }}</span>
+              <span data-ql-add-label>{{ section.settings.add_label | default: 'Add to bag' }}</span>
             </button>
             <a class="hrail-btn hrail-btn--solid" data-ql-view href="{{ routes.all_products_collection_url }}">
               <span>{{ section.settings.view_label | default: 'View product' }}</span>
@@ -290,7 +297,7 @@
     --hr-hook: calc(var(--hr-h) * 0.04); /* hook loop centre = 4% down the image */
     --hr-gutter: clamp(1rem, 4vw, 3rem);
     --hr-pitch: min(64vw, 320px);
-    --hr-ease: cubic-bezier(0.2, 0.85, 0.2, 1);
+    --hr-ease: cubic-bezier(0.23, 1, 0.32, 1);
     position: relative;
     overflow: hidden;
     background: var(--hr-bg, var(--color-background, #f4f2ee));
@@ -330,6 +337,7 @@
   .hrail__head {
     width: min(1320px, 100% - 2 * var(--hr-gutter));
     margin-inline: auto;
+    margin-bottom: clamp(2rem, 4.5vw, 4rem);
   }
 
   .hrail__head-row {
@@ -340,27 +348,41 @@
   }
 
   .hrail__eyebrow {
-    margin: 0 0 0.6rem;
-    color: var(--color-text-subtle, rgba(0, 0, 0, 0.5));
-    text-transform: uppercase;
+    margin: 0 0 0.75rem;
+    color: var(--color-text-muted, rgba(0, 0, 0, 0.55));
+    font-weight: 500;
     letter-spacing: 0.14em;
-    font-size: 0.7rem;
+    text-transform: uppercase;
   }
 
   .hrail__heading {
     margin: 0;
-    font-family: var(--font-display, inherit);
-    font-size: clamp(1.75rem, 3.2vw, 2.75rem);
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 7.2vw, 6.5rem);
     font-weight: 500;
-    line-height: 1.08;
-    letter-spacing: -0.025em;
+    line-height: 0.98;
+    letter-spacing: -0.04em;
+    color: var(--hr-ink, var(--color-text));
     text-wrap: balance;
   }
 
+  .hrail__word {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: top;
+    padding-block: 0.06em 0.14em;
+    margin-block: -0.06em -0.14em;
+  }
+
+  .hrail__word-i {
+    display: inline-block;
+  }
+
   .hrail__caption {
-    margin: 0.75rem 0 0;
+    margin: 1.25rem 0 0;
     max-width: 44ch;
     color: var(--color-text-muted, rgba(0, 0, 0, 0.62));
+    font-size: clamp(0.875rem, 1.1vw, 1rem);
     line-height: 1.5;
   }
 
@@ -650,41 +672,47 @@
     opacity: 1;
   }
 
-  /* ---------- Intro: rod draws, pieces drop on ---------- */
+  /* ---------- Intro: rod draws, pieces settle on with boutique splay ---------- */
   .hrail.is-ready:not(.is-in) .hrail__link {
     opacity: 0;
   }
 
   .hrail.is-ready:not(.is-in) .hrail__rod {
     transform: scaleX(0);
+    opacity: 0;
   }
 
   .hrail.is-ready.is-in .hrail__rod {
-    animation: hrail-rod 0.9s var(--hr-ease) both;
+    animation: hrail-rod 750ms var(--hr-ease) both;
   }
 
   .hrail.is-ready.is-in .hrail__link {
-    animation: hrail-drop 1s var(--hr-ease) both;
-    animation-delay: calc(0.25s + var(--i) * 55ms);
+    animation: hrail-drop 800ms var(--hr-ease) both;
+    animation-delay: calc(80ms + var(--i, 0) * 45ms);
   }
 
   @keyframes hrail-rod {
-    from {
+    0% {
       transform: scaleX(0);
+      opacity: 0;
     }
-    to {
+    100% {
       transform: scaleX(1);
+      opacity: 1;
     }
   }
 
   @keyframes hrail-drop {
-    from {
+    0% {
       opacity: 0;
-      transform: translateY(-26px) rotate(2.5deg);
+      transform: translateY(-18px) scale(0.96) rotate(-1.5deg);
     }
-    to {
+    65% {
+      transform: translateY(1.5px) scale(1.006) rotate(0.35deg);
+    }
+    100% {
       opacity: 1;
-      transform: none;
+      transform: translateY(0) scale(1) rotate(0deg);
     }
   }
 
@@ -1311,93 +1339,155 @@
     }
   }
 
-  /* phone: piece on top, thumbnails under it, text below, buttons stay at the bottom */
+  /* phone: piece on top, thumbnails under it, text & actions compactly grouped */
   @media (max-width: 749px) {
     .hrail-ql {
-      --ql-top: clamp(40px, 6svh, 56px);
-      --ql-h: min(40svh, 100vw);
+      --ql-top: clamp(16px, 3svh, 28px);
+      --ql-h: min(44svh, 320px);
     }
     .hrail-ql__layout {
       display: flex;
       flex-direction: column;
-      align-items: stretch;
+      align-items: center;
+      justify-content: flex-start;
       width: 100%;
-      padding: var(--ql-top) 0 0;
+      max-width: 440px;
+      margin-inline: auto;
+      padding: var(--ql-top) var(--hr-gutter) calc(1.25rem + env(safe-area-inset-bottom));
+      box-sizing: border-box;
+      gap: 0.6rem;
+    }
+    .hrail-ql__close {
+      top: max(0.75rem, env(safe-area-inset-top));
+      right: 0.75rem;
+      width: 36px;
+      height: 36px;
+      min-height: 36px;
+      padding: 0;
+      border-radius: 50%;
+      background: color-mix(in srgb, var(--hr-bg, #f4f2ee) 85%, transparent);
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      border: 1px solid color-mix(in srgb, var(--hr-ink, #111) 12%, transparent);
+    }
+    .hrail-ql__close span {
+      display: none;
     }
     /* keep the phone view short so the sizes and buttons are on screen without scrolling */
     .hrail-ql__desc,
     .hrail-ql__count {
       display: none;
     }
-    .hrail-ql__info {
-      gap: 0.45rem;
-    }
-    .hrail-ql__sizes {
-      margin-top: 0.35rem;
-    }
-    .hrail-ql__chip {
-      flex: 1 1 0;
-      min-width: 0;
-    }
-    .hrail-btn {
-      min-height: 48px;
-    }
     .hrail-ql__show {
       flex-direction: column;
       align-items: center;
-      gap: 0.75rem;
+      gap: 0.4rem;
+      width: 100%;
     }
     .hrail-ql__stage {
       order: 1;
       width: 100%;
+      height: var(--ql-h);
+    }
+    .hrail-ql__garment {
+      height: var(--ql-h);
     }
     .hrail-ql__thumbs {
       order: 2;
       flex-direction: row;
       justify-content: center;
+      gap: 0.35rem;
     }
     .hrail-ql__thumb {
-      width: 48px;
+      width: 42px;
+      height: 52px;
     }
     .hrail-ql__arrow {
-      width: 40px;
-      height: 40px;
-      top: calc(var(--ql-h) * 0.5 - 20px);
+      width: 38px;
+      height: 38px;
+      top: calc(var(--ql-h) * 0.5 - 19px);
     }
     .hrail-ql__arrow--prev {
-      left: 6px;
+      left: 4px;
     }
     .hrail-ql__arrow--next {
-      right: 6px;
+      right: 4px;
     }
     .hrail-ql__info {
-      flex: 1 1 auto;
+      flex: 0 0 auto;
       align-self: stretch;
-      align-items: stretch;
-      padding: 1rem var(--hr-gutter) 0;
+      align-items: center;
+      text-align: center;
+      padding: 0;
+      gap: 0.3rem;
+      width: 100%;
+    }
+    .hrail-ql__meta {
+      justify-content: center;
+      gap: 0.2rem 0.6rem;
+    }
+    .hrail-ql__name {
+      font-size: clamp(1.1rem, 3.8vw, 1.3rem);
+      line-height: 1.15;
+    }
+    .hrail-ql__price {
+      font-size: 0.98rem;
+      min-height: auto;
+    }
+    .hrail-ql__sub {
+      font-size: 0.8rem;
+      min-height: auto;
+    }
+    .hrail-ql__sizes {
+      width: 100%;
+      margin-top: 0.25rem;
+    }
+    .hrail-ql__label {
+      justify-content: center;
+      margin: 0 0 0.3rem;
+      font-size: 0.68rem;
+    }
+    .hrail-ql__chips {
+      justify-content: center;
+      gap: 0.35rem;
+    }
+    .hrail-ql__chip {
+      flex: 0 1 auto;
+      min-width: 44px;
+      min-height: 38px;
+      padding: 0 0.65rem;
+      font-size: 0.75rem;
+    }
+    .hrail-ql__cta {
+      display: grid;
+      gap: 0.45rem;
+      width: 100%;
+      margin-top: 0.5rem;
+      padding: 0;
+      position: static;
+      background: transparent;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+    .hrail-btn {
+      min-height: 44px;
+      padding: 0 1.25rem;
+      font-size: 0.72rem;
     }
     .hrail-ql__more {
       justify-self: center;
-    }
-    .hrail-ql__cta {
-      position: sticky;
-      bottom: 0;
-      margin: auto calc(-1 * var(--hr-gutter)) 0;
-      width: auto;
-      padding: 0.75rem var(--hr-gutter) calc(0.75rem + env(safe-area-inset-bottom));
-      background: color-mix(in srgb, var(--hr-bg, #f4f2ee) 94%, transparent);
-      -webkit-backdrop-filter: blur(10px);
-      backdrop-filter: blur(10px);
+      margin-top: 0.15rem;
     }
   }
 
   /* short phones (for example 360 x 640): make the piece a bit smaller so sizes stay above the buttons */
-  @media (max-width: 749px) and (max-height: 700px) {
+  @media (max-width: 749px) and (max-height: 680px) {
     .hrail-ql {
-      --ql-h: min(33svh, 100vw);
+      --ql-h: min(34svh, 240px);
     }
     .hrail-ql__thumb {
-      width: 40px;
+      width: 36px;
+      height: 44px;
     }
   }
 
@@ -1572,6 +1662,7 @@
         clearTimeout(this.scrollT);
         if (this.ro) this.ro.disconnect();
         if (this.io) this.io.disconnect();
+        if (this.stageIo) this.stageIo.disconnect();
         if (this.fine) this.fine.removeEventListener('change', this._onMq);
         if (this.reduce) this.reduce.removeEventListener('change', this._onMq);
         document.removeEventListener('shopify:block:select', this._onSelect);
@@ -1691,7 +1782,6 @@
             entries.forEach(function (en) {
               self.visible = en.isIntersecting;
               if (self.visible) {
-                self.playIntro();
                 self.request();
                 self.startAttract();
                 self.warm();
@@ -1700,9 +1790,23 @@
               }
             });
           },
-          { threshold: 0.25 }
+          { threshold: 0.05 }
         );
         this.io.observe(this.section);
+
+        // Trigger intro animation only when the clothes rail stage itself enters the viewport
+        this.stageIo = new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (en) {
+              if (en.isIntersecting) {
+                self.playIntro();
+                if (self.stageIo) self.stageIo.disconnect();
+              }
+            });
+          },
+          { rootMargin: '0px 0px -40px 0px', threshold: 0.15 }
+        );
+        this.stageIo.observe(this.stage);
 
         this._onMq = function () {
           self.chooseMode();
@@ -2164,10 +2268,10 @@
         this.qViewIdx = 0;
         this.showSizes = this.dataset.showSizes !== 'false';
         this.quickAdd = this.dataset.quickAdd === 'true';
-        this.addLabel = this.dataset.addLabel || 'Add to cart';
+        this.addLabel = this.dataset.addLabel || 'Add to bag';
         this.spin = { a: 0, v: 0, t: 0, drag: false, raf: 0, last: 0, hasBack: false, hasSide: false };
 
-        // Main button: "Add to cart" (if on) or "View product". Never both.
+        // Main button: "Add to bag" (if on) or "View product". Never both.
         this.qAdd.hidden = !this.quickAdd;
         this.qMore.hidden = !this.quickAdd;
         this.qView.hidden = this.quickAdd;
@@ -2488,10 +2592,11 @@
             btn.disabled = false;
           }, ms);
         };
+        var variantId = Number(it.size);
         fetch(root + 'cart/add.js', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-          body: JSON.stringify({ items: [{ id: Number(it.size), quantity: 1 }] })
+          body: JSON.stringify({ items: [{ id: variantId, quantity: 1 }] })
         })
           .then(function (r) {
             if (!r.ok) throw new Error('add failed');
@@ -2499,30 +2604,38 @@
           })
           .then(function () {
             reset('Added', 1800);
-            self.afterAdd(root);
+            self.afterAdd(root, variantId);
           })
           .catch(function () {
             reset('Could not add. Try again', 2200);
           });
       }
 
-      // THEME HOOK: the header cart badge already has data-cart-count.
-      // cart:refresh redraws the drawer and the badge. cart:open shows the drawer.
-      afterAdd(root) {
+      // THEME HOOK: cart:refresh redraws the drawer + badge; closeQL({ toBag }) flies into the bag and opens it.
+      afterAdd(root, variantId) {
         document.dispatchEvent(new CustomEvent('hanger-rail:cart-add', { bubbles: true }));
-        window.dispatchEvent(new CustomEvent('cart:refresh'));
-        window.dispatchEvent(new CustomEvent('cart:open'));
-        fetch(root + 'cart.js', { headers: { Accept: 'application/json' } })
-          .then(function (r) {
-            return r.json();
-          })
-          .then(function (cart) {
-            document.querySelectorAll('[data-cart-count]').forEach(function (el) {
-              var bracket = /^\s*\[\d+\]\s*$/.test(el.textContent);
-              el.textContent = bracket ? '[' + cart.item_count + ']' : String(cart.item_count);
-            });
-          })
-          .catch(function () {});
+        var hasDrawer = !!document.querySelector('cart-drawer');
+        window.dispatchEvent(
+          new CustomEvent('cart:refresh', { detail: { variantId: variantId } })
+        );
+        if (!hasDrawer) {
+          fetch(root + 'cart.js', { headers: { Accept: 'application/json' } })
+            .then(function (r) {
+              return r.json();
+            })
+            .then(function (cart) {
+              document.querySelectorAll('[data-cart-count]').forEach(function (el) {
+                var bracket = /^\s*\[\d+\]\s*$/.test(el.textContent);
+                el.textContent = bracket ? '[' + cart.item_count + ']' : String(cart.item_count);
+              });
+            })
+            .catch(function () {});
+          return;
+        }
+        var self = this;
+        setTimeout(function () {
+          self.closeQL({ toBag: true });
+        }, 450);
       }
 
       cancelQLAnims() {
@@ -2574,7 +2687,7 @@
         });
       }
 
-      flip(from, dir) {
+      flip(from, dir, toBag) {
         var g = this.qGarment;
         var to = g.getBoundingClientRect();
         if (!to.width || !from.width) return Promise.resolve();
@@ -2583,6 +2696,33 @@
         var dy = from.top - to.top;
         var frames = [{ transform: 'translate(' + dx + 'px,' + dy + 'px) scale(' + s + ')' }, { transform: 'none' }];
         if (dir === 'out') frames.reverse();
+        if (toBag && dir === 'out') {
+          // Shrink into the bag icon (or top-right corner) and fade out.
+          var bag = document.querySelector('[data-cart-trigger]');
+          var header = document.querySelector('.header');
+          var hidden = header && header.classList.contains('header--hidden');
+          var br = bag && !hidden ? bag.getBoundingClientRect() : null;
+          var tx = br ? br.left + br.width / 2 : window.innerWidth - 28;
+          var ty = br ? br.top + br.height / 2 : 28;
+          var gx = to.left + to.width / 2;
+          var gy = to.top + to.height / 2;
+          frames = [
+            { transform: 'none', opacity: 1 },
+            {
+              transform: 'translate(' + (tx - gx) + 'px,' + (ty - gy) + 'px) scale(0.08)',
+              opacity: 0
+            }
+          ];
+          var animBag = g.animate(frames, {
+            duration: 680,
+            easing: 'cubic-bezier(0.55, 0, 0.7, 0.3)',
+            fill: 'both'
+          });
+          return animBag.finished.then(
+            function () {},
+            function () {}
+          );
+        }
         var anim = g.animate(frames, {
           duration: dir === 'in' ? 780 : 540,
           easing: dir === 'in' ? 'cubic-bezier(0.2, 0.85, 0.2, 1)' : 'cubic-bezier(0.55, 0, 0.7, 0.3)',
@@ -2673,9 +2813,11 @@
         out.finished.then(swap, swap);
       }
 
-      closeQL() {
+      closeQL(opts) {
+        opts = opts || {};
         if (!this.qOpen || this.qClosing) return;
         var self = this;
+        var toBag = !!opts.toBag;
         this.qClosing = true;
         var it = this.items[this.qIndex];
         var done = function () {
@@ -2686,8 +2828,15 @@
           self.qOpen = false;
           self.qClosing = false;
           self.qBusy = false;
-          var op = self.items[self.qIndex].link;
-          if (op) op.focus({ preventScroll: true });
+          if (toBag) {
+            var piece = self.items[self.qIndex].link;
+            var drawer = document.querySelector('cart-drawer');
+            if (drawer && piece) drawer.opener = piece;
+            window.dispatchEvent(new CustomEvent('cart:open'));
+          } else {
+            var op = self.items[self.qIndex].link;
+            if (op) op.focus({ preventScroll: true });
+          }
           if (self.mode === 'rail' && !self.ptr && !self.focusInside()) self.setTarget(-1);
           self.request();
         };
@@ -2706,7 +2855,8 @@
           el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 240, easing: 'ease-in', fill: 'forwards' });
         });
         var p;
-        if (onScreen) p = this.flip(to, 'out');
+        if (toBag) p = this.flip(to, 'out', true);
+        else if (onScreen) p = this.flip(to, 'out');
         else
           p = this.qGarment
             .animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, fill: 'forwards' })
@@ -2724,7 +2874,7 @@
         p.then(function () {
           setTimeout(finish, 40);
         });
-        setTimeout(finish, 1200);
+        setTimeout(finish, toBag ? 1400 : 1200);
       }
 
       // ---------- spin (front / back) ----------
@@ -2819,12 +2969,12 @@
     {
       "type": "checkbox",
       "id": "quick_add",
-      "label": "Add to cart button",
-      "info": "Needs a product on every piece. If off, the main button opens the product page.",
+      "label": "Add to bag button",
+      "info": "Needs a product on every piece. Keep off until the header bag drawer is verified. If off, the main button opens the product page.",
       "default": false
     },
-    { "type": "text", "id": "add_label", "label": "Add to cart label", "default": "Add to cart" },
-    { "type": "text", "id": "view_label", "label": "Main button label (when Add to cart is off)", "default": "View product" },
+    { "type": "text", "id": "add_label", "label": "Add to bag label", "default": "Add to bag" },
+    { "type": "text", "id": "view_label", "label": "Main button label (when Add to bag is off)", "default": "View product" },
     {
       "type": "text",
       "id": "whatsapp_number",
