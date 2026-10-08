@@ -298,7 +298,7 @@
         </svg>
         <span class="pdp-trust__copy">
           <span class="pdp-trust__title">{{ section.settings.trust_badge_1_title | default: 'Cash on Delivery' }}</span>
-          <span class="pdp-trust__sub">{{ section.settings.trust_badge_1_subtitle }}</span>
+          <span class="pdp-trust__sub">{{ section.settings.trust_badge_1_subtitle | default: 'Pay upon arrival nationwide' }}</span>
         </span>
       </li>
       <li class="pdp-trust__item">
@@ -310,7 +310,7 @@
         </svg>
         <span class="pdp-trust__copy">
           <span class="pdp-trust__title">{{ section.settings.trust_badge_2_title | default: '7-Day Easy Exchange' }}</span>
-          <span class="pdp-trust__sub">{{ section.settings.trust_badge_2_subtitle }}</span>
+          <span class="pdp-trust__sub">{{ section.settings.trust_badge_2_subtitle | default: 'Hassle-free size replacement' }}</span>
         </span>
       </li>
       <li class="pdp-trust__item">
@@ -322,7 +322,7 @@
         </svg>
         <span class="pdp-trust__copy">
           <span class="pdp-trust__title">{{ section.settings.trust_badge_3_title | default: '2–4 Day Delivery' }}</span>
-          <span class="pdp-trust__sub">{{ section.settings.trust_badge_3_subtitle }}</span>
+          <span class="pdp-trust__sub">{{ section.settings.trust_badge_3_subtitle | default: 'Express courier dispatch' }}</span>
         </span>
       </li>
     </ul>
@@ -1414,30 +1414,6 @@
 
     .pdp-actions {
       margin-top: var(--s-6);
-    }
-
-    /* Three reassurance badges become one ruled strip */
-    .pdp-trust {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      border-bottom: 1px solid var(--pdp-line);
-    }
-
-    .pdp-trust__item {
-      grid-template-columns: minmax(0, 1fr);
-      gap: var(--s-3);
-      padding: var(--s-4) var(--s-3);
-      border-bottom: 0;
-      border-left: 1px solid var(--pdp-line);
-    }
-
-    .pdp-trust__item:first-child {
-      padding-left: 0;
-      border-left: 0;
-    }
-
-    .pdp-trust__copy {
-      gap: var(--s-1);
     }
   }
 
