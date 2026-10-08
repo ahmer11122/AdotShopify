@@ -1,0 +1,258 @@
+{{ 'section-size-guide.css' | asset_url | stylesheet_tag }}
+
+<section class="size-guide-section section-padding">
+  <div class="container container--narrow">
+    <div class="size-guide-header text-center">
+      <span class="size-guide-eyebrow text-eyebrow">Official Fit Matrix</span>
+      <h1 class="size-guide-title h2">Apparel Size Guide</h1>
+      <p class="size-guide-subtitle text-body">
+        Standard &amp; Regular Fit measurements in inches. Measure your favorite garment flat across a smooth surface to find your perfect fit.
+      </p>
+    </div>
+
+    <!-- Hoodies Size Table -->
+    <div class="size-guide-card">
+      <div class="size-guide-card__header">
+        <h2 class="size-guide-card__title h4">1. Heavyweight Hoodie (350 GSM)</h2>
+        <span class="size-guide-badge">Regular / Relaxed Fit</span>
+      </div>
+      <div class="size-guide-table-wrapper">
+        <table class="size-guide-table">
+          <thead>
+            <tr>
+              <th>Size</th>
+              <th>Chest (Width)</th>
+              <th>Length</th>
+              <th>Shoulder</th>
+              <th>Sleeve Length</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Small (S)</strong></td>
+              <td>20"</td>
+              <td>26"</td>
+              <td>17.5"</td>
+              <td>24"</td>
+            </tr>
+            <tr>
+              <td><strong>Medium (M)</strong></td>
+              <td>21"</td>
+              <td>27"</td>
+              <td>18.5"</td>
+              <td>24.5"</td>
+            </tr>
+            <tr>
+              <td><strong>Large (L)</strong></td>
+              <td>22"</td>
+              <td>28"</td>
+              <td>19.5"</td>
+              <td>25"</td>
+            </tr>
+            <tr>
+              <td><strong>XL</strong></td>
+              <td>23"</td>
+              <td>29"</td>
+              <td>20.5"</td>
+              <td>25.5"</td>
+            </tr>
+            <tr>
+              <td><strong>XXL</strong></td>
+              <td>24" - 25"</td>
+              <td>30"</td>
+              <td>21.5"</td>
+              <td>26"</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Sweatshirts Size Table -->
+    <div class="size-guide-card">
+      <div class="size-guide-card__header">
+        <h2 class="size-guide-card__title h4">2. Classic Fleece Sweatshirt (280 GSM)</h2>
+        <span class="size-guide-badge">Standard Fit</span>
+      </div>
+      <div class="size-guide-table-wrapper">
+        <table class="size-guide-table">
+          <thead>
+            <tr>
+              <th>Size</th>
+              <th>Chest (Width)</th>
+              <th>Length</th>
+              <th>Shoulder</th>
+              <th>Sleeve Length</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Small (S)</strong></td>
+              <td>19.5"</td>
+              <td>25.5"</td>
+              <td>17"</td>
+              <td>23.5"</td>
+            </tr>
+            <tr>
+              <td><strong>Medium (M)</strong></td>
+              <td>20.5"</td>
+              <td>26.5"</td>
+              <td>18"</td>
+              <td>24"</td>
+            </tr>
+            <tr>
+              <td><strong>Large (L)</strong></td>
+              <td>21.5"</td>
+              <td>27.5"</td>
+              <td>19"</td>
+              <td>24.5"</td>
+            </tr>
+            <tr>
+              <td><strong>XL</strong></td>
+              <td>22.5"</td>
+              <td>28.5"</td>
+              <td>20"</td>
+              <td>25"</td>
+            </tr>
+            <tr>
+              <td><strong>XXL</strong></td>
+              <td>23.5" - 24"</td>
+              <td>29.5"</td>
+              <td>21"</td>
+              <td>25.5"</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Measurement Tips -->
+    <div class="size-guide-tips">
+      <h3 class="h5">How to Measure</h3>
+      <div class="size-guide-tips__grid">
+        <div class="size-guide-tip-item">
+          <strong>Chest (Width):</strong>
+          <p>Measured straight from armpit to armpit flat across the front of the garment.</p>
+        </div>
+        <div class="size-guide-tip-item">
+          <strong>Length:</strong>
+          <p>Measured from the highest point of the shoulder down to the bottom edge of the hem ribbing.</p>
+        </div>
+        <div class="size-guide-tip-item">
+          <strong>Shoulder:</strong>
+          <p>Measured from shoulder seam to shoulder seam straight across the upper back.</p>
+        </div>
+        <div class="size-guide-tip-item">
+          <strong>Sleeve Length:</strong>
+          <p>Measured from the top shoulder seam down to the end of the wrist cuff.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .size-guide-section {
+    padding: 60px 20px;
+    background-color: var(--color-background, #fff);
+  }
+  .size-guide-header {
+    margin-bottom: 40px;
+  }
+  .size-guide-eyebrow {
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-foreground-secondary, #666);
+    display: block;
+    margin-bottom: 8px;
+  }
+  .size-guide-title {
+    margin-bottom: 12px;
+  }
+  .size-guide-subtitle {
+    max-width: 600px;
+    margin: 0 auto;
+    color: var(--color-foreground-secondary, #666);
+  }
+  .size-guide-card {
+    border: 1px solid var(--color-border, #e5e5e5);
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 32px;
+    background: #fafafa;
+  }
+  .size-guide-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .size-guide-card__title {
+    margin: 0;
+  }
+  .size-guide-badge {
+    background: #000;
+    color: #fff;
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .size-guide-table-wrapper {
+    overflow-x: auto;
+  }
+  .size-guide-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    background: #fff;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .size-guide-table th {
+    background: #f0f0f0;
+    padding: 12px 16px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    border-bottom: 2px solid #ddd;
+  }
+  .size-guide-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #eee;
+    font-size: 0.875rem;
+  }
+  .size-guide-tips {
+    background: #fdfdfd;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 24px;
+  }
+  .size-guide-tips__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+  }
+  .size-guide-tip-item strong {
+    display: block;
+    margin-bottom: 4px;
+    color: #111;
+  }
+  .size-guide-tip-item p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: #666;
+  }
+</style>
+
+{% schema %}
+{
+  "name": "Size Guide Page",
+  "settings": []
+}
+{% endschema %}

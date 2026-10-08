@@ -34,10 +34,10 @@
     <nav class="header-drawer__nav" aria-label="Mobile Navigation">
       <ul class="header-drawer__primary-links">
         {% if section.settings.direct_categories %}
-          <li><a href="{{ routes.all_products_collection_url }}?category=hoodies" class="header-drawer__primary-link">Hoodies</a></li>
-          <li><a href="{{ routes.all_products_collection_url }}?category=shirts" class="header-drawer__primary-link">Shirts</a></li>
-          <li><a href="{{ routes.all_products_collection_url }}?category=trousers" class="header-drawer__primary-link">Trousers</a></li>
-          <li><a href="{{ routes.all_products_collection_url }}" class="header-drawer__primary-link">All Essentials</a></li>
+          <li><a href="{{ routes.collections_url }}/hoodies" class="header-drawer__primary-link">Hoodies</a></li>
+          <li><a href="{{ routes.collections_url }}/sweatshirts" class="header-drawer__primary-link">Sweatshirts</a></li>
+          <li><a href="{{ routes.collections_url }}/new-arrivals" class="header-drawer__primary-link">Winter Drop</a></li>
+          <li><a href="{{ routes.collections_url }}/shop-all" class="header-drawer__primary-link">Shop All</a></li>
         {% else %}
           {% for link in section.settings.menu.links %}
             <li>
@@ -46,10 +46,10 @@
               </a>
             </li>
           {% else %}
-            <li><a href="{{ routes.all_products_collection_url }}?category=hoodies" class="header-drawer__primary-link">Hoodies</a></li>
-            <li><a href="{{ routes.all_products_collection_url }}?category=shirts" class="header-drawer__primary-link">Shirts</a></li>
-            <li><a href="{{ routes.all_products_collection_url }}?category=trousers" class="header-drawer__primary-link">Trousers</a></li>
-            <li><a href="{{ routes.all_products_collection_url }}" class="header-drawer__primary-link">All Essentials</a></li>
+            <li><a href="{{ routes.collections_url }}/hoodies" class="header-drawer__primary-link">Hoodies</a></li>
+            <li><a href="{{ routes.collections_url }}/sweatshirts" class="header-drawer__primary-link">Sweatshirts</a></li>
+            <li><a href="{{ routes.collections_url }}/new-arrivals" class="header-drawer__primary-link">Winter Drop</a></li>
+            <li><a href="{{ routes.collections_url }}/shop-all" class="header-drawer__primary-link">Shop All</a></li>
           {% endfor %}
         {% endif %}
       </ul>
@@ -76,6 +76,11 @@
         <li>
           <a href="{{ routes.root_url }}pages/size-guide" class="header-drawer__secondary-link text-micro">
             Size Guide
+          </a>
+        </li>
+        <li>
+          <a href="{{ routes.root_url }}pages/shipping-delivery" class="header-drawer__secondary-link text-micro">
+            Shipping &amp; Exchanges
           </a>
         </li>
       </ul>
@@ -183,7 +188,7 @@
           <div class="search-modal__quick-group">
             <p class="text-micro search-modal__suggestions-title">DISCOVER COLLECTIONS</p>
             <div class="search-modal__quick-links">
-              <a href="{{ routes.all_products_collection_url }}" class="search-modal__quick-link">
+              <a href="{{ routes.collections_url }}/shop-all" class="search-modal__quick-link">
                 <span>All Essentials</span>
                 <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                   <line x1="1" y1="7" x2="13" y2="7"></line>
@@ -197,15 +202,15 @@
                   <polyline points="8 2 13 7 8 12"></polyline>
                 </svg>
               </a>
-              <a href="{{ routes.collections_url }}/shirts" class="search-modal__quick-link">
-                <span>Shirts Collection</span>
+              <a href="{{ routes.collections_url }}/sweatshirts" class="search-modal__quick-link">
+                <span>Sweatshirts Collection</span>
                 <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                   <line x1="1" y1="7" x2="13" y2="7"></line>
                   <polyline points="8 2 13 7 8 12"></polyline>
                 </svg>
               </a>
-              <a href="{{ routes.collections_url }}/trousers" class="search-modal__quick-link">
-                <span>Trousers Collection</span>
+              <a href="{{ routes.collections_url }}/new-arrivals" class="search-modal__quick-link">
+                <span>Winter Drop 2026</span>
                 <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                   <line x1="1" y1="7" x2="13" y2="7"></line>
                   <polyline points="8 2 13 7 8 12"></polyline>
@@ -251,14 +256,17 @@
       <nav class="header__nav-left" aria-label="Desktop Navigation">
         <div class="header__categories">
           {% if section.settings.direct_categories %}
-            <a href="{{ routes.all_products_collection_url }}?category=hoodies" class="header__nav-link text-micro">
+            <a href="{{ routes.collections_url }}/hoodies" class="header__nav-link text-micro">
               <span>Hoodies</span>
             </a>
-            <a href="{{ routes.all_products_collection_url }}?category=shirts" class="header__nav-link text-micro">
-              <span>Shirts</span>
+            <a href="{{ routes.collections_url }}/sweatshirts" class="header__nav-link text-micro">
+              <span>Sweatshirts</span>
             </a>
-            <a href="{{ routes.all_products_collection_url }}?category=trousers" class="header__nav-link text-micro">
-              <span>Trousers</span>
+            <a href="{{ routes.collections_url }}/new-arrivals" class="header__nav-link text-micro">
+              <span>Winter Drop</span>
+            </a>
+            <a href="{{ routes.collections_url }}/shop-all" class="header__nav-link text-micro">
+              <span>Shop All</span>
             </a>
           {% else %}
             {% for link in section.settings.menu.links %}
@@ -266,14 +274,17 @@
                 <span>{{ link.title }}</span>
               </a>
             {% else %}
-              <a href="{{ routes.all_products_collection_url }}?category=hoodies" class="header__nav-link text-micro">
+              <a href="{{ routes.collections_url }}/hoodies" class="header__nav-link text-micro">
                 <span>Hoodies</span>
               </a>
-              <a href="{{ routes.all_products_collection_url }}?category=shirts" class="header__nav-link text-micro">
-                <span>Shirts</span>
+              <a href="{{ routes.collections_url }}/sweatshirts" class="header__nav-link text-micro">
+                <span>Sweatshirts</span>
               </a>
-              <a href="{{ routes.all_products_collection_url }}?category=trousers" class="header__nav-link text-micro">
-                <span>Trousers</span>
+              <a href="{{ routes.collections_url }}/new-arrivals" class="header__nav-link text-micro">
+                <span>Winter Drop</span>
+              </a>
+              <a href="{{ routes.collections_url }}/shop-all" class="header__nav-link text-micro">
+                <span>Shop All</span>
               </a>
             {% endfor %}
           {% endif %}

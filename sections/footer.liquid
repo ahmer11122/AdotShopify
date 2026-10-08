@@ -132,10 +132,10 @@
                 <li><a href="{{ link.url }}" class="footer__link"><span class="footer__roll"><span class="footer__roll-a">{{ link.title }}</span><span class="footer__roll-b" aria-hidden="true">{{ link.title }}</span></span></a></li>
               {%- endfor -%}
             {%- else -%}
-              <li><a href="{{ routes.all_products_collection_url }}?category=hoodies" class="footer__link"><span class="footer__roll"><span class="footer__roll-a">Hoodies</span><span class="footer__roll-b" aria-hidden="true">Hoodies</span></span></a></li>
-              <li><a href="{{ routes.all_products_collection_url }}?category=shirts" class="footer__link"><span class="footer__roll"><span class="footer__roll-a">Shirts</span><span class="footer__roll-b" aria-hidden="true">Shirts</span></span></a></li>
-              <li><a href="{{ routes.all_products_collection_url }}?category=trousers" class="footer__link"><span class="footer__roll"><span class="footer__roll-a">Trousers</span><span class="footer__roll-b" aria-hidden="true">Trousers</span></span></a></li>
-              <li><a href="{{ routes.all_products_collection_url }}" class="footer__link"><span class="footer__roll"><span class="footer__roll-a">All essentials</span><span class="footer__roll-b" aria-hidden="true">All essentials</span></span></a></li>
+              <li><a href="{{ routes.collections_url }}/hoodies" class="footer__link"><span class="footer__roll"><span class="footer__roll-a">Hoodies</span><span class="footer__roll-b" aria-hidden="true">Hoodies</span></span></a></li>
+              <li><a href="{{ routes.collections_url }}/sweatshirts" class="footer__link"><span class="footer__roll"><span class="footer__roll-a">Sweatshirts</span><span class="footer__roll-b" aria-hidden="true">Sweatshirts</span></span></a></li>
+              <li><a href="{{ routes.collections_url }}/new-arrivals" class="footer__link"><span class="footer__roll"><span class="footer__roll-a">Winter Drop</span><span class="footer__roll-b" aria-hidden="true">Winter Drop</span></span></a></li>
+              <li><a href="{{ routes.collections_url }}/shop-all" class="footer__link"><span class="footer__roll"><span class="footer__roll-a">Shop All</span><span class="footer__roll-b" aria-hidden="true">Shop All</span></span></a></li>
             {%- endif -%}
           </ul>
         </nav>
@@ -148,8 +148,10 @@
                 <li><a href="{{ link.url }}" class="footer__link"><span class="footer__roll"><span class="footer__roll-a">{{ link.title }}</span><span class="footer__roll-b" aria-hidden="true">{{ link.title }}</span></span></a></li>
               {%- endfor -%}
             {%- else -%}
-              <li><a href="{{ routes.root_url }}pages/contact" class="footer__link"><span class="footer__roll"><span class="footer__roll-a">Contact us</span><span class="footer__roll-b" aria-hidden="true">Contact us</span></span></a></li>
+              <li><a href="{{ routes.root_url }}pages/size-guide" class="footer__link"><span class="footer__roll"><span class="footer__roll-a">Size Guide</span><span class="footer__roll-b" aria-hidden="true">Size Guide</span></span></a></li>
+              <li><a href="{{ routes.root_url }}pages/shipping-delivery" class="footer__link"><span class="footer__roll"><span class="footer__roll-a">Shipping &amp; Exchanges</span><span class="footer__roll-b" aria-hidden="true">Shipping &amp; Exchanges</span></span></a></li>
               <li><a href="{{ routes.root_url }}pages/faq" class="footer__link"><span class="footer__roll"><span class="footer__roll-a">FAQs</span><span class="footer__roll-b" aria-hidden="true">FAQs</span></span></a></li>
+              <li><a href="{{ routes.root_url }}pages/contact" class="footer__link"><span class="footer__roll"><span class="footer__roll-a">Contact Us</span><span class="footer__roll-b" aria-hidden="true">Contact Us</span></span></a></li>
             {%- endif -%}
           </ul>
         </nav>

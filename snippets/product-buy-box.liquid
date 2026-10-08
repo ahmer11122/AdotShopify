@@ -170,8 +170,18 @@
               {%- for value in option.values -%}
                 {%- liquid
                   assign option_available = false
+                  assign val_str = value.name | default: value | escape
                   for variant in product.variants
-                    if variant.options[forloop.parentloop.index0] == value and variant.available
+                    assign v_opt = ''
+                    case option.position
+                      when 1
+                        assign v_opt = variant.option1 | escape
+                      when 2
+                        assign v_opt = variant.option2 | escape
+                      when 3
+                        assign v_opt = variant.option3 | escape
+                    endcase
+                    if v_opt == val_str and variant.available
                       assign option_available = true
                       break
                     endif
@@ -1681,21 +1691,35 @@
     }
 
     function refreshAvailability() {
-      if (groups.length < 2) return;
       groups.forEach((group) => {
         const optionIndex = parseInt(group.dataset.optionIndex, 10);
         group.querySelectorAll('.pdp-size').forEach((cell) => {
           const value = cell.dataset.optionValue;
           const possible = variants.some((variant) => {
-            if (!variant.available || variant.options[optionIndex] !== value) return false;
+            if (!variant.available) return false;
+            const optVal = variant.options ? variant.options[optionIndex] : (variant['option' + (optionIndex + 1)]);
+            if (optVal !== value) return false;
+            if (groups.length <= 1) return true;
             return Object.entries(selectedOptions).every(([index, selectedValue]) => {
               if (parseInt(index, 10) === optionIndex) return true;
-              return variant.options[parseInt(index, 10)] === selectedValue;
+              const otherVal = variant.options ? variant.options[parseInt(index, 10)] : (variant['option' + (parseInt(index, 10) + 1)]);
+              return otherVal === selectedValue;
             });
           });
           cell.classList.toggle('is-sold-out', !possible);
-          if (possible) cell.removeAttribute('aria-disabled');
-          else cell.setAttribute('aria-disabled', 'true');
+          if (possible) {
+            cell.removeAttribute('aria-disabled');
+            const slash = cell.querySelector('.pdp-size__slash');
+            if (slash) slash.remove();
+          } else {
+            cell.setAttribute('aria-disabled', 'true');
+            if (!cell.querySelector('.pdp-size__slash')) {
+              const slash = document.createElement('span');
+              slash.className = 'pdp-size__slash';
+              slash.setAttribute('aria-hidden', 'true');
+              cell.appendChild(slash);
+            }
+          }
         });
       });
     }
@@ -1860,6 +1884,7 @@
       });
     }, 0);
 
+    refreshAvailability();
     render();
   })();
 </script>
