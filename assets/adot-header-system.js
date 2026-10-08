@@ -1031,6 +1031,8 @@
         var delta = y - lastY;
         if (open || y < 120 || delta < -4) header.classList.remove('header--hidden');
         else if (delta > 6) header.classList.add('header--hidden');
+      } else {
+        header.classList.remove('header--hidden');
       }
       lastY = y;
     }

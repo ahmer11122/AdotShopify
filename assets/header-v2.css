@@ -6,7 +6,8 @@
   z-index: 1000;
 }
 
-.header {
+.header,
+.header.header--sticky {
   position: fixed;
   top: 0;
   left: 0;
