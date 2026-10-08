@@ -29,6 +29,7 @@
     {% render 'css-variables' %}
 
     {{ 'base.css' | asset_url | stylesheet_tag }}
+    {{ 'threadline.css' | asset_url | stylesheet_tag }}
 
     {% # Social, title, etc. %}
     {% render 'meta-tags' %}
@@ -48,5 +49,6 @@
 
     <script src="{{ 'theme.js' | asset_url }}" defer></script>
     <script src="{{ 'adot-header-system.js' | asset_url }}" defer></script>
+    <script src="{{ 'threadline.js' | asset_url }}" defer></script>
   </body>
 </html>

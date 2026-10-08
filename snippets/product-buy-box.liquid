@@ -227,8 +227,10 @@
       <button
         type="submit"
         name="add"
-        class="pdp-cta"
+        class="pdp-cta tl-cta"
         id="AddToCartBtn-{{ section.id }}"
+        data-tl-cta
+        data-tl-state="idle"
         data-state="{% if only_default %}ready{% else %}needs-size{% endif %}"
         aria-disabled="{% if only_default %}false{% else %}true{% endif %}"
       >
@@ -1902,6 +1904,8 @@
     }
 
     /* ------------------------------------------------------------------- submit */
+    let lastTriggerCta = null;
+
     if (form) {
       form.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -1912,6 +1916,22 @@
           return;
         }
         if (current && !current.available) return;
+
+        const activeCta = lastTriggerCta || addToCartBtn;
+        lastTriggerCta = null;
+
+        if (window.Threadline && typeof window.Threadline.add === 'function') {
+          const varLabel = current ? current.title : '';
+          const prStr = formatMoney(current ? current.price : baseCents);
+          window.Threadline.add({
+            cta: activeCta,
+            form: form,
+            variantLabel: varLabel,
+            title: '{{ product.title | escape }}',
+            price: prStr
+          });
+          return;
+        }
 
         clearTimeout(doneTimer);
         status = 'loading';
@@ -2026,7 +2046,8 @@
       if (cell) selectCell(cell);
     });
 
-    window.addEventListener('pdp:sticky-add', () => {
+    window.addEventListener('pdp:sticky-add', (e) => {
+      lastTriggerCta = (e && e.detail && e.detail.cta) || null;
       if (!variantInput.value) requireSizeSelection();
       else if (form) form.requestSubmit();
     });

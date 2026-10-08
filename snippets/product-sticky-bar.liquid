@@ -53,7 +53,7 @@
   endif
 -%}
 
-<div class="pdp-dock" id="ProductStickyBar-{{ section.id }}" data-sticky-bar role="region" aria-label="Quick add">
+<div class="pdp-dock" id="ProductStickyBar-{{ section.id }}" data-sticky-bar data-tl-dock role="region" aria-label="Quick add">
   {%- if dock_chips -%}
     <div class="pdp-dock__sizes" id="DockSizes-{{ section.id }}" data-dock-sizes inert>
       <div class="pdp-dock__sizes-clip">
@@ -135,10 +135,24 @@
       class="pdp-dock__cta"
       id="ProductStickyCta-{{ section.id }}"
       data-sticky-cta
+      data-tl-cta
+      data-tl-state="idle"
       data-state="{% if dock_default %}ready{% else %}needs-size{% endif %}"
     >
-      <span data-sticky-btn-text>{% if dock_default %}Add to bag{% else %}Select a size{% endif %}</span>
+      <span class="tl-cta__label" data-tl-label>
+        <span class="tl-cta__line" data-line="idle" data-sticky-btn-text>{% if dock_default %}Add to bag{% else %}Select a size{% endif %}</span>
+        <span class="tl-cta__line" data-line="done" aria-hidden="true">Added to Bag</span>
+        <span class="tl-cta__line" data-line="error" aria-hidden="true">Couldn't add</span>
+      </span>
     </button>
+
+    <a href="{{ routes.cart_url }}" class="pdp-dock__bag" data-tl-dock-bag data-cart-trigger aria-label="Shopping bag, {{ cart.item_count }} items">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M6 8h12l1.5 13H4.5L6 8z"></path>
+        <path d="M9 8V6a3 3 0 0 1 6 0v2"></path>
+      </svg>
+      <span class="pdp-dock__bag-badge" data-cart-count data-tl-badge>[{{ cart.item_count }}]</span>
+    </a>
   </div>
 </div>
 
@@ -569,7 +583,7 @@
           return;
         }
         // Otherwise same path as the main button: validation, scrolling and the nudge live in one place.
-        window.dispatchEvent(new CustomEvent('pdp:sticky-add'));
+        window.dispatchEvent(new CustomEvent('pdp:sticky-add', { detail: { cta: cta } }));
       });
     }
 
