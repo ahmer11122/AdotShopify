@@ -12,6 +12,7 @@
 {%- liquid
   assign current_handle = product.handle
   assign rendered_count = 0
+  assign max_products = section.settings.products_to_show | default: 6
   assign shown = ','
   assign primary_collection = product.collections | first
 -%}
@@ -34,7 +35,7 @@
 
   <div class="pdp-more__grid">
     {%- for pass in (1..2) -%}
-      {%- if rendered_count >= 4 -%}{%- break -%}{%- endif -%}
+      {%- if rendered_count >= max_products -%}{%- break -%}{%- endif -%}
       {%- if pass == 1 and primary_collection != blank -%}
         {%- assign pool = primary_collection.products -%}
       {%- elsif pass == 2 -%}
@@ -55,7 +56,7 @@
 
         {%- assign shown = shown | append: prod_item.handle | append: ',' -%}
         {%- assign rendered_count = rendered_count | plus: 1 -%}
-        {%- if rendered_count == 4 -%}{%- break -%}{%- endif -%}
+        {%- if rendered_count >= max_products -%}{%- break -%}{%- endif -%}
       {%- endfor -%}
     {%- endfor -%}
   </div>
@@ -71,7 +72,7 @@
   .pdp-more {
     display: flex;
     flex-direction: column;
-    gap: clamp(2rem, 4vw, 3.5rem);
+    gap: clamp(1.75rem, 3.5vw, 3rem);
   }
 
   .pdp-more__head {
@@ -85,12 +86,11 @@
 
   .pdp-more__title {
     margin: 0;
-    max-width: 14ch;
     font-family: var(--font-display, inherit);
-    font-size: clamp(2.5rem, 7.5vw, 6.5rem);
+    font-size: clamp(1.75rem, 4vw, 3.25rem);
     font-weight: 500;
-    line-height: 0.92;
-    letter-spacing: -0.05em;
+    line-height: 1.05;
+    letter-spacing: -0.035em;
     text-wrap: balance;
     color: var(--color-text, #111);
   }
@@ -108,10 +108,18 @@
     white-space: nowrap;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
     background-image: linear-gradient(currentColor, currentColor);
     background-repeat: no-repeat;
     background-size: 100% 1px;
     background-position: 0 calc(50% + 0.75em);
+    transition: background-size 320ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), transform 160ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), opacity 160ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+  }
+
+  .pdp-more__all:active {
+    opacity: 0.7;
+    transform: scale(0.98);
   }
 
   .pdp-more__all svg {
@@ -121,7 +129,6 @@
   @media (hover: hover) and (pointer: fine) {
     .pdp-more__all {
       background-size: 0% 1px;
-      transition: background-size 320ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
     }
 
     .pdp-more__all:hover {
@@ -174,21 +181,16 @@
       padding-inline: 0;
       scroll-snap-type: none;
     }
-
-    /* Rhythm: every second card steps down */
-    .pdp-more__item:nth-child(even) {
-      margin-top: clamp(2rem, 4vw, 4rem);
-    }
   }
 
   /* Soften the siblings of the card under the pointer */
   @media (hover: hover) and (pointer: fine) {
     .pdp-more__item {
-      transition: opacity 360ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+      transition: opacity 280ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
     }
 
     .pdp-more__grid:has(.pdp-more__item:hover) .pdp-more__item:not(:hover) {
-      opacity: 0.45;
+      opacity: 0.72;
     }
   }
 
@@ -212,6 +214,15 @@
       "id": "heading",
       "label": "Heading",
       "default": "You may also like"
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "label": "Products to show",
+      "min": 4,
+      "max": 8,
+      "step": 1,
+      "default": 6
     }
   ],
   "presets": [
