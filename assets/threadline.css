@@ -194,6 +194,30 @@
   font-family: var(--font-body, -apple-system, BlinkMacSystemFont, sans-serif);
 }
 
+.tl-peek__close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-subtle, #6B6B6B);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 150ms ease, color 150ms ease;
+  z-index: 2;
+}
+
+.tl-peek__close:hover {
+  background: rgba(17, 17, 17, 0.06);
+  color: var(--color-text, #111111);
+}
+
 .tl-peek__handle {
   display: none;
   width: 36px;

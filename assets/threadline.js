@@ -609,6 +609,8 @@
      --------------------------------------------------------------------------- */
   let peekEl = null;
   let peekTimer = 0;
+  let peekHardTimer = 0;
+  let peekCleanupFns = [];
 
   function showPeek(cartResult, anchor, meta) {
     dismissPeek(true);
@@ -626,6 +628,18 @@
     el.className = 'tl-peek';
     el.setAttribute('role', 'group');
     el.setAttribute('aria-label', 'Added to bag confirmation');
+
+    // Close Button (×)
+    const closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.className = 'tl-peek__close';
+    closeBtn.setAttribute('aria-label', 'Dismiss notification');
+    closeBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 1l10 10M11 1L1 11"/></svg>';
+    closeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dismissPeek();
+    });
+    el.appendChild(closeBtn);
 
     // Mobile pull handle
     const handle = document.createElement('div');
@@ -677,7 +691,8 @@
     viewBagBtn.type = 'button';
     viewBagBtn.className = 'tl-peek__btn tl-peek__btn--secondary';
     viewBagBtn.textContent = 'View bag';
-    viewBagBtn.addEventListener('click', () => {
+    viewBagBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
       dismissPeek(true);
       adapters.openCart();
     });
@@ -727,32 +742,70 @@
       { duration: 520, delay: 140, easing: EASE_OUT, fill: 'forwards' }
     );
 
-    // Pausable Auto-Dismissal
-    const ms = coarse ? 5000 : 4500;
-    const arm = () => {
+    // Auto-Dismissal Timer (3.5s desktop, 3.8s mobile)
+    const ms = coarse ? 3800 : 3500;
+    const arm = (delayMs) => {
       clearTimeout(peekTimer);
-      peekTimer = setTimeout(() => dismissPeek(), ms);
+      peekTimer = setTimeout(() => dismissPeek(), delayMs || ms);
     };
     const hold = () => clearTimeout(peekTimer);
 
     el.addEventListener('pointerenter', hold);
-    el.addEventListener('pointerleave', arm);
+    el.addEventListener('pointerleave', () => arm(1800));
     el.addEventListener('focusin', hold);
-    el.addEventListener('focusout', arm);
+    el.addEventListener('focusout', () => arm(1800));
 
-    window.addEventListener('keydown', onEscKey);
+    // Hard ceiling timeout (never stay open beyond 7s even if hovered)
+    clearTimeout(peekHardTimer);
+    peekHardTimer = setTimeout(() => dismissPeek(), 7000);
+
+    // Click outside to dismiss immediately
+    const onDocPointerDown = (e) => {
+      if (el && !el.contains(e.target) && !e.target.closest('[data-tl-cta], [data-tl-bag], [data-tl-dock-bag], .product-card__size-pill')) {
+        dismissPeek();
+      }
+    };
+    document.addEventListener('pointerdown', onDocPointerDown, { capture: true });
+
+    // Scroll threshold to dismiss
+    const startScroll = window.scrollY;
+    const onScroll = () => {
+      if (Math.abs(window.scrollY - startScroll) > 60) {
+        dismissPeek();
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    // Escape key
+    const onEsc = (e) => {
+      if (e.key === 'Escape') dismissPeek();
+    };
+    window.addEventListener('keydown', onEsc);
+
+    // Cart drawer open listener
+    const onCartOpen = () => dismissPeek(true);
+    window.addEventListener('cart:open', onCartOpen, { once: true });
+
+    peekCleanupFns.push(() => {
+      document.removeEventListener('pointerdown', onDocPointerDown, { capture: true });
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('keydown', onEsc);
+      window.removeEventListener('cart:open', onCartOpen);
+    });
+
     arm();
 
     if (coarse) enableSwipe(el);
   }
 
-  function onEscKey(e) {
-    if (e.key === 'Escape') dismissPeek();
-  }
-
   function dismissPeek(instant = false) {
     clearTimeout(peekTimer);
-    window.removeEventListener('keydown', onEscKey);
+    clearTimeout(peekHardTimer);
+
+    peekCleanupFns.forEach((fn) => {
+      try { fn(); } catch (_) {}
+    });
+    peekCleanupFns = [];
 
     const el = peekEl;
     if (!el) return;
@@ -764,10 +817,14 @@
       return;
     }
 
+    try {
+      el.getAnimations().forEach((a) => a.cancel());
+    } catch (_) {}
+
     const coarse = isCoarse();
     const outKeyframes = coarse
-      ? [{ transform: 'translateY(0)' }, { transform: 'translateY(120%)' }]
-      : [{ opacity: 1, transform: 'translateY(0)' }, { opacity: 0, transform: 'translateY(-6px)' }];
+      ? [{ transform: 'translateY(0)', opacity: 1 }, { transform: 'translateY(120%)', opacity: 0 }]
+      : [{ opacity: 1, transform: 'translateY(0) scale(1)' }, { opacity: 0, transform: 'translateY(-6px) scale(0.96)' }];
 
     const a = el.animate(outKeyframes, { duration: coarse ? 220 : 180, easing: 'ease-in', fill: 'forwards' });
     onDone(a, () => {
