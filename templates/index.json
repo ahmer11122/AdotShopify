@@ -17,7 +17,9 @@
         "secondary_button_label": "",
         "show_category_bar": false,
         "show_scroll_indicator": true,
-        "footer_metadata": "Cash on Delivery · Easy Exchange"
+        "footer_metadata": "Cash on Delivery \u00b7 Easy Exchange",
+        "image": "shopify://shop_images/adot-theme-hero-desktop.jpg",
+        "image_mobile": "shopify://shop_images/adot-theme-hero-mobile.jpg"
       }
     },
     "featured_collection": {
@@ -39,21 +41,24 @@
           "type": "tile",
           "settings": {
             "title": "Hoodies",
-            "link": "/collections/hoodies"
+            "link": "/collections/hoodies",
+            "image": "shopify://shop_images/adot-theme-category-hoodies.jpg"
           }
         },
         "tile_sweatshirts": {
           "type": "tile",
           "settings": {
             "title": "Sweatshirts",
-            "link": "/collections/sweatshirts"
+            "link": "/collections/sweatshirts",
+            "image": "shopify://shop_images/adot-theme-category-sweatshirts.jpg"
           }
         },
         "tile_trousers": {
           "type": "tile",
           "settings": {
             "title": "Trousers",
-            "link": "/collections/trousers"
+            "link": "/collections/trousers",
+            "image": "shopify://shop_images/adot-theme-category-trousers.jpg"
           }
         }
       },
@@ -73,21 +78,24 @@
           "type": "chip",
           "settings": {
             "title": "Hoodies",
-            "link": "/collections/hoodies"
+            "link": "/collections/hoodies",
+            "image": "shopify://shop_images/adot-theme-category-hoodies.jpg"
           }
         },
         "chip_sweatshirts": {
           "type": "chip",
           "settings": {
             "title": "Sweatshirts",
-            "link": "/collections/sweatshirts"
+            "link": "/collections/sweatshirts",
+            "image": "shopify://shop_images/adot-theme-category-sweatshirts.jpg"
           }
         },
         "chip_trousers": {
           "type": "chip",
           "settings": {
             "title": "Trousers",
-            "link": "/collections/trousers"
+            "link": "/collections/trousers",
+            "image": "shopify://shop_images/adot-theme-category-trousers.jpg"
           }
         }
       },
@@ -110,7 +118,7 @@
         "pillar_1_desc": "Pay when it arrives",
         "pillar_2_title": "7-day exchange",
         "pillar_2_desc": "Size or fit, replaced",
-        "pillar_3_title": "2–4 day delivery",
+        "pillar_3_title": "2\u20134 day delivery",
         "pillar_3_desc": "Across Pakistan",
         "pillar_4_title": "WhatsApp",
         "pillar_4_desc": "Order in a chat",
@@ -125,7 +133,9 @@
           "settings": {
             "title": "Heavyweight Hoodie",
             "subtitle": "350 GSM Fleece",
-            "link": "/collections/hoodies"
+            "link": "/collections/hoodies",
+            "image": "shopify://shop_images/adot-theme-adot-rail-hoodie-front.png",
+            "image_side": "shopify://shop_images/adot-theme-adot-rail-hoodie-side.png"
           }
         },
         "card_2": {
@@ -133,7 +143,9 @@
           "settings": {
             "title": "Classic Sweatshirt",
             "subtitle": "280 GSM Fleece",
-            "link": "/collections/sweatshirts"
+            "link": "/collections/sweatshirts",
+            "image": "shopify://shop_images/adot-theme-adot-rail-shirt-front.png",
+            "image_side": "shopify://shop_images/adot-theme-adot-rail-shirt-side.png"
           }
         },
         "card_3": {
@@ -141,7 +153,8 @@
           "settings": {
             "title": "Twill Trouser",
             "subtitle": "Straight Cut",
-            "link": "/collections/trousers"
+            "link": "/collections/trousers",
+            "image": "shopify://shop_images/adot-theme-adot-rail-trouser-front.png"
           }
         },
         "card_4": {
@@ -149,7 +162,9 @@
           "settings": {
             "title": "Winter Drop",
             "subtitle": "New Arrivals",
-            "link": "/collections/new-arrivals"
+            "link": "/collections/new-arrivals",
+            "image": "shopify://shop_images/adot-theme-adot-rail-hoodie-front.png",
+            "image_side": "shopify://shop_images/adot-theme-adot-rail-hoodie-side.png"
           }
         },
         "card_5": {
@@ -157,7 +172,9 @@
           "settings": {
             "title": "Boxy Sweatshirt",
             "subtitle": "Heavy Fleece",
-            "link": "/collections/sweatshirts"
+            "link": "/collections/sweatshirts",
+            "image": "shopify://shop_images/adot-theme-adot-rail-shirt-front.png",
+            "image_side": "shopify://shop_images/adot-theme-adot-rail-shirt-side.png"
           }
         },
         "card_6": {
@@ -165,7 +182,9 @@
           "settings": {
             "title": "Pullover Hoodie",
             "subtitle": "Daily Layer",
-            "link": "/collections/hoodies"
+            "link": "/collections/hoodies",
+            "image": "shopify://shop_images/adot-theme-adot-rail-hoodie-front.png",
+            "image_side": "shopify://shop_images/adot-theme-adot-rail-hoodie-side.png"
           }
         }
       },

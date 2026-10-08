@@ -2,7 +2,7 @@
   assign og_title = page_title | default: shop.name
   assign og_url = canonical_url | default: request.origin
   assign og_type = 'website'
-  assign fallback_description = shop.description | default: 'ADOT menswear essentials — heavyweight hoodies and fleece sweatshirts with cash on delivery across Pakistan.'
+  assign fallback_description = shop.description | default: 'ADOT Wear menswear essentials — heavyweight hoodies and fleece sweatshirts with cash on delivery across Pakistan.'
   assign og_description = page_description | default: fallback_description
 
   if request.page_type == 'product'
