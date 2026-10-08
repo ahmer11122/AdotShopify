@@ -14,13 +14,10 @@
 
   if selected_collection != blank and selected_collection.products_count > 0
     assign grid_products = selected_collection.products
-    assign total_products = selected_collection.products_count
   else
     assign grid_products = collections.all.products
-    assign total_products = collections.all.products_count
   endif
 
-  assign shown_count = total_products | at_most: limit_n
   assign mobile_cols = section.settings.mobile_columns | default: '2'
 
   if mobile_cols == '1'

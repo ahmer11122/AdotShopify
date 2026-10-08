@@ -52,10 +52,12 @@
 
   assign type_lc = product.type | downcase
   assign size_cat = 'hoodies'
-  if type_lc contains 'shirt' or type_lc contains 'tee'
-    assign size_cat = 'shirts'
+  if type_lc contains 'sweat'
+    assign size_cat = 'sweatshirts'
   elsif type_lc contains 'trouser' or type_lc contains 'pant' or type_lc contains 'jogger'
     assign size_cat = 'trousers'
+  elsif type_lc contains 'shirt' or type_lc contains 'tee'
+    assign size_cat = 'sweatshirts'
   endif
 
   assign title_words = product.title | split: ' '

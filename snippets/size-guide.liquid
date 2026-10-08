@@ -9,10 +9,10 @@
   - The row for the currently selected size is marked.
   - AdotSizeData JSON is the JS source of truth; tables below mirror the same measurements in Liquid.
 
-  Opened by any element with [data-open-size-guide] (optionally data-size-category="hoodies|shirts|trousers").
+  Opened by any element with [data-open-size-guide] (optionally data-size-category="hoodies|sweatshirts|trousers").
 {% enddoc %}
 
-<script type="application/json" id="AdotSizeData">[{"key":"hoodies","label":"Hoodies","cols":["Chest","Length","Shoulder","Sleeve"],"note":"Boxy, relaxed drape. Fits true to size: take your regular size for an oversized silhouette.","rows":[{"size":"S","keys":["S"],"v":[116,68,54,61]},{"size":"M","keys":["M"],"v":[122,70,56,62]},{"size":"L","keys":["L"],"v":[128,72,58,63]},{"size":"XL","keys":["XL"],"v":[134,74,60,64]}]},{"key":"shirts","label":"Shirts","cols":["Chest","Length","Shoulder","Neck"],"note":"Tailored casual drape with a clean shoulder line and comfortable room through the chest.","rows":[{"size":"S","keys":["S"],"v":[108,74,48,39]},{"size":"M","keys":["M"],"v":[114,76,50,41]},{"size":"L","keys":["L"],"v":[120,78,52,43]},{"size":"XL","keys":["XL"],"v":[126,80,54,45]}]},{"key":"trousers","label":"Trousers","cols":["Waist","Inseam","Rise","Opening"],"note":"Relaxed straight leg with a tailored waistband. Order your standard waist size.","rows":[{"size":"30 (S)","keys":["30","S"],"v":[78,76,30,22]},{"size":"32 (M)","keys":["32","M"],"v":[83,77,31,23]},{"size":"34 (L)","keys":["34","L"],"v":[88,78,32,24]},{"size":"36 (XL)","keys":["36","XL"],"v":[93,79,33,25]}]}]</script>
+<script type="application/json" id="AdotSizeData">[{"key":"hoodies","label":"Hoodies","cols":["Chest","Length","Shoulder","Sleeve"],"note":"Boxy, relaxed drape. Fits true to size: take your regular size for an oversized silhouette.","rows":[{"size":"S","keys":["S"],"v":[116,68,54,61]},{"size":"M","keys":["M"],"v":[122,70,56,62]},{"size":"L","keys":["L"],"v":[128,72,58,63]},{"size":"XL","keys":["XL"],"v":[134,74,60,64]}]},{"key":"sweatshirts","label":"Sweatshirts","cols":["Chest","Length","Shoulder","Sleeve"],"note":"Tailored casual drape with a clean shoulder line and comfortable room through the chest.","rows":[{"size":"S","keys":["S"],"v":[108,74,48,39]},{"size":"M","keys":["M"],"v":[114,76,50,41]},{"size":"L","keys":["L"],"v":[120,78,52,43]},{"size":"XL","keys":["XL"],"v":[126,80,54,45]}]},{"key":"trousers","label":"Trousers","cols":["Waist","Inseam","Rise","Opening"],"note":"Relaxed straight leg with a tailored waistband. Order your standard waist size.","rows":[{"size":"30 (S)","keys":["30","S"],"v":[78,76,30,22]},{"size":"32 (M)","keys":["32","M"],"v":[83,77,31,23]},{"size":"34 (L)","keys":["34","L"],"v":[88,78,32,24]},{"size":"36 (XL)","keys":["36","XL"],"v":[93,79,33,25]}]}]</script>
 
 <dialog id="SizeGuideDialog" class="sg" aria-labelledby="SizeGuideTitle" data-unit="cm">
   <div class="sg__sheet" data-sg-sheet>
@@ -45,12 +45,12 @@
           <button
             type="button"
             role="tab"
-            id="SgTab-shirts"
-            aria-controls="SgPanel-shirts"
+            id="SgTab-sweatshirts"
+            aria-controls="SgPanel-sweatshirts"
             aria-selected="false"
             tabindex="-1"
-            data-tab="shirts"
-          >Shirts</button>
+            data-tab="sweatshirts"
+          >Sweatshirts</button>
           <button
             type="button"
             role="tab"
@@ -248,10 +248,10 @@
         </section>
         <section
           class="sg__panel"
-          id="SgPanel-shirts"
+          id="SgPanel-sweatshirts"
           role="tabpanel"
-          aria-labelledby="SgTab-shirts"
-          data-panel="shirts"
+          aria-labelledby="SgTab-sweatshirts"
+          data-panel="sweatshirts"
           hidden
         >
           <table class="sg__table">
@@ -271,7 +271,7 @@
                     <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
                   </th>
                   <th scope="col">
-                    Neck
+                    Sleeve
                     <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
                   </th>
                 <td class="sg__act"></td>

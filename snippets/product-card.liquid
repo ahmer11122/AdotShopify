@@ -48,7 +48,6 @@
     assign card_compare_at = product.compare_at_price
     assign is_available = product.available
     assign card_spec = product.metafields.custom.fabric_spec | default: product.type
-    assign featured_media = product.featured_media
     assign has_secondary_image = false
     if product.media.size > 1
       assign has_secondary_image = true

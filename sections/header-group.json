@@ -12,11 +12,11 @@
             "query": "Hoodie"
           }
         },
-        "search_tag_shirts": {
+        "search_tag_sweatshirts": {
           "type": "search_tag",
           "settings": {
-            "label": "Shirts",
-            "query": "Shirt"
+            "label": "Sweatshirts",
+            "query": "Sweatshirt"
           }
         },
         "search_tag_trousers": {
@@ -36,7 +36,7 @@
       },
       "block_order": [
         "search_tag_hoodies",
-        "search_tag_shirts",
+        "search_tag_sweatshirts",
         "search_tag_trousers",
         "search_tag_winter"
       ],

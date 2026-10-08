@@ -68,8 +68,8 @@
           <p class="search-page__empty-text">Please check your spelling, or try searching for another product category.</p>
           <div class="search-page__empty-actions">
             <a href="{{ routes.all_products_collection_url }}" class="search-page__btn search-page__btn--primary">View All Products</a>
-            <a href="{{ routes.all_products_collection_url }}?category=hoodies" class="search-page__btn search-page__btn--outline">Hoodies</a>
-            <a href="{{ routes.all_products_collection_url }}?category=shirts" class="search-page__btn search-page__btn--outline">Shirts</a>
+            <a href="{{ routes.collections_url }}/hoodies" class="search-page__btn search-page__btn--outline">Hoodies</a>
+            <a href="{{ routes.collections_url }}/sweatshirts" class="search-page__btn search-page__btn--outline">Sweatshirts</a>
           </div>
         </div>
 
@@ -155,15 +155,15 @@
       <div class="search-page__landing-categories">
         <span class="text-micro search-page__landing-eyebrow">BROWSE CATEGORIES</span>
         <div class="search-page__category-grid">
-          <a href="{{ routes.all_products_collection_url }}?category=hoodies" class="search-page__category-card">
+          <a href="{{ routes.collections_url }}/hoodies" class="search-page__category-card">
             <span class="search-page__category-title">Hoodies</span>
             <span class="text-micro search-page__category-cta">Shop Now →</span>
           </a>
-          <a href="{{ routes.all_products_collection_url }}?category=shirts" class="search-page__category-card">
-            <span class="search-page__category-title">Shirts</span>
+          <a href="{{ routes.collections_url }}/sweatshirts" class="search-page__category-card">
+            <span class="search-page__category-title">Sweatshirts</span>
             <span class="text-micro search-page__category-cta">Shop Now →</span>
           </a>
-          <a href="{{ routes.all_products_collection_url }}?category=trousers" class="search-page__category-card">
+          <a href="{{ routes.collections_url }}/trousers" class="search-page__category-card">
             <span class="search-page__category-title">Trousers</span>
             <span class="text-micro search-page__category-cta">Shop Now →</span>
           </a>

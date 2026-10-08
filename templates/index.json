@@ -9,11 +9,11 @@
         "cinematic_reveal": true,
         "badge_label": "",
         "edition_tag": "",
-        "heading": "Polos and Trousers. Made for Daily Wear.",
-        "subheading": "Soft cotton polos and clean trousers. Easy to wear every day.",
+        "heading": "Hoodies and Sweatshirts. Made for Daily Wear.",
+        "subheading": "Heavy fleece essentials for everyday comfort across Pakistan.",
         "text_alignment": "left",
-        "primary_button_label": "Shop Polos",
-        "primary_button_link": "/collections/all?category=shirts",
+        "primary_button_label": "Shop New Arrivals",
+        "primary_button_link": "/collections/new-arrivals",
         "secondary_button_label": "",
         "show_category_bar": false,
         "show_scroll_indicator": true,
@@ -23,6 +23,7 @@
     "featured_collection": {
       "type": "featured-collection",
       "settings": {
+        "collection": "new-arrivals",
         "eyebrow": "AUTUMN / WINTER 2026",
         "heading": "New Arrivals",
         "mobile_columns": "2",
@@ -38,27 +39,27 @@
           "type": "tile",
           "settings": {
             "title": "Hoodies",
-            "link": "/collections/all?category=hoodies"
+            "link": "/collections/hoodies"
           }
         },
-        "tile_shirts": {
+        "tile_sweatshirts": {
           "type": "tile",
           "settings": {
-            "title": "Shirts",
-            "link": "/collections/all?category=shirts"
+            "title": "Sweatshirts",
+            "link": "/collections/sweatshirts"
           }
         },
         "tile_trousers": {
           "type": "tile",
           "settings": {
             "title": "Trousers",
-            "link": "/collections/all?category=trousers"
+            "link": "/collections/trousers"
           }
         }
       },
       "block_order": [
         "tile_hoodies",
-        "tile_shirts",
+        "tile_sweatshirts",
         "tile_trousers"
       ],
       "settings": {
@@ -72,34 +73,34 @@
           "type": "chip",
           "settings": {
             "title": "Hoodies",
-            "link": "/collections/all?category=hoodies"
+            "link": "/collections/hoodies"
           }
         },
-        "chip_shirts": {
+        "chip_sweatshirts": {
           "type": "chip",
           "settings": {
-            "title": "Shirts",
-            "link": "/collections/all?category=shirts"
+            "title": "Sweatshirts",
+            "link": "/collections/sweatshirts"
           }
         },
         "chip_trousers": {
           "type": "chip",
           "settings": {
             "title": "Trousers",
-            "link": "/collections/all?category=trousers"
+            "link": "/collections/trousers"
           }
         }
       },
       "block_order": [
         "chip_hoodies",
-        "chip_shirts",
+        "chip_sweatshirts",
         "chip_trousers"
       ],
       "settings": {
         "color_scheme": "dark",
         "eyebrow": "The ADOT standard",
         "meta": "Autumn / Winter 2026",
-        "statement": "Soft cotton|Heavy fleece|Daily wear|Easy fits"
+        "statement": "Heavy fleece|Daily wear|Easy fits|Cash on delivery"
       }
     },
     "trust_strip": {
@@ -123,16 +124,16 @@
           "type": "card",
           "settings": {
             "title": "Heavyweight Hoodie",
-            "subtitle": "Organic Cotton",
-            "link": "/collections/all?category=hoodies"
+            "subtitle": "350 GSM Fleece",
+            "link": "/collections/hoodies"
           }
         },
         "card_2": {
           "type": "card",
           "settings": {
-            "title": "Poplin Shirt",
-            "subtitle": "Relaxed Fit",
-            "link": "/collections/all?category=shirts"
+            "title": "Classic Sweatshirt",
+            "subtitle": "280 GSM Fleece",
+            "link": "/collections/sweatshirts"
           }
         },
         "card_3": {
@@ -140,15 +141,15 @@
           "settings": {
             "title": "Twill Trouser",
             "subtitle": "Straight Cut",
-            "link": "/collections/all?category=trousers"
+            "link": "/collections/trousers"
           }
         },
         "card_4": {
           "type": "card",
           "settings": {
-            "title": "Daily Overshirt",
-            "subtitle": "Classic Layer",
-            "link": "/collections/all"
+            "title": "Winter Drop",
+            "subtitle": "New Arrivals",
+            "link": "/collections/new-arrivals"
           }
         },
         "card_5": {
@@ -156,15 +157,15 @@
           "settings": {
             "title": "Boxy Sweatshirt",
             "subtitle": "Heavy Fleece",
-            "link": "/collections/all?category=hoodies"
+            "link": "/collections/sweatshirts"
           }
         },
         "card_6": {
           "type": "card",
           "settings": {
-            "title": "Casual Shirt",
-            "subtitle": "100% Cotton",
-            "link": "/collections/all?category=shirts"
+            "title": "Pullover Hoodie",
+            "subtitle": "Daily Layer",
+            "link": "/collections/hoodies"
           }
         }
       },
@@ -179,12 +180,12 @@
       "settings": {
         "eyebrow": "",
         "heading": "The Essentials",
-        "caption": "Hoodies, shirts and trousers for every day.",
+        "caption": "Hoodies, sweatshirts and trousers for every day.",
         "idle_title": "",
         "hint_hover": "Hover a piece to turn it.",
         "hint_touch": "Swipe to browse. Tap a piece to open.",
         "button_label": "Shop All",
-        "button_link": "/collections/all",
+        "button_link": "/collections/shop-all",
         "whatsapp_number": "923131707080",
         "mobile_layout": "carousel",
         "label_pull": 70,

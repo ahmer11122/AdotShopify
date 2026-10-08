@@ -7,6 +7,8 @@
 
     {%- if settings.favicon != blank -%}
       <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 32, height: 32 }}">
+    {%- else -%}
+      <link rel="icon" type="image/png" href="{{ 'logo.png' | asset_url }}">
     {%- endif -%}
 
     {% comment %}
@@ -35,9 +37,10 @@
   </head>
 
   <body class="template-{{ template.name | default: 'index' }}">
+    <a class="skip-link" href="#MainContent">Skip to content</a>
     {% sections 'header-group' %}
 
-    <main id="MainContent" role="main">
+    <main id="MainContent" role="main" tabindex="-1">
       {{ content_for_layout }}
     </main>
 
