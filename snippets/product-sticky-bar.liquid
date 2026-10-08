@@ -241,6 +241,9 @@
     cursor: pointer;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
     transition:
       background-color 200ms var(--pdp-ease, ease),
       color 200ms var(--pdp-ease, ease),
@@ -249,7 +252,7 @@
   }
 
   .pdp-dock__chip:active:not(.is-sold-out) {
-    transform: scale(0.95);
+    transform: scale(0.96);
   }
 
   .pdp-dock__chip.is-selected {
@@ -356,10 +359,12 @@
   }
 
   .pdp-dock__size {
-    min-height: 28px;
+    min-height: 44px;
     cursor: pointer;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
   }
 
   .pdp-dock__size::before,
@@ -398,6 +403,8 @@
     cursor: pointer;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
     transition:
       background-color 220ms var(--pdp-ease, ease),
       color 220ms var(--pdp-ease, ease),

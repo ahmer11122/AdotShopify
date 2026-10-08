@@ -384,15 +384,22 @@
 
               {%- liquid
                 assign title_check = block.settings.title | downcase
-                assign has_swatch = false
-                if title_check contains 'detail' or title_check contains 'care' or title_check contains 'fabric' or title_check contains 'material' or title_check contains 'craft'
-                  if product.images.size > 0
-                    assign has_swatch = true
-                  endif
+                assign swatch_img = nil
+                if product.metafields.custom.fabric_swatch != blank
+                  assign swatch_img = product.metafields.custom.fabric_swatch
+                elsif product.metafields.custom.macro_image != blank
+                  assign swatch_img = product.metafields.custom.macro_image
+                else
+                  for img in product.images
+                    assign img_alt = img.alt | downcase
+                    if img_alt contains 'swatch' or img_alt contains 'fabric' or img_alt contains 'weave' or img_alt contains 'macro' or img_alt contains 'texture' or img_alt contains 'material'
+                      assign swatch_img = img
+                      break
+                    endif
+                  endfor
                 endif
               -%}
-              {%- if has_swatch -%}
-                {%- assign swatch_img = product.images[1] | default: product.featured_image -%}
+              {%- if swatch_img != nil -%}
                 <div class="pdp-loupe" data-fabric-loupe>
                   <div class="pdp-loupe__view" data-loupe-view>
                     <img
@@ -709,6 +716,9 @@
     cursor: pointer;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
     transition:
       color 200ms var(--pdp-ease),
       background-color 160ms var(--pdp-ease),
@@ -860,6 +870,8 @@
     cursor: pointer;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
     transition:
       background-color 260ms var(--pdp-ease),
       color 320ms var(--pdp-ease),
@@ -1015,6 +1027,8 @@
     cursor: pointer;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
     transition: box-shadow 200ms var(--pdp-ease), transform 140ms var(--pdp-ease);
   }
 

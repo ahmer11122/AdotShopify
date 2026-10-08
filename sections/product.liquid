@@ -119,11 +119,18 @@
     cursor: pointer;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
     background-image: linear-gradient(currentColor, currentColor);
     background-repeat: no-repeat;
     background-size: 100% 1px;
     background-position: 0 calc(50% + 0.7em);
-    transition: background-size 320ms var(--pdp-ease);
+    transition: background-size 320ms var(--pdp-ease), opacity 160ms var(--pdp-ease), transform 160ms var(--pdp-ease);
+  }
+
+  .section-product .pdp-link:active {
+    opacity: 0.7;
+    transform: scale(0.98);
   }
 
   @media (hover: hover) and (pointer: fine) {
