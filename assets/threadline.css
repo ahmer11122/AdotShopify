@@ -1,30 +1,46 @@
 /* ==========================================================================
-   THREADLINE 2.0 — "Cut · Carry · Close"
-   Add to Bag motion system. Desktop + Mobile.
-   Native WAAPI + CSS custom properties + SVG path geometry. Zero dependencies.
+   THREADLINE 3.0 — "The Sartorial Hybrid"
+   Award-grade Add to Bag motion system for luxury menswear. Desktop + Mobile.
+   Native WAAPI + 3D Garment Fold Geometry + Continuous Brass Thread + Apple-grade Physics.
+   Zero dependencies.
    ========================================================================== */
+
 :root {
-  --tl-ease-out:   cubic-bezier(0.23, 1, 0.32, 1);     /* entrances, feedback */
-  --tl-ease-in:    cubic-bezier(0.55, 0, 1, 0.45);     /* things leaving / impact */
-  --tl-ease-sheet: cubic-bezier(0.32, 0.72, 0, 1);     /* sheet rise */
-  --tl-ease-morph: cubic-bezier(0.77, 0, 0.175, 1);    /* pill -> disc */
-  --tl-ease-dart:  cubic-bezier(0.5, 0, 0.2, 1);       /* swatch -> dart fold */
-  --tl-thread:      #A8864F;                           /* brass tailor's thread */
-  --tl-thread-hi:   #C9A86A;                           /* brass highlight */
-  --tl-thread-width: 1.25px;
-  --tl-token-shadow: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.24));
+  /* Brand luxury tokens */
+  --tl-ink:          #1B1613;                           /* deep charcoal ink */
+  --tl-paper:        #EFE8DA;                           /* woven label + card base */
+  --tl-lining:       #4A1523;                           /* silk cupro lining (base oxblood) */
+  --tl-lining-hi:    #6B2236;                           /* silk cupro lining (highlight) */
+  --tl-pin:          rgba(235, 214, 170, 0.20);         /* suiting pinstripe on lining */
+  --tl-thread:       #A8864F;                           /* antique brass tailor's thread */
+  --tl-thread-hi:    #C9A86A;                           /* brass highlight */
+  --tl-thread-width: 1.5px;
+  
+  /* Easings */
+  --tl-ease-out:     cubic-bezier(0.16, 1, 0.3, 1);     /* entrances, feedback, line-in */
+  --tl-ease-fold:    cubic-bezier(0.65, 0, 0.35, 1);    /* crisp 3D suiting folds */
+  --tl-ease-in:      cubic-bezier(0.55, 0, 1, 0.45);     /* exits / absorb into bag */
+  --tl-ease-spring:  cubic-bezier(0.34, 1.56, 0.64, 1);  /* receiver overshoot only */
+  --tl-ease-sheet:   cubic-bezier(0.32, 0.72, 0, 1);    /* iOS sheet curve */
+
+  /* Layers */
   --tl-z-thread: 2147483000;
   --tl-z-token:  2147483001;
   --tl-z-peek:   2147482000;
 }
+
 /* -----------------------------------------------------------------------------
    1. CTA states, label roll, and the "cut-out socket"
    ----------------------------------------------------------------------------- */
 .tl-cta {
   position: relative;
+  overflow: hidden;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   transition: transform 120ms var(--tl-ease-out);
 }
-.tl-cta:active {
+.tl-cta:active,
+.tl-cta[data-tl-pressed] {
   transform: scale(0.97);
 }
 .tl-cta__label {
@@ -58,9 +74,8 @@
   transform: none;
   opacity: 1;
 }
-/* The swatch was CUT from the button: a dashed brass cut-line is left behind.
-   Scoped to [data-tl-cta] so it also works on the dock CTA / quick-add pills.
-   If your theme already uses ::after on these buttons, move this to ::before. */
+
+/* Brass cut-line left behind on the CTA */
 [data-tl-cta][data-tl-state]::after {
   content: "";
   position: absolute;
@@ -73,83 +88,185 @@
 }
 [data-tl-cta][data-tl-state="lifted"]::after { opacity: 0.85; }
 [data-tl-cta][data-tl-state="error"]::after  { opacity: 0.55; }
+
 /* -----------------------------------------------------------------------------
-   2. Flying token (swatch -> brass dart) and trailing size tag
+   2. 3D Folded Garment Flyer
    ----------------------------------------------------------------------------- */
-.tl-token {
+.tl-flyer {
   position: fixed;
+  left: 0;
+  top: 0;
+  width: var(--tl-w, 96px);
+  height: var(--tl-h, 120px);
   z-index: var(--tl-z-token);
   pointer-events: none;
-  transform-origin: 50% 50%;
   will-change: transform;
-  /* drop-shadow on the WRAPPER: box-shadow on a clip-path'd child is clipped away */
-  filter: var(--tl-token-shadow);
 }
-.tl-token--lite { filter: none; }
-.tl-token__disc {
+.tl-body {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 50%;
+  will-change: transform, opacity;
+  opacity: 0; /* revealed on lift */
+  filter: drop-shadow(0 10px 18px rgba(27, 22, 19, 0.28));
+}
+.tl-body--lite { filter: none; }
+
+.tl-stage {
+  position: absolute;
+  left: 0;
+  width: var(--tl-w, 96px);
+  perspective: 640px;
+}
+.tl-stage--1 { 
+  top: 0; 
+  height: var(--tl-h, 120px); 
+}
+.tl-stage--2 { 
+  top: calc(var(--tl-h, 120px) / 2); 
+  height: calc(var(--tl-h, 120px) / 2); 
+  opacity: 0; 
+}
+
+/* Fold 1 (horizontal crease): bottom half stays, top half folds down */
+.tl-base {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 50%;
+  overflow: hidden;
+}
+.tl-flap {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 50%;
+  transform-origin: 50% 100%;
+  transform-style: preserve-3d;
+  transform: translateZ(0.6px) rotateX(0deg);
+  will-change: transform;
+}
+
+/* Fold 2 (vertical crease): left half folds over the right half */
+.tl-base2 {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  overflow: hidden;
+}
+.tl-flap2 {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  transform-origin: 100% 50%;
+  transform-style: preserve-3d;
+  transform: translateZ(0.6px) rotateY(0deg);
+  will-change: transform;
+}
+
+.tl-face {
   position: absolute;
   inset: 0;
   overflow: hidden;
-  opacity: 0;
-  will-change: clip-path;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  box-shadow: inset 0 0 0 1px rgba(27, 22, 19, 0.12);
 }
-.tl-token__img {
+.tl-face--front { transform: translateZ(0); }
+.tl-flap .tl-face--back  { transform: rotateX(180deg); }
+.tl-flap2 .tl-face--back { transform: rotateY(180deg); }
+
+/* Garment photo mapped seamlessly across halves */
+.tl-img {
   position: absolute;
-  inset: 0;
+  left: 0;
+  width: var(--tl-w, 96px);
+  height: var(--tl-h, 120px);
+  background-color: var(--tl-paper);
+  background-position: center top;
   background-size: cover;
-  background-position: center;
   background-repeat: no-repeat;
-  opacity: 0;
 }
-/* Paper-fold crease: two tonal halves split along the dart's spine */
-.tl-token__fold {
+.tl-img--top    { top: 0; }
+.tl-img--bottom { top: calc(var(--tl-h, 120px) / -2); }
+
+/* Soft cast shadow the flap casts upon folding */
+.tl-cast {
   position: absolute;
   inset: 0;
   opacity: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.30) 0%,
-    rgba(255, 255, 255, 0.30) 49%,
-    rgba(255, 255, 255, 0.62) 49.2%,
-    rgba(255, 255, 255, 0.62) 50.2%,
-    rgba(0, 0, 0, 0.26) 50.4%,
-    rgba(0, 0, 0, 0.26) 100%
-  );
-}
-/* The tag no longer rides inside the (rotating) token: it hangs from its own
-   non-rotating wrapper so the text stays upright while the dart turns. */
-.tl-tagfly {
-  position: fixed;
-  width: 0;
-  height: 0;
-  z-index: var(--tl-z-token);
   pointer-events: none;
-  opacity: 0;
-  will-change: transform, opacity;
+  background: linear-gradient(180deg, rgba(27, 22, 19, 0.55), rgba(27, 22, 19, 0) 70%);
 }
-.tl-token__tag {
+.tl-cast--h { 
+  background: linear-gradient(90deg, rgba(27, 22, 19, 0.55), rgba(27, 22, 19, 0) 70%); 
+}
+
+/* Oxblood cupro silk lining with tailored suiting pinstripe */
+.tl-lining {
+  background-color: var(--tl-lining);
+  background-image:
+    repeating-linear-gradient(90deg, var(--tl-pin) 0 1px, transparent 1px 5px),
+    linear-gradient(180deg, var(--tl-lining-hi), var(--tl-lining));
+  background-size: var(--tl-w, 96px) 100%, 100% 100%;
+  background-position: 0 0, 0 0;
+  background-repeat: repeat, no-repeat;
+}
+.tl-lining--right { 
+  background-position: calc(var(--tl-w, 96px) / -2) 0, 0 0; 
+}
+
+/* Woven bespoke label: final face of the folded suiting bundle */
+.tl-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--tl-paper);
+  position: relative;
+  padding: 4px;
+  box-sizing: border-box;
+  text-align: center;
+  user-select: none;
+}
+.tl-label::before {
+  content: "";
   position: absolute;
-  left: calc(var(--tl-d, 56px) * 0.30);
-  top: calc(var(--tl-d, 56px) * 0.34);
-  min-width: 20px;
-  height: 16px;
-  padding: 0 4px;
-  display: grid;
-  place-items: center;
-  font-family: var(--font-body, -apple-system, BlinkMacSystemFont, sans-serif);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  line-height: 1;
-  background: #F3EEE4;
-  color: #1A1A1A;
-  border: 1px solid var(--tl-thread);
+  inset: 2.5px;
+  border: 1px dashed var(--tl-thread);
   border-radius: 2px;
-  transform-origin: 0 0;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  pointer-events: none;
 }
+.tl-brand-mark {
+  position: relative;
+  font-family: var(--font-display, "Cormorant Garamond", Georgia, serif);
+  font-weight: 700;
+  font-size: calc(var(--tl-h, 120px) * 0.13);
+  line-height: 1;
+  letter-spacing: 0.12em;
+  color: var(--tl-ink);
+  text-transform: uppercase;
+}
+.tl-tag-size {
+  position: relative;
+  font-family: var(--font-body, "Inter", -apple-system, sans-serif);
+  font-size: calc(var(--tl-h, 120px) * 0.08);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--tl-thread);
+  margin-top: 3px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
 /* -----------------------------------------------------------------------------
-   3. Brass thread overlay (SVG)
+   3. Continuous Brass Thread Overlay (SVG)
    ----------------------------------------------------------------------------- */
 .tl-thread {
   position: fixed;
@@ -165,10 +282,11 @@
   stroke: var(--tl-thread);
   stroke-width: var(--tl-thread-width);
   stroke-linecap: round;
-  opacity: 0.92;
+  opacity: 0.95;
 }
+
 /* -----------------------------------------------------------------------------
-   4. Landing: running-stitch ring, pending ring, knot
+   4. Landing: Running-Stitch Ring, Knot, Line Sweep
    ----------------------------------------------------------------------------- */
 .tl-ring {
   position: fixed;
@@ -191,8 +309,19 @@
   transform: translate(-50%, -50%) scale(0);
   will-change: transform, opacity;
 }
+.tl-sweep {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent, var(--tl-thread), transparent);
+  transform-origin: 0 50%;
+  pointer-events: none;
+}
+
 /* -----------------------------------------------------------------------------
-   5. Odometer badge roll
+   5. Odometer Numeric Badge Roll
    ----------------------------------------------------------------------------- */
 .tl-badge {
   display: inline-block;
@@ -211,8 +340,9 @@
   height: 1.2em;
   line-height: 1.2em;
 }
+
 /* -----------------------------------------------------------------------------
-   6. Tailored receipt card (peek)
+   6. Tailored Receipt Card (Peek)
    ----------------------------------------------------------------------------- */
 .tl-peek {
   position: fixed;
@@ -269,7 +399,7 @@
   grid-template-columns: 56px 1fr auto;
   gap: 12px;
   align-items: start;
-  padding-right: 24px; /* clearance so price never collides with close button */
+  padding-right: 24px;
 }
 .tl-peek__img {
   width: 56px;
@@ -350,8 +480,8 @@
   border: 1px solid var(--color-btn-bg, #111111);
 }
 .tl-peek__btn--primary:hover { background: var(--color-btn-hover-bg, #333333); }
-/* The auto-dismiss countdown IS the thread running out: a brass line that
-   shortens, pauses on hover/focus/drag, and resumes. */
+
+/* The auto-dismiss countdown is the thread running out */
 .tl-peek__timer {
   position: absolute;
   left: 14px;
@@ -364,7 +494,7 @@
   transform-origin: 0 50%;
   pointer-events: none;
 }
-/* Mobile: full-width card that rises out of the dock chip ("pocket") */
+
 @media (hover: none) and (pointer: coarse), (max-width: 989px) {
   .tl-peek {
     left: 12px;
@@ -374,8 +504,9 @@
   }
   .tl-peek__handle { display: block; }
 }
+
 /* -----------------------------------------------------------------------------
-   7. Sticky mobile dock bag chip
+   7. Sticky Mobile Dock Bag Target
    ----------------------------------------------------------------------------- */
 .pdp-dock__bag {
   display: inline-flex;
@@ -390,6 +521,7 @@
   background: var(--pdp-paper, #FFFFFF);
   text-decoration: none;
   transition: transform 120ms ease, background-color 150ms ease;
+  transform-origin: 50% 85%;
 }
 .pdp-dock__bag:active { transform: scale(0.94); }
 .pdp-dock__bag-badge {
@@ -405,8 +537,14 @@
   line-height: 1.1;
   border-radius: 2px;
 }
+
+/* Header Bag target origin */
+[data-tl-bag], .header__cart-btn {
+  transform-origin: 50% 85%;
+}
+
 /* -----------------------------------------------------------------------------
-   8. Accessibility: live region + reduced motion
+   8. Accessibility & Reduced Motion
    ----------------------------------------------------------------------------- */
 .tl-sr {
   position: absolute;
@@ -420,8 +558,7 @@
   border: 0;
 }
 @media (prefers-reduced-motion: reduce) {
-  .tl-token,
-  .tl-tagfly,
+  .tl-flyer,
   .tl-thread,
   .tl-ring,
   .tl-knot {
