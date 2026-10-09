@@ -16,6 +16,7 @@
   var HAS_WAAPI = TL.HAS_WAAPI;
   var adapters = TL.adapters;
   var haptics = TL.haptics;
+  var isLite = TL.isLite;
 
   function buildFlyer(T, imageSrc, variantLabel) {
     const root = el('div', 'tl-flyer');

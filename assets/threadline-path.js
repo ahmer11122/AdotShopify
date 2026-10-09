@@ -18,6 +18,9 @@
   var clamp = TL.clamp;
   var haptics = TL.haptics;
   var config = TL.config;
+  var isLite = TL.isLite;
+  var isCoarse = TL.isCoarse;
+  var reduceMotion = TL.reduceMotion;
 
   function controlPoint(p0, end, mobile) {
     const dx = end.x - p0.x, dy = end.y - p0.y;
@@ -170,10 +173,22 @@
     onDone(a, () => s.remove());
   }
   // The drawer renders its lines asynchronously after cart:refresh. Wait for the new one (max ~0.9s).
-  function highlightWhenReady(selector, tries) {
-    const line = document.querySelector(selector);
+  // Accepts a CSS selector, or a variant id (number / digit string) via config.lineSelector.
+  function highlightWhenReady(selectorOrId, tries) {
+    tries = tries == null ? 15 : tries;
+    var selector = selectorOrId;
+    if (typeof selectorOrId === 'number' || (typeof selectorOrId === 'string' && /^\d+$/.test(selectorOrId))) {
+      selector = config.lineSelector(selectorOrId);
+    }
+    if (!selector || typeof selector !== 'string') return;
+    var line = null;
+    try {
+      line = document.querySelector(selector);
+    } catch (_) {
+      return;
+    }
     if (line) return highlightLine(line);
-    if (tries > 0) setTimeout(() => highlightWhenReady(selector, tries - 1), 60);
+    if (tries > 0) setTimeout(function () { highlightWhenReady(selector, tries - 1); }, 60);
   }
 
   TL.controlPoint = controlPoint;
