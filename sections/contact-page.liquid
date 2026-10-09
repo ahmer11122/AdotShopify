@@ -107,7 +107,7 @@
           </p>
         </div>
 
-        {%- assign wa_num = section.settings.whatsapp_number | default: '923131707080' | remove: '+' | remove: ' ' | remove: '-' -%}
+        {%- assign wa_num = section.settings.whatsapp_number | default: '923706735800' | remove: '+' | remove: ' ' | remove: '-' -%}
         <a
           href="https://wa.me/{{ wa_num }}?text={{ section.settings.whatsapp_message | default: 'Hello ADOT, I need help with an order.' | url_encode }}"
           class="contact-page__wa-btn"
@@ -128,8 +128,18 @@
 
         <div class="contact-page__info-row">
           <span class="contact-page__info-title text-micro">WORKING HOURS</span>
-          <p class="contact-page__info-body">{{ section.settings.working_hours | default: 'Monday to Saturday, 10:00 AM – 8:00 PM (PKT)' }}</p>
+          <p class="contact-page__info-body">{{ section.settings.working_hours | default: 'Monday to Saturday, 9:00 AM – 5:00 PM (PKT)' }}</p>
         </div>
+
+        {%- assign support_email = settings.support_email | default: 'support@adotoffical.com' -%}
+        {%- if support_email != blank -%}
+          <div class="contact-page__info-row">
+            <span class="contact-page__info-title text-micro">EMAIL</span>
+            <p class="contact-page__info-body">
+              <a href="mailto:{{ support_email | escape }}">{{ support_email | escape }}</a>
+            </p>
+          </div>
+        {%- endif -%}
 
         <div class="contact-page__info-row">
           <span class="contact-page__info-title text-micro">DELIVERY COVERAGE</span>
@@ -404,8 +414,8 @@
       "type": "text",
       "id": "whatsapp_number",
       "label": "WhatsApp Phone Number",
-      "default": "923131707080",
-      "info": "Include country code without plus sign or spaces (e.g. 923131707080)."
+      "default": "923706735800",
+      "info": "Include country code without plus sign or spaces (e.g. 923706735800)."
     },
     {
       "type": "text",
@@ -429,7 +439,7 @@
       "type": "text",
       "id": "working_hours",
       "label": "Working Hours",
-      "default": "Monday to Saturday, 10:00 AM – 8:00 PM (PKT)"
+      "default": "Monday to Saturday, 9:00 AM – 5:00 PM (PKT)"
     }
   ]
 }

@@ -14,7 +14,7 @@
   assign p3_desc = section.settings.pillar_3_desc | default: 'Across Pakistan'
   assign p4_title = section.settings.pillar_4_title | default: 'WhatsApp'
   assign p4_desc = section.settings.pillar_4_desc | default: 'Order in a chat'
-  assign wa_num = section.settings.whatsapp_number | default: '923131707080' | remove: '+' | remove: ' ' | remove: '-'
+  assign wa_num = section.settings.whatsapp_number | default: '923706735800' | remove: '+' | remove: ' ' | remove: '-'
   assign wa_msg = 'Hello ADOT, I would like to place an order.' | url_encode
   assign wa_url = 'https://wa.me/' | append: wa_num | append: '?text=' | append: wa_msg
   assign scheme = section.settings.color_scheme | default: 'dark'
@@ -353,8 +353,8 @@
     {
       "type": "text",
       "id": "whatsapp_number",
-      "label": "WhatsApp Phone Number (e.g. 923131707080)",
-      "default": "923131707080"
+      "label": "WhatsApp Phone Number (e.g. 923706735800)",
+      "default": "923706735800"
     }
   ],
   "presets": [

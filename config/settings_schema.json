@@ -131,7 +131,7 @@
         "type": "text",
         "id": "whatsapp_number",
         "label": "WhatsApp number",
-        "default": "923131707080",
+        "default": "923706735800",
         "info": "Digits only with country code, no +. Used on password page and schema contact when set."
       },
       {

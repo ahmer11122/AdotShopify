@@ -26,7 +26,7 @@
   assign close_h = section.settings.support_close
   assign open_label = open_h | plus: 100 | slice: 1, 2
 
-  assign wa_raw = section.settings.whatsapp_number | default: '923131707080' | replace: '+', '' | replace: ' ', '' | replace: '-', ''
+  assign wa_raw = section.settings.whatsapp_number | default: '923706735800' | replace: '+', '' | replace: ' ', '' | replace: '-', ''
   assign wa_mid = wa_raw | slice: 2, 3
   assign wa_end = wa_raw | slice: 5, 7
   if wa_raw.size == 12
@@ -1301,8 +1301,8 @@
       "type": "text",
       "id": "whatsapp_number",
       "label": "WhatsApp number",
-      "default": "923131707080",
-      "info": "Country code, no plus sign. Example: 923131707080"
+      "default": "923706735800",
+      "info": "Country code, no plus sign. Example: 923706735800"
     },
     {
       "type": "textarea",

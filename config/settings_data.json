@@ -10,6 +10,13 @@
 {
   "current": {
     "logo": "shopify://shop_images/adot-theme-logo.png",
-    "favicon": "shopify://shop_images/adot-theme-logo.png"
+    "favicon": "shopify://shop_images/adot-theme-logo.png",
+    "brand_name": "ADOT Official",
+    "brand_alternate_names": "ADOT Wear, AdotWear, ADOT",
+    "brand_description": "ADOT Official menswear — heavyweight hoodies and fleece sweatshirts with cash on delivery across Pakistan.",
+    "social_instagram_url": "https://www.instagram.com/adotofficial.pk/",
+    "social_facebook_url": "https://www.facebook.com/profile.php?id=61594633291367",
+    "whatsapp_number": "923706735800",
+    "support_email": "support@adotoffical.com"
   }
 }
