@@ -1,16 +1,55 @@
 {% doc %}
-  Size Guide — Clean Minimalist Table (Uncluttered Headers)
+  Size Guide — Official Measurements (M to XXL) & Clean Minimalist UI
 
-  - Native <dialog> with zero-jerk scroll stability (tabindex="-1" autofocus prevents off-screen focus jump).
+  - Measurements strictly synced with official specification PDF (Adot_hoodies_sweatshirts_size_chart.pdf).
+  - Sizes: M, L, XL, XXL (No XS/S for hoodies & sweatshirts).
+  - Native <dialog> with zero-jerk scroll stability (programmatic focus with preventScroll: true).
   - 100% responsive fixed-layout table that fits cleanly on Desktop & Mobile with zero horizontal scroll.
   - Clean typographic column headers (Size, Chest, Length, Shoulder, Sleeve) without cluttered unit suffixes.
-  - Active unit controlled cleanly by the top segmented toggle (cm / in).
+  - Active unit toggle (cm / in) with animated sliding indicator.
   - Active size row automatically highlighted based on current PDP variant.
 {% enddoc %}
 
-<script type="application/json" id="AdotSizeData">[{"key":"hoodies","label":"Hoodies","cols":["Chest","Length","Shoulder","Sleeve"],"note":"Laid flat, relaxed. Chest is half-chest width. Sleeve measured from center back. Fits true to size for a relaxed silhouette.","rows":[{"size":"M","keys":["M"],"v":[55,68,50,87]},{"size":"L","keys":["L"],"v":[58,70,52,89]},{"size":"XL","keys":["XL"],"v":[61,72,54,91]},{"size":"XXL","keys":["XXL"],"v":[64,74,56,93]}]},{"key":"sweatshirts","label":"Sweatshirts","cols":["Chest","Length","Shoulder","Sleeve"],"note":"Same chart as hoodies. Laid flat, relaxed. Chest is half-chest width. Sleeve measured from center back.","rows":[{"size":"M","keys":["M"],"v":[55,68,50,87]},{"size":"L","keys":["L"],"v":[58,70,52,89]},{"size":"XL","keys":["XL"],"v":[61,72,54,91]},{"size":"XXL","keys":["XXL"],"v":[64,74,56,93]}]},{"key":"trousers","label":"Trousers","cols":["Waist","Inseam","Rise","Opening"],"note":"Relaxed straight leg with a tailored waistband. Order your standard waist size.","rows":[{"size":"30 (S)","keys":["30","S"],"v":[78,76,30,22]},{"size":"32 (M)","keys":["32","M"],"v":[83,77,31,23]},{"size":"34 (L)","keys":["34","L"],"v":[88,78,32,24]},{"size":"36 (XL)","keys":["36","XL"],"v":[93,79,33,25]}]}]</script>
+<script type="application/json" id="AdotSizeData">[
+  {
+    "key": "hoodies",
+    "label": "Hoodies",
+    "cols": ["Chest", "Length", "Shoulder", "Sleeve"],
+    "note": "Standard fit garment measurements, laid flat. Chest is half-chest width (armpit to armpit). Length is high point shoulder to bottom hem. Sleeve is from shoulder seam to cuff.",
+    "rows": [
+      { "size": "M", "keys": ["M"], "v": [53.3, 68.6, 47.0, 62.2], "in": [21.0, 27.0, 18.5, 24.5] },
+      { "size": "L", "keys": ["L"], "v": [55.9, 71.1, 49.5, 63.5], "in": [22.0, 28.0, 19.5, 25.0] },
+      { "size": "XL", "keys": ["XL"], "v": [58.4, 73.7, 52.1, 64.8], "in": [23.0, 29.0, 20.5, 25.5] },
+      { "size": "XXL", "keys": ["XXL"], "v": [62.2, 76.2, 54.6, 66.0], "in": [24.5, 30.0, 21.5, 26.0] }
+    ]
+  },
+  {
+    "key": "sweatshirts",
+    "label": "Sweatshirts",
+    "cols": ["Chest", "Length", "Shoulder", "Sleeve"],
+    "note": "Standard fit garment measurements, laid flat. Chest is half-chest width (armpit to armpit). Length is high point shoulder to bottom hem. Sleeve is from shoulder seam to cuff.",
+    "rows": [
+      { "size": "M", "keys": ["M"], "v": [52.1, 67.3, 45.7, 61.0], "in": [20.5, 26.5, 18.0, 24.0] },
+      { "size": "L", "keys": ["L"], "v": [54.6, 69.9, 48.3, 62.2], "in": [21.5, 27.5, 19.0, 24.5] },
+      { "size": "XL", "keys": ["XL"], "v": [57.2, 72.4, 50.8, 63.5], "in": [22.5, 28.5, 20.0, 25.0] },
+      { "size": "XXL", "keys": ["XXL"], "v": [59.7, 74.9, 53.3, 64.8], "in": [23.5, 29.5, 21.0, 25.5] }
+    ]
+  },
+  {
+    "key": "trousers",
+    "label": "Trousers",
+    "cols": ["Waist", "Inseam", "Rise", "Opening"],
+    "note": "Relaxed straight leg with a tailored waistband. Order your standard waist size.",
+    "rows": [
+      { "size": "30 (S)", "keys": ["30", "S"], "v": [78, 76, 30, 22], "in": [30.7, 29.9, 11.8, 8.7] },
+      { "size": "32 (M)", "keys": ["32", "M"], "v": [83, 77, 31, 23], "in": [32.7, 30.3, 12.2, 9.1] },
+      { "size": "34 (L)", "keys": ["34", "L"], "v": [88, 78, 32, 24], "in": [34.6, 30.7, 12.6, 9.4] },
+      { "size": "36 (XL)", "keys": ["36", "XL"], "v": [93, 79, 33, 25], "in": [36.6, 31.1, 13.0, 9.8] }
+    ]
+  }
+]</script>
 
-<dialog id="SizeGuideDialog" class="sg" tabindex="-1" autofocus aria-labelledby="SizeGuideTitle" data-unit="cm">
+<dialog id="SizeGuideDialog" class="sg" tabindex="-1" aria-labelledby="SizeGuideTitle" data-unit="cm">
   <div class="sg__sheet" data-sg-sheet>
     <div class="sg__grab" data-sg-grab aria-hidden="true"><i></i></div>
 
@@ -94,35 +133,35 @@
           <tbody>
             <tr class="sg__row" data-keys="M">
               <th scope="row"><span class="sg__size">M</span></th>
-              <td><span class="sg__num"><span class="sg__cm">55</span><span class="sg__in" aria-hidden="true">21.7</span></span></td>
-              <td><span class="sg__num"><span class="sg__cm">68</span><span class="sg__in" aria-hidden="true">26.8</span></span></td>
-              <td><span class="sg__num"><span class="sg__cm">50</span><span class="sg__in" aria-hidden="true">19.7</span></span></td>
-              <td><span class="sg__num"><span class="sg__cm">87</span><span class="sg__in" aria-hidden="true">34.3</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">53.3</span><span class="sg__in" aria-hidden="true">21.0</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">68.6</span><span class="sg__in" aria-hidden="true">27.0</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">47.0</span><span class="sg__in" aria-hidden="true">18.5</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">62.2</span><span class="sg__in" aria-hidden="true">24.5</span></span></td>
             </tr>
             <tr class="sg__row" data-keys="L">
               <th scope="row"><span class="sg__size">L</span></th>
-              <td><span class="sg__num"><span class="sg__cm">58</span><span class="sg__in" aria-hidden="true">22.8</span></span></td>
-              <td><span class="sg__num"><span class="sg__cm">70</span><span class="sg__in" aria-hidden="true">27.6</span></span></td>
-              <td><span class="sg__num"><span class="sg__cm">52</span><span class="sg__in" aria-hidden="true">20.5</span></span></td>
-              <td><span class="sg__num"><span class="sg__cm">89</span><span class="sg__in" aria-hidden="true">35.0</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">55.9</span><span class="sg__in" aria-hidden="true">22.0</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">71.1</span><span class="sg__in" aria-hidden="true">28.0</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">49.5</span><span class="sg__in" aria-hidden="true">19.5</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">63.5</span><span class="sg__in" aria-hidden="true">25.0</span></span></td>
             </tr>
             <tr class="sg__row" data-keys="XL">
               <th scope="row"><span class="sg__size">XL</span></th>
-              <td><span class="sg__num"><span class="sg__cm">61</span><span class="sg__in" aria-hidden="true">24.0</span></span></td>
-              <td><span class="sg__num"><span class="sg__cm">72</span><span class="sg__in" aria-hidden="true">28.3</span></span></td>
-              <td><span class="sg__num"><span class="sg__cm">54</span><span class="sg__in" aria-hidden="true">21.3</span></span></td>
-              <td><span class="sg__num"><span class="sg__cm">91</span><span class="sg__in" aria-hidden="true">35.8</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">58.4</span><span class="sg__in" aria-hidden="true">23.0</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">73.7</span><span class="sg__in" aria-hidden="true">29.0</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">52.1</span><span class="sg__in" aria-hidden="true">20.5</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">64.8</span><span class="sg__in" aria-hidden="true">25.5</span></span></td>
             </tr>
             <tr class="sg__row" data-keys="XXL">
               <th scope="row"><span class="sg__size">XXL</span></th>
-              <td><span class="sg__num"><span class="sg__cm">64</span><span class="sg__in" aria-hidden="true">25.2</span></span></td>
-              <td><span class="sg__num"><span class="sg__cm">74</span><span class="sg__in" aria-hidden="true">29.1</span></span></td>
-              <td><span class="sg__num"><span class="sg__cm">56</span><span class="sg__in" aria-hidden="true">22.0</span></span></td>
-              <td><span class="sg__num"><span class="sg__cm">93</span><span class="sg__in" aria-hidden="true">36.6</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">62.2</span><span class="sg__in" aria-hidden="true">24.5</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">76.2</span><span class="sg__in" aria-hidden="true">30.0</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">54.6</span><span class="sg__in" aria-hidden="true">21.5</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">66.0</span><span class="sg__in" aria-hidden="true">26.0</span></span></td>
             </tr>
           </tbody>
         </table>
-        <p class="sg__note">Laid flat, relaxed. Chest is half-chest width. Sleeve measured from center back. Fits true to size for a relaxed silhouette.</p>
+        <p class="sg__note">Standard fit. Chest is half-chest width flat across under arms. Length is high shoulder point to bottom hem. Sleeve is from shoulder seam to cuff.</p>
       </section>
 
       <!-- PANEL: SWEATSHIRTS -->
@@ -154,35 +193,35 @@
           <tbody>
             <tr class="sg__row" data-keys="M">
               <th scope="row"><span class="sg__size">M</span></th>
-              <td><span class="sg__num"><span class="sg__cm">55</span><span class="sg__in" aria-hidden="true">21.7</span></span></td>
-              <td><span class="sg__num"><span class="sg__cm">68</span><span class="sg__in" aria-hidden="true">26.8</span></span></td>
-              <td><span class="sg__num"><span class="sg__cm">50</span><span class="sg__in" aria-hidden="true">19.7</span></span></td>
-              <td><span class="sg__num"><span class="sg__cm">87</span><span class="sg__in" aria-hidden="true">34.3</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">52.1</span><span class="sg__in" aria-hidden="true">20.5</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">67.3</span><span class="sg__in" aria-hidden="true">26.5</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">45.7</span><span class="sg__in" aria-hidden="true">18.0</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">61.0</span><span class="sg__in" aria-hidden="true">24.0</span></span></td>
             </tr>
             <tr class="sg__row" data-keys="L">
               <th scope="row"><span class="sg__size">L</span></th>
-              <td><span class="sg__num"><span class="sg__cm">58</span><span class="sg__in" aria-hidden="true">22.8</span></span></td>
-              <td><span class="sg__num"><span class="sg__cm">70</span><span class="sg__in" aria-hidden="true">27.6</span></span></td>
-              <td><span class="sg__num"><span class="sg__cm">52</span><span class="sg__in" aria-hidden="true">20.5</span></span></td>
-              <td><span class="sg__num"><span class="sg__cm">89</span><span class="sg__in" aria-hidden="true">35.0</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">54.6</span><span class="sg__in" aria-hidden="true">21.5</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">69.9</span><span class="sg__in" aria-hidden="true">27.5</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">48.3</span><span class="sg__in" aria-hidden="true">19.0</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">62.2</span><span class="sg__in" aria-hidden="true">24.5</span></span></td>
             </tr>
             <tr class="sg__row" data-keys="XL">
               <th scope="row"><span class="sg__size">XL</span></th>
-              <td><span class="sg__num"><span class="sg__cm">61</span><span class="sg__in" aria-hidden="true">24.0</span></span></td>
-              <td><span class="sg__num"><span class="sg__cm">72</span><span class="sg__in" aria-hidden="true">28.3</span></span></td>
-              <td><span class="sg__num"><span class="sg__cm">54</span><span class="sg__in" aria-hidden="true">21.3</span></span></td>
-              <td><span class="sg__num"><span class="sg__cm">91</span><span class="sg__in" aria-hidden="true">35.8</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">57.2</span><span class="sg__in" aria-hidden="true">22.5</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">72.4</span><span class="sg__in" aria-hidden="true">28.5</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">50.8</span><span class="sg__in" aria-hidden="true">20.0</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">63.5</span><span class="sg__in" aria-hidden="true">25.0</span></span></td>
             </tr>
             <tr class="sg__row" data-keys="XXL">
               <th scope="row"><span class="sg__size">XXL</span></th>
-              <td><span class="sg__num"><span class="sg__cm">64</span><span class="sg__in" aria-hidden="true">25.2</span></span></td>
-              <td><span class="sg__num"><span class="sg__cm">74</span><span class="sg__in" aria-hidden="true">29.1</span></span></td>
-              <td><span class="sg__num"><span class="sg__cm">56</span><span class="sg__in" aria-hidden="true">22.0</span></span></td>
-              <td><span class="sg__num"><span class="sg__cm">93</span><span class="sg__in" aria-hidden="true">36.6</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">59.7</span><span class="sg__in" aria-hidden="true">23.5</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">74.9</span><span class="sg__in" aria-hidden="true">29.5</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">53.3</span><span class="sg__in" aria-hidden="true">21.0</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">64.8</span><span class="sg__in" aria-hidden="true">25.5</span></span></td>
             </tr>
           </tbody>
         </table>
-        <p class="sg__note">Same chart as hoodies. Laid flat, relaxed. Chest is half-chest width. Sleeve measured from center back.</p>
+        <p class="sg__note">Standard fit. Chest is half-chest width flat across under arms. Length is high shoulder point to bottom hem. Sleeve is from shoulder seam to cuff.</p>
       </section>
 
       <!-- PANEL: TROUSERS -->
@@ -779,12 +818,16 @@
       setClosed(true);
 
       dialog.showModal();
+      try { dialog.focus({ preventScroll: true }); } catch (_) {}
       lockPage();
 
       /* Lock background page precisely where it was */
       if (window.scrollY !== currentScrollY) {
         window.scrollTo(0, currentScrollY);
       }
+
+      /* Force layout reflow so browser commits the starting transform state before transition */
+      void sheet.offsetHeight;
 
       requestAnimationFrame(() => {
         sheet.classList.remove('is-prep');
