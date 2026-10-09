@@ -163,9 +163,10 @@
     left: 0;
     right: 0;
     z-index: 85;
-    padding: 0 var(--page-margin, 1rem) max(0.75rem, env(safe-area-inset-bottom, 0px));
+    padding: 0.5rem 0.75rem max(0.5rem, env(safe-area-inset-bottom, 0px));
     background: var(--pdp-paper, #fff);
     border-top: 1px solid var(--pdp-line, oklch(0 0 0 / 0.1));
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
     transform: translateY(100%);
     opacity: 0;
     pointer-events: none;
@@ -186,11 +187,19 @@
     }
   }
 
-  body:has(dialog[open]) .pdp-dock,
+  /* Hide the dock for cart / other overlays. Size guide covers it itself —
+     sliding the dock away at the same time makes the page behind jerk. */
+  body:has(dialog[open]:not(#SizeGuideDialog)) .pdp-dock,
   body:has(cart-drawer.is-open) .pdp-dock,
   .pdp-dock.is-hidden {
     transform: translateY(100%) !important;
     opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  /* Under the size guide: freeze the dock in place (no exit motion). */
+  body:has(#SizeGuideDialog[open]) .pdp-dock {
+    transition: none !important;
     pointer-events: none !important;
   }
 
@@ -295,9 +304,8 @@
   .pdp-dock__row {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: var(--s-3, 0.75rem);
-    padding-top: var(--s-3, 0.75rem);
+    gap: 0.5rem;
+    padding-top: 0;
     max-width: var(--container-max, 1440px);
     margin: 0 auto;
   }
@@ -305,10 +313,11 @@
   .pdp-dock__thumb {
     position: relative;
     flex-shrink: 0;
-    width: 40px;
-    height: 52px;
+    width: 36px;
+    height: 46px;
     overflow: hidden;
     background: var(--pdp-sunk, #f5f5f5);
+    border-radius: 2px;
   }
 
   .pdp-dock__thumb::after {
@@ -317,6 +326,7 @@
     inset: 0;
     outline: 1px solid oklch(0 0 0 / 0.1);
     outline-offset: -1px;
+    border-radius: 2px;
   }
 
   .pdp-dock__img {
@@ -328,10 +338,12 @@
 
   .pdp-dock__meta {
     display: flex;
-    flex: 1;
+    flex: 1 1 0%;
     flex-direction: column;
+    justify-content: center;
     gap: 2px;
     min-width: 0;
+    overflow: hidden;
   }
 
   .pdp-dock__title {
@@ -339,41 +351,49 @@
     white-space: nowrap;
     text-overflow: ellipsis;
     font-family: var(--pdp-font);
-    font-size: var(--pdp-fs-ui, 0.875rem);
+    font-size: 0.8125rem;
     font-weight: 500;
     letter-spacing: -0.005em;
     color: var(--pdp-ink, #111);
+    line-height: 1.2;
   }
 
   .pdp-dock__sub {
     display: flex;
     align-items: center;
-    gap: var(--s-2, 0.5rem);
+    gap: 0.35rem;
     font-family: var(--pdp-font);
-    font-size: var(--pdp-fs-small, 0.8125rem);
+    font-size: 0.75rem;
     font-variant-numeric: tabular-nums;
     color: var(--pdp-ink-2, #555);
+    line-height: 1.2;
+    overflow: hidden;
   }
 
   .pdp-dock__price {
-    font-weight: 500;
+    font-weight: 600;
     color: var(--pdp-ink, #111);
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 
   .pdp-dock__size,
   .pdp-dock__size-text {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 3px;
     padding: 0;
     border: 0;
     background: none;
     color: inherit;
     font: inherit;
+    font-size: 0.72rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .pdp-dock__size {
-    min-height: 44px;
     cursor: pointer;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
@@ -388,11 +408,13 @@
     height: 0.75em;
     background: currentColor;
     opacity: 0.4;
+    flex-shrink: 0;
   }
 
   .pdp-dock__size svg {
     transition: transform 320ms var(--pdp-ease, ease);
     transform: rotate(180deg);
+    flex-shrink: 0;
   }
 
   .pdp-dock.is-open .pdp-dock__size svg {
@@ -404,16 +426,21 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    min-width: 9.5rem;
-    min-height: 3rem;
-    padding: 0 var(--s-5, 1.5rem);
+    min-width: 7.25rem;
+    height: 42px;
+    min-height: 42px;
+    padding: 0 0.85rem;
     border: 0;
+    border-radius: 2px;
     background: var(--pdp-btn-bg, #111);
     color: var(--pdp-btn-fg, #fff);
     box-shadow: inset 0 0 0 1px var(--pdp-btn-bg, #111);
     font-family: var(--pdp-font);
-    font-size: var(--pdp-fs-ui, 0.875rem);
-    font-weight: 500;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: var(--tracking-micro, 0.04em);
+    text-transform: uppercase;
+    white-space: nowrap;
     cursor: pointer;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
@@ -449,6 +476,35 @@
 
   .pdp-dock__cta[data-state='loading'] {
     opacity: 0.7;
+  }
+
+  .pdp-dock__bag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    flex-shrink: 0;
+    color: var(--pdp-ink, #111111);
+    border: 1px solid var(--pdp-line, oklch(0 0 0 / 0.12));
+    background: var(--pdp-paper, #FFFFFF);
+    border-radius: 2px;
+    text-decoration: none;
+    transition: transform 120ms ease, background-color 150ms ease;
+    transform-origin: 50% 85%;
+  }
+
+  @media (max-width: 360px) {
+    .pdp-dock__thumb {
+      display: none;
+    }
+    .pdp-dock__cta {
+      min-width: 6.25rem;
+      padding: 0 0.6rem;
+      font-size: 0.7rem;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
