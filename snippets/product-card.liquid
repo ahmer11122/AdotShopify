@@ -1412,8 +1412,6 @@
         var imgInput = form.querySelector('input[name="properties[_adot_image]"]');
         var imgUrl = imgInput ? imgInput.value : '';
 
-        closeSheet();
-
         if (window.Threadline && typeof window.Threadline.add === 'function') {
           window.Threadline.add({
             cta: btn,
@@ -1421,10 +1419,13 @@
             variantLabel: size,
             title: productTitle,
             price: productPrice,
-            thumbUrl: imgUrl
+            thumbUrl: imgUrl,
+            context: 'grid',
+            onStart: closeSheet
           });
           return;
         }
+        closeSheet();
 
         var originalText = btn.textContent;
         btn.setAttribute('data-state', 'loading');

@@ -1,15 +1,19 @@
 /**
- * THREADLINE 3.0 — "The Sartorial Hybrid"
- * Award-grade Add to Bag motion system for luxury menswear (Desktop + Mobile).
- * 3D Garment Fold Geometry · Continuous Brass Thread · Apple-grade Physics · Dual-Ending Routing.
+ * THREADLINE 3.1 — "The Sartorial Hybrid" (fixed)
+ * Lift -> 3D suiting fold x2 -> continuous brass thread flight -> vector bag hit -> dual finish.
  *
- * 1. LIFT & FOLD: Product photo condenses and folds twice (revealing suiting lining + ADOT woven label).
- * 2. PARALLEL GATE: Request fires on press; bundle breathes if network is slow; shakes & dissolves on error.
- * 3. FLIGHT: Continuous brass thread unspools along a quadratic Bezier pulling the suiting bundle.
- * 4. IMPACT: Vector-aware bag catch, tailor's knot pop, dashed stitch ring, odometer badge roll.
- * 5. DUAL FINISH: Floating receipt card for Grid Quick-Add; Cart Drawer / Sheet sweep for PDP.
+ * 3.1 changes vs 3.0 (see spec for the full list):
+ *  1. ORIGIN: the flyer now condenses out of THE PHOTO OF THE CARD THE SHOPPER TAPPED, never out of
+ *     the size pill and never out of an unrelated gallery. New option `originEl` to force it.
+ *  2. onStart hook: the size sheet closes AFTER the origin is captured and the flyer is mounted.
+ *  3. Thread head and bundle are sampled by ARC LENGTH, so they stay in lockstep.
+ *  4. Flight slot accounting: one idempotent release (3.0 could decrement twice and overshoot the cap).
+ *  5. Flyer + thread are removed right after landing, not 1.7s later; label reset is independent.
+ *  6. Absorb "pierce" now travels along the arrival heading (3.0 offset was scaled to ~0.6px).
+ *  7. Restored from 2.0: receipt stagger, swipe-to-dismiss, iOS haptic, pending-safe cleanup.
+ *  8. highlightLine waits for the drawer to render the new line (3.0 ran too early).
  *
- * Public API: Threadline.add({ cta, form, variantLabel, title, price, thumbUrl, context })
+ * Public API: Threadline.add({ cta, form, variantLabel, title, price, thumbUrl, context, originEl, onStart })
  */
 (function () {
   'use strict';
@@ -18,7 +22,7 @@
   const DEG = 180 / Math.PI;
 
   /* ---------------------------------------------------------------------------
-     Configuration & Master Tokens
+     Config
      --------------------------------------------------------------------------- */
   const config = {
     brandMark: 'ADOT',
@@ -27,23 +31,25 @@
     holdLabelMs: 1700,
     expressWindowMs: 8000,
     expressFactor: 0.7,
+    imageLiftBonus: 40,   // a big photo needs longer to condense than a button needs to lift
+    // VERIFY against the real cart drawer markup. Used to find the new line for the brass sweep.
+    lineSelector: (id) => '[data-variant-id="' + id + '"], .cart-drawer__item[data-id="' + id + '"]',
+    gallerySelector: '.product-gallery__item.is-active img, .product-gallery img, .pdp-gallery img, [data-tf-product-image] img',
     desktop: { w: 96, h: 120, lift: 110, fold1: 170, fold2: 150, flight: 380, catch: 340 },
     mobile:  { w: 80, h: 100, lift: 100, fold1: 150, fold2: 130, flight: 340, catch: 320 },
   };
 
   const EASE = {
-    out:    'cubic-bezier(0.16, 1, 0.3, 1)',      // fast start, soft stop
-    fold:   'cubic-bezier(0.65, 0, 0.35, 1)',     // crisp suiting fold
-    in:     'cubic-bezier(0.55, 0, 1, 0.45)',      // absorb into bag / exit
-    spring: 'cubic-bezier(0.34, 1.56, 0.64, 1)',  // overshoot ONLY on receivers
-    sheet:  'cubic-bezier(0.32, 0.72, 0, 1)',    // iOS sheet curve
+    out:    'cubic-bezier(0.16, 1, 0.3, 1)',
+    fold:   'cubic-bezier(0.65, 0, 0.35, 1)',
+    in:     'cubic-bezier(0.55, 0, 1, 0.45)',
+    spring: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+    sheet:  'cubic-bezier(0.32, 0.72, 0, 1)',
   };
-
-  const FLIGHT_BEZIER = [0.5, 0, 0.3, 0.92];
-  const FLIGHT_EASE   = 'cubic-bezier(' + FLIGHT_BEZIER.join(', ') + ')';
+  const FLIGHT_EASE = 'cubic-bezier(0.5, 0, 0.3, 0.92)';
 
   /* ---------------------------------------------------------------------------
-     Helpers & Environment
+     Helpers
      --------------------------------------------------------------------------- */
   const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -51,11 +57,8 @@
 
   const HAS_WAAPI = typeof Element !== 'undefined' && typeof Element.prototype.animate === 'function';
   const isCoarse = () =>
-    (typeof window !== 'undefined' && window.matchMedia('(hover: none) and (pointer: coarse)').matches) ||
-    (typeof window !== 'undefined' && window.innerWidth < 768);
-  const reduceMotion = () =>
-    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
+    window.matchMedia('(hover: none) and (pointer: coarse)').matches || window.innerWidth < 768;
+  const reduceMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const isLite = () => {
     try {
       return (
@@ -66,9 +69,9 @@
     } catch (_) { return false; }
   };
 
-  const inViewport = (el) => {
-    if (!el) return false;
-    const r = el.getBoundingClientRect();
+  const inViewport = (node) => {
+    if (!node) return false;
+    const r = node.getBoundingClientRect();
     return r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < window.innerHeight && r.right > 0 && r.left < window.innerWidth;
   };
 
@@ -78,32 +81,30 @@
     return n;
   }
 
-  // Transform order: translate -> scale -> rotate (around bundle center)
-  const bt = (tx, ty, s, r) => `rotate(${r}deg) scale(${s}) translate3d(${tx}px, ${ty}px, 0)`;
-
-  // Quadratic Bezier interpolation
-  const quad = (p0, p1, p2, t) => {
-    const u = 1 - t;
-    return {
-      x: u * u * p0.x + 2 * u * t * p1.x + t * t * p2.x,
-      y: u * u * p0.y + 2 * u * t * p1.y + t * t * p2.y,
-    };
+  // Idempotent: 'finish' and 'cancel' can both fire.
+  const onDone = (anim, fn) => {
+    let called = false;
+    const once = () => { if (called) return; called = true; fn(); };
+    if (!anim) return once();
+    anim.addEventListener('finish', once, { once: true });
+    anim.addEventListener('cancel', once, { once: true });
   };
 
+  // translate -> scale -> rotate about the folded bundle's own centre. Never reorder.
+  const bt = (tx, ty, s, r) => 'rotate(' + r + 'deg) scale(' + s + ') translate3d(' + tx + 'px, ' + ty + 'px, 0)';
+
   /* ---------------------------------------------------------------------------
-     Spring Physics Generator (Apple-grade CSS linear() or cubic fallback)
+     Springs -> CSS linear()
      --------------------------------------------------------------------------- */
   const SPRING_OK = (() => {
     try { return !!(window.CSS && CSS.supports && CSS.supports('animation-timing-function', 'linear(0, 1)')); }
     catch (_) { return false; }
   })();
-
   const springCache = {};
   function spring(stiffness, damping, mass) {
     mass = mass || 1;
     const key = stiffness + '|' + damping + '|' + mass;
     if (springCache[key]) return springCache[key];
-
     const w0 = Math.sqrt(stiffness / mass);
     const zeta = damping / (2 * Math.sqrt(stiffness * mass));
     const step = (t) => {
@@ -113,14 +114,10 @@
       }
       if (zeta === 1) return 1 - Math.exp(-w0 * t) * (1 + w0 * t);
       const s = Math.sqrt(zeta * zeta - 1);
-      const r1 = -w0 * (zeta - s);
-      const r2 = -w0 * (zeta + s);
+      const r1 = -w0 * (zeta - s), r2 = -w0 * (zeta + s);
       return 1 - (r2 * Math.exp(r1 * t) - r1 * Math.exp(r2 * t)) / (r2 - r1);
     };
-
-    const FRAME = 1 / 60;
-    const MAX = 180;
-    const vals = [];
+    const FRAME = 1 / 60, MAX = 180, vals = [];
     let lastLoud = 0;
     for (let i = 0; i <= MAX; i++) {
       const v = step(i * FRAME);
@@ -137,42 +134,53 @@
     springCache[key] = out;
     return out;
   }
-
   const SPRINGS = {
-    catch:   [560, 24, 1],
-    peek:    [380, 30, 1],
-    sheet:   [300, 34, 1],
-    roll:    [520, 40, 1],
-    release: [420, 34, 1],
-    knot:    [600, 22, 1],
+    catch: [560, 24, 1], peek: [380, 30, 1], sheet: [300, 34, 1],
+    roll: [520, 40, 1], release: [420, 34, 1], knot: [600, 22, 1],
   };
   const sp = (name) => spring.apply(null, SPRINGS[name]);
 
   /* ---------------------------------------------------------------------------
-     Haptics
+     Haptics (Android vibrate; iOS 17.4+ best effort)
      --------------------------------------------------------------------------- */
+  let iosSwitch = null;
   const haptics = {
     tick(ms) {
       try {
-        if (navigator.vibrate) navigator.vibrate(ms || 8);
+        if (navigator.vibrate) { navigator.vibrate(ms || 8); return; }
+        if (!('ontouchstart' in window)) return;
+        if (!iosSwitch) {
+          iosSwitch = el('label');
+          iosSwitch.setAttribute('aria-hidden', 'true');
+          iosSwitch.style.cssText = 'position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0;pointer-events:none;';
+          const input = el('input');
+          input.type = 'checkbox';
+          input.setAttribute('switch', '');
+          iosSwitch.appendChild(input);
+          document.body.appendChild(iosSwitch);
+        }
+        iosSwitch.click();
       } catch (_) {}
     },
   };
 
   /* ---------------------------------------------------------------------------
-     Shopify & ADOT Theme Adapters
+     Theme adapters
      --------------------------------------------------------------------------- */
   const adapters = {
     getTarget() {
       const coarse = isCoarse();
       const dockBag = document.querySelector('[data-tl-dock-bag], [data-bag-dock]');
       if (coarse && dockBag && inViewport(dockBag)) return dockBag;
-      return (
-        document.querySelector('[data-tl-bag]') ||
-        document.querySelector('[data-bag-target]') ||
-        document.querySelector('.header__cart-btn') ||
-        document.querySelector('a[href*="/cart"]')
-      );
+      const preferred = document.querySelector('[data-tl-bag]') || document.querySelector('[data-bag-target]') || document.querySelector('.header__cart-btn');
+      if (preferred) return preferred;
+      // Last resort: a visible cart link that is NOT inside the drawer or the receipt card.
+      const links = document.querySelectorAll('a[href*="/cart"]');
+      for (const a of links) {
+        if (a.closest('cart-drawer, .cart-drawer, .tl-peek')) continue;
+        if (inViewport(a)) return a;
+      }
+      return null;
     },
     async addToCart(form) {
       const formData = form instanceof FormData ? form : new FormData(form);
@@ -187,10 +195,7 @@
         });
         if (!res.ok) {
           let errDesc = 'Unable to add item';
-          try {
-            const errData = await res.json();
-            errDesc = errData.description || errData.message || errDesc;
-          } catch (_) {}
+          try { const e = await res.json(); errDesc = e.description || e.message || errDesc; } catch (_) {}
           throw new Error(errDesc);
         }
         const itemData = await res.json();
@@ -233,16 +238,14 @@
           if (img && (img.currentSrc || img.src)) return img.currentSrc || img.src;
         }
       }
-      const mainImg = document.querySelector('.product-gallery__item.is-active img, .product-gallery img, .pdp-gallery img, [data-tf-product-image] img');
+      const mainImg = document.querySelector(config.gallerySelector);
       if (mainImg && (mainImg.currentSrc || mainImg.src)) return mainImg.currentSrc || mainImg.src;
       return '';
     },
     getVariantLabel(form, cta) {
       if (cta && cta.getAttribute('data-variant-title')) {
         const t = cta.getAttribute('data-variant-title').trim();
-        if (t && t.toLowerCase() !== 'add' && t.toLowerCase() !== 'add to bag') {
-          return t.length > 3 ? t.slice(0, 3) : t;
-        }
+        if (t && t.toLowerCase() !== 'add' && t.toLowerCase() !== 'add to bag') return t.length > 3 ? t.slice(0, 3) : t;
       }
       if (form) {
         const szProp = form.querySelector('input[name="properties[Size]"]');
@@ -273,9 +276,7 @@
     },
     getPriceFormatted(form, cta, cartResult) {
       if (cartResult && cartResult.item && cartResult.item.final_price) {
-        if (window.AdotCart && typeof window.AdotCart.formatMoney === 'function') {
-          return window.AdotCart.formatMoney(cartResult.item.final_price);
-        }
+        if (window.AdotCart && typeof window.AdotCart.formatMoney === 'function') return window.AdotCart.formatMoney(cartResult.item.final_price);
         return 'Rs. ' + Math.floor(cartResult.item.final_price / 100).toLocaleString('en-PK');
       }
       if (form) {
@@ -292,9 +293,7 @@
       if (cartResult.cart && typeof cartResult.cart.item_count === 'number') return cartResult.cart.item_count;
       return 1;
     },
-    getDock() {
-      return document.querySelector('[data-tl-dock]') || document.querySelector('.pdp-dock');
-    },
+    getDock() { return document.querySelector('[data-tl-dock]') || document.querySelector('.pdp-dock'); },
     openCart() {
       const drawer = document.querySelector('cart-drawer, #HeaderCartDrawer, .cart-drawer');
       if (drawer && typeof drawer.open === 'function') drawer.open();
@@ -305,90 +304,82 @@
     refreshCart(cartResult) {
       const vId = cartResult && cartResult.item ? cartResult.item.variant_id : undefined;
       window.dispatchEvent(new CustomEvent('cart:refresh', { detail: { variantId: vId } }));
-      if (cartResult && cartResult.cart) {
-        window.dispatchEvent(new CustomEvent('cart:updated', { detail: { cart: cartResult.cart } }));
-      }
+      if (cartResult && cartResult.cart) window.dispatchEvent(new CustomEvent('cart:updated', { detail: { cart: cartResult.cart } }));
     },
   };
 
   /* ---------------------------------------------------------------------------
-     Origin Resolution
+     ORIGIN (the 3.0 bug). Scope the photo to the CTA's own product, in this order:
+       1. explicit options.originEl
+       2. the photo of the .product-card that contains the CTA   <- grid / related products
+       3. the PDP gallery, ONLY when the CTA is not inside a card
+       4. the CTA itself (sticky dock, no visible photo)
+     3.0 skipped 2 entirely: on a collection page it fell to the size pill (inside a closing sheet),
+     and on a PDP's related-products card it grabbed the main gallery photo.
      --------------------------------------------------------------------------- */
-  function resolveOrigin(cta, form, T) {
-    const mainImg = document.querySelector('.product-gallery__item.is-active img, .product-gallery img, .pdp-gallery img, [data-tf-product-image] img');
-    if (mainImg && mainImg.isConnected) {
-      const r = mainImg.getBoundingClientRect();
-      const vw = window.innerWidth, vh = window.innerHeight;
+  function photoFor(cta, originEl) {
+    if (originEl && originEl.isConnected) return originEl;
+    const card = cta.closest('.product-card');
+    if (card) return card.querySelector('.product-card__image') || card.querySelector('img');
+    return document.querySelector(config.gallerySelector);
+  }
+
+  function resolveOrigin(cta, originEl, T) {
+    const photo = photoFor(cta, originEl);
+    if (photo) {
+      const r = photo.getBoundingClientRect();
       const left = Math.max(r.left, 0), top = Math.max(r.top, 0);
-      const right = Math.min(r.right, vw), bottom = Math.min(r.bottom, vh);
+      const right = Math.min(r.right, window.innerWidth), bottom = Math.min(r.bottom, window.innerHeight);
       const w = Math.max(0, right - left), h = Math.max(0, bottom - top);
       const coverage = (w * h) / Math.max(1, r.width * r.height);
-      if (coverage >= 0.35 && w >= 120 && h >= 120) {
-        return {
-          mode: 'image',
-          cx: (left + right) / 2,
-          cy: (top + bottom) / 2,
-          s0: clamp((w * 0.75) / T.w, 1.1, 2.2),
-        };
+      if (coverage >= 0.35 && w >= 90 && h >= 90) {
+        return { mode: 'image', cx: (left + right) / 2, cy: (top + bottom) / 2, s0: clamp((w * 0.75) / T.w, 1.1, 2.2) };
       }
     }
     const b = cta.getBoundingClientRect();
-    return {
-      mode: 'button',
-      cx: b.left + b.width / 2,
-      cy: b.top + b.height / 2,
-      s0: 0.55,
-    };
+    return { mode: 'button', cx: b.left + b.width / 2, cy: b.top + b.height / 2, s0: 0.55 };
   }
 
   function scaled(T, factor) {
     if (factor === 1) return T;
-    const out = { ...T };
-    ['lift', 'fold1', 'fold2', 'flight', 'catch'].forEach((k) => {
-      out[k] = Math.round(T[k] * factor);
-    });
+    const out = Object.assign({}, T);
+    ['lift', 'fold1', 'fold2', 'flight', 'catch'].forEach((k) => { out[k] = Math.round(T[k] * factor); });
     return out;
   }
 
   /* ---------------------------------------------------------------------------
-     3D Suiting Garment Flyer (Lift -> Fold I -> Fold II -> Woven Label)
+     3D flyer (lift -> fold I -> fold II -> woven label)
      --------------------------------------------------------------------------- */
   function buildFlyer(T, imageSrc, variantLabel) {
     const root = el('div', 'tl-flyer');
     root.setAttribute('aria-hidden', 'true');
-    root.style.setProperty('--tl-w', `${T.w}px`);
-    root.style.setProperty('--tl-h', `${T.h}px`);
-
-    const lite = isLite();
-    root.innerHTML = `
-      <div class="tl-body ${lite ? 'tl-body--lite' : ''}">
-        <div class="tl-stage tl-stage--1">
-          <div class="tl-base">
-            <div class="tl-img tl-img--bottom"></div>
-            <div class="tl-cast"></div>
-          </div>
-          <div class="tl-flap">
-            <div class="tl-face tl-face--front"><div class="tl-img tl-img--top"></div></div>
-            <div class="tl-face tl-face--back tl-lining"></div>
-          </div>
-        </div>
-        <div class="tl-stage tl-stage--2">
-          <div class="tl-base2 tl-lining tl-lining--right"><div class="tl-cast tl-cast--h"></div></div>
-          <div class="tl-flap2">
-            <div class="tl-face tl-face--front tl-lining"></div>
-            <div class="tl-face tl-face--back tl-label">
-              <span class="tl-brand-mark">${config.brandMark}</span>
-              ${variantLabel ? `<span class="tl-tag-size">${variantLabel}</span>` : ''}
-            </div>
-          </div>
-        </div>
-      </div>`;
-
+    root.style.setProperty('--tl-w', T.w + 'px');
+    root.style.setProperty('--tl-h', T.h + 'px');
+    root.innerHTML =
+      '<div class="tl-body' + (isLite() ? ' tl-body--lite' : '') + '">' +
+        '<div class="tl-stage tl-stage--1">' +
+          '<div class="tl-base"><div class="tl-img tl-img--bottom"></div><div class="tl-cast"></div></div>' +
+          '<div class="tl-flap">' +
+            '<div class="tl-face tl-face--front"><div class="tl-img tl-img--top"></div></div>' +
+            '<div class="tl-face tl-face--back tl-lining"></div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="tl-stage tl-stage--2">' +
+          '<div class="tl-base2 tl-lining tl-lining--right"><div class="tl-cast tl-cast--h"></div></div>' +
+          '<div class="tl-flap2">' +
+            '<div class="tl-face tl-face--front tl-lining"></div>' +
+            '<div class="tl-face tl-face--back tl-label"><span class="tl-brand-mark"></span><span class="tl-tag-size"></span></div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    // textContent, never innerHTML, for anything that came from the page
+    root.querySelector('.tl-brand-mark').textContent = config.brandMark;
+    const tagEl = root.querySelector('.tl-tag-size');
+    if (variantLabel) tagEl.textContent = variantLabel; else tagEl.remove();
     if (imageSrc) {
-      const bgCss = `url("${String(imageSrc).replace(/\\/g, '%5C').replace(/"/g, '%22')}")`;
-      root.querySelectorAll('.tl-img').forEach((n) => { n.style.backgroundImage = bgCss; });
+      const css = 'url("' + String(imageSrc).replace(/\\/g, '%5C').replace(/"/g, '%22') + '")';
+      root.querySelectorAll('.tl-img').forEach((n) => { n.style.backgroundImage = css; });
     }
-
     return {
       el: root,
       body: root.querySelector('.tl-body'),
@@ -402,165 +393,118 @@
   }
 
   function scheduleFolds(anims, f, T, origin) {
-    const { w: W, h: H } = T;
-    const t1 = T.lift;
-    const t2 = T.lift + T.fold1;
+    const H = T.h, W = T.w;
+    const t1 = T.lift, t2 = T.lift + T.fold1;
     const fromY = origin.mode === 'button' ? 14 : 0;
 
-    // 1. Lift & condense from photo (or rise from button)
-    const aLift = f.body.animate([
+    anims.push(f.body.animate([
       { transform: bt(0, fromY, origin.s0, 0), opacity: 0, offset: 0 },
       { opacity: 1, offset: 0.45 },
       { transform: bt(0, 0, 1, 0), opacity: 1, offset: 1 },
-    ], { duration: T.lift, easing: EASE.out, fill: 'forwards' });
-    anims.push(aLift);
+    ], { duration: T.lift, easing: EASE.out, fill: 'forwards' }));
 
-    // 2. Fold I: Top half folds down over bottom (revealing oxblood suiting lining)
-    const flap1 = f.flap1.animate([
-      { transform: 'translateZ(0.6px) rotateX(0deg)' },
-      { transform: 'translateZ(0.6px) rotateX(-180deg)' },
-    ], { delay: t1, duration: T.fold1, easing: EASE.fold, fill: 'forwards' });
+    const flap1 = f.flap1.animate(
+      [{ transform: 'translateZ(0.6px) rotateX(0deg)' }, { transform: 'translateZ(0.6px) rotateX(-180deg)' }],
+      { delay: t1, duration: T.fold1, easing: EASE.fold, fill: 'forwards' });
     anims.push(flap1);
+    anims.push(f.cast1.animate([{ opacity: 0 }, { opacity: 1, offset: 0.6 }, { opacity: 0.3 }],
+      { delay: t1, duration: T.fold1, easing: 'linear', fill: 'forwards' }));
+    anims.push(f.body.animate([{ transform: bt(0, 0, 1, 0) }, { transform: bt(0, -H / 4, 1, 0) }],
+      { delay: t1, duration: T.fold1, easing: EASE.fold, fill: 'forwards' }));
 
-    anims.push(f.cast1.animate(
-      [{ opacity: 0 }, { opacity: 1, offset: 0.6 }, { opacity: 0.3 }],
-      { delay: t1, duration: T.fold1, easing: 'linear', fill: 'forwards' }
-    ));
-
-    // Re-center body after Fold 1
-    anims.push(f.body.animate(
-      [{ transform: bt(0, 0, 1, 0) }, { transform: bt(0, -H / 4, 1, 0) }],
-      { delay: t1, duration: T.fold1, easing: EASE.fold, fill: 'forwards' }
-    ));
-
-    // Stage hand-off: Stage 2 replaces Stage 1 at t2
     anims.push(f.stage1.animate([{ opacity: 1 }, { opacity: 0 }], { delay: t2, duration: 1, fill: 'forwards' }));
     anims.push(f.stage2.animate([{ opacity: 0 }, { opacity: 1 }], { delay: t2, duration: 1, fill: 'forwards' }));
 
-    // 3. Fold II: Left half folds over right half (revealing woven label)
-    const flap2 = f.flap2.animate([
-      { transform: 'translateZ(0.6px) rotateY(0deg)' },
-      { transform: 'translateZ(0.6px) rotateY(180deg)' },
-    ], { delay: t2, duration: T.fold2, easing: EASE.fold, fill: 'forwards' });
+    const flap2 = f.flap2.animate(
+      [{ transform: 'translateZ(0.6px) rotateY(0deg)' }, { transform: 'translateZ(0.6px) rotateY(180deg)' }],
+      { delay: t2, duration: T.fold2, easing: EASE.fold, fill: 'forwards' });
     anims.push(flap2);
-
-    anims.push(f.cast2.animate(
-      [{ opacity: 0 }, { opacity: 1, offset: 0.6 }, { opacity: 0.3 }],
-      { delay: t2, duration: T.fold2, easing: 'linear', fill: 'forwards' }
-    ));
-
-    // Re-center bundle to (-W/4, -H/4) so it scales and rotates around its new folded center
-    anims.push(f.body.animate(
-      [{ transform: bt(0, -H / 4, 1, 0) }, { transform: bt(-W / 4, -H / 4, 1, 0) }],
-      { delay: t2, duration: T.fold2, easing: EASE.fold, fill: 'forwards' }
-    ));
+    anims.push(f.cast2.animate([{ opacity: 0 }, { opacity: 1, offset: 0.6 }, { opacity: 0.3 }],
+      { delay: t2, duration: T.fold2, easing: 'linear', fill: 'forwards' }));
+    anims.push(f.body.animate([{ transform: bt(0, -H / 4, 1, 0) }, { transform: bt(-W / 4, -H / 4, 1, 0) }],
+      { delay: t2, duration: T.fold2, easing: EASE.fold, fill: 'forwards' }));
 
     done(flap1).then(() => haptics.tick(6));
     done(flap2).then(() => haptics.tick(8));
-
     return flap2;
   }
 
   /* ---------------------------------------------------------------------------
-     Trajectory & Continuous Thread
+     Flight + continuous thread. Bundle AND thread head are sampled by ARC LENGTH
+     (getPointAtLength), so the brass line always ends exactly under the bundle.
      --------------------------------------------------------------------------- */
-  function calculateControlPoint(p0, end, isMobile) {
-    const dx = end.x - p0.x;
-    const dy = end.y - p0.y;
+  function controlPoint(p0, end, mobile) {
+    const dx = end.x - p0.x, dy = end.y - p0.y;
     const dist = Math.max(1, Math.hypot(dx, dy));
-    let nx = dy / dist;
-    let ny = -dx / dist;
-    if (ny > 0 || (Math.abs(ny) < 0.001 && nx < 0)) {
-      nx = -nx;
-      ny = -ny;
-    }
-    const bulge = clamp(dist * 0.30, isMobile ? 40 : 60, isMobile ? 130 : 200);
-    const vw = window.innerWidth, vh = window.innerHeight;
+    let nx = dy / dist, ny = -dx / dist;
+    if (ny > 0 || (Math.abs(ny) < 0.001 && nx < 0)) { nx = -nx; ny = -ny; }
+    const bulge = clamp(dist * 0.30, mobile ? 40 : 60, mobile ? 130 : 200);
     return {
       dist,
-      x: clamp((p0.x + end.x) / 2 + nx * bulge, 12, vw - 12),
-      y: clamp((p0.y + end.y) / 2 + ny * bulge, 12, vh - 12),
+      x: clamp((p0.x + end.x) / 2 + nx * bulge, 12, window.innerWidth - 12),
+      y: clamp((p0.y + end.y) / 2 + ny * bulge, 12, window.innerHeight - 12),
     };
   }
 
-  function playFlightWithThread(f, T, p0, target, anims, nodes) {
-    const { w: W, h: H } = T;
+  function playFlight(f, T, p0, target, anims, nodes) {
+    const W = T.w, H = T.h;
     const tr = target.getBoundingClientRect();
     const end = { x: tr.left + tr.width / 2, y: tr.top + tr.height / 2 };
-    const cp = calculateControlPoint(p0, end, isCoarse());
-    const p1 = { x: cp.x, y: cp.y };
+    const cp = controlPoint(p0, end, isCoarse());
 
-    /* 1. Continuous SVG brass thread */
     const svg = document.createElementNS(SVG_NS, 'svg');
     svg.setAttribute('class', 'tl-thread');
     svg.setAttribute('aria-hidden', 'true');
     const path = document.createElementNS(SVG_NS, 'path');
-    path.setAttribute('d', `M ${p0.x.toFixed(1)} ${p0.y.toFixed(1)} Q ${p1.x.toFixed(1)} ${p1.y.toFixed(1)} ${end.x.toFixed(1)} ${end.y.toFixed(1)}`);
+    path.setAttribute('d', 'M ' + p0.x.toFixed(1) + ' ' + p0.y.toFixed(1) + ' Q ' + cp.x.toFixed(1) + ' ' + cp.y.toFixed(1) + ' ' + end.x.toFixed(1) + ' ' + end.y.toFixed(1));
     svg.appendChild(path);
     document.body.appendChild(svg);
     nodes.push(svg);
 
     const L = path.getTotalLength();
-    path.style.strokeDasharray = `${L}px ${L}px`;
-    path.style.strokeDashoffset = `${L}px`;
+    path.style.strokeDasharray = L + 'px ' + L + 'px';
+    path.style.strokeDashoffset = L + 'px';
 
-    // Thread unspools as the bundle flies
-    const thAnim = path.animate(
-      [{ strokeDashoffset: `${L}px` }, { strokeDashoffset: '0px' }],
-      { duration: T.flight, easing: FLIGHT_EASE, fill: 'forwards' }
-    );
-    anims.push(thAnim);
+    // Same effect-level easing on both => same arc-length fraction at every instant.
+    anims.push(path.animate(
+      [{ strokeDashoffset: L + 'px' }, { strokeDashoffset: '0px' }],
+      { duration: T.flight, easing: FLIGHT_EASE, fill: 'forwards' }));
 
-    /* 2. Bundle 3D Flight Keyframes */
-    const N = 32;
+    const N = isLite() ? 20 : 32;
     const frames = [];
     for (let i = 0; i <= N; i++) {
-      const t = i / N;
-      const pt = quad(p0, p1, end, t);
-      frames.push({
-        transform: `translate3d(${(pt.x - W / 2).toFixed(2)}px, ${(pt.y - H / 2).toFixed(2)}px, 0)`,
-        offset: t,
-      });
+      const u = i / N;
+      const pt = path.getPointAtLength(L * u);
+      frames.push({ transform: 'translate3d(' + (pt.x - W / 2).toFixed(2) + 'px, ' + (pt.y - H / 2).toFixed(2) + 'px, 0)', offset: u });
     }
-
     const flightAnim = f.el.animate(frames, { duration: T.flight, easing: FLIGHT_EASE, fill: 'forwards' });
     anims.push(flightAnim);
 
-    // Dynamic tilt & shrink into the target
-    const dx = end.x - p0.x;
-    const tilt = clamp((dx / cp.dist) * 16, -16, 16);
+    const tilt = clamp(((end.x - p0.x) / cp.dist) * 16, -16, 16);
     const endScale = clamp((tr.width * 0.52) / (W / 2), 0.18, 0.58);
     const bx = -W / 4, by = -H / 4;
-
-    const bodyFlight = f.body.animate([
+    anims.push(f.body.animate([
       { transform: bt(bx, by, 1, 0), opacity: 1, offset: 0 },
       { transform: bt(bx, by, 0.94, tilt), opacity: 1, offset: 0.3 },
       { transform: bt(bx, by, endScale * 1.3, -tilt * 0.5), opacity: 1, offset: 0.8 },
       { transform: bt(bx, by, endScale, 0), opacity: 1, offset: 1 },
-    ], { duration: T.flight, easing: FLIGHT_EASE, fill: 'forwards' });
-    anims.push(bodyFlight);
+    ], { duration: T.flight, easing: FLIGHT_EASE, fill: 'forwards' }));
 
-    // Compute arrival heading vector for vector-aware bag impact
-    const endTangent = {
-      x: 2 * (end.x - p1.x),
-      y: 2 * (end.y - p1.y),
-    };
-    const tLen = Math.hypot(endTangent.x, endTangent.y) || 1;
-    const hx = endTangent.x / tLen, hy = endTangent.y / tLen;
-
-    return { flightAnim, path, L, end, hx, hy, endScale };
+    // Arrival heading from the real end of the path
+    const a = path.getPointAtLength(L), b = path.getPointAtLength(Math.max(0, L - 3));
+    const hl = Math.hypot(a.x - b.x, a.y - b.y) || 1;
+    return { flightAnim, path, L, end, endScale, hx: (a.x - b.x) / hl, hy: (a.y - b.y) / hl };
   }
 
   /* ---------------------------------------------------------------------------
-     Landing Micro-Interactions (Vector Catch, Knot, Ring, Odometer)
+     Landing micro-interactions
      --------------------------------------------------------------------------- */
   function bagCatch(target, hx, hy) {
     if (!target || reduceMotion()) return;
     const s = sp('catch');
     const rest = 'translate(0px, 0px) scale(1, 1)';
-    const hit = `translate(${(hx * 3.5).toFixed(2)}px, ${(hy * 3.5).toFixed(2)}px) scale(1.16, 0.86)`;
-    const rebound = `translate(${(-hx * 1.5).toFixed(2)}px, ${(-hy * 1.5).toFixed(2)}px) scale(0.94, 1.08)`;
-    
+    const hit = 'translate(' + (hx * 3.5).toFixed(2) + 'px, ' + (hy * 3.5).toFixed(2) + 'px) scale(1.16, 0.86)';
+    const rebound = 'translate(' + (-hx * 1.5).toFixed(2) + 'px, ' + (-hy * 1.5).toFixed(2) + 'px) scale(0.94, 1.08)';
     target.animate([
       { transform: rest, easing: 'ease-out' },
       { transform: hit, offset: 0.20, easing: s.easing },
@@ -574,15 +518,12 @@
     const size = Math.max(r.width, r.height) + pad;
     const ring = el('div', 'tl-ring');
     Object.assign(ring.style, {
-      width: size + 'px',
-      height: size + 'px',
-      left: (r.left + r.width / 2 - size / 2) + 'px',
-      top: (r.top + r.height / 2 - size / 2) + 'px',
+      width: size + 'px', height: size + 'px',
+      left: (r.left + r.width / 2 - size / 2) + 'px', top: (r.top + r.height / 2 - size / 2) + 'px',
     });
     document.body.appendChild(ring);
     return ring;
   }
-
   function stitchRing(target) {
     if (!target || reduceMotion()) return;
     const ring = makeRing(target, 16);
@@ -590,9 +531,8 @@
       { transform: 'rotate(0deg) scale(0.65)', opacity: 0.9 },
       { transform: 'rotate(70deg) scale(1.6)', opacity: 0 },
     ], { duration: 520, easing: EASE.out });
-    done(a).then(() => ring.remove());
+    onDone(a, () => ring.remove());
   }
-
   function knot(target) {
     if (!target || reduceMotion()) return;
     const r = target.getBoundingClientRect();
@@ -600,22 +540,13 @@
     k.style.left = (r.left + r.width / 2) + 'px';
     k.style.top = (r.top + r.height / 2) + 'px';
     document.body.appendChild(k);
-
     const s = sp('knot');
-    k.animate([
-      { transform: 'translate(-50%, -50%) scale(0)' },
-      { transform: 'translate(-50%, -50%) scale(1)' },
-    ], { duration: s.duration, easing: s.easing, fill: 'forwards' });
-
-    const fade = k.animate([
-      { opacity: 1 },
-      { opacity: 1, offset: 0.55 },
-      { opacity: 0 },
-    ], { duration: 520, easing: 'linear', fill: 'forwards' });
-
-    done(fade).then(() => k.remove());
+    k.animate([{ transform: 'translate(-50%, -50%) scale(0)' }, { transform: 'translate(-50%, -50%) scale(1)' }],
+      { duration: s.duration, easing: s.easing, fill: 'forwards' });
+    const fade = k.animate([{ opacity: 1 }, { opacity: 1, offset: 0.55 }, { opacity: 0 }],
+      { duration: 520, easing: 'linear', fill: 'forwards' });
+    onDone(fade, () => k.remove());
   }
-
   function rollBadge(badge, nextCount) {
     if (!badge) return;
     const raw = badge.textContent.replace(/[^\d]/g, '');
@@ -623,28 +554,20 @@
     const next = typeof nextCount === 'number' ? nextCount : parseInt(nextCount, 10) || 0;
     badge.hidden = false;
     const formattedNext = '[' + next + ']';
-    if (reduceMotion() || prev === next) {
-      badge.textContent = formattedNext;
-      return;
-    }
+    if (reduceMotion() || prev === next) { badge.textContent = formattedNext; return; }
     badge.textContent = '';
     badge.classList.add('tl-badge');
     const roll = el('span', 'tl-badge__roll');
-    [('[' + prev + ']'), formattedNext, formattedNext].forEach((txt) => {
+    ['[' + prev + ']', formattedNext, formattedNext].forEach((txt) => {
       const row = el('span');
       row.textContent = txt;
       roll.appendChild(row);
     });
     badge.appendChild(roll);
     const s = sp('roll');
-    const a = roll.animate([
-      { transform: 'translateY(0)' },
-      { transform: 'translateY(-33.3333%)' },
-    ], { duration: s.duration, easing: s.easing, fill: 'forwards' });
-    done(a).then(() => {
-      badge.textContent = formattedNext;
-      badge.classList.remove('tl-badge');
-    });
+    const a = roll.animate([{ transform: 'translateY(0)' }, { transform: 'translateY(-33.3333%)' }],
+      { duration: s.duration, easing: s.easing, fill: 'forwards' });
+    onDone(a, () => { badge.textContent = formattedNext; badge.classList.remove('tl-badge'); });
   }
 
   function highlightLine(line) {
@@ -658,16 +581,19 @@
       { transform: 'scaleX(1)', opacity: 1, offset: 0.6 },
       { transform: 'scaleX(1)', opacity: 0 },
     ], { duration: 850, easing: EASE.out });
-    done(a).then(() => s.remove());
+    onDone(a, () => s.remove());
+  }
+  // The drawer renders its lines asynchronously after cart:refresh. Wait for the new one (max ~0.9s).
+  function highlightWhenReady(selector, tries) {
+    const line = document.querySelector(selector);
+    if (line) return highlightLine(line);
+    if (tries > 0) setTimeout(() => highlightWhenReady(selector, tries - 1), 60);
   }
 
   /* ---------------------------------------------------------------------------
-     Receipt Card (Peek) for Grid Quick-Add
+     Receipt card (grid quick-add finish): stagger, countdown thread, swipe
      --------------------------------------------------------------------------- */
-  let peekEl = null;
-  let peekTimerAnim = null;
-  let peekHardTimer = 0;
-  let peekCleanupFns = [];
+  let peekEl = null, peekTimerAnim = null, peekHardTimer = 0, peekCleanupFns = [];
 
   function showPeek(cartResult, anchor, meta) {
     dismissPeek(true);
@@ -690,51 +616,37 @@
     closeBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 1l10 10M11 1L1 11"/></svg>';
     closeBtn.addEventListener('click', (e) => { e.stopPropagation(); dismissPeek(); });
     card.appendChild(closeBtn);
-
-    const handle = el('div', 'tl-peek__handle');
-    card.appendChild(handle);
+    card.appendChild(el('div', 'tl-peek__handle'));
 
     const row = el('div', 'tl-peek__row');
     const imgBox = el('div', 'tl-peek__img');
     if (imgUrl) imgBox.style.backgroundImage = 'url("' + imgUrl.replace(/"/g, '%22') + '")';
-
     const metaCol = el('div', 'tl-peek__meta');
     const nameEl = el('h4', 'tl-peek__name');
     nameEl.textContent = title;
     metaCol.appendChild(nameEl);
-
+    let varEl = null;
     if (variantTitle) {
-      const varEl = el('p', 'tl-peek__variant');
+      varEl = el('p', 'tl-peek__variant');
       varEl.textContent = 'Size ' + variantTitle;
       metaCol.appendChild(varEl);
     }
     const seamEl = el('div', 'tl-peek__seam');
     metaCol.appendChild(seamEl);
-
     const priceEl = el('div', 'tl-peek__price');
     priceEl.textContent = priceStr;
-
-    row.appendChild(imgBox);
-    row.appendChild(metaCol);
-    row.appendChild(priceEl);
+    row.appendChild(imgBox); row.appendChild(metaCol); row.appendChild(priceEl);
     card.appendChild(row);
 
     const actions = el('div', 'tl-peek__actions');
     const viewBagBtn = el('button', 'tl-peek__btn tl-peek__btn--secondary');
     viewBagBtn.type = 'button';
     viewBagBtn.textContent = 'View bag';
-    viewBagBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      dismissPeek(true);
-      adapters.openCart();
-    });
-
+    viewBagBtn.addEventListener('click', (e) => { e.stopPropagation(); dismissPeek(true); adapters.openCart(); });
     const checkoutBtn = el('a', 'tl-peek__btn tl-peek__btn--primary');
     checkoutBtn.href = '/checkout';
     checkoutBtn.textContent = 'Checkout';
-
-    actions.appendChild(viewBagBtn);
-    actions.appendChild(checkoutBtn);
+    actions.appendChild(viewBagBtn); actions.appendChild(checkoutBtn);
     card.appendChild(actions);
 
     const timerEl = el('div', 'tl-peek__timer');
@@ -743,7 +655,7 @@
     if (coarse) {
       const dock = adapters.getDock();
       const dockH = dock && inViewport(dock) ? dock.getBoundingClientRect().height : 0;
-      card.style.bottom = `calc(env(safe-area-inset-bottom, 0px) + ${dockH + 12}px)`;
+      card.style.bottom = 'calc(env(safe-area-inset-bottom, 0px) + ' + (dockH + 12) + 'px)';
     } else if (anchor && inViewport(anchor)) {
       const r = anchor.getBoundingClientRect();
       card.style.top = (r.bottom + 10) + 'px';
@@ -759,8 +671,7 @@
     const box = card.getBoundingClientRect();
     if (anchor && inViewport(anchor)) {
       const ar = anchor.getBoundingClientRect();
-      const ox = clamp(ar.left + ar.width / 2 - box.left, 0, box.width);
-      card.style.transformOrigin = ox + 'px ' + (coarse ? '100%' : '0px');
+      card.style.transformOrigin = clamp(ar.left + ar.width / 2 - box.left, 0, box.width) + 'px ' + (coarse ? '100%' : '0px');
     } else {
       card.style.transformOrigin = coarse ? '50% 100%' : '100% 0px';
     }
@@ -770,40 +681,37 @@
       if (HAS_WAAPI) card.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 140, fill: 'backwards' });
     } else {
       const s = sp(coarse ? 'sheet' : 'peek');
-      const from = coarse ? 'translateY(28px) scale(0.9)' : 'translateY(-10px) scale(0.92)';
-      card.animate(
-        [{ transform: from }, { transform: 'translateY(0px) scale(1)' }],
-        { duration: s.duration, easing: s.easing, fill: 'backwards' }
-      );
+      // fill:'backwards' only, so the swipe gesture can own the transform afterwards
+      card.animate([{ transform: coarse ? 'translateY(28px) scale(0.9)' : 'translateY(-10px) scale(0.92)' }, { transform: 'translateY(0px) scale(1)' }],
+        { duration: s.duration, easing: s.easing, fill: 'backwards' });
       card.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 160, fill: 'backwards' });
-      seamEl.animate(
-        [{ clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0 0 0)' }],
-        { duration: 520, delay: 160, easing: EASE.out, fill: 'forwards' }
-      );
+      seamEl.animate([{ clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0 0 0)' }],
+        { duration: 520, delay: 160, easing: EASE.out, fill: 'forwards' });
+      [imgBox, nameEl, varEl, priceEl, viewBagBtn, checkoutBtn].forEach((n, i) => {
+        if (!n) return;
+        n.animate([{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'translateY(0px)' }],
+          { duration: 320, delay: 50 + i * 38, easing: EASE.out, fill: 'backwards' });
+      });
     }
 
-    const totalTime = coarse ? 3800 : 3500;
+    const total = coarse ? 3800 : 3500;
     try {
-      peekTimerAnim = timerEl.animate(
-        [{ transform: 'scaleX(1)' }, { transform: 'scaleX(0)' }],
-        { duration: totalTime, easing: 'linear', fill: 'forwards' }
-      );
+      peekTimerAnim = timerEl.animate([{ transform: 'scaleX(1)' }, { transform: 'scaleX(0)' }],
+        { duration: total, easing: 'linear', fill: 'forwards' });
       peekTimerAnim.addEventListener('finish', () => dismissPeek(), { once: true });
     } catch (_) {
       peekTimerAnim = null;
-      const t = setTimeout(() => dismissPeek(), totalTime);
+      const t = setTimeout(() => dismissPeek(), total);
       peekCleanupFns.push(() => clearTimeout(t));
     }
-
     const pauseTimer = () => { try { if (peekTimerAnim) peekTimerAnim.pause(); } catch (_) {} };
     const resumeTimer = () => {
       try {
         if (!peekTimerAnim) return;
-        peekTimerAnim.currentTime = Math.min(peekTimerAnim.currentTime || 0, totalTime - 1200);
+        peekTimerAnim.currentTime = Math.min(peekTimerAnim.currentTime || 0, total - 1200);
         peekTimerAnim.play();
       } catch (_) {}
     };
-
     card.addEventListener('pointerenter', pauseTimer);
     card.addEventListener('pointerleave', resumeTimer);
     card.addEventListener('focusin', pauseTimer);
@@ -813,9 +721,7 @@
     peekHardTimer = setTimeout(() => dismissPeek(), 9000);
 
     const onDocPointerDown = (e) => {
-      if (card && !card.contains(e.target) && !e.target.closest('[data-tl-cta], [data-tl-bag], [data-tl-dock-bag], .product-card__size-pill')) {
-        dismissPeek();
-      }
+      if (card && !card.contains(e.target) && !e.target.closest('[data-tl-cta], [data-tl-bag], [data-tl-dock-bag], .product-card__size-pill')) dismissPeek();
     };
     document.addEventListener('pointerdown', onDocPointerDown, { capture: true });
     const startScroll = window.scrollY;
@@ -825,16 +731,17 @@
     window.addEventListener('keydown', onEsc);
     const onCartOpen = () => dismissPeek(true);
     window.addEventListener('cart:open', onCartOpen, { once: true });
-
     peekCleanupFns.push(() => {
       document.removeEventListener('pointerdown', onDocPointerDown, { capture: true });
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('keydown', onEsc);
       window.removeEventListener('cart:open', onCartOpen);
     });
+
+    if (coarse) enableSwipe(card, pauseTimer, resumeTimer);
   }
 
-  function dismissPeek(instant) {
+  function dismissPeek(instant, via) {
     clearTimeout(peekHardTimer);
     if (peekTimerAnim) { try { peekTimerAnim.cancel(); } catch (_) {} peekTimerAnim = null; }
     peekCleanupFns.forEach((fn) => { try { fn(); } catch (_) {} });
@@ -842,25 +749,54 @@
     const card = peekEl;
     if (!card) return;
     peekEl = null;
-    if (instant || reduceMotion() || !HAS_WAAPI) {
-      card.remove();
-      return;
-    }
+    if (instant || reduceMotion() || !HAS_WAAPI) { card.remove(); return; }
     const cs = window.getComputedStyle(card);
     const fromT = cs.transform === 'none' ? 'translateY(0px)' : cs.transform;
     const fromO = cs.opacity;
     try { card.getAnimations().forEach((x) => x.cancel()); } catch (_) {}
     const coarse = isCoarse();
-    const toT = coarse ? 'translateY(24px) scale(0.92)' : 'translateY(-8px) scale(0.96)';
-    const a = card.animate(
-      [{ transform: fromT, opacity: fromO }, { transform: toT, opacity: 0 }],
-      { duration: coarse ? 200 : 160, easing: EASE.in, fill: 'forwards' }
-    );
-    done(a).then(() => card.remove());
+    const swipe = via === 'swipe';
+    const toT = swipe ? 'translateY(130%)' : coarse ? 'translateY(24px) scale(0.92)' : 'translateY(-8px) scale(0.96)';
+    const a = card.animate([{ transform: fromT, opacity: fromO }, { transform: toT, opacity: 0 }],
+      { duration: swipe ? 240 : coarse ? 200 : 160, easing: EASE.in, fill: 'forwards' });
+    onDone(a, () => card.remove());
+  }
+
+  function enableSwipe(card, pauseTimer, resumeTimer) {
+    let startY = 0, currentY = 0, startTime = 0, dragging = false;
+    card.addEventListener('pointerdown', (e) => {
+      if (e.target.closest('button, a')) return;
+      dragging = true; startY = currentY = e.clientY; startTime = Date.now();
+      try { card.setPointerCapture(e.pointerId); } catch (_) {}
+      pauseTimer();
+    }, { passive: true });
+    card.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      currentY = e.clientY;
+      const dy = currentY - startY;
+      card.style.transform = 'translateY(' + (dy > 0 ? dy : dy * 0.18) + 'px)';
+    }, { passive: true });
+    const end = (e) => {
+      if (!dragging) return;
+      dragging = false;
+      try { card.releasePointerCapture(e.pointerId); } catch (_) {}
+      const dy = currentY - startY, vy = dy / Math.max(1, Date.now() - startTime);
+      if (dy > 60 || vy > 0.5) dismissPeek(false, 'swipe');
+      else if (dy < -30) { dismissPeek(true); adapters.openCart(); }
+      else {
+        const from = card.style.transform || 'translateY(0px)';
+        card.style.transform = '';
+        const s = sp('release');
+        card.animate([{ transform: from }, { transform: 'translateY(0px)' }], { duration: s.duration, easing: s.easing });
+        resumeTimer();
+      }
+    };
+    card.addEventListener('pointerup', end);
+    card.addEventListener('pointercancel', end);
   }
 
   /* ---------------------------------------------------------------------------
-     Rejection & Failure Handling
+     Failure / calm paths
      --------------------------------------------------------------------------- */
   function playReject(f, T) {
     const bx = -T.w / 4, by = -T.h / 4;
@@ -872,32 +808,27 @@
       { transform: bt(bx + 3, by, 1, 1), offset: 0.82 },
       { transform: bt(bx, by, 1, 0), offset: 1 },
     ], { duration: 340, easing: 'ease-in-out', fill: 'forwards' });
-
     return done(shake).then(() => done(f.body.animate([
       { transform: bt(bx, by, 1, 0), opacity: 1 },
       { transform: bt(bx, by - 24, 0.8, 0), opacity: 0 },
     ], { duration: 200, easing: EASE.in, fill: 'forwards' })));
   }
-
   function announce(cartResult) {
     const n = adapters.getItemCount(cartResult);
     const live = document.querySelector('[data-tl-live], [data-adot-live]');
     if (live) live.textContent = 'Added to bag. ' + n + ' ' + (n === 1 ? 'item' : 'items') + ' in bag.';
   }
-
   function failLabel(cta) {
     cta.dataset.tlState = 'error';
     const live = document.querySelector('[data-tl-live], [data-adot-live]');
     if (live) live.textContent = "Couldn't add to bag. Try again.";
     setTimeout(() => { cta.dataset.tlState = 'idle'; }, 2400);
   }
-
   function calmConfirm(cta, target, cartResult, meta) {
     cta.dataset.tlState = 'done';
     if (target) {
       bagCatch(target, 0, 1);
-      const badgeEl = target.querySelector('[data-tl-badge]') || target.querySelector('[data-cart-count]');
-      rollBadge(badgeEl, adapters.getItemCount(cartResult));
+      rollBadge(target.querySelector('[data-tl-badge]') || target.querySelector('[data-cart-count]'), adapters.getItemCount(cartResult));
     }
     announce(cartResult);
     adapters.refreshCart(cartResult);
@@ -906,57 +837,45 @@
   }
 
   /* ---------------------------------------------------------------------------
-     Orchestration Engine (addWithThreadline)
+     Orchestration
      --------------------------------------------------------------------------- */
   let activeFlights = 0;
   let chain = Promise.resolve();
   let lastAddAt = 0;
-
-  function enqueue(fn) {
-    const p = chain.then(fn);
-    chain = p.catch(() => {});
-    return p;
-  }
+  function enqueue(fn) { const p = chain.then(fn); chain = p.catch(() => {}); return p; }
 
   async function addWithThreadline(options) {
     const cta = options.cta, form = options.form;
     if (!cta || !form) return;
+    const fireStart = () => { try { if (typeof options.onStart === 'function') options.onStart(); } catch (_) {} };
 
-    // Fast-press feedback
     cta.setAttribute('data-tl-pressed', '');
     setTimeout(() => cta.removeAttribute('data-tl-pressed'), 120);
 
     const now = Date.now();
-    const isExpress = now - lastAddAt < config.expressWindowMs;
+    const express = now - lastAddAt < config.expressWindowMs;
     lastAddAt = now;
 
-    // Optimistic network dispatch
     const requestP = enqueue(() => adapters.addToCart(form));
     requestP.catch(() => {});
-    let settled = null;
-    requestP.then((r) => { settled = { ok: true, val: r }; }, (e) => { settled = { ok: false, err: e }; });
+    let settled = false;
+    requestP.then(() => { settled = true; }, () => { settled = true; });
 
     const target = adapters.getTarget();
-    const canFly =
-      HAS_WAAPI &&
-      !reduceMotion() &&
-      target &&
-      inViewport(target) &&
-      activeFlights < config.maxFlights &&
-      (!window.visualViewport || window.visualViewport.scale === 1);
+    const canFly = HAS_WAAPI && !reduceMotion() && target && inViewport(target) &&
+      activeFlights < config.maxFlights && (!window.visualViewport || window.visualViewport.scale === 1);
 
     const thumbUrl = options.thumbUrl || adapters.getThumbUrl(form, cta);
     const variantLabel = options.variantLabel || adapters.getVariantLabel(form, cta);
     const productTitle = options.title || adapters.getProductTitle(form, cta);
     const priceFormatted = options.price || adapters.getPriceFormatted(form, cta);
     const meta = { thumbUrl, variantLabel, productTitle, priceFormatted };
-
-    const isGridQuickAdd = !!cta.closest('.product-card') || options.context === 'grid';
+    const isGrid = !!cta.closest('.product-card') || options.context === 'grid';
 
     if (!canFly) {
+      fireStart();
       try {
-        const cartResult = await requestP;
-        calmConfirm(cta, target, cartResult, meta);
+        calmConfirm(cta, target, await requestP, meta);
       } catch (err) {
         failLabel(cta);
         adapters.resync();
@@ -964,133 +883,121 @@
       return;
     }
 
-    activeFlights++;
-    cta.dataset.tlState = 'lifted';
-
-    const T = scaled(isCoarse() ? config.mobile : config.desktop, isExpress ? config.expressFactor : 1);
-    const origin = resolveOrigin(cta, form, T);
+    // Everything geometric is measured NOW, synchronously, before onStart() can close the size sheet.
+    let T = scaled(isCoarse() ? config.mobile : config.desktop, express ? config.expressFactor : 1);
+    const origin = resolveOrigin(cta, options.originEl, T);
+    if (origin.mode === 'image') T = Object.assign({}, T, { lift: T.lift + Math.round(config.imageLiftBonus * (express ? config.expressFactor : 1)) });
     const p0 = { x: origin.cx, y: origin.cy };
 
     const f = buildFlyer(T, thumbUrl, variantLabel);
-    f.el.style.transform = `translate3d(${(p0.x - T.w / 2).toFixed(2)}px, ${(p0.y - T.h / 2).toFixed(2)}px, 0)`;
+    f.el.style.transform = 'translate3d(' + (p0.x - T.w / 2).toFixed(2) + 'px, ' + (p0.y - T.h / 2).toFixed(2) + 'px, 0)';
     document.body.appendChild(f.el);
 
-    const anims = [];
-    const nodes = [f.el];
+    activeFlights++;
+    cta.dataset.tlState = 'lifted';
+    fireStart();   // size sheet / popover may close now: the flyer already owns its start position
 
-    const cleanup = () => {
+    const anims = [], nodes = [f.el];
+    let released = false;
+    const dispose = () => {
       anims.forEach((a) => { try { a.cancel(); } catch (_) {} });
       nodes.forEach((n) => { try { n.remove(); } catch (_) {} });
-      activeFlights = Math.max(0, activeFlights - 1);
+      if (!released) { released = true; activeFlights = Math.max(0, activeFlights - 1); }
     };
+    const resetLabel = () => setTimeout(() => { cta.dataset.tlState = 'idle'; }, config.holdLabelMs);
 
     try {
-      // 1. Execute 3D folds
-      const foldEnd = scheduleFolds(anims, f, T, origin);
-      await done(foldEnd);
+      await done(scheduleFolds(anims, f, T, origin));
 
-      // 2. Parallel Network Gate: Breathing loop if server is slower than folds
-      let breatheAnim = null;
+      let breathe = null;
       if (!settled) {
         const bx = -T.w / 4, by = -T.h / 4;
-        breatheAnim = f.body.animate([
-          { transform: bt(bx, by, 1, 0) },
-          { transform: bt(bx, by, 1.05, 0) },
-          { transform: bt(bx, by, 1, 0) },
-        ], { duration: 740, iterations: Infinity, easing: 'ease-in-out' });
-        anims.push(breatheAnim);
+        breathe = f.body.animate([{ transform: bt(bx, by, 1, 0) }, { transform: bt(bx, by, 1.05, 0) }, { transform: bt(bx, by, 1, 0) }],
+          { duration: 740, iterations: Infinity, easing: 'ease-in-out' });
+        anims.push(breathe);
       }
 
       let cartResult;
       try {
         cartResult = await requestP;
       } catch (reqErr) {
-        if (breatheAnim) breatheAnim.cancel();
+        if (breathe) breathe.cancel();
         await playReject(f, T);
         failLabel(cta);
         adapters.resync();
-        cleanup();
+        dispose();
         return;
       }
+      if (breathe) breathe.cancel();
+      cta.dataset.tlState = 'done';
 
-      if (breatheAnim) breatheAnim.cancel();
-      cta.dataset.tlState = 'done'; // Server confirmed
+      const fl = playFlight(f, T, { x: p0.x, y: p0.y }, target, anims, nodes);
+      await done(fl.flightAnim);
 
-      // 3. Flight with Continuous SVG Brass Thread
-      const flightData = playFlightWithThread(f, T, p0, target, anims, nodes);
-      await done(flightData.flightAnim);
-
-      // 4. Absorbed into Bag & Thread Retraction
+      // Pierce INTO the bag along the arrival heading (translate the flyer root, not the scaled body)
+      const endT = (dx, dy) => 'translate3d(' + (fl.end.x - T.w / 2 + dx).toFixed(2) + 'px, ' + (fl.end.y - T.h / 2 + dy).toFixed(2) + 'px, 0)';
+      anims.push(f.el.animate([{ transform: endT(0, 0) }, { transform: endT(fl.hx * 9, fl.hy * 9) }],
+        { duration: 140, easing: EASE.in, fill: 'forwards' }));
       const bx = -T.w / 4, by = -T.h / 4;
       const absorb = f.body.animate([
-        { transform: bt(bx, by, flightData.endScale, 0), opacity: 1 },
-        { transform: bt(bx + flightData.hx * 8, by + flightData.hy * 8, 0.08, 0), opacity: 0 },
+        { transform: bt(bx, by, fl.endScale, 0), opacity: 1 },
+        { transform: bt(bx, by, 0.08, 0), opacity: 0 },
       ], { duration: 140, easing: EASE.in, fill: 'forwards' });
       anims.push(absorb);
-
-      const retract = flightData.path.animate([
-        { strokeDashoffset: '0px' },
-        { strokeDashoffset: `-${flightData.L}px` },
-      ], { duration: 260, easing: EASE.out, fill: 'forwards' });
+      const retract = fl.path.animate([{ strokeDashoffset: '0px' }, { strokeDashoffset: -fl.L + 'px' }],
+        { duration: 260, easing: EASE.out, fill: 'forwards' });
       anims.push(retract);
 
-      // 5. Impact Physics: Vector Catch, Knot, Ring, Odometer
       haptics.tick(14);
-      bagCatch(target, flightData.hx, flightData.hy);
+      bagCatch(target, fl.hx, fl.hy);
       stitchRing(target);
       knot(target);
-
       const badgeEl = target.querySelector('[data-tl-badge]') || target.querySelector('[data-cart-count]');
       setTimeout(() => rollBadge(badgeEl, adapters.getItemCount(cartResult)), 50);
-
       announce(cartResult);
       adapters.refreshCart(cartResult);
 
       await Promise.all([done(absorb), done(retract)]);
+      dispose();          // flyer + thread are gone NOW; the slot is free for the next tap
+      resetLabel();       // label timing is independent of the flight slot
 
-      // 6. Dual-Finish Terminal Action
-      if (isGridQuickAdd) {
-        showPeek(cartResult, target, {
-          thumbUrl,
-          variantLabel,
-          productTitle,
-          priceFormatted: adapters.getPriceFormatted(form, cta, cartResult),
-        });
+      if (isGrid) {
+        showPeek(cartResult, target, { thumbUrl, variantLabel, productTitle, priceFormatted: adapters.getPriceFormatted(form, cta, cartResult) });
       } else {
-        // PDP Full Add: Open Drawer / Bottom Sheet & line sweep
         adapters.openCart();
-        requestAnimationFrame(() => {
-          const vId = cartResult && cartResult.item ? cartResult.item.variant_id : null;
-          if (vId) {
-            const line = document.querySelector(`[data-variant-id="${vId}"], .cart-drawer__item[data-id="${vId}"]`);
-            if (line) highlightLine(line);
-          }
-        });
+        const vId = cartResult && cartResult.item ? cartResult.item.variant_id : null;
+        if (vId) highlightWhenReady(config.lineSelector(vId), 14);
       }
-
-      await sleep(config.holdLabelMs);
-      cta.dataset.tlState = 'idle';
     } catch (err) {
-      console.warn('Threadline hybrid error:', err);
+      console.warn('Threadline error:', err);
       failLabel(cta);
       adapters.resync();
     } finally {
-      cleanup();
+      dispose();   // idempotent
     }
   }
 
   /* ---------------------------------------------------------------------------
-     Public API
+     Lifecycle + public API
      --------------------------------------------------------------------------- */
+  const killAll = () => {
+    dismissPeek(true);
+    document.querySelectorAll('.tl-flyer, .tl-thread, .tl-ring, .tl-knot').forEach((n) => n.remove());
+  };
+  window.addEventListener('pagehide', killAll);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) killAll(); });
+
   window.Threadline = {
-    version: '3.0.0',
+    version: '3.1.0',
     add: addWithThreadline,
     config: config,
     adapters: adapters,
     showPeek: showPeek,
     dismissPeek: dismissPeek,
     highlightLine: highlightLine,
+    killAll: killAll,
     spring: spring,
+    debug: { activeFlights: () => activeFlights, resolveOrigin: resolveOrigin },
   };
 
   const initLive = () => {
@@ -1101,7 +1008,6 @@
     live.setAttribute('aria-live', 'polite');
     document.body.appendChild(live);
   };
-
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initLive);
   else initLive();
 })();

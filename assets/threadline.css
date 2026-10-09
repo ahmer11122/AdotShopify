@@ -1,48 +1,40 @@
 /* ==========================================================================
-   THREADLINE 3.0 — "The Sartorial Hybrid"
-   Award-grade Add to Bag motion system for luxury menswear. Desktop + Mobile.
-   Native WAAPI + 3D Garment Fold Geometry + Continuous Brass Thread + Apple-grade Physics.
-   Zero dependencies.
+   THREADLINE 3.1 — "The Sartorial Hybrid" (fixed)
+   Add to Bag motion system · luxury menswear · Desktop + Mobile · zero dependencies
+   3.1 fixes: woven-label face collapsed (position override), CTA overflow clipping.
    ========================================================================== */
 
 :root {
-  /* Brand luxury tokens */
-  --tl-ink:          #1B1613;                           /* deep charcoal ink */
-  --tl-paper:        #EFE8DA;                           /* woven label + card base */
-  --tl-lining:       #4A1523;                           /* silk cupro lining (base oxblood) */
-  --tl-lining-hi:    #6B2236;                           /* silk cupro lining (highlight) */
-  --tl-pin:          rgba(235, 214, 170, 0.20);         /* suiting pinstripe on lining */
-  --tl-thread:       #A8864F;                           /* antique brass tailor's thread */
-  --tl-thread-hi:    #C9A86A;                           /* brass highlight */
+  --tl-ink:          #1B1613;
+  --tl-paper:        #EFE8DA;
+  --tl-lining:       #4A1523;
+  --tl-lining-hi:    #6B2236;
+  --tl-pin:          rgba(235, 214, 170, 0.20);
+  --tl-thread:       #A8864F;
+  --tl-thread-hi:    #C9A86A;
   --tl-thread-width: 1.5px;
-  
-  /* Easings */
-  --tl-ease-out:     cubic-bezier(0.16, 1, 0.3, 1);     /* entrances, feedback, line-in */
-  --tl-ease-fold:    cubic-bezier(0.65, 0, 0.35, 1);    /* crisp 3D suiting folds */
-  --tl-ease-in:      cubic-bezier(0.55, 0, 1, 0.45);     /* exits / absorb into bag */
-  --tl-ease-spring:  cubic-bezier(0.34, 1.56, 0.64, 1);  /* receiver overshoot only */
-  --tl-ease-sheet:   cubic-bezier(0.32, 0.72, 0, 1);    /* iOS sheet curve */
 
-  /* Layers */
+  --tl-ease-out:     cubic-bezier(0.16, 1, 0.3, 1);
+  --tl-ease-fold:    cubic-bezier(0.65, 0, 0.35, 1);
+  --tl-ease-in:      cubic-bezier(0.55, 0, 1, 0.45);
+  --tl-ease-sheet:   cubic-bezier(0.32, 0.72, 0, 1);
+
   --tl-z-thread: 2147483000;
   --tl-z-token:  2147483001;
   --tl-z-peek:   2147482000;
 }
 
-/* -----------------------------------------------------------------------------
-   1. CTA states, label roll, and the "cut-out socket"
-   ----------------------------------------------------------------------------- */
+/* ---------- 1. CTA states ---------- */
 .tl-cta {
   position: relative;
-  overflow: hidden;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   transition: transform 120ms var(--tl-ease-out);
+  /* 3.1: NO overflow:hidden here. It clipped focus rings and badges on theme buttons. */
 }
 .tl-cta:active,
-.tl-cta[data-tl-pressed] {
-  transform: scale(0.97);
-}
+.tl-cta[data-tl-pressed] { transform: scale(0.97); }
+
 .tl-cta__label {
   position: relative;
   display: block;
@@ -66,17 +58,15 @@
   transform: translateY(-110%);
   opacity: 0;
 }
-.tl-cta[data-tl-state="lifted"] [data-line="idle"] {
-  transition-duration: 160ms;
-}
+.tl-cta[data-tl-state="lifted"] [data-line="idle"] { transition-duration: 160ms; }
 .tl-cta[data-tl-state="done"]  [data-line="done"],
-.tl-cta[data-tl-state="error"] [data-line="error"] {
-  transform: none;
-  opacity: 1;
-}
+.tl-cta[data-tl-state="error"] [data-line="error"] { transform: none; opacity: 1; }
 
-/* Brass cut-line left behind on the CTA */
-[data-tl-cta][data-tl-state]::after {
+/* Brass cut-line left on the CTA.
+   3.1: scoped to .tl-cta. On [data-tl-cta] alone it also hit size pills, which are not position:relative,
+   so the dashed box was drawn around the whole size SHEET. Size pills sit in a sheet that closes anyway.
+   If your theme already uses ::after on .tl-cta buttons, switch this rule to ::before. */
+.tl-cta[data-tl-state]::after {
   content: "";
   position: absolute;
   inset: 4px;
@@ -86,12 +76,10 @@
   pointer-events: none;
   transition: opacity 180ms linear;
 }
-[data-tl-cta][data-tl-state="lifted"]::after { opacity: 0.85; }
-[data-tl-cta][data-tl-state="error"]::after  { opacity: 0.55; }
+.tl-cta[data-tl-state="lifted"]::after { opacity: 0.85; }
+.tl-cta[data-tl-state="error"]::after  { opacity: 0.55; }
 
-/* -----------------------------------------------------------------------------
-   2. 3D Folded Garment Flyer
-   ----------------------------------------------------------------------------- */
+/* ---------- 2. 3D folded garment flyer ---------- */
 .tl-flyer {
   position: fixed;
   left: 0;
@@ -107,7 +95,7 @@
   inset: 0;
   transform-origin: 50% 50%;
   will-change: transform, opacity;
-  opacity: 0; /* revealed on lift */
+  opacity: 0;
   filter: drop-shadow(0 10px 18px rgba(27, 22, 19, 0.28));
 }
 .tl-body--lite { filter: none; }
@@ -118,52 +106,24 @@
   width: var(--tl-w, 96px);
   perspective: 640px;
 }
-.tl-stage--1 { 
-  top: 0; 
-  height: var(--tl-h, 120px); 
-}
-.tl-stage--2 { 
-  top: calc(var(--tl-h, 120px) / 2); 
-  height: calc(var(--tl-h, 120px) / 2); 
-  opacity: 0; 
-}
+.tl-stage--1 { top: 0; height: var(--tl-h, 120px); }
+.tl-stage--2 { top: calc(var(--tl-h, 120px) / 2); height: calc(var(--tl-h, 120px) / 2); opacity: 0; }
 
-/* Fold 1 (horizontal crease): bottom half stays, top half folds down */
 .tl-base {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  height: 50%;
-  overflow: hidden;
+  position: absolute; left: 0; bottom: 0; width: 100%; height: 50%; overflow: hidden;
 }
 .tl-flap {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 50%;
+  position: absolute; left: 0; top: 0; width: 100%; height: 50%;
   transform-origin: 50% 100%;
   transform-style: preserve-3d;
   transform: translateZ(0.6px) rotateX(0deg);
   will-change: transform;
 }
-
-/* Fold 2 (vertical crease): left half folds over the right half */
 .tl-base2 {
-  position: absolute;
-  right: 0;
-  top: 0;
-  width: 50%;
-  height: 100%;
-  overflow: hidden;
+  position: absolute; right: 0; top: 0; width: 50%; height: 100%; overflow: hidden;
 }
 .tl-flap2 {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 50%;
-  height: 100%;
+  position: absolute; left: 0; top: 0; width: 50%; height: 100%;
   transform-origin: 100% 50%;
   transform-style: preserve-3d;
   transform: translateZ(0.6px) rotateY(0deg);
@@ -182,7 +142,6 @@
 .tl-flap .tl-face--back  { transform: rotateX(180deg); }
 .tl-flap2 .tl-face--back { transform: rotateY(180deg); }
 
-/* Garment photo mapped seamlessly across halves */
 .tl-img {
   position: absolute;
   left: 0;
@@ -196,19 +155,12 @@
 .tl-img--top    { top: 0; }
 .tl-img--bottom { top: calc(var(--tl-h, 120px) / -2); }
 
-/* Soft cast shadow the flap casts upon folding */
 .tl-cast {
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  pointer-events: none;
+  position: absolute; inset: 0; opacity: 0; pointer-events: none;
   background: linear-gradient(180deg, rgba(27, 22, 19, 0.55), rgba(27, 22, 19, 0) 70%);
 }
-.tl-cast--h { 
-  background: linear-gradient(90deg, rgba(27, 22, 19, 0.55), rgba(27, 22, 19, 0) 70%); 
-}
+.tl-cast--h { background: linear-gradient(90deg, rgba(27, 22, 19, 0.55), rgba(27, 22, 19, 0) 70%); }
 
-/* Oxblood cupro silk lining with tailored suiting pinstripe */
 .tl-lining {
   background-color: var(--tl-lining);
   background-image:
@@ -218,18 +170,17 @@
   background-position: 0 0, 0 0;
   background-repeat: repeat, no-repeat;
 }
-.tl-lining--right { 
-  background-position: calc(var(--tl-w, 96px) / -2) 0, 0 0; 
-}
+.tl-lining--right { background-position: calc(var(--tl-w, 96px) / -2) 0, 0 0; }
 
-/* Woven bespoke label: final face of the folded suiting bundle */
+/* Woven label. 3.1 FIX: 3.0 declared `position: relative` here, which overrode .tl-face's
+   `position: absolute; inset: 0`, so the label stopped filling the flap and collapsed to a thin
+   strip. Keep it absolutely positioned; the ::before border still anchors to it. */
 .tl-label {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   background: var(--tl-paper);
-  position: relative;
   padding: 4px;
   box-sizing: border-box;
   text-align: center;
@@ -265,44 +216,25 @@
   text-transform: uppercase;
 }
 
-/* -----------------------------------------------------------------------------
-   3. Continuous Brass Thread Overlay (SVG)
-   ----------------------------------------------------------------------------- */
+/* ---------- 3. Continuous brass thread ---------- */
 .tl-thread {
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  pointer-events: none;
-  z-index: var(--tl-z-thread);
+  position: fixed; inset: 0; width: 100%; height: 100%;
+  overflow: visible; pointer-events: none; z-index: var(--tl-z-thread);
 }
 .tl-thread path {
-  fill: none;
-  stroke: var(--tl-thread);
-  stroke-width: var(--tl-thread-width);
-  stroke-linecap: round;
-  opacity: 0.95;
+  fill: none; stroke: var(--tl-thread); stroke-width: var(--tl-thread-width);
+  stroke-linecap: round; opacity: 0.95;
 }
 
-/* -----------------------------------------------------------------------------
-   4. Landing: Running-Stitch Ring, Knot, Line Sweep
-   ----------------------------------------------------------------------------- */
+/* ---------- 4. Landing: ring, knot, line sweep ---------- */
 .tl-ring {
-  position: fixed;
-  z-index: var(--tl-z-token);
-  pointer-events: none;
-  border: 1.5px dashed var(--tl-thread);
-  border-radius: 50%;
-  opacity: 0;
+  position: fixed; z-index: var(--tl-z-token); pointer-events: none;
+  border: 1.5px dashed var(--tl-thread); border-radius: 50%; opacity: 0;
   will-change: transform, opacity;
 }
 .tl-knot {
-  position: fixed;
-  z-index: var(--tl-z-token);
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
+  position: fixed; z-index: var(--tl-z-token);
+  width: 9px; height: 9px; border-radius: 50%;
   background: var(--tl-thread);
   box-shadow: 0 0 0 2px rgba(168, 134, 79, 0.28);
   pointer-events: none;
@@ -310,40 +242,17 @@
   will-change: transform, opacity;
 }
 .tl-sweep {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 1.5px;
+  position: absolute; left: 0; right: 0; bottom: 0; height: 1.5px;
   background: linear-gradient(90deg, transparent, var(--tl-thread), transparent);
-  transform-origin: 0 50%;
-  pointer-events: none;
+  transform-origin: 0 50%; pointer-events: none;
 }
 
-/* -----------------------------------------------------------------------------
-   5. Odometer Numeric Badge Roll
-   ----------------------------------------------------------------------------- */
-.tl-badge {
-  display: inline-block;
-  overflow: hidden;
-  height: 1.2em;
-  line-height: 1.2em;
-  vertical-align: middle;
-}
-.tl-badge__roll {
-  display: flex;
-  flex-direction: column;
-  will-change: transform;
-}
-.tl-badge__roll > span {
-  display: block;
-  height: 1.2em;
-  line-height: 1.2em;
-}
+/* ---------- 5. Odometer badge ---------- */
+.tl-badge { display: inline-block; overflow: hidden; height: 1.2em; line-height: 1.2em; vertical-align: middle; }
+.tl-badge__roll { display: flex; flex-direction: column; will-change: transform; }
+.tl-badge__roll > span { display: block; height: 1.2em; line-height: 1.2em; }
 
-/* -----------------------------------------------------------------------------
-   6. Tailored Receipt Card (Peek)
-   ----------------------------------------------------------------------------- */
+/* ---------- 6. Receipt card (grid quick-add finish) ---------- */
 .tl-peek {
   position: fixed;
   z-index: var(--tl-z-peek);
@@ -367,206 +276,76 @@
   }
 }
 .tl-peek__close {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 22px;
-  height: 22px;
-  padding: 0;
-  border: 0;
-  background: rgba(17, 17, 17, 0.05);
-  color: var(--color-text-subtle, #6B6B6B);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: background-color 150ms ease, color 150ms ease, transform 120ms ease;
-  z-index: 10;
+  position: absolute; top: 10px; right: 10px; width: 22px; height: 22px; padding: 0;
+  border: 0; background: rgba(17, 17, 17, 0.05); color: var(--color-text-subtle, #6B6B6B);
+  cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 50%;
+  transition: background-color 150ms ease, color 150ms ease, transform 120ms ease; z-index: 10;
 }
 .tl-peek__close:hover  { background: rgba(17, 17, 17, 0.12); color: var(--color-text, #111111); }
 .tl-peek__close:active { transform: scale(0.92); }
-.tl-peek__handle {
-  display: none;
-  width: 36px;
-  height: 4px;
-  border-radius: 999px;
-  background: rgba(17, 17, 17, 0.16);
-  margin: 0 auto 10px auto;
-}
-.tl-peek__row {
-  display: grid;
-  grid-template-columns: 56px 1fr auto;
-  gap: 12px;
-  align-items: start;
-  padding-right: 24px;
-}
+.tl-peek__handle { display: none; width: 36px; height: 4px; border-radius: 999px; background: rgba(17, 17, 17, 0.16); margin: 0 auto 10px auto; }
+.tl-peek__row { display: grid; grid-template-columns: 56px 1fr auto; gap: 12px; align-items: start; padding-right: 24px; }
 .tl-peek__img {
-  width: 56px;
-  height: 72px;
-  background-size: cover;
-  background-position: center top;
-  background-repeat: no-repeat;
-  background-color: var(--color-surface, #F5F5F5);
-  border-radius: 4px;
-  flex-shrink: 0;
+  width: 56px; height: 72px; background-size: cover; background-position: center top;
+  background-repeat: no-repeat; background-color: var(--color-surface, #F5F5F5); border-radius: 4px; flex-shrink: 0;
 }
 .tl-peek__meta { min-width: 0; }
 .tl-peek__name {
-  font-family: var(--font-display, "Inter Tight", sans-serif);
-  font-size: 0.875rem;
-  font-weight: 600;
-  line-height: 1.25;
-  color: var(--color-text, #111111);
-  margin: 0 0 2px 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-family: var(--font-display, "Inter Tight", sans-serif); font-size: 0.875rem; font-weight: 600;
+  line-height: 1.25; color: var(--color-text, #111111); margin: 0 0 2px 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.tl-peek__variant {
-  font-size: 0.75rem;
-  color: var(--color-text-subtle, #6B6B6B);
-  line-height: 1.3;
-  margin: 0;
-}
-.tl-peek__seam {
-  border-top: 1px dashed var(--tl-thread);
-  margin-top: 8px;
-  clip-path: inset(0 100% 0 0);
-}
+.tl-peek__variant { font-size: 0.75rem; color: var(--color-text-subtle, #6B6B6B); line-height: 1.3; margin: 0; }
+.tl-peek__seam { border-top: 1px dashed var(--tl-thread); margin-top: 8px; clip-path: inset(0 100% 0 0); }
 .tl-peek__price {
-  font-family: var(--font-body, "Inter", sans-serif);
-  font-size: 0.8125rem;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  color: var(--color-text, #111111);
-  text-align: right;
-  white-space: nowrap;
-  padding-top: 2px;
+  font-family: var(--font-body, "Inter", sans-serif); font-size: 0.8125rem; font-weight: 600;
+  font-variant-numeric: tabular-nums; color: var(--color-text, #111111); text-align: right; white-space: nowrap; padding-top: 2px;
 }
-.tl-peek__actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-top: 14px;
-}
+.tl-peek__actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
 .tl-peek__btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 38px;
-  padding: 0 12px;
-  font-family: var(--font-body, "Inter", sans-serif);
-  font-size: 0.8125rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  text-decoration: none;
-  cursor: pointer;
-  border-radius: 4px;
+  display: inline-flex; align-items: center; justify-content: center; height: 38px; padding: 0 12px;
+  font-family: var(--font-body, "Inter", sans-serif); font-size: 0.8125rem; font-weight: 600; letter-spacing: 0.02em;
+  text-decoration: none; cursor: pointer; border-radius: 4px;
   transition: background-color 150ms ease, color 150ms ease, transform 120ms ease;
-  user-select: none;
-  -webkit-user-select: none;
+  user-select: none; -webkit-user-select: none;
 }
 .tl-peek__btn:active { transform: scale(0.97); }
-.tl-peek__btn--secondary {
-  background: var(--color-surface, #F5F5F5);
-  color: var(--color-text, #111111);
-  border: 1px solid rgba(17, 17, 17, 0.08);
-}
+.tl-peek__btn--secondary { background: var(--color-surface, #F5F5F5); color: var(--color-text, #111111); border: 1px solid rgba(17, 17, 17, 0.08); }
 .tl-peek__btn--secondary:hover { background: #EBEBEB; }
-.tl-peek__btn--primary {
-  background: var(--color-btn-bg, #111111);
-  color: var(--color-btn-text, #FFFFFF);
-  border: 1px solid var(--color-btn-bg, #111111);
-}
+.tl-peek__btn--primary { background: var(--color-btn-bg, #111111); color: var(--color-btn-text, #FFFFFF); border: 1px solid var(--color-btn-bg, #111111); }
 .tl-peek__btn--primary:hover { background: var(--color-btn-hover-bg, #333333); }
 
-/* The auto-dismiss countdown is the thread running out */
 .tl-peek__timer {
-  position: absolute;
-  left: 14px;
-  right: 14px;
-  bottom: 7px;
-  height: 2px;
-  border-radius: 2px;
-  background: var(--tl-thread);
-  opacity: 0.85;
-  transform-origin: 0 50%;
-  pointer-events: none;
+  position: absolute; left: 14px; right: 14px; bottom: 7px; height: 2px; border-radius: 2px;
+  background: var(--tl-thread); opacity: 0.85; transform-origin: 0 50%; pointer-events: none;
 }
 
 @media (hover: none) and (pointer: coarse), (max-width: 989px) {
-  .tl-peek {
-    left: 12px;
-    right: 12px;
-    width: auto;
-    border-radius: 14px;
-  }
+  .tl-peek { left: 12px; right: 12px; width: auto; border-radius: 14px; }
   .tl-peek__handle { display: block; }
 }
 
-/* -----------------------------------------------------------------------------
-   7. Sticky Mobile Dock Bag Target
-   ----------------------------------------------------------------------------- */
+/* ---------- 7. Bag targets ---------- */
 .pdp-dock__bag {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  width: 44px;
-  height: 44px;
-  flex-shrink: 0;
-  color: var(--pdp-ink, #111111);
-  border: 1px solid var(--pdp-line, oklch(0 0 0 / 0.12));
-  background: var(--pdp-paper, #FFFFFF);
-  text-decoration: none;
-  transition: transform 120ms ease, background-color 150ms ease;
-  transform-origin: 50% 85%;
+  display: inline-flex; align-items: center; justify-content: center; position: relative;
+  width: 44px; height: 44px; flex-shrink: 0; color: var(--pdp-ink, #111111);
+  border: 1px solid var(--pdp-line, oklch(0 0 0 / 0.12)); background: var(--pdp-paper, #FFFFFF);
+  text-decoration: none; transition: transform 120ms ease, background-color 150ms ease; transform-origin: 50% 85%;
 }
 .pdp-dock__bag:active { transform: scale(0.94); }
 .pdp-dock__bag-badge {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  font-size: 10px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  background: var(--color-btn-bg, #111111);
-  color: var(--color-btn-text, #FFFFFF);
-  padding: 1px 4px;
-  line-height: 1.1;
-  border-radius: 2px;
+  position: absolute; top: -4px; right: -4px; font-size: 10px; font-weight: 600;
+  font-variant-numeric: tabular-nums; background: var(--color-btn-bg, #111111);
+  color: var(--color-btn-text, #FFFFFF); padding: 1px 4px; line-height: 1.1; border-radius: 2px;
 }
+[data-tl-bag], .header__cart-btn { transform-origin: 50% 85%; }
 
-/* Header Bag target origin */
-[data-tl-bag], .header__cart-btn {
-  transform-origin: 50% 85%;
-}
-
-/* -----------------------------------------------------------------------------
-   8. Accessibility & Reduced Motion
-   ----------------------------------------------------------------------------- */
+/* ---------- 8. Accessibility ---------- */
 .tl-sr {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
 }
 @media (prefers-reduced-motion: reduce) {
-  .tl-flyer,
-  .tl-thread,
-  .tl-ring,
-  .tl-knot {
-    display: none !important;
-  }
-  .tl-cta,
-  .tl-cta__line,
-  [data-tl-cta][data-tl-state]::after {
-    transition-duration: 0.01ms !important;
-  }
+  .tl-flyer, .tl-thread, .tl-ring, .tl-knot { display: none !important; }
+  .tl-cta, .tl-cta__line, .tl-cta[data-tl-state]::after { transition-duration: 0.01ms !important; }
 }
