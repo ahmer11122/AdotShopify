@@ -88,19 +88,35 @@
   };
 
   /* ---------- one scroll lock for everything ---------- */
+  /* Freeze the page in place (position:fixed + restore scrollY) so opening a
+     drawer never jumps the viewport — overflow:hidden alone does that on mobile. */
   var locks = {};
+  var lockedScrollY = 0;
   function applyLock() {
     var html = document.documentElement;
+    var body = document.body;
     var on = Object.keys(locks).length > 0;
     if (on && !html.hasAttribute('data-adot-locked')) {
+      lockedScrollY = window.scrollY || window.pageYOffset || 0;
       var gap = window.innerWidth - html.clientWidth;
       html.style.overflow = 'hidden';
       if (gap > 0) html.style.paddingRight = gap + 'px';
+      body.style.position = 'fixed';
+      body.style.top = '-' + lockedScrollY + 'px';
+      body.style.left = '0';
+      body.style.right = '0';
+      body.style.width = '100%';
       html.setAttribute('data-adot-locked', '');
     } else if (!on && html.hasAttribute('data-adot-locked')) {
       html.style.overflow = '';
       html.style.paddingRight = '';
+      body.style.position = '';
+      body.style.top = '';
+      body.style.left = '';
+      body.style.right = '';
+      body.style.width = '';
       html.removeAttribute('data-adot-locked');
+      window.scrollTo(0, lockedScrollY);
     }
   }
   AdotUI.lock = function (name) {

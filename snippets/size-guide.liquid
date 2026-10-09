@@ -603,12 +603,14 @@
 </dialog>
 
 <style>
-  /* The dialog is a full-screen transparent shell. The sheet inside is what you see. */
+  /* The dialog is a full-screen transparent shell. The sheet inside is what you see.
+     Scroll lock is handled in JS (AdotUI.lock) so the page does not jump on open. */
   .sg {
     position: fixed;
     inset: 0;
     width: 100%;
     height: 100%;
+    height: 100dvh;
     max-width: none;
     max-height: none;
     margin: 0;
@@ -617,15 +619,18 @@
     background: transparent;
     color: var(--pdp-ink, #111);
     overflow: hidden;
+    overscroll-behavior: none;
     z-index: 9999;
-    transition: display 340ms allow-discrete, overlay 340ms allow-discrete;
+    transition: display 380ms allow-discrete, overlay 380ms allow-discrete;
   }
 
   .sg::backdrop {
     background: oklch(0 0 0 / 0);
     backdrop-filter: blur(0px);
     -webkit-backdrop-filter: blur(0px);
-    transition: background-color 340ms cubic-bezier(0.23, 1, 0.32, 1), backdrop-filter 340ms cubic-bezier(0.23, 1, 0.32, 1);
+    transition:
+      background-color 380ms var(--ease-drawer, cubic-bezier(0.32, 0.72, 0, 1)),
+      backdrop-filter 380ms var(--ease-drawer, cubic-bezier(0.32, 0.72, 0, 1));
   }
 
   .sg[open]::backdrop {
@@ -642,18 +647,15 @@
     }
   }
 
-  html:has(.sg[open]) {
-    overflow: hidden;
-  }
-
   .sg__sheet {
     position: absolute;
     display: flex;
     flex-direction: column;
     background: var(--pdp-paper, #fff);
     font-family: var(--pdp-font, inherit);
-    transition: transform 340ms var(--pdp-ease, cubic-bezier(0.23, 1, 0.32, 1));
+    transition: transform 380ms var(--ease-drawer, cubic-bezier(0.32, 0.72, 0, 1));
     will-change: transform;
+    backface-visibility: hidden;
   }
 
   .sg__sheet.is-dragging {
@@ -667,19 +669,19 @@
       left: 0;
       right: 0;
       bottom: 0;
-      max-height: 85dvh;
+      max-height: min(85dvh, 100%);
       border-radius: 16px 16px 0 0;
       padding-bottom: env(safe-area-inset-bottom, 0px);
-      transform: translateY(100%);
+      transform: translate3d(0, 100%, 0);
     }
 
     .sg[open] .sg__sheet {
-      transform: translateY(0);
+      transform: translate3d(0, 0, 0);
     }
 
     @starting-style {
       .sg[open] .sg__sheet {
-        transform: translateY(100%);
+        transform: translate3d(0, 100%, 0);
       }
     }
   }
@@ -691,16 +693,16 @@
       right: 0;
       bottom: 0;
       width: min(34rem, 100%);
-      transform: translateX(100%);
+      transform: translate3d(100%, 0, 0);
     }
 
     .sg[open] .sg__sheet {
-      transform: translateX(0);
+      transform: translate3d(0, 0, 0);
     }
 
     @starting-style {
       .sg[open] .sg__sheet {
-        transform: translateX(100%);
+        transform: translate3d(100%, 0, 0);
       }
     }
   }
@@ -1172,15 +1174,51 @@
     });
 
     /* ------------------------------------------------------------ open / close */
+    /* Lock scroll BEFORE showModal so the page never jumps under the sheet.
+       Unlock after the exit transition so the frozen page stays put while it leaves. */
+    let unlockTimer = 0;
+
+    function lockPage() {
+      if (window.AdotUI && typeof window.AdotUI.lock === 'function') {
+        window.AdotUI.lock('size-guide');
+      }
+    }
+
+    function unlockPage() {
+      if (window.AdotUI && typeof window.AdotUI.unlock === 'function') {
+        window.AdotUI.unlock('size-guide');
+      }
+    }
+
     function open(trigger) {
       productCat = (trigger && trigger.dataset.sizeCategory) || productCat || (panels[0] && panels[0].dataset.panel);
       setCategory(productCat, false);
       setUnit(dialog.dataset.unit || 'cm');
-      if (!dialog.open) dialog.showModal();
+      if (dialog.open) return;
+      window.clearTimeout(unlockTimer);
+      lockPage();
+      dialog.showModal();
+      /* Keep focus in the sheet without scrolling the frozen page behind it. */
+      const closeBtn = dialog.querySelector('[data-close-size-guide]');
+      if (closeBtn && typeof closeBtn.focus === 'function') {
+        try {
+          closeBtn.focus({ preventScroll: true });
+        } catch (err) {
+          closeBtn.focus();
+        }
+      }
       requestAnimationFrame(() => {
         moveAllThumbs(true);
       });
     }
+
+    dialog.addEventListener('close', () => {
+      window.clearTimeout(unlockTimer);
+      const delay = reduce.matches ? 0 : 400;
+      unlockTimer = window.setTimeout(() => {
+        if (!dialog.open) unlockPage();
+      }, delay);
+    });
 
     dialog.addEventListener('click', (e) => {
       if (e.target === dialog) dialog.close();
@@ -1215,7 +1253,7 @@
         drag.v = (e.clientY - drag.last) / Math.max(1, now - drag.lastT);
         drag.last = e.clientY;
         drag.lastT = now;
-        sheet.style.transform = 'translateY(' + drag.dy + 'px)';
+        sheet.style.transform = 'translate3d(0, ' + drag.dy + 'px, 0)';
       });
 
       const end = () => {
