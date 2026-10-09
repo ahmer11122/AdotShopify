@@ -1,8 +1,8 @@
 {% doc %}
-  Size Guide — Clean Minimalist Table (Zero-Jerk & Horizontal Scroll)
+  Size Guide — Clean Minimalist Table (100% Fit & No Horizontal Scroll Desktop + Mobile)
 
   - Native <dialog> with zero-jerk scroll stability (tabindex="-1" autofocus prevents off-screen focus jump).
-  - Horizontal swipeable table (.sg__table-wrap) for seamless left-right scrolling across all screen sizes.
+  - 100% responsive fixed-layout table that fits cleanly on Desktop & Mobile with zero horizontal scroll.
   - Pure measurement matrix without action buttons or sold-out clutter.
   - Active size row automatically highlighted based on current PDP variant.
   - cm / in flips each number in place.
@@ -74,61 +74,66 @@
         aria-labelledby="SgTab-hoodies"
         data-panel="hoodies"
       >
-        <div class="sg__table-wrap" tabindex="0" aria-label="Hoodies size chart scrollable table">
-          <table class="sg__table">
-            <thead>
-              <tr>
-                <th scope="col" class="sg__th-sticky">Size</th>
-                <th scope="col">
-                  Chest
-                  <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
-                </th>
-                <th scope="col">
-                  Length
-                  <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
-                </th>
-                <th scope="col">
-                  Shoulder
-                  <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
-                </th>
-                <th scope="col">
-                  Sleeve
-                  <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="sg__row" data-keys="M">
-                <th scope="row" class="sg__th-sticky"><span class="sg__size">M</span></th>
-                <td><span class="sg__num"><span class="sg__cm">55</span><span class="sg__in" aria-hidden="true">21.7</span></span></td>
-                <td><span class="sg__num"><span class="sg__cm">68</span><span class="sg__in" aria-hidden="true">26.8</span></span></td>
-                <td><span class="sg__num"><span class="sg__cm">50</span><span class="sg__in" aria-hidden="true">19.7</span></span></td>
-                <td><span class="sg__num"><span class="sg__cm">87</span><span class="sg__in" aria-hidden="true">34.3</span></span></td>
-              </tr>
-              <tr class="sg__row" data-keys="L">
-                <th scope="row" class="sg__th-sticky"><span class="sg__size">L</span></th>
-                <td><span class="sg__num"><span class="sg__cm">58</span><span class="sg__in" aria-hidden="true">22.8</span></span></td>
-                <td><span class="sg__num"><span class="sg__cm">70</span><span class="sg__in" aria-hidden="true">27.6</span></span></td>
-                <td><span class="sg__num"><span class="sg__cm">52</span><span class="sg__in" aria-hidden="true">20.5</span></span></td>
-                <td><span class="sg__num"><span class="sg__cm">89</span><span class="sg__in" aria-hidden="true">35.0</span></span></td>
-              </tr>
-              <tr class="sg__row" data-keys="XL">
-                <th scope="row" class="sg__th-sticky"><span class="sg__size">XL</span></th>
-                <td><span class="sg__num"><span class="sg__cm">61</span><span class="sg__in" aria-hidden="true">24.0</span></span></td>
-                <td><span class="sg__num"><span class="sg__cm">72</span><span class="sg__in" aria-hidden="true">28.3</span></span></td>
-                <td><span class="sg__num"><span class="sg__cm">54</span><span class="sg__in" aria-hidden="true">21.3</span></span></td>
-                <td><span class="sg__num"><span class="sg__cm">91</span><span class="sg__in" aria-hidden="true">35.8</span></span></td>
-              </tr>
-              <tr class="sg__row" data-keys="XXL">
-                <th scope="row" class="sg__th-sticky"><span class="sg__size">XXL</span></th>
-                <td><span class="sg__num"><span class="sg__cm">64</span><span class="sg__in" aria-hidden="true">25.2</span></span></td>
-                <td><span class="sg__num"><span class="sg__cm">74</span><span class="sg__in" aria-hidden="true">29.1</span></span></td>
-                <td><span class="sg__num"><span class="sg__cm">56</span><span class="sg__in" aria-hidden="true">22.0</span></span></td>
-                <td><span class="sg__num"><span class="sg__cm">93</span><span class="sg__in" aria-hidden="true">36.6</span></span></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <table class="sg__table">
+          <colgroup>
+            <col style="width: 18%;">
+            <col style="width: 20.5%;">
+            <col style="width: 20.5%;">
+            <col style="width: 20.5%;">
+            <col style="width: 20.5%;">
+          </colgroup>
+          <thead>
+            <tr>
+              <th scope="col">Size</th>
+              <th scope="col">
+                Chest
+                <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
+              </th>
+              <th scope="col">
+                Length
+                <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
+              </th>
+              <th scope="col">
+                Shoulder
+                <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
+              </th>
+              <th scope="col">
+                Sleeve
+                <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="sg__row" data-keys="M">
+              <th scope="row"><span class="sg__size">M</span></th>
+              <td><span class="sg__num"><span class="sg__cm">55</span><span class="sg__in" aria-hidden="true">21.7</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">68</span><span class="sg__in" aria-hidden="true">26.8</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">50</span><span class="sg__in" aria-hidden="true">19.7</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">87</span><span class="sg__in" aria-hidden="true">34.3</span></span></td>
+            </tr>
+            <tr class="sg__row" data-keys="L">
+              <th scope="row"><span class="sg__size">L</span></th>
+              <td><span class="sg__num"><span class="sg__cm">58</span><span class="sg__in" aria-hidden="true">22.8</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">70</span><span class="sg__in" aria-hidden="true">27.6</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">52</span><span class="sg__in" aria-hidden="true">20.5</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">89</span><span class="sg__in" aria-hidden="true">35.0</span></span></td>
+            </tr>
+            <tr class="sg__row" data-keys="XL">
+              <th scope="row"><span class="sg__size">XL</span></th>
+              <td><span class="sg__num"><span class="sg__cm">61</span><span class="sg__in" aria-hidden="true">24.0</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">72</span><span class="sg__in" aria-hidden="true">28.3</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">54</span><span class="sg__in" aria-hidden="true">21.3</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">91</span><span class="sg__in" aria-hidden="true">35.8</span></span></td>
+            </tr>
+            <tr class="sg__row" data-keys="XXL">
+              <th scope="row"><span class="sg__size">XXL</span></th>
+              <td><span class="sg__num"><span class="sg__cm">64</span><span class="sg__in" aria-hidden="true">25.2</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">74</span><span class="sg__in" aria-hidden="true">29.1</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">56</span><span class="sg__in" aria-hidden="true">22.0</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">93</span><span class="sg__in" aria-hidden="true">36.6</span></span></td>
+            </tr>
+          </tbody>
+        </table>
         <p class="sg__note">Laid flat, relaxed. Chest is half-chest width. Sleeve measured from center back. Fits true to size for a relaxed silhouette.</p>
       </section>
 
@@ -141,61 +146,66 @@
         data-panel="sweatshirts"
         hidden
       >
-        <div class="sg__table-wrap" tabindex="0" aria-label="Sweatshirts size chart scrollable table">
-          <table class="sg__table">
-            <thead>
-              <tr>
-                <th scope="col" class="sg__th-sticky">Size</th>
-                <th scope="col">
-                  Chest
-                  <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
-                </th>
-                <th scope="col">
-                  Length
-                  <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
-                </th>
-                <th scope="col">
-                  Shoulder
-                  <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
-                </th>
-                <th scope="col">
-                  Sleeve
-                  <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="sg__row" data-keys="M">
-                <th scope="row" class="sg__th-sticky"><span class="sg__size">M</span></th>
-                <td><span class="sg__num"><span class="sg__cm">55</span><span class="sg__in" aria-hidden="true">21.7</span></span></td>
-                <td><span class="sg__num"><span class="sg__cm">68</span><span class="sg__in" aria-hidden="true">26.8</span></span></td>
-                <td><span class="sg__num"><span class="sg__cm">50</span><span class="sg__in" aria-hidden="true">19.7</span></span></td>
-                <td><span class="sg__num"><span class="sg__cm">87</span><span class="sg__in" aria-hidden="true">34.3</span></span></td>
-              </tr>
-              <tr class="sg__row" data-keys="L">
-                <th scope="row" class="sg__th-sticky"><span class="sg__size">L</span></th>
-                <td><span class="sg__num"><span class="sg__cm">58</span><span class="sg__in" aria-hidden="true">22.8</span></span></td>
-                <td><span class="sg__num"><span class="sg__cm">70</span><span class="sg__in" aria-hidden="true">27.6</span></span></td>
-                <td><span class="sg__num"><span class="sg__cm">52</span><span class="sg__in" aria-hidden="true">20.5</span></span></td>
-                <td><span class="sg__num"><span class="sg__cm">89</span><span class="sg__in" aria-hidden="true">35.0</span></span></td>
-              </tr>
-              <tr class="sg__row" data-keys="XL">
-                <th scope="row" class="sg__th-sticky"><span class="sg__size">XL</span></th>
-                <td><span class="sg__num"><span class="sg__cm">61</span><span class="sg__in" aria-hidden="true">24.0</span></span></td>
-                <td><span class="sg__num"><span class="sg__cm">72</span><span class="sg__in" aria-hidden="true">28.3</span></span></td>
-                <td><span class="sg__num"><span class="sg__cm">54</span><span class="sg__in" aria-hidden="true">21.3</span></span></td>
-                <td><span class="sg__num"><span class="sg__cm">91</span><span class="sg__in" aria-hidden="true">35.8</span></span></td>
-              </tr>
-              <tr class="sg__row" data-keys="XXL">
-                <th scope="row" class="sg__th-sticky"><span class="sg__size">XXL</span></th>
-                <td><span class="sg__num"><span class="sg__cm">64</span><span class="sg__in" aria-hidden="true">25.2</span></span></td>
-                <td><span class="sg__num"><span class="sg__cm">74</span><span class="sg__in" aria-hidden="true">29.1</span></span></td>
-                <td><span class="sg__num"><span class="sg__cm">56</span><span class="sg__in" aria-hidden="true">22.0</span></span></td>
-                <td><span class="sg__num"><span class="sg__cm">93</span><span class="sg__in" aria-hidden="true">36.6</span></span></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <table class="sg__table">
+          <colgroup>
+            <col style="width: 18%;">
+            <col style="width: 20.5%;">
+            <col style="width: 20.5%;">
+            <col style="width: 20.5%;">
+            <col style="width: 20.5%;">
+          </colgroup>
+          <thead>
+            <tr>
+              <th scope="col">Size</th>
+              <th scope="col">
+                Chest
+                <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
+              </th>
+              <th scope="col">
+                Length
+                <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
+              </th>
+              <th scope="col">
+                Shoulder
+                <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
+              </th>
+              <th scope="col">
+                Sleeve
+                <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="sg__row" data-keys="M">
+              <th scope="row"><span class="sg__size">M</span></th>
+              <td><span class="sg__num"><span class="sg__cm">55</span><span class="sg__in" aria-hidden="true">21.7</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">68</span><span class="sg__in" aria-hidden="true">26.8</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">50</span><span class="sg__in" aria-hidden="true">19.7</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">87</span><span class="sg__in" aria-hidden="true">34.3</span></span></td>
+            </tr>
+            <tr class="sg__row" data-keys="L">
+              <th scope="row"><span class="sg__size">L</span></th>
+              <td><span class="sg__num"><span class="sg__cm">58</span><span class="sg__in" aria-hidden="true">22.8</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">70</span><span class="sg__in" aria-hidden="true">27.6</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">52</span><span class="sg__in" aria-hidden="true">20.5</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">89</span><span class="sg__in" aria-hidden="true">35.0</span></span></td>
+            </tr>
+            <tr class="sg__row" data-keys="XL">
+              <th scope="row"><span class="sg__size">XL</span></th>
+              <td><span class="sg__num"><span class="sg__cm">61</span><span class="sg__in" aria-hidden="true">24.0</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">72</span><span class="sg__in" aria-hidden="true">28.3</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">54</span><span class="sg__in" aria-hidden="true">21.3</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">91</span><span class="sg__in" aria-hidden="true">35.8</span></span></td>
+            </tr>
+            <tr class="sg__row" data-keys="XXL">
+              <th scope="row"><span class="sg__size">XXL</span></th>
+              <td><span class="sg__num"><span class="sg__cm">64</span><span class="sg__in" aria-hidden="true">25.2</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">74</span><span class="sg__in" aria-hidden="true">29.1</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">56</span><span class="sg__in" aria-hidden="true">22.0</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">93</span><span class="sg__in" aria-hidden="true">36.6</span></span></td>
+            </tr>
+          </tbody>
+        </table>
         <p class="sg__note">Same chart as hoodies. Laid flat, relaxed. Chest is half-chest width. Sleeve measured from center back.</p>
       </section>
 
@@ -208,61 +218,66 @@
         data-panel="trousers"
         hidden
       >
-        <div class="sg__table-wrap" tabindex="0" aria-label="Trousers size chart scrollable table">
-          <table class="sg__table">
-            <thead>
-              <tr>
-                <th scope="col" class="sg__th-sticky">Size</th>
-                <th scope="col">
-                  Waist
-                  <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
-                </th>
-                <th scope="col">
-                  Inseam
-                  <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
-                </th>
-                <th scope="col">
-                  Rise
-                  <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
-                </th>
-                <th scope="col">
-                  Opening
-                  <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="sg__row" data-keys="30|S">
-                <th scope="row" class="sg__th-sticky"><span class="sg__size">30 (S)</span></th>
-                <td><span class="sg__num"><span class="sg__cm">78</span><span class="sg__in" aria-hidden="true">30.7</span></span></td>
-                <td><span class="sg__num"><span class="sg__cm">76</span><span class="sg__in" aria-hidden="true">29.9</span></span></td>
-                <td><span class="sg__num"><span class="sg__cm">30</span><span class="sg__in" aria-hidden="true">11.8</span></span></td>
-                <td><span class="sg__num"><span class="sg__cm">22</span><span class="sg__in" aria-hidden="true">8.7</span></span></td>
-              </tr>
-              <tr class="sg__row" data-keys="32|M">
-                <th scope="row" class="sg__th-sticky"><span class="sg__size">32 (M)</span></th>
-                <td><span class="sg__num"><span class="sg__cm">83</span><span class="sg__in" aria-hidden="true">32.7</span></span></td>
-                <td><span class="sg__num"><span class="sg__cm">77</span><span class="sg__in" aria-hidden="true">30.3</span></span></td>
-                <td><span class="sg__num"><span class="sg__cm">31</span><span class="sg__in" aria-hidden="true">12.2</span></span></td>
-                <td><span class="sg__num"><span class="sg__cm">23</span><span class="sg__in" aria-hidden="true">9.1</span></span></td>
-              </tr>
-              <tr class="sg__row" data-keys="34|L">
-                <th scope="row" class="sg__th-sticky"><span class="sg__size">34 (L)</span></th>
-                <td><span class="sg__num"><span class="sg__cm">88</span><span class="sg__in" aria-hidden="true">34.6</span></span></td>
-                <td><span class="sg__num"><span class="sg__cm">78</span><span class="sg__in" aria-hidden="true">30.7</span></span></td>
-                <td><span class="sg__num"><span class="sg__cm">32</span><span class="sg__in" aria-hidden="true">12.6</span></span></td>
-                <td><span class="sg__num"><span class="sg__cm">24</span><span class="sg__in" aria-hidden="true">9.4</span></span></td>
-              </tr>
-              <tr class="sg__row" data-keys="36|XL">
-                <th scope="row" class="sg__th-sticky"><span class="sg__size">36 (XL)</span></th>
-                <td><span class="sg__num"><span class="sg__cm">93</span><span class="sg__in" aria-hidden="true">36.6</span></span></td>
-                <td><span class="sg__num"><span class="sg__cm">79</span><span class="sg__in" aria-hidden="true">31.1</span></span></td>
-                <td><span class="sg__num"><span class="sg__cm">33</span><span class="sg__in" aria-hidden="true">13.0</span></span></td>
-                <td><span class="sg__num"><span class="sg__cm">25</span><span class="sg__in" aria-hidden="true">9.8</span></span></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <table class="sg__table">
+          <colgroup>
+            <col style="width: 24%;">
+            <col style="width: 19%;">
+            <col style="width: 19%;">
+            <col style="width: 19%;">
+            <col style="width: 19%;">
+          </colgroup>
+          <thead>
+            <tr>
+              <th scope="col">Size</th>
+              <th scope="col">
+                Waist
+                <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
+              </th>
+              <th scope="col">
+                Inseam
+                <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
+              </th>
+              <th scope="col">
+                Rise
+                <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
+              </th>
+              <th scope="col">
+                Opening
+                <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="sg__row" data-keys="30|S">
+              <th scope="row"><span class="sg__size">30 (S)</span></th>
+              <td><span class="sg__num"><span class="sg__cm">78</span><span class="sg__in" aria-hidden="true">30.7</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">76</span><span class="sg__in" aria-hidden="true">29.9</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">30</span><span class="sg__in" aria-hidden="true">11.8</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">22</span><span class="sg__in" aria-hidden="true">8.7</span></span></td>
+            </tr>
+            <tr class="sg__row" data-keys="32|M">
+              <th scope="row"><span class="sg__size">32 (M)</span></th>
+              <td><span class="sg__num"><span class="sg__cm">83</span><span class="sg__in" aria-hidden="true">32.7</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">77</span><span class="sg__in" aria-hidden="true">30.3</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">31</span><span class="sg__in" aria-hidden="true">12.2</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">23</span><span class="sg__in" aria-hidden="true">9.1</span></span></td>
+            </tr>
+            <tr class="sg__row" data-keys="34|L">
+              <th scope="row"><span class="sg__size">34 (L)</span></th>
+              <td><span class="sg__num"><span class="sg__cm">88</span><span class="sg__in" aria-hidden="true">34.6</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">78</span><span class="sg__in" aria-hidden="true">30.7</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">32</span><span class="sg__in" aria-hidden="true">12.6</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">24</span><span class="sg__in" aria-hidden="true">9.4</span></span></td>
+            </tr>
+            <tr class="sg__row" data-keys="36|XL">
+              <th scope="row"><span class="sg__size">36 (XL)</span></th>
+              <td><span class="sg__num"><span class="sg__cm">93</span><span class="sg__in" aria-hidden="true">36.6</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">79</span><span class="sg__in" aria-hidden="true">31.1</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">33</span><span class="sg__in" aria-hidden="true">13.0</span></span></td>
+              <td><span class="sg__num"><span class="sg__cm">25</span><span class="sg__in" aria-hidden="true">9.8</span></span></td>
+            </tr>
+          </tbody>
+        </table>
         <p class="sg__note">Relaxed straight leg with a tailored waistband. Order your standard waist size.</p>
       </section>
     </div>
@@ -271,7 +286,7 @@
 
 <style>
   /* -------------------------------------------------------------------------
-     SIZE GUIDE STYLES — CLEAN MINIMALIST (ZERO-JERK & SWIPEABLE)
+     SIZE GUIDE STYLES — 100% RESPONSIVE FIT (ZERO HORIZONTAL SCROLL)
      ------------------------------------------------------------------------- */
   .sg {
     position: fixed;
@@ -394,13 +409,13 @@
     align-items: flex-start;
     justify-content: space-between;
     gap: 1rem;
-    padding: clamp(1.25rem, 3vw, 2rem) clamp(1.25rem, 3vw, 2rem) 0;
+    padding: clamp(1rem, 2.5vw, 1.75rem) clamp(1rem, 2.5vw, 1.75rem) 0;
   }
 
   .sg__title {
     margin: 0;
     font-family: var(--pdp-font-display, inherit);
-    font-size: clamp(1.875rem, 5vw, 2.5rem);
+    font-size: clamp(1.625rem, 4.5vw, 2.25rem);
     font-weight: 500;
     line-height: 1;
     letter-spacing: -0.04em;
@@ -408,7 +423,7 @@
   }
 
   .sg__sub {
-    margin: 0.5rem 0 0;
+    margin: 0.375rem 0 0;
     font-size: var(--pdp-fs-small, 0.8125rem);
     color: var(--pdp-ink-3, #6b6b6b);
   }
@@ -417,9 +432,9 @@
     display: grid;
     place-items: center;
     flex-shrink: 0;
-    width: 44px;
-    height: 44px;
-    margin: -0.5rem -0.75rem 0 0;
+    width: 40px;
+    height: 40px;
+    margin: -0.375rem -0.5rem 0 0;
     border: 0;
     background: none;
     color: inherit;
@@ -453,7 +468,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 0.75rem;
-    padding: 1.25rem clamp(1.25rem, 3vw, 2rem) 0;
+    padding: 1rem clamp(1rem, 2.5vw, 1.75rem) 0;
   }
 
   .sg__seg {
@@ -485,13 +500,13 @@
   .sg__seg button {
     position: relative;
     z-index: 1;
-    min-height: 2.25rem;
-    padding: 0 1rem;
+    min-height: 2.125rem;
+    padding: 0 0.875rem;
     border: 0;
     background: none;
     color: var(--pdp-ink-3, #6b6b6b);
     font-family: var(--pdp-font, inherit);
-    font-size: var(--pdp-fs-ui, 0.875rem);
+    font-size: var(--pdp-fs-ui, 0.8125rem);
     font-weight: 500;
     cursor: pointer;
     touch-action: manipulation;
@@ -511,79 +526,56 @@
     flex: 1;
     min-height: 0;
     overflow-y: auto;
+    overflow-x: hidden;
     overscroll-behavior: contain;
-    padding: 1.5rem clamp(1.25rem, 3vw, 2rem) clamp(1.5rem, 3vw, 2.5rem);
+    padding: 1.25rem clamp(1rem, 2.5vw, 1.75rem) clamp(1.25rem, 2.5vw, 2rem);
   }
 
-  /* Scrollable Table Wrapper */
-  .sg__table-wrap {
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior-x: contain;
-    padding-bottom: 0.25rem;
-    /* subtle custom scrollbar for horizontal swipe */
-    scrollbar-width: thin;
-    scrollbar-color: var(--pdp-line-2, #ccc) transparent;
-  }
-
-  .sg__table-wrap::-webkit-scrollbar {
-    height: 4px;
-  }
-
-  .sg__table-wrap::-webkit-scrollbar-thumb {
-    background: var(--pdp-line-2, #ccc);
-    border-radius: 2px;
-  }
-
+  /* 100% Width Table — No Horizontal Scroll on Desktop or Mobile */
   .sg__table {
     width: 100%;
-    min-width: 380px;
+    table-layout: fixed;
     border-collapse: collapse;
     font-variant-numeric: tabular-nums;
+    margin: 0;
   }
 
   .sg__table th {
-    padding: 0 1rem 0.75rem 0.75rem;
-    text-align: left;
+    padding: 0 4px 0.625rem 4px;
+    text-align: right;
     vertical-align: bottom;
-    font-size: var(--pdp-fs-small, 0.8125rem);
+    font-size: clamp(0.6875rem, 2.5vw, 0.75rem);
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.03em;
     color: var(--pdp-ink-3, #6b6b6b);
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: clip;
   }
 
   .sg__table td {
-    padding: 0 1rem 0 0.75rem;
-    font-size: var(--pdp-fs-body, 0.9375rem);
+    padding: 0 4px;
+    text-align: right;
+    font-size: clamp(0.8125rem, 3.2vw, 0.9375rem);
     color: var(--pdp-ink, #111);
     white-space: nowrap;
   }
 
-  /* Sticky first column (Size) so it stays pinned during horizontal scroll */
-  .sg__th-sticky {
-    position: sticky;
-    left: 0;
-    z-index: 2;
-    background: var(--pdp-paper, #fff);
-    width: 4.5rem;
-    min-width: 4.5rem;
+  /* First column (Size) aligned left */
+  .sg__table th:first-child,
+  .sg__table td:first-child {
+    text-align: left;
+    padding-left: 0.25rem;
   }
 
-  .sg__row.is-yours .sg__th-sticky {
-    background: var(--pdp-sunk, #f5f5f5);
-  }
-
-  @media (hover: hover) and (pointer: fine) {
-    .sg__row:hover .sg__th-sticky {
-      background: var(--pdp-sunk, #f5f5f5);
-    }
+  .sg__table th:last-child,
+  .sg__table td:last-child {
+    padding-right: 0.25rem;
   }
 
   .sg__row > * {
-    height: 3.5rem;
+    height: 3.25rem;
     border-top: 1px solid var(--pdp-line, oklch(0 0 0 / 0.1));
     transition: background-color 180ms ease;
   }
@@ -594,11 +586,34 @@
 
   .sg__size {
     font-family: var(--pdp-font-display, inherit);
-    font-size: 1.125rem;
+    font-size: clamp(0.9375rem, 3.5vw, 1.125rem);
     font-weight: 600;
     letter-spacing: -0.02em;
     white-space: nowrap;
     color: var(--pdp-ink, #111);
+  }
+
+  /* Desktop generous spacing */
+  @media (min-width: 990px) {
+    .sg__table th {
+      padding: 0 0.75rem 0.75rem;
+      font-size: 0.8125rem;
+    }
+    .sg__table td {
+      padding: 0 0.75rem;
+      font-size: 0.9375rem;
+    }
+    .sg__table th:first-child,
+    .sg__table td:first-child {
+      padding-left: 0.75rem;
+    }
+    .sg__table th:last-child,
+    .sg__table td:last-child {
+      padding-right: 0.75rem;
+    }
+    .sg__row > * {
+      height: 3.5rem;
+    }
   }
 
   @media (hover: hover) and (pointer: fine) {
@@ -633,7 +648,8 @@
   }
 
   .sg__unit {
-    margin-left: 0.25rem;
+    margin-left: 0.125rem;
+    font-size: 0.625rem;
     font-weight: 400;
   }
 
