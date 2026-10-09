@@ -148,6 +148,7 @@
                 <li><a href="{{ link.url }}" class="footer__link"><span class="footer__roll"><span class="footer__roll-a">{{ link.title }}</span><span class="footer__roll-b" aria-hidden="true">{{ link.title }}</span></span></a></li>
               {%- endfor -%}
             {%- else -%}
+              <li><a href="{{ routes.root_url }}pages/about" class="footer__link"><span class="footer__roll"><span class="footer__roll-a">About</span><span class="footer__roll-b" aria-hidden="true">About</span></span></a></li>
               <li><a href="{{ routes.root_url }}pages/size-guide" class="footer__link"><span class="footer__roll"><span class="footer__roll-a">Size Guide</span><span class="footer__roll-b" aria-hidden="true">Size Guide</span></span></a></li>
               <li><a href="{{ routes.root_url }}pages/shipping-delivery" class="footer__link"><span class="footer__roll"><span class="footer__roll-a">Shipping &amp; Exchanges</span><span class="footer__roll-b" aria-hidden="true">Shipping &amp; Exchanges</span></span></a></li>
               <li><a href="{{ routes.root_url }}pages/faq" class="footer__link"><span class="footer__roll"><span class="footer__roll-a">FAQs</span><span class="footer__roll-b" aria-hidden="true">FAQs</span></span></a></li>
@@ -213,6 +214,21 @@
             {%- for link in social.links -%}
               <li><a href="{{ link.url }}" class="footer__mini" target="_blank" rel="noopener noreferrer">{{ link.title }}</a></li>
             {%- endfor -%}
+          </ul>
+        {%- elsif settings.social_instagram_url != blank or settings.social_facebook_url != blank or settings.social_tiktok_url != blank or settings.social_youtube_url != blank -%}
+          <ul class="footer__social" aria-label="Social">
+            {%- if settings.social_instagram_url != blank -%}
+              <li><a href="{{ settings.social_instagram_url }}" class="footer__mini" target="_blank" rel="noopener noreferrer">Instagram</a></li>
+            {%- endif -%}
+            {%- if settings.social_facebook_url != blank -%}
+              <li><a href="{{ settings.social_facebook_url }}" class="footer__mini" target="_blank" rel="noopener noreferrer">Facebook</a></li>
+            {%- endif -%}
+            {%- if settings.social_tiktok_url != blank -%}
+              <li><a href="{{ settings.social_tiktok_url }}" class="footer__mini" target="_blank" rel="noopener noreferrer">TikTok</a></li>
+            {%- endif -%}
+            {%- if settings.social_youtube_url != blank -%}
+              <li><a href="{{ settings.social_youtube_url }}" class="footer__mini" target="_blank" rel="noopener noreferrer">YouTube</a></li>
+            {%- endif -%}
           </ul>
         {%- endif -%}
 

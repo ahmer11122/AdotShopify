@@ -34,6 +34,10 @@
     {% # Social, title, etc. %}
     {% render 'meta-tags' %}
 
+    {%- if request.page_type == 'search' -%}
+      <meta name="robots" content="noindex, follow">
+    {%- endif -%}
+
     {{ content_for_header }}
   </head>
 

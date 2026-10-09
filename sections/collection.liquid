@@ -29,6 +29,11 @@
         </h1>
         <span class="collection__count" data-collection-count>{{ collection.all_products_count }} items</span>
       </div>
+      {%- if collection.description != blank -%}
+        <div class="collection__intro">
+          {{ collection.description }}
+        </div>
+      {%- endif -%}
 
       <!-- Segmented Category Pill Track (Quiet Luxury Apple-Grade) -->
       <nav class="collection__filter-nav" aria-label="Filter products by category">
@@ -166,6 +171,22 @@
     display: flex;
     align-items: baseline;
     gap: 0.75rem;
+  }
+
+  .collection__intro {
+    margin-top: 1rem;
+    max-width: 42rem;
+    color: var(--color-text-muted, #555);
+    font-size: var(--font-size-body, 0.9375rem);
+    line-height: var(--leading-normal, 1.5);
+  }
+
+  .collection__intro p {
+    margin: 0 0 0.75rem;
+  }
+
+  .collection__intro p:last-child {
+    margin-bottom: 0;
   }
 
   .collection__title {

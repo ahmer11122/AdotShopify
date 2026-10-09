@@ -8,10 +8,10 @@
   Every snippet rendered below inherits the tokens, including the <dialog> size guide.
 {% endcomment %}
 
-<!-- Google Structured Data (JSON-LD) -->
-<script type="application/ld+json">
-  {{ product | structured_data }}
-</script>
+{%- comment -%}
+  Product JSON-LD is emitted once in snippets/meta-tags.liquid.
+  Do not add a second {{ product | structured_data }} here (duplicate Product/ProductGroup).
+{%- endcomment -%}
 
 <section
   class="section-product section-product--{{ section.id }}"

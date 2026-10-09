@@ -81,5 +81,65 @@
         "info": "Used for Organization schema and gift card template. Falls back to theme logo.png asset when empty."
       }
     ]
+  },
+  {
+    "name": "Brand & Social",
+    "settings": [
+      {
+        "type": "text",
+        "id": "brand_name",
+        "label": "Canonical brand name",
+        "default": "ADOT Official",
+        "info": "Used in titles and Organization/WebSite schema. Also set the same string in Settings → Store details."
+      },
+      {
+        "type": "text",
+        "id": "brand_alternate_names",
+        "label": "Alternate names (comma-separated)",
+        "default": "ADOT Wear, AdotWear, ADOT",
+        "info": "Helps search/AI map aliases to this brand. Do not invent unrelated brands."
+      },
+      {
+        "type": "textarea",
+        "id": "brand_description",
+        "label": "Brand one-liner",
+        "default": "ADOT Official menswear — heavyweight hoodies and fleece sweatshirts with cash on delivery across Pakistan.",
+        "info": "Plain factual sentence for meta fallback and Organization.description."
+      },
+      {
+        "type": "text",
+        "id": "social_instagram_url",
+        "label": "Instagram URL",
+        "info": "Full URL, e.g. https://www.instagram.com/adotofficial/"
+      },
+      {
+        "type": "text",
+        "id": "social_facebook_url",
+        "label": "Facebook page URL"
+      },
+      {
+        "type": "text",
+        "id": "social_tiktok_url",
+        "label": "TikTok URL"
+      },
+      {
+        "type": "text",
+        "id": "social_youtube_url",
+        "label": "YouTube URL"
+      },
+      {
+        "type": "text",
+        "id": "whatsapp_number",
+        "label": "WhatsApp number",
+        "default": "923131707080",
+        "info": "Digits only with country code, no +. Used on password page and schema contact when set."
+      },
+      {
+        "type": "text",
+        "id": "support_email",
+        "label": "Public support email",
+        "info": "Shown on password page when set. Leave blank to hide."
+      }
+    ]
   }
 ]

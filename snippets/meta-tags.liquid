@@ -1,8 +1,14 @@
 {%- liquid
-  assign og_title = page_title | default: shop.name
+  assign brand_name = settings.brand_name | default: 'ADOT Official' | strip
+  if brand_name == blank
+    assign brand_name = shop.name
+  endif
+  assign brand_description = settings.brand_description | default: 'ADOT Official menswear — heavyweight hoodies and fleece sweatshirts with cash on delivery across Pakistan.' | strip
+  assign fallback_description = shop.description | default: brand_description
+
+  assign og_title = page_title | default: brand_name
   assign og_url = canonical_url | default: request.origin
   assign og_type = 'website'
-  assign fallback_description = shop.description | default: 'ADOT Wear menswear essentials — heavyweight hoodies and fleece sweatshirts with cash on delivery across Pakistan.'
   assign og_description = page_description | default: fallback_description
 
   if request.page_type == 'product'
@@ -12,11 +18,19 @@
   elsif request.page_type == 'password'
     assign og_url = request.origin
   endif
-%}
+
+  assign title_has_brand = false
+  if page_title contains brand_name or page_title contains shop.name
+    assign title_has_brand = true
+  endif
+  if page_title contains 'ADOT Wear' or page_title contains 'AdotWear' or page_title contains 'ADOT Official'
+    assign title_has_brand = true
+  endif
+-%}
 
 <meta
   property="og:site_name"
-  content="{{ shop.name }}"
+  content="{{ brand_name | escape }}"
 >
 <meta
   property="og:url"
@@ -84,12 +98,12 @@
 
 <title>
   {%- if page_title == blank -%}
-    {{ shop.name }}
+    {{ brand_name }}
   {%- else -%}
     {{ page_title }}
     {%- if current_tags %} &ndash; tagged "{{ current_tags | join: ', ' }}"{% endif -%}
     {%- if current_page != 1 %} &ndash; Page {{ current_page }}{% endif -%}
-    {%- unless page_title contains shop.name %} &ndash; {{ shop.name }}{% endunless -%}
+    {%- unless title_has_brand %} &ndash; {{ brand_name }}{% endunless -%}
   {%- endif -%}
 </title>
 
@@ -110,23 +124,77 @@
     assign org_logo = 'logo.png' | asset_url | prepend: 'https:' | replace: 'https:https:', 'https:'
   endif
   assign search_target = request.origin | append: routes.search_url | append: '?q={search_term_string}'
+
+  assign alt_raw = settings.brand_alternate_names | default: 'ADOT Wear, AdotWear, ADOT'
+  assign alt_parts = alt_raw | split: ','
+  assign alt_json_items = ''
+  for part in alt_parts
+    assign cleaned = part | strip
+    if cleaned != blank
+      assign piece = cleaned | json
+      if alt_json_items == blank
+        assign alt_json_items = piece
+      else
+        assign alt_json_items = alt_json_items | append: ',' | append: piece
+      endif
+    endif
+  endfor
+
+  assign same_as_items = ''
+  if settings.social_instagram_url != blank
+    assign same_as_items = settings.social_instagram_url | json
+  endif
+  if settings.social_facebook_url != blank
+    assign piece = settings.social_facebook_url | json
+    if same_as_items == blank
+      assign same_as_items = piece
+    else
+      assign same_as_items = same_as_items | append: ',' | append: piece
+    endif
+  endif
+  if settings.social_tiktok_url != blank
+    assign piece = settings.social_tiktok_url | json
+    if same_as_items == blank
+      assign same_as_items = piece
+    else
+      assign same_as_items = same_as_items | append: ',' | append: piece
+    endif
+  endif
+  if settings.social_youtube_url != blank
+    assign piece = settings.social_youtube_url | json
+    if same_as_items == blank
+      assign same_as_items = piece
+    else
+      assign same_as_items = same_as_items | append: ',' | append: piece
+    endif
+  endif
 -%}
 <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "Organization",
-    "name": {{ shop.name | json }},
+    "@id": {{ request.origin | append: '/#organization' | json }},
+    "name": {{ brand_name | json }},
     "url": {{ request.origin | json }},
-    "logo": {{ org_logo | json }}
+    "logo": {{ org_logo | json }},
+    "description": {{ brand_description | json }}
+    {%- if same_as_items != blank -%}
+    ,"sameAs": [{{ same_as_items }}]
+    {%- endif -%}
   }
 </script>
 <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "name": {{ shop.name | json }},
+    "@id": {{ request.origin | append: '/#website' | json }},
+    "name": {{ brand_name | json }},
     "url": {{ request.origin | json }},
-    "potentialAction": {
+    "publisher": { "@id": {{ request.origin | append: '/#organization' | json }} }
+    {%- if alt_json_items != blank -%}
+    ,"alternateName": [{{ alt_json_items }}]
+    {%- endif -%}
+    ,"potentialAction": {
       "@type": "SearchAction",
       "target": {{ search_target | json }},
       "query-input": "required name=search_term_string"
