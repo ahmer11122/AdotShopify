@@ -89,21 +89,21 @@
         "type": "text",
         "id": "brand_name",
         "label": "Canonical brand name",
-        "default": "ADOT Official",
+        "default": "ADOT Wear",
         "info": "Used in titles and Organization/WebSite schema. Also set the same string in Settings → Store details."
       },
       {
         "type": "text",
         "id": "brand_alternate_names",
         "label": "Alternate names (comma-separated)",
-        "default": "ADOT Wear, AdotWear, ADOT",
+        "default": "AdotWear, ADOT Official, ADOT",
         "info": "Helps search/AI map aliases to this brand. Do not invent unrelated brands."
       },
       {
         "type": "textarea",
         "id": "brand_description",
         "label": "Brand one-liner",
-        "default": "ADOT Official menswear — heavyweight hoodies and fleece sweatshirts with cash on delivery across Pakistan.",
+        "default": "ADOT Wear menswear — shirts, hoodies, sweatshirts, and trousers with cash on delivery across Pakistan.",
         "info": "Plain factual sentence for meta fallback and Organization.description."
       },
       {

@@ -34,8 +34,8 @@
         "shipping": {
           "type": "accordion",
           "settings": {
-            "title": "Shipping & Returns",
-            "content": "Nationwide delivery across Pakistan in 2–4 working days. Cash on Delivery available. Easy 7-day hassle-free exchange window."
+            "title": "Shipping & Exchanges",
+            "content": "We deliver all over Pakistan in 3 to 4 working days (Monday to Friday). Cash on Delivery, bank transfer, Easypaisa, and JazzCash. Easy 7-day size or colour exchange. We do not offer refunds."
           }
         }
       },
@@ -50,7 +50,7 @@
         "show_cursor": true,
         "fit_scale": "relaxed",
         "show_delivery_estimate": true,
-        "delivery_days_min": 2,
+        "delivery_days_min": 3,
         "delivery_days_max": 4,
         "show_whatsapp_button": true,
         "whatsapp_number": "923706735800",
@@ -58,9 +58,9 @@
         "trust_badge_1_title": "Cash on Delivery",
         "trust_badge_1_subtitle": "Pay upon arrival nationwide",
         "trust_badge_2_title": "7-Day Easy Exchange",
-        "trust_badge_2_subtitle": "Hassle-free size replacement",
-        "trust_badge_3_title": "2–4 Day Delivery",
-        "trust_badge_3_subtitle": "Express courier dispatch"
+        "trust_badge_2_subtitle": "Size or colour, if in stock",
+        "trust_badge_3_title": "3–4 Day Delivery",
+        "trust_badge_3_subtitle": "Monday to Friday working days"
       }
     },
     "complete_the_look": {

@@ -8,7 +8,7 @@
     4  one-line summary
     5  size ruler          sliding indicator, live garment measurements for the chosen size
     6  add to bag          one state machine: needs-size / ready / sold-out / loading / done
-    7  delivery dates      computed from the visitor's date (working days, Mon to Sat)
+    7  delivery dates      computed from the visitor's date (working days, Mon to Fri)
     8  reassurance         the three theme-editor badges
     9  at a glance         spec rows + fit scale, from "Spec row" blocks
    10  accordions          native <details>, exclusive, animated height
@@ -277,7 +277,7 @@
     <p
       class="pdp-eta"
       data-eta
-      data-min="{{ section.settings.delivery_days_min | default: 2 }}"
+      data-min="{{ section.settings.delivery_days_min | default: 3 }}"
       data-max="{{ section.settings.delivery_days_max | default: 4 }}"
       hidden
     >
@@ -323,7 +323,7 @@
           <circle cx="18" cy="18.5" r="2"></circle>
         </svg>
         <span class="pdp-trust__copy">
-          <span class="pdp-trust__title">{{ section.settings.trust_badge_3_title | default: '2–4 Day Delivery' }}</span>
+          <span class="pdp-trust__title">{{ section.settings.trust_badge_3_title | default: '3–4 Day Delivery' }}</span>
           <span class="pdp-trust__sub">{{ section.settings.trust_badge_3_subtitle | default: 'Express courier dispatch' }}</span>
         </span>
       </li>
@@ -2017,7 +2017,7 @@
     const eta = root.querySelector('[data-eta]');
     const etaRange = eta ? eta.querySelector('[data-eta-range]') : null;
     if (eta && etaRange) {
-      const min = parseInt(eta.dataset.min, 10) || 2;
+      const min = parseInt(eta.dataset.min, 10) || 3;
       const max = Math.max(min, parseInt(eta.dataset.max, 10) || 4);
       const fmt = new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
       const addWorkingDays = (n) => {
@@ -2025,7 +2025,8 @@
         let left = n;
         while (left > 0) {
           d.setDate(d.getDate() + 1);
-          if (d.getDay() !== 0) left--; // couriers rest on Sunday
+          const day = d.getDay();
+          if (day !== 0 && day !== 6) left--; // Mon–Fri only
         }
         return d;
       };

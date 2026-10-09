@@ -7,42 +7,70 @@
           "type": "question",
           "settings": {
             "question": "How long does delivery take?",
-            "answer": "<p>We deliver nationwide across Pakistan in 2 to 4 working days via express courier service.</p>"
+            "answer": "<p>We deliver all over Pakistan in 3 to 4 working days, Monday to Friday. Remote areas may take longer.</p>"
           }
         },
         "q2": {
           "type": "question",
           "settings": {
-            "question": "Do you offer Cash on Delivery (COD)?",
-            "answer": "<p>Yes! Cash on Delivery is available for all addresses across Pakistan.</p>"
+            "question": "Do you offer Cash on Delivery?",
+            "answer": "<p>Yes. Cash on Delivery is available in all cities and towns across Pakistan.</p>"
           }
         },
         "q3": {
           "type": "question",
           "settings": {
-            "question": "What is your exchange policy?",
-            "answer": "<p>We offer a 7-day easy exchange window. If your size or fit is not right, simply message our team on WhatsApp and we will replace it for you.</p>"
+            "question": "What payment methods do you accept?",
+            "answer": "<p>Cash on Delivery, bank transfer, Easypaisa, and JazzCash.</p>"
           }
         },
         "q4": {
           "type": "question",
           "settings": {
-            "question": "How do I choose my size?",
-            "answer": "<p>Check our Size Guide on each product page for exact garment dimensions. If you prefer a loose, relaxed fit, we suggest sizing up.</p>"
+            "question": "Can I exchange my order if the size is wrong?",
+            "answer": "<p>Yes. You can exchange within 7 days of delivery for a different size or colour, if it is in stock. The item must be unworn, unwashed, and have its tags on. For size or colour exchanges, you pay the courier charge to send the item back to us.</p>"
           }
         },
         "q5": {
           "type": "question",
           "settings": {
-            "question": "Can I place an order via WhatsApp?",
-            "answer": "<p>Yes! Send us a message on WhatsApp with the item name, your size, and your delivery address, and we will place the order for you.</p>"
+            "question": "Can I exchange sale items?",
+            "answer": "<p>No. Sale items cannot be exchanged.</p>"
           }
         },
         "q6": {
           "type": "question",
           "settings": {
-            "question": "How do I care for heavyweight cotton garments?",
-            "answer": "<p>Wash inside out with cold water. Hang to air dry. Do not iron directly over printed details or high-density graphics.</p>"
+            "question": "What if I receive a wrong, damaged, or faulty item?",
+            "answer": "<p>Message us on WhatsApp within 48 hours of delivery with clear photos and a short unboxing video. We will send a replacement and cover the return shipping.</p>"
+          }
+        },
+        "q7": {
+          "type": "question",
+          "settings": {
+            "question": "How do I choose my size?",
+            "answer": "<p>Check the size guide on each product page for exact measurements. If you prefer a loose, relaxed fit, we suggest sizing up.</p>"
+          }
+        },
+        "q8": {
+          "type": "question",
+          "settings": {
+            "question": "Can I order by WhatsApp, or ask about my order?",
+            "answer": "<p>Yes. Message us on WhatsApp to place an order or ask any question about your order. For a new order, send the item name, your size, and your delivery address.</p>"
+          }
+        },
+        "q9": {
+          "type": "question",
+          "settings": {
+            "question": "How do I wash my clothes?",
+            "answer": "<p>Care instructions are on each product page.</p>"
+          }
+        },
+        "q10": {
+          "type": "question",
+          "settings": {
+            "question": "How can I get help?",
+            "answer": "<p>Message us on WhatsApp at +92 370 6735800 (Monday to Saturday, 10:00 AM to 12:00 AM), or email support@adotoffical.com.</p>"
           }
         }
       },
@@ -52,7 +80,11 @@
         "q3",
         "q4",
         "q5",
-        "q6"
+        "q6",
+        "q7",
+        "q8",
+        "q9",
+        "q10"
       ],
       "settings": {}
     }

@@ -6,14 +6,16 @@ After changing scopes: **Save** → click **Install app** / **Reinstall** so Sho
 
 ---
 
-## Must enable now (blocked work)
+## Status (Oct 2026)
 
-| Scope | Why |
+| Scope | Status |
 |---|---|
-| `read_legal_policies` | Read Shipping / Refund / Terms / Privacy policy bodies |
-| `write_legal_policies` | Publish Shipping, Refund, and Terms via `shopPolicyUpdate` (paste step goes away) |
+| `write_legal_policies` | ✅ Enabled — Shipping / Refund / Terms published |
+| `read_legal_policies` | ✅ Enabled |
+| `write_privacy_settings` | ✅ Enabled — Privacy auto feature disabled + pack published |
+| `read_privacy_settings` | ✅ Enabled |
 
-These are the only scopes missing for the policy pack.
+Privacy published via `privacyFeaturesDisable(PRIVACY_POLICY)` then `shopPolicyUpdate`. Source: `launch-copy/privacy-policy.html`.
 
 ---
 

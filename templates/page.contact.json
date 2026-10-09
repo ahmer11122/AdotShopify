@@ -2,7 +2,9 @@
   "sections": {
     "main": {
       "type": "contact-page",
-      "settings": {}
+      "settings": {
+        "working_hours": "Monday to Saturday, 10:00 AM to 12:00 AM (Pakistan time)"
+      }
     }
   },
   "order": [

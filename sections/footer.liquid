@@ -34,7 +34,7 @@
   else
     assign wa_display = '+' | append: wa_raw
   endif
-  assign wa_greeting = section.settings.whatsapp_greeting | default: 'Hello ADOT, I would like assistance with an order.'
+  assign wa_greeting = section.settings.whatsapp_greeting | default: 'Hello ADOT Wear, I would like assistance with an order.'
 
   assign social = section.settings.social_menu
 -%}
@@ -1308,7 +1308,7 @@
       "type": "textarea",
       "id": "whatsapp_greeting",
       "label": "WhatsApp greeting message",
-      "default": "Hello ADOT, I would like assistance with an order.",
+      "default": "Hello ADOT Wear, I would like assistance with an order.",
       "info": "Pre-filled text sent with the WhatsApp chat link."
     },
     {
@@ -1327,7 +1327,7 @@
       "min": 1,
       "max": 24,
       "step": 1,
-      "default": 22
+      "default": 24
     },
     {
       "type": "text",
@@ -1349,13 +1349,13 @@
       "type": "text",
       "id": "horizon_badge_1",
       "label": "Line above wordmark (left)",
-      "default": "Architectural essentials"
+      "info": "Leave empty to hide. Do not use Architectural essentials or city names."
     },
     {
       "type": "text",
       "id": "horizon_badge_2",
       "label": "Line above wordmark (right)",
-      "default": "Sargodha"
+      "info": "Leave empty to hide."
     }
   ]
 }

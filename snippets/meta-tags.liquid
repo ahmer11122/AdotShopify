@@ -1,9 +1,9 @@
 {%- liquid
-  assign brand_name = settings.brand_name | default: 'ADOT Official' | strip
+  assign brand_name = settings.brand_name | default: 'ADOT Wear' | strip
   if brand_name == blank
     assign brand_name = shop.name
   endif
-  assign brand_description = settings.brand_description | default: 'ADOT Official menswear — heavyweight hoodies and fleece sweatshirts with cash on delivery across Pakistan.' | strip
+  assign brand_description = settings.brand_description | default: 'ADOT Wear menswear — shirts, hoodies, sweatshirts, and trousers with cash on delivery across Pakistan.' | strip
   assign fallback_description = shop.description | default: brand_description
 
   assign og_title = page_title | default: brand_name

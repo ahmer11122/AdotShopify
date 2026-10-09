@@ -7,9 +7,12 @@
       "settings": {
         "menu": "",
         "whatsapp_number": "923706735800",
-        "whatsapp_greeting": "Hello ADOT, I would like assistance with an order.",
-        "horizon_badge_1": "Architectural essentials",
-        "horizon_badge_2": "Sargodha",
+        "whatsapp_greeting": "Hello ADOT Wear, I would like assistance with an order.",
+        "support_open": 10,
+        "support_close": 24,
+        "timezone": "Asia/Karachi",
+        "horizon_badge_1": "",
+        "horizon_badge_2": "",
         "collections_menu": ""
       }
     }

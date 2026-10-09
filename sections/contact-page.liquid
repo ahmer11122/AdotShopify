@@ -128,7 +128,7 @@
 
         <div class="contact-page__info-row">
           <span class="contact-page__info-title text-micro">WORKING HOURS</span>
-          <p class="contact-page__info-body">{{ section.settings.working_hours | default: 'Monday to Saturday, 9:00 AM – 5:00 PM (PKT)' }}</p>
+          <p class="contact-page__info-body">{{ section.settings.working_hours | default: 'Monday to Saturday, 10:00 AM to 12:00 AM (Pakistan time)' }}</p>
         </div>
 
         {%- assign support_email = settings.support_email | default: 'support@adotoffical.com' -%}
@@ -439,7 +439,7 @@
       "type": "text",
       "id": "working_hours",
       "label": "Working Hours",
-      "default": "Monday to Saturday, 9:00 AM – 5:00 PM (PKT)"
+      "default": "Monday to Saturday, 10:00 AM to 12:00 AM (Pakistan time)"
     }
   ]
 }
