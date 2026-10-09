@@ -1,11 +1,11 @@
 {% doc %}
-  Size Guide — Clean Minimalist Table (100% Fit & No Horizontal Scroll Desktop + Mobile)
+  Size Guide — Clean Minimalist Table (Uncluttered Headers)
 
   - Native <dialog> with zero-jerk scroll stability (tabindex="-1" autofocus prevents off-screen focus jump).
   - 100% responsive fixed-layout table that fits cleanly on Desktop & Mobile with zero horizontal scroll.
-  - Pure measurement matrix without action buttons or sold-out clutter.
+  - Clean typographic column headers (Size, Chest, Length, Shoulder, Sleeve) without cluttered unit suffixes.
+  - Active unit controlled cleanly by the top segmented toggle (cm / in).
   - Active size row automatically highlighted based on current PDP variant.
-  - cm / in flips each number in place.
 {% enddoc %}
 
 <script type="application/json" id="AdotSizeData">[{"key":"hoodies","label":"Hoodies","cols":["Chest","Length","Shoulder","Sleeve"],"note":"Laid flat, relaxed. Chest is half-chest width. Sleeve measured from center back. Fits true to size for a relaxed silhouette.","rows":[{"size":"M","keys":["M"],"v":[55,68,50,87]},{"size":"L","keys":["L"],"v":[58,70,52,89]},{"size":"XL","keys":["XL"],"v":[61,72,54,91]},{"size":"XXL","keys":["XXL"],"v":[64,74,56,93]}]},{"key":"sweatshirts","label":"Sweatshirts","cols":["Chest","Length","Shoulder","Sleeve"],"note":"Same chart as hoodies. Laid flat, relaxed. Chest is half-chest width. Sleeve measured from center back.","rows":[{"size":"M","keys":["M"],"v":[55,68,50,87]},{"size":"L","keys":["L"],"v":[58,70,52,89]},{"size":"XL","keys":["XL"],"v":[61,72,54,91]},{"size":"XXL","keys":["XXL"],"v":[64,74,56,93]}]},{"key":"trousers","label":"Trousers","cols":["Waist","Inseam","Rise","Opening"],"note":"Relaxed straight leg with a tailored waistband. Order your standard waist size.","rows":[{"size":"30 (S)","keys":["30","S"],"v":[78,76,30,22]},{"size":"32 (M)","keys":["32","M"],"v":[83,77,31,23]},{"size":"34 (L)","keys":["34","L"],"v":[88,78,32,24]},{"size":"36 (XL)","keys":["36","XL"],"v":[93,79,33,25]}]}]</script>
@@ -85,22 +85,10 @@
           <thead>
             <tr>
               <th scope="col">Size</th>
-              <th scope="col">
-                Chest
-                <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
-              </th>
-              <th scope="col">
-                Length
-                <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
-              </th>
-              <th scope="col">
-                Shoulder
-                <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
-              </th>
-              <th scope="col">
-                Sleeve
-                <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
-              </th>
+              <th scope="col">Chest</th>
+              <th scope="col">Length</th>
+              <th scope="col">Shoulder</th>
+              <th scope="col">Sleeve</th>
             </tr>
           </thead>
           <tbody>
@@ -157,22 +145,10 @@
           <thead>
             <tr>
               <th scope="col">Size</th>
-              <th scope="col">
-                Chest
-                <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
-              </th>
-              <th scope="col">
-                Length
-                <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
-              </th>
-              <th scope="col">
-                Shoulder
-                <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
-              </th>
-              <th scope="col">
-                Sleeve
-                <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
-              </th>
+              <th scope="col">Chest</th>
+              <th scope="col">Length</th>
+              <th scope="col">Shoulder</th>
+              <th scope="col">Sleeve</th>
             </tr>
           </thead>
           <tbody>
@@ -229,22 +205,10 @@
           <thead>
             <tr>
               <th scope="col">Size</th>
-              <th scope="col">
-                Waist
-                <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
-              </th>
-              <th scope="col">
-                Inseam
-                <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
-              </th>
-              <th scope="col">
-                Rise
-                <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
-              </th>
-              <th scope="col">
-                Opening
-                <span class="sg__unit" aria-hidden="true"><span class="sg__cm">cm</span><span class="sg__in">in</span></span>
-              </th>
+              <th scope="col">Waist</th>
+              <th scope="col">Inseam</th>
+              <th scope="col">Rise</th>
+              <th scope="col">Opening</th>
             </tr>
           </thead>
           <tbody>
@@ -409,13 +373,13 @@
     align-items: flex-start;
     justify-content: space-between;
     gap: 1rem;
-    padding: clamp(1rem, 2.5vw, 1.75rem) clamp(1rem, 2.5vw, 1.75rem) 0;
+    padding: clamp(1.25rem, 3vw, 2rem) clamp(1.25rem, 3vw, 2rem) 0;
   }
 
   .sg__title {
     margin: 0;
     font-family: var(--pdp-font-display, inherit);
-    font-size: clamp(1.625rem, 4.5vw, 2.25rem);
+    font-size: clamp(1.75rem, 4.5vw, 2.25rem);
     font-weight: 500;
     line-height: 1;
     letter-spacing: -0.04em;
@@ -468,7 +432,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 0.75rem;
-    padding: 1rem clamp(1rem, 2.5vw, 1.75rem) 0;
+    padding: 1.25rem clamp(1.25rem, 3vw, 2rem) 0;
   }
 
   .sg__seg {
@@ -528,10 +492,10 @@
     overflow-y: auto;
     overflow-x: hidden;
     overscroll-behavior: contain;
-    padding: 1.25rem clamp(1rem, 2.5vw, 1.75rem) clamp(1.25rem, 2.5vw, 2rem);
+    padding: 1.5rem clamp(1.25rem, 3vw, 2rem) clamp(1.5rem, 3vw, 2.5rem);
   }
 
-  /* 100% Width Table — No Horizontal Scroll on Desktop or Mobile */
+  /* 100% Width Table — Clean Typographic Headers without cluttered units */
   .sg__table {
     width: 100%;
     table-layout: fixed;
@@ -541,13 +505,13 @@
   }
 
   .sg__table th {
-    padding: 0 4px 0.625rem 4px;
+    padding: 0 4px 0.75rem 4px;
     text-align: right;
     vertical-align: bottom;
     font-size: clamp(0.6875rem, 2.5vw, 0.75rem);
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.04em;
     color: var(--pdp-ink-3, #6b6b6b);
     white-space: nowrap;
     overflow: hidden;
@@ -596,7 +560,7 @@
   /* Desktop generous spacing */
   @media (min-width: 990px) {
     .sg__table th {
-      padding: 0 0.75rem 0.75rem;
+      padding: 0 0.75rem 0.875rem;
       font-size: 0.8125rem;
     }
     .sg__table td {
@@ -631,26 +595,18 @@
     box-shadow: inset 3px 0 0 var(--pdp-ink, #111);
   }
 
-  /* Unit flip numbers */
-  .sg__num,
-  .sg__unit {
+  /* Unit flip numbers in table cells */
+  .sg__num {
     display: inline-grid;
     overflow: hidden;
     vertical-align: bottom;
   }
 
-  .sg__num > span,
-  .sg__unit > span {
+  .sg__num > span {
     grid-area: 1 / 1;
     transition:
       transform 360ms var(--pdp-ease-expo, cubic-bezier(0.16, 1, 0.3, 1)),
       opacity 220ms ease;
-  }
-
-  .sg__unit {
-    margin-left: 0.125rem;
-    font-size: 0.625rem;
-    font-weight: 400;
   }
 
   .sg[data-unit='cm'] .sg__in {
@@ -677,8 +633,7 @@
     .sg::backdrop,
     .sg__sheet,
     .sg__seg-ind,
-    .sg__num > span,
-    .sg__unit > span {
+    .sg__num > span {
       transition-duration: 0.01ms !important;
     }
   }
