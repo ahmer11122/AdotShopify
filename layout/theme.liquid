@@ -29,7 +29,7 @@
     {% render 'css-variables' %}
 
     {{ 'base.css' | asset_url | stylesheet_tag }}
-    {{ 'threadline.css' | asset_url | stylesheet_tag }}
+    {% render 'threadline-assets', part: 'css' %}
 
     {% # Social, title, etc. %}
     {% render 'meta-tags' %}
@@ -52,7 +52,13 @@
     {% sections 'footer-group' %}
 
     <script src="{{ 'theme.js' | asset_url }}" defer></script>
-    <script src="{{ 'adot-header-system.js' | asset_url }}" defer></script>
-    <script src="{{ 'threadline.js' | asset_url }}" defer></script>
+    <script src="{{ 'adot-ui.js' | asset_url }}" defer></script>
+    <script src="{{ 'adot-header-drawer.js' | asset_url }}" defer></script>
+    <script src="{{ 'adot-search-modal.js' | asset_url }}" defer></script>
+    <script src="{{ 'adot-search-results.js' | asset_url }}" defer></script>
+    <script src="{{ 'adot-cart-drawer.js' | asset_url }}" defer></script>
+    <script src="{{ 'adot-cart-ops.js' | asset_url }}" defer></script>
+    <script src="{{ 'adot-header-sticky.js' | asset_url }}" defer></script>
+    {% render 'threadline-assets', part: 'js' %}
   </body>
 </html>

@@ -10,9 +10,9 @@ AssetSizeCSS:
   threshold_in_bytes: 100000
 AssetSizeJavaScript:
   enabled: true
-  # Header system (adot-header-system.js) is intentionally readable and ~39KB.
-  # theme.js stays minified under ~10KB for the shared cart helpers.
-  threshold_in_bytes: 50000
+  # Shopify default recommendation (10KB uncompressed per asset).
+  # Header + Threadline are split into modules that each stay under this limit.
+  threshold_in_bytes: 10000
 ImgWidthAndHeight:
   enabled: true
 ParserBlockingScript:

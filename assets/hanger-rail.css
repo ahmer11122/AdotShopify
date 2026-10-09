@@ -1,0 +1,1222 @@
+  /* ---------- Hanger Rail: base ---------- */
+  .hrail {
+    --hr-h: clamp(300px, 47svh, var(--hr-h-max, 480px));
+    --hr-hook: calc(var(--hr-h) * 0.04); /* hook loop centre = 4% down the image */
+    --hr-gutter: clamp(1rem, 4vw, 3rem);
+    --hr-pitch: min(64vw, 320px);
+    --hr-ease: cubic-bezier(0.23, 1, 0.32, 1);
+    position: relative;
+    overflow: hidden;
+    background: var(--hr-bg, var(--color-background, #f4f2ee));
+    color: var(--hr-ink, var(--color-text, #111));
+    padding-block: clamp(2.5rem, 6vw, 5rem) clamp(2.5rem, 5vw, 4.5rem);
+    border-top: 1px solid var(--color-border, rgba(0, 0, 0, 0.08));
+  }
+
+  @media (max-width: 749px) {
+    .hrail {
+      --hr-h: min(88vw, 440px);
+    }
+    .hrail--hide-mobile {
+      display: none;
+    }
+  }
+
+  .hrail *,
+  .hrail *::before,
+  .hrail *::after {
+    box-sizing: border-box;
+  }
+
+  .hrail__sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* ---------- Header ---------- */
+  .hrail__head {
+    width: min(1320px, 100% - 2 * var(--hr-gutter));
+    margin-inline: auto;
+    margin-bottom: clamp(2rem, 4.5vw, 4rem);
+  }
+
+  .hrail__head-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .hrail__eyebrow {
+    margin: 0 0 0.75rem;
+    color: var(--color-text-muted, rgba(0, 0, 0, 0.55));
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .hrail__heading {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 7.2vw, 6.5rem);
+    font-weight: 500;
+    line-height: 0.98;
+    letter-spacing: -0.04em;
+    color: var(--hr-ink, var(--color-text));
+    text-wrap: balance;
+  }
+
+  .hrail__word {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: top;
+    padding-block: 0.06em 0.14em;
+    margin-block: -0.06em -0.14em;
+  }
+
+  .hrail__word-i {
+    display: inline-block;
+  }
+
+  .hrail__caption {
+    margin: 1.25rem 0 0;
+    max-width: 44ch;
+    color: var(--color-text-muted, rgba(0, 0, 0, 0.62));
+    font-size: clamp(0.875rem, 1.1vw, 1rem);
+    line-height: 1.5;
+  }
+
+
+
+
+  /* ---------- Stage ---------- */
+  .hrail__stage {
+    position: relative;
+    width: min(1320px, 100% - 2 * var(--hr-gutter));
+    height: calc(var(--hr-h) + 10px);
+    margin: clamp(1.5rem, 4vw, 3rem) auto 0;
+  }
+
+  @media (max-width: 749px) {
+    .hrail__stage {
+      width: 100%;
+    }
+  }
+
+  .hrail__scroller {
+    position: relative;
+    height: 100%;
+  }
+
+  .hrail__track {
+    position: relative;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Before JS: a plain swipe list of front images. It still works. */
+  .hrail:not(.is-ready) .hrail__scroller {
+    overflow-x: auto;
+  }
+  .hrail:not(.is-ready) .hrail__track {
+    display: flex;
+    gap: 12px;
+    width: max-content;
+  }
+  .hrail:not(.is-ready) .hrail__item {
+    position: relative;
+    flex: 0 0 min(60vw, 300px);
+  }
+  .hrail:not(.is-ready) .hrail__img--side {
+    display: none;
+  }
+
+  .hrail__item {
+    position: relative;
+    height: var(--hr-h);
+    margin: 0;
+    padding: 0;
+  }
+
+  .hrail__slide {
+    position: absolute;
+    inset: 0;
+    display: block;
+  }
+
+  .hrail__link {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    display: block;
+    width: calc(var(--hr-h) * 0.8);
+    height: var(--hr-h);
+    margin-left: calc(var(--hr-h) * -0.4);
+    color: inherit;
+    text-decoration: none;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Theme links fade on hover. That would dim a piece as it turns. */
+  .hrail a:hover,
+  .hrail a:focus {
+    opacity: 1;
+  }
+
+  .hrail [hidden] {
+    display: none !important;
+  }
+
+  .hrail__swing,
+  .hrail__turn {
+    position: absolute;
+    inset: 0;
+    display: block;
+    transform-origin: 50% 0;
+  }
+
+  /* A real hanger swings from the hook, not from the top edge of the photo. */
+  .hrail__swing {
+    transform-origin: 50% 4%;
+  }
+
+  /* Side view sits outside the 3D turn, so at rest it faces the camera. */
+  .hrail__img--side {
+    transform-origin: 50% 0;
+  }
+
+  .hrail__img {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: 50% 0;
+    user-select: none;
+    -webkit-user-drag: none;
+    pointer-events: none;
+  }
+
+  .hrail__ph {
+    position: absolute;
+    inset: 12% 8% auto;
+    padding: 2rem 1rem;
+    border: 1px dashed currentColor;
+    text-align: center;
+    font-size: 0.75rem;
+    opacity: 0.5;
+  }
+
+  .hrail__hit {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: var(--hw, 100%);
+    transform: translateX(-50%);
+  }
+
+  .hrail:not(.is-ready) .hrail__hit {
+    display: none;
+  }
+
+  .hrail__link:focus-visible .hrail__hit {
+    outline: 2px solid var(--color-focus, currentColor);
+    outline-offset: 4px;
+    border-radius: 4px;
+  }
+
+  /* ---------- Mode: rail (desktop, mouse) ---------- */
+  .hrail.is-ready[data-mode='rail'] .hrail__track {
+    width: var(--hr-track-w, 100%);
+    margin-inline: auto;
+  }
+
+  .hrail.is-ready[data-mode='rail'] .hrail__item {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: var(--hr-pitch);
+    will-change: transform;
+  }
+
+  .hrail.is-ready[data-mode='rail'] .hrail__hit {
+    pointer-events: auto;
+    cursor: pointer;
+  }
+
+  .hrail.is-ready[data-mode='rail'] .hrail__link {
+    pointer-events: none;
+  }
+
+  /* ---------- Mode: scroll (touch, small screens) ---------- */
+  .hrail.is-ready[data-mode='scroll'] .hrail__scroller {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    padding-inline: calc(50% - var(--hr-pitch) / 2);
+    box-sizing: border-box;
+  }
+
+  .hrail.is-ready[data-mode='scroll'] .hrail__scroller::-webkit-scrollbar {
+    display: none;
+  }
+
+  .hrail.is-ready[data-mode='scroll'] .hrail__track {
+    display: flex;
+    width: max-content;
+  }
+
+  .hrail.is-ready[data-mode='scroll'] .hrail__item {
+    flex: 0 0 var(--hr-pitch);
+    width: var(--hr-pitch);
+    scroll-snap-align: center;
+  }
+
+  .hrail.is-ready[data-mode='scroll'] .hrail__slide {
+    will-change: transform;
+  }
+
+  .hrail.is-ready[data-mode='scroll'] .hrail__link {
+    pointer-events: none;
+  }
+
+  /* Phone / touch: one piece at a time, front view. No side-on slivers. */
+  .hrail.is-ready[data-mode='scroll'] .hrail__img--side {
+    display: none;
+  }
+
+  .hrail.is-ready[data-mode='scroll'] .hrail__rod {
+    height: 3px;
+    top: calc(var(--hr-hook) - 1.5px);
+    box-shadow: none;
+  }
+
+  .hrail.is-ready[data-mode='scroll'] .hrail__hit {
+    pointer-events: auto;
+  }
+
+  /* ---------- The rod ---------- */
+  .hrail__rod {
+    display: none;
+    position: absolute;
+    top: calc(var(--hr-hook) - 3px);
+    height: 6px;
+    border-radius: 6px;
+    background: linear-gradient(180deg, #fbfaf8 0%, #d3d1cc 40%, #8d8b86 100%);
+    box-shadow: 0 10px 14px -8px rgba(0, 0, 0, 0.35);
+    transform-origin: left center;
+    pointer-events: none;
+  }
+
+  .hrail__rod::before,
+  .hrail__rod::after {
+    content: '';
+    position: absolute;
+    top: -7px;
+    width: 8px;
+    height: 20px;
+    border-radius: 3px;
+    background: linear-gradient(90deg, #dedcd7, #98968f);
+    box-shadow: 0 6px 8px -4px rgba(0, 0, 0, 0.3);
+  }
+  .hrail__rod::before {
+    left: -4px;
+  }
+  .hrail__rod::after {
+    right: -4px;
+  }
+
+  .hrail.is-ready .hrail__rod {
+    display: block;
+  }
+
+  .hrail.is-ready[data-mode='rail'] .hrail__rod {
+    left: 0;
+    width: 100%;
+  }
+
+  .hrail.is-ready[data-mode='scroll'] .hrail__rod {
+    left: 0;
+    width: 100%;
+    border-radius: 0;
+  }
+  .hrail.is-ready[data-mode='scroll'] .hrail__rod::before,
+  .hrail.is-ready[data-mode='scroll'] .hrail__rod::after {
+    display: none;
+  }
+
+  /* ---------- Spotlight (a soft pool of light behind the active piece) ---------- */
+  .hrail__spot {
+    position: absolute;
+    top: -6%;
+    left: 0;
+    width: calc(var(--hr-h) * 1.25);
+    height: calc(var(--hr-h) * 1.35);
+    margin-left: calc(var(--hr-h) * -0.625);
+    border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0));
+    opacity: 0;
+    pointer-events: none;
+    will-change: transform, opacity;
+  }
+
+  .hrail.is-ready[data-mode='scroll'] .hrail__spot {
+    left: 50%;
+    opacity: 1;
+  }
+
+  /* ---------- Intro: rod draws, pieces settle on with boutique splay ---------- */
+  .hrail.is-ready:not(.is-in) .hrail__link {
+    opacity: 0;
+  }
+
+  .hrail.is-ready:not(.is-in) .hrail__rod {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+
+  .hrail.is-ready.is-in .hrail__rod {
+    animation: hrail-rod 750ms var(--hr-ease) both;
+  }
+
+  .hrail.is-ready.is-in .hrail__link {
+    animation: hrail-drop 800ms var(--hr-ease) both;
+    animation-delay: calc(80ms + var(--i, 0) * 45ms);
+  }
+
+  @keyframes hrail-rod {
+    0% {
+      transform: scaleX(0);
+      opacity: 0;
+    }
+    100% {
+      transform: scaleX(1);
+      opacity: 1;
+    }
+  }
+
+  @keyframes hrail-drop {
+    0% {
+      opacity: 0;
+      transform: translateY(-18px) scale(0.96) rotate(-1.5deg);
+    }
+    65% {
+      transform: translateY(1.5px) scale(1.006) rotate(0.35deg);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1) rotate(0deg);
+    }
+  }
+
+  .hrail__item.is-lifted .hrail__link {
+    visibility: hidden;
+  }
+
+  /* ---------- Piece index (phone and touch tablet) ---------- */
+  .hrail__dots {
+    display: none;
+  }
+
+  .hrail.is-ready[data-mode='scroll'] .hrail__dots {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: min(1320px, 100% - 2 * var(--hr-gutter));
+    margin: 1.15rem auto 0;
+  }
+
+  .hrail__dot {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    appearance: none;
+  }
+
+  .hrail__dot::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    background: currentColor;
+    opacity: 0.28;
+    transition: width 260ms var(--hr-ease), height 260ms var(--hr-ease), opacity 260ms ease;
+  }
+
+  .hrail__dot.is-on::before {
+    width: 18px;
+    height: 2px;
+    opacity: 1;
+  }
+
+  /* ---------- Label under the rail ---------- */
+  .hrail__label {
+    display: grid;
+    justify-items: center;
+    gap: 0.35rem;
+    width: min(1320px, 100% - 2 * var(--hr-gutter));
+    min-height: 4.6rem;
+    margin: calc(clamp(0.75rem, 2vw, 1.25rem) - var(--hr-pull, 0px)) auto 0;
+    text-align: center;
+  }
+
+  .hrail__name {
+    margin: 0;
+    font-family: var(--font-display, inherit);
+    font-size: clamp(1rem, 0.6vw + 0.85rem, 1.3rem);
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .hrail__mask {
+    display: block;
+    overflow: hidden;
+    padding-block: 0.12em;
+  }
+
+  .hrail__mask > span {
+    display: block;
+  }
+
+  .hrail__meta {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    min-height: 1.3em;
+    margin: 0;
+    overflow: hidden;
+    color: var(--color-text-muted, rgba(0, 0, 0, 0.62));
+    font-size: 0.875rem;
+  }
+
+  .hrail__meta > span {
+    display: inline-block;
+  }
+
+  .hrail__meta > span:empty {
+    display: none;
+  }
+
+  .hrail__meta > span:not(:empty) + span:not(:empty) {
+    margin-left: 1.1rem;
+    color: var(--hr-ink, #111);
+  }
+
+  .hrail__hint {
+    transition: opacity 600ms ease;
+    margin: 0;
+    color: var(--color-text-subtle, rgba(0, 0, 0, 0.5));
+    letter-spacing: 0.04em;
+    font-size: 0.8rem;
+  }
+
+  .hrail__hint.is-quiet {
+    opacity: 0;
+  }
+
+  /* The upward pull is for the desktop rail. On the carousel it lands the
+     cloth line on top of the piece index. */
+  .hrail.is-ready[data-mode='scroll'] .hrail__label {
+    gap: 0.2rem;
+    min-height: 0;
+    margin-top: 0.15rem;
+  }
+
+  .hrail.is-ready[data-mode='scroll'] .hrail__hint {
+    display: none;
+  }
+
+  .hrail.is-ready[data-mode='scroll'] .hrail__meta {
+    min-height: 0;
+  }
+
+  .hrail__foot {
+    display: flex;
+    justify-content: center;
+    margin-top: 1.25rem;
+  }
+
+  .hrail__cta {
+    gap: 0.5rem;
+  }
+
+  @media (max-width: 749px) {
+    .hrail__foot {
+      padding-inline: var(--hr-gutter);
+    }
+    .hrail__cta {
+      flex: 1 1 auto;
+      justify-content: center;
+      min-height: 48px;
+    }
+  }
+
+  /* ---------- Quick look (dialog) ---------- */
+  html.hrail-lock {
+    overflow: hidden;
+  }
+
+  .hrail-ql {
+    --ql-top: clamp(48px, 9svh, 96px);
+    --ql-h: min(70svh, 700px);
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: hidden;
+    background: transparent;
+    color: var(--hr-ink, #111);
+  }
+
+  .hrail-ql:not([open]) {
+    display: none;
+  }
+
+  .hrail-ql:focus {
+    outline: none;
+  }
+
+  .hrail-ql::backdrop {
+    background: transparent;
+  }
+
+  .hrail-ql__wall {
+    position: absolute;
+    inset: 0;
+    background: color-mix(in srgb, var(--hr-bg, #f4f2ee) 90%, transparent);
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+  }
+
+  .hrail-ql__layout {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 400px);
+    align-items: start;
+    align-content: start;
+    column-gap: clamp(2rem, 5vw, 5rem);
+    width: min(1240px, 100%);
+    height: 100%;
+    margin-inline: auto;
+    padding: var(--ql-top) var(--hr-gutter) clamp(1rem, 3svh, 2rem);
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  /* left side: thumbnails + the hanging piece */
+  .hrail-ql__show {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 1rem;
+    min-width: 0;
+  }
+
+  .hrail-ql__thumbs {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .hrail-ql__thumb {
+    display: block;
+    width: 60px;
+    aspect-ratio: 4 / 5;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm, 0);
+    background: color-mix(in srgb, var(--hr-ink, #111) 5%, transparent);
+    opacity: 0.55;
+    cursor: pointer;
+    transition: opacity 200ms ease, border-color 200ms ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .hrail-ql__thumb[aria-pressed='true'] {
+    opacity: 1;
+    border-color: var(--hr-ink, #111);
+  }
+
+  .hrail-ql__thumb img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 20%;
+    pointer-events: none;
+  }
+
+  .hrail-ql__thumb.is-cut img {
+    object-fit: contain;
+    object-position: 50% 0;
+  }
+
+  .hrail-ql__stage {
+    position: relative;
+    display: flex;
+    flex: 0 1 auto;
+    justify-content: center;
+    width: calc(var(--ql-h) * 0.8 + 112px);
+    max-width: 100%;
+    height: var(--ql-h);
+  }
+
+  /* the thread from the ceiling to the hook ring (ring sits 4% down the image) */
+  .hrail-ql__thread {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% - var(--ql-h) * 0.04);
+    width: 1px;
+    height: 100vh;
+    background: color-mix(in srgb, var(--hr-ink, #111) 38%, transparent);
+    transform-origin: top;
+    transition: opacity 300ms ease;
+    pointer-events: none;
+  }
+
+  .hrail-ql.is-photo-view .hrail-ql__thread {
+    opacity: 0;
+  }
+
+  .hrail-ql__arrow,
+  .hrail-ql__close,
+  .hrail-ql__chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .hrail-ql__arrow {
+    position: absolute;
+    top: calc(var(--ql-h) * 0.5 - 22px);
+    z-index: 2;
+    width: 44px;
+    height: 44px;
+    border: 1px solid color-mix(in srgb, var(--hr-ink, #111) 18%, transparent);
+    border-radius: var(--radius-sm, 0);
+    background: color-mix(in srgb, var(--hr-bg, #f4f2ee) 70%, transparent);
+    color: var(--hr-ink, #111);
+    transition: background-color 160ms ease, transform 160ms var(--hr-ease);
+  }
+
+  .hrail-ql__arrow--prev {
+    left: 0;
+  }
+
+  .hrail-ql__arrow--next {
+    right: 0;
+  }
+
+  .hrail-ql__arrow:active {
+    transform: scale(0.94);
+  }
+
+  .hrail-ql__garment {
+    position: relative;
+    height: var(--ql-h);
+    aspect-ratio: 4 / 5;
+    perspective: 1500px;
+    transform-origin: 50% 0;
+    touch-action: pan-y;
+    cursor: grab;
+    user-select: none;
+  }
+
+  .hrail-ql__garment:active {
+    cursor: grabbing;
+  }
+
+  .hrail-ql__hang {
+    position: absolute;
+    inset: 0;
+    transition: opacity 320ms ease;
+  }
+
+  .hrail-ql__spin {
+    position: absolute;
+    inset: 0;
+    transform-origin: 50% 0;
+    transform-style: preserve-3d;
+  }
+
+  .hrail-ql__face,
+  .hrail-ql__side {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: 50% 0;
+    pointer-events: none;
+    -webkit-user-drag: none;
+  }
+
+  .hrail-ql__face {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .hrail-ql__face--back {
+    transform: rotateY(180deg);
+  }
+
+  .hrail-ql__side {
+    opacity: 0;
+  }
+
+  /* product photo view (cross-fades over the hanging piece) */
+  .hrail-ql__photo {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 20%;
+    opacity: 0;
+    transition: opacity 320ms ease;
+    pointer-events: none;
+    -webkit-user-drag: none;
+  }
+
+  .hrail-ql__garment.is-photo .hrail-ql__hang {
+    opacity: 0;
+  }
+
+  .hrail-ql__garment.is-photo .hrail-ql__photo {
+    opacity: 1;
+  }
+
+  /* right side: text and buttons. These never leave the screen while you switch pieces. */
+  .hrail-ql__info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    align-self: center;
+    gap: 0.6rem;
+    min-width: 0;
+    text-align: left;
+  }
+
+  .hrail-ql__count {
+    margin: 0 0 0.4rem;
+    color: var(--color-text-subtle, rgba(0, 0, 0, 0.5));
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+  }
+
+  .hrail-ql__name {
+    margin: 0;
+    font-family: var(--font-display, inherit);
+    font-size: clamp(1.4rem, 1.4vw + 0.9rem, 2rem);
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    line-height: 1.12;
+    text-wrap: balance;
+  }
+
+  .hrail-ql__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.15rem 1rem;
+  }
+
+  .hrail-ql__price {
+    min-height: 1.4em;
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 500;
+  }
+
+  .hrail-ql__sub {
+    min-height: 1.4em;
+    margin: 0;
+    color: var(--color-text-muted, rgba(0, 0, 0, 0.62));
+    font-size: 0.9rem;
+  }
+
+  .hrail-ql__desc {
+    max-width: 38ch;
+    margin: 0.2rem 0 0;
+    color: var(--color-text-muted, rgba(0, 0, 0, 0.62));
+    font-size: 0.9rem;
+    line-height: 1.55;
+  }
+
+  .hrail-ql__desc:empty,
+  .hrail-ql__price:empty,
+  .hrail-ql__sub:empty {
+    display: none;
+  }
+
+  .hrail-ql__sizes {
+    width: 100%;
+    margin-top: 0.6rem;
+  }
+
+  .hrail-ql__label {
+    display: flex;
+    gap: 0.9rem;
+    margin: 0 0 0.55rem;
+    color: var(--color-text-subtle, rgba(0, 0, 0, 0.5));
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+  }
+
+  .hrail-ql__note {
+    color: var(--hr-ink, #111);
+    letter-spacing: 0.04em;
+    text-transform: none;
+  }
+
+  .hrail-ql__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .hrail-ql__chip {
+    min-width: 52px;
+    min-height: 46px;
+    padding: 0 0.9rem;
+    border: 1px solid color-mix(in srgb, var(--hr-ink, #111) 24%, transparent);
+    border-radius: var(--radius-sm, 0);
+    background: transparent;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: background-color 180ms ease, color 180ms ease, border-color 180ms ease;
+  }
+
+  .hrail-ql__chip[aria-pressed='true'] {
+    border-color: var(--hr-ink, #111);
+    background: var(--hr-ink, #111);
+    color: var(--hr-bg, #fff);
+  }
+
+  .hrail-ql__chip.is-out {
+    opacity: 0.4;
+    text-decoration: line-through;
+    cursor: not-allowed;
+  }
+
+  .hrail-ql__chips.is-shaking {
+    animation: hrail-shake 420ms var(--hr-ease);
+  }
+
+  @keyframes hrail-shake {
+    20% { transform: translateX(-6px); }
+    45% { transform: translateX(5px); }
+    70% { transform: translateX(-3px); }
+    100% { transform: none; }
+  }
+
+  .hrail-ql__cta {
+    display: grid;
+    gap: 0.6rem;
+    width: 100%;
+    margin-top: 0.9rem;
+  }
+
+  .hrail-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    min-height: 52px;
+    padding: 0 1.75rem;
+    border: 1px solid var(--hr-ink, #111);
+    border-radius: var(--radius-sm, 0);
+    font: inherit;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 180ms ease, color 180ms ease, transform 160ms var(--hr-ease);
+  }
+
+  .hrail-btn--solid {
+    background: var(--hr-ink, #111);
+    color: var(--hr-bg, #fff);
+  }
+
+  .hrail-btn--ghost {
+    background: transparent;
+    color: var(--hr-ink, #111);
+  }
+
+  .hrail-btn:disabled {
+    opacity: 0.55;
+    cursor: default;
+  }
+
+  .hrail-btn:active {
+    transform: scale(0.99);
+  }
+
+  .hrail-ql__more {
+    justify-self: start;
+    color: var(--hr-ink, #111);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: underline;
+    text-underline-offset: 5px;
+  }
+
+  .hrail-ql__close {
+    position: absolute;
+    top: max(1rem, env(safe-area-inset-top));
+    right: 1rem;
+    z-index: 3;
+    min-height: 44px;
+    padding-inline: 0.75rem;
+    border: 0;
+    background: transparent;
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+  }
+
+  .hrail-ql :focus-visible {
+    outline: 2px solid var(--color-focus, currentColor);
+    outline-offset: 3px;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .hrail-btn--solid:hover {
+      background: transparent;
+      color: var(--hr-ink, #111);
+    }
+    .hrail-btn--ghost:hover {
+      background: var(--hr-ink, #111);
+      color: var(--hr-bg, #fff);
+    }
+    .hrail-ql__arrow:hover {
+      background: color-mix(in srgb, var(--hr-ink, #111) 10%, transparent);
+    }
+    .hrail-ql__thumb:hover {
+      opacity: 1;
+    }
+    .hrail-ql__chip:not(.is-out):hover {
+      border-color: var(--hr-ink, #111);
+    }
+  }
+
+  /* phone: piece on top, thumbnails under it, text & actions compactly grouped */
+  @media (max-width: 749px) {
+    .hrail-ql {
+      --ql-top: clamp(16px, 3svh, 28px);
+      --ql-h: min(44svh, 320px);
+    }
+    .hrail-ql__layout {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      width: 100%;
+      max-width: 440px;
+      margin-inline: auto;
+      padding: var(--ql-top) var(--hr-gutter) calc(1.25rem + env(safe-area-inset-bottom));
+      box-sizing: border-box;
+      gap: 0.6rem;
+    }
+    .hrail-ql__close {
+      top: max(0.75rem, env(safe-area-inset-top));
+      right: 0.75rem;
+      width: 36px;
+      height: 36px;
+      min-height: 36px;
+      padding: 0;
+      border-radius: 50%;
+      background: color-mix(in srgb, var(--hr-bg, #f4f2ee) 85%, transparent);
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      border: 1px solid color-mix(in srgb, var(--hr-ink, #111) 12%, transparent);
+    }
+    .hrail-ql__close span {
+      display: none;
+    }
+    /* keep the phone view short so the sizes and buttons are on screen without scrolling */
+    .hrail-ql__desc,
+    .hrail-ql__count {
+      display: none;
+    }
+    .hrail-ql__show {
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      width: 100%;
+    }
+    .hrail-ql__stage {
+      order: 1;
+      width: 100%;
+      height: var(--ql-h);
+    }
+    .hrail-ql__garment {
+      height: var(--ql-h);
+    }
+    .hrail-ql__thumbs {
+      order: 2;
+      flex-direction: row;
+      justify-content: center;
+      gap: 0.35rem;
+    }
+    .hrail-ql__thumb {
+      width: 42px;
+      height: 52px;
+    }
+    .hrail-ql__arrow {
+      width: 38px;
+      height: 38px;
+      top: calc(var(--ql-h) * 0.5 - 19px);
+    }
+    .hrail-ql__arrow--prev {
+      left: 4px;
+    }
+    .hrail-ql__arrow--next {
+      right: 4px;
+    }
+    .hrail-ql__info {
+      flex: 0 0 auto;
+      align-self: stretch;
+      align-items: center;
+      text-align: center;
+      padding: 0;
+      gap: 0.3rem;
+      width: 100%;
+    }
+    .hrail-ql__meta {
+      justify-content: center;
+      gap: 0.2rem 0.6rem;
+    }
+    .hrail-ql__name {
+      font-size: clamp(1.1rem, 3.8vw, 1.3rem);
+      line-height: 1.15;
+    }
+    .hrail-ql__price {
+      font-size: 0.98rem;
+      min-height: auto;
+    }
+    .hrail-ql__sub {
+      font-size: 0.8rem;
+      min-height: auto;
+    }
+    .hrail-ql__sizes {
+      width: 100%;
+      margin-top: 0.25rem;
+    }
+    .hrail-ql__label {
+      justify-content: center;
+      margin: 0 0 0.3rem;
+      font-size: 0.68rem;
+    }
+    .hrail-ql__chips {
+      justify-content: center;
+      gap: 0.35rem;
+    }
+    .hrail-ql__chip {
+      flex: 0 1 auto;
+      min-width: 44px;
+      min-height: 38px;
+      padding: 0 0.65rem;
+      font-size: 0.75rem;
+    }
+    .hrail-ql__cta {
+      display: grid;
+      gap: 0.45rem;
+      width: 100%;
+      margin-top: 0.5rem;
+      padding: 0;
+      position: static;
+      background: transparent;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+    .hrail-btn {
+      min-height: 44px;
+      padding: 0 1.25rem;
+      font-size: 0.72rem;
+    }
+    .hrail-ql__more {
+      justify-self: center;
+      margin-top: 0.15rem;
+    }
+  }
+
+  /* short phones (for example 360 x 640): make the piece a bit smaller so sizes stay above the buttons */
+  @media (max-width: 749px) and (max-height: 680px) {
+    .hrail-ql {
+      --ql-h: min(34svh, 240px);
+    }
+    .hrail-ql__thumb {
+      width: 36px;
+      height: 44px;
+    }
+  }
+
+  /* ---------- Reduced motion ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    .hrail.is-ready .hrail__link,
+    .hrail.is-ready .hrail__rod {
+      animation: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+    }
+    .hrail__dot,
+    .hrail-ql__hang,
+    .hrail-ql__photo,
+    .hrail-ql__thumb,
+    .hrail-ql__chip,
+    .hrail-ql__arrow,
+    .hrail-btn,
+    .hrail__hint {
+      transition: none;
+    }
+    .hrail-ql__chips.is-shaking {
+      animation: none;
+    }
+  }

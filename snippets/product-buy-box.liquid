@@ -385,7 +385,6 @@
               {%- endif -%}
 
               {%- liquid
-                assign title_check = block.settings.title | downcase
                 assign swatch_img = nil
                 if product.metafields.custom.fabric_swatch != blank
                   assign swatch_img = product.metafields.custom.fabric_swatch

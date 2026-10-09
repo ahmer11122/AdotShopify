@@ -1,0 +1,29 @@
+{% comment %}
+  Threadline add-to-bag animation assets.
+  Only on templates that can add to cart (product cards / PDP).
+  Usage:
+    {% render 'threadline-assets', part: 'css' %}
+    {% render 'threadline-assets', part: 'js' %}
+{% endcomment %}
+{%- liquid
+  assign load_threadline = false
+  if request.design_mode
+    assign load_threadline = true
+  elsif template.name == 'index' or template.name == 'product' or template.name == 'collection' or template.name == 'search'
+    assign load_threadline = true
+  endif
+-%}
+{%- if load_threadline -%}
+  {%- if part == 'css' -%}
+    {{ 'threadline.css' | asset_url | stylesheet_tag }}
+  {%- elsif part == 'js' -%}
+    <script src="{{ 'threadline-core.js' | asset_url }}" defer></script>
+    <script src="{{ 'threadline-adapters.js' | asset_url }}" defer></script>
+    <script src="{{ 'threadline-flyer.js' | asset_url }}" defer></script>
+    <script src="{{ 'threadline-path.js' | asset_url }}" defer></script>
+    <script src="{{ 'threadline-peek.js' | asset_url }}" defer></script>
+    <script src="{{ 'threadline-swipe.js' | asset_url }}" defer></script>
+    <script src="{{ 'threadline-flow.js' | asset_url }}" defer></script>
+    <script src="{{ 'threadline.js' | asset_url }}" defer></script>
+  {%- endif -%}
+{%- endif -%}
