@@ -291,12 +291,15 @@
   /* -------------------------------------------------------------------------
      SIZE GUIDE STYLES — 100% RESPONSIVE FIT (ZERO HORIZONTAL SCROLL)
      ------------------------------------------------------------------------- */
+  /* ---------- Shell: never scrollable, never sized in vw/vh ---------- */
   .sg {
+    --sg-dur: 380ms;
+    --sg-ease: var(--ease-drawer, cubic-bezier(0.32, 0.72, 0, 1));
+
     position: fixed;
     inset: 0;
-    width: 100vw;
-    height: 100vh;
-    height: 100dvh;
+    width: 100%;
+    height: 100%;
     max-width: none;
     max-height: none;
     margin: 0;
@@ -304,45 +307,41 @@
     border: 0;
     background: transparent;
     color: var(--pdp-ink, #111);
-    overflow: hidden;
+    overflow: hidden;            /* legacy fallback */
     overscroll-behavior: none;
     z-index: 9999;
     outline: none;
-    transition: display 380ms allow-discrete, overlay 380ms allow-discrete;
+    /* NO transition on display/overlay. Exit is driven from JS. */
   }
+  /* `clip` is NOT a scroll container, so focus / scrollIntoView can never scroll the dialog. */
+  @supports (overflow: clip) {
+    .sg { overflow: clip; }
+  }
+  .sg[data-state='closing'] { pointer-events: none; }
 
-  /* Backdrop */
+  /* ---------- Backdrop: fully keyframe-driven, same duration as the sheet ---------- */
   .sg::backdrop {
-    background: oklch(0 0 0 / 0);
-    transition: background-color 380ms var(--ease-drawer, cubic-bezier(0.32, 0.72, 0, 1));
-  }
-
-  .sg[open]::backdrop {
     background: oklch(0 0 0 / 0.44);
+    animation: sg-backdrop-in 380ms cubic-bezier(0.32, 0.72, 0, 1) backwards;
   }
-
-  @starting-style {
-    .sg[open]::backdrop {
-      background: oklch(0 0 0 / 0);
-    }
+  .sg[data-state='closing']::backdrop {
+    animation: sg-backdrop-out 380ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
   }
+  @keyframes sg-backdrop-in  { from { opacity: 0; } }
+  @keyframes sg-backdrop-out { to   { opacity: 0; } }
 
-  /* Main Sheet */
+  /* ---------- Sheet: resting state is OPEN ---------- */
   .sg__sheet {
     position: absolute;
     display: flex;
     flex-direction: column;
     background: var(--pdp-paper, #fff);
     font-family: var(--pdp-font, inherit);
-    transition: transform 380ms var(--ease-drawer, cubic-bezier(0.32, 0.72, 0, 1));
-    will-change: transform;
-    backface-visibility: hidden;
+    transform: none;
+    /* Only used for the drag spring-back. Enter/exit are Web Animations (JS). */
+    transition: transform var(--sg-dur) var(--sg-ease);
   }
-
-  .sg__sheet.is-dragging,
-  .sg__sheet.is-prep {
-    transition: none;
-  }
+  .sg__sheet.is-dragging { transition: none; }
 
   /* Mobile: Bottom Sheet */
   @media (max-width: 989px) {
@@ -354,12 +353,7 @@
       max-height: min(88svh, 100%);
       border-radius: 18px 18px 0 0;
       padding-bottom: env(safe-area-inset-bottom, 0px);
-      transform: translate3d(0, 0, 0);
       overscroll-behavior: contain;
-    }
-
-    .sg__sheet[data-closed] {
-      transform: translate3d(0, 100%, 0);
     }
   }
 
@@ -370,12 +364,7 @@
       right: 0;
       bottom: 0;
       width: min(34rem, 100%);
-      transform: translate3d(0, 0, 0);
       border-left: 1px solid var(--pdp-line-2, oklch(0 0 0 / 0.12));
-    }
-
-    .sg__sheet[data-closed] {
-      transform: translate3d(100%, 0, 0);
     }
   }
 
@@ -496,10 +485,7 @@
       width 360ms var(--pdp-spring, cubic-bezier(0.34, 1.35, 0.64, 1));
   }
 
-  .sg__seg-ind.is-still {
-    transition: none;
-  }
-
+  /* Constant weight, so selecting a button never changes its width or its neighbours' positions */
   .sg__seg button {
     position: relative;
     z-index: 1;
@@ -521,17 +507,32 @@
   .sg__seg button[aria-selected='true'],
   .sg__seg button[aria-checked='true'] {
     color: var(--pdp-ink, #111);
-    font-weight: 600;
+    /* no font-weight change here */
   }
 
-  /* Body */
+  /* Body & Stacking Panels */
   .sg__body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start;
     flex: 1;
     min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
     overscroll-behavior: contain;
     padding: 1.5rem clamp(1.25rem, 3vw, 2rem) clamp(1.5rem, 3vw, 2.5rem);
+  }
+
+  .sg__panel {
+    grid-area: 1 / 1;
+  }
+
+  /* Override the UA `[hidden]{display:none}`: inactive panels still take up space, but are invisible,
+     unfocusable and removed from the accessibility tree (visibility:hidden). */
+  .sg__panel[hidden] {
+    display: block;
+    visibility: hidden;
+    pointer-events: none;
   }
 
   /* 100% Width Table — Clean Typographic Headers without cluttered units */
@@ -668,13 +669,11 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .sg,
+    .sg { --sg-dur: 0.01ms; }
     .sg::backdrop,
-    .sg__sheet,
+    .sg[data-state='closing']::backdrop { animation-duration: 0.01ms; }
     .sg__seg-ind,
-    .sg__num > span {
-      transition-duration: 0.01ms !important;
-    }
+    .sg__num > span { transition-duration: 0.01ms !important; }
   }
 </style>
 
@@ -691,20 +690,47 @@
     const unitBtns = [...dialog.querySelectorAll('[data-unit-btn]')];
     const segs = [...dialog.querySelectorAll('[data-seg]')];
 
+    const DURATION = 380;                                   /* keep in sync with --sg-dur */
+    const EASING = 'cubic-bezier(0.32, 0.72, 0, 1)';
+    const REST = 'translate3d(0, 0, 0)';
+
     let productCat = '';
     let yours = [];
     let openerTrigger = null;
+    let closing = false;
+
+    const duration = () => (reduce.matches ? 1 : DURATION);
+    const offscreen = () =>
+      mobile.matches ? 'translate3d(0, 100%, 0)' : 'translate3d(100%, 0, 0)';
+
+    /* ------------------------------------------------ sheet housekeeping */
+    function resetSheet() {
+      /* WAAPI animations on a display:none element are NOT auto-cancelled. Cancel explicitly,
+         otherwise a fill:forwards exit animation would keep the sheet off-screen on re-open. */
+      sheet.getAnimations().forEach((a) => a.cancel());
+      dialog.removeAttribute('data-state');
+      sheet.classList.remove('is-dragging');
+      sheet.style.transform = '';
+    }
+
+    /* Safety net for browsers without overflow:clip. With clip this never fires. */
+    function pinDialogScroll() {
+      if (dialog.scrollTop) dialog.scrollTop = 0;
+      if (dialog.scrollLeft) dialog.scrollLeft = 0;
+    }
+    dialog.addEventListener('scroll', pinDialogScroll, { passive: true });
 
     /* ------------------------------------------------------- sliding thumbs */
     function moveThumb(seg, still) {
       const ind = seg.querySelector('.sg__seg-ind');
       const on = seg.querySelector('[aria-selected="true"], [aria-checked="true"]');
-      if (!ind || !on) return;
-      if (still) ind.classList.add('is-still');
+      if (!ind || !on || !on.offsetWidth) return;   /* not laid out yet: never write width 0 */
+      if (still) ind.style.transition = 'none';
       ind.style.width = on.offsetWidth + 'px';
       ind.style.transform = 'translateX(' + on.offsetLeft + 'px)';
       if (still) {
-        requestAnimationFrame(() => ind.classList.remove('is-still'));
+        void ind.offsetWidth;                       /* flush while transitions are off */
+        ind.style.transition = '';
       }
     }
 
@@ -723,10 +749,11 @@
       });
       panels.forEach((p) => { p.hidden = p !== target; });
       if (animate && !reduce.matches && target.animate) {
-        target.animate(
-          [{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'translateY(0)' }],
-          { duration: 260, easing: 'cubic-bezier(0.23, 1, 0.32, 1)' }
-        );
+        /* opacity only: a translate would briefly extend the scroll extent of .sg__body */
+        target.animate([{ opacity: 0 }, { opacity: 1 }], {
+          duration: 220,
+          easing: 'cubic-bezier(0.23, 1, 0.32, 1)',
+        });
       }
       moveThumb(tabs[0].parentElement, false);
       refreshRows();
@@ -745,7 +772,6 @@
       moveThumb(unitBtns[0].parentElement, false);
     }
 
-    /* Arrow keys inside a segmented control */
     function arrowNav(buttons, activate) {
       buttons.forEach((btn) => {
         btn.addEventListener('keydown', (e) => {
@@ -783,92 +809,71 @@
     });
 
     /* ------------------------------------------------------------ open / close */
-    let unlockTimer = 0;
-    let closing = false;
-
-    function lockPage() {
-      if (window.AdotUI && typeof window.AdotUI.lock === 'function') {
-        window.AdotUI.lock('size-guide');
-      }
-    }
-
-    function unlockPage() {
-      if (window.AdotUI && typeof window.AdotUI.unlock === 'function') {
-        window.AdotUI.unlock('size-guide');
-      }
-    }
-
-    function setClosed(on) {
-      if (on) sheet.setAttribute('data-closed', '');
-      else sheet.removeAttribute('data-closed');
-    }
-
     function open(trigger) {
       openerTrigger = trigger || null;
-      productCat = (trigger && trigger.dataset.sizeCategory) || productCat || (panels[0] && panels[0].dataset.panel);
+      if (dialog.open) return;
+      productCat =
+        (trigger && trigger.dataset.sizeCategory) || productCat || (panels[0] && panels[0].dataset.panel);
+
+      closing = false;
+      resetSheet();
       setCategory(productCat, false);
       setUnit(dialog.dataset.unit || 'cm');
-      if (dialog.open) return;
-      window.clearTimeout(unlockTimer);
-      closing = false;
 
-      const currentScrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
-
-      sheet.classList.add('is-prep');
-      setClosed(true);
-
+      /* 1. Sheet is at REST (fully on-screen) when showModal() runs its focus step -> nothing to scroll to.
+         2. The scroll lock is pure CSS (html:has(dialog.sg[open])) and lands in the same style recalc. */
       dialog.showModal();
-      try { dialog.focus({ preventScroll: true }); } catch (_) {}
-      lockPage();
+      pinDialogScroll();
 
-      /* Lock background page precisely where it was */
-      if (window.scrollY !== currentScrollY) {
-        window.scrollTo(0, currentScrollY);
+      /* 3. Start the slide immediately. fill:'backwards' applies keyframe 0 (off-screen) from the first
+            painted frame, so there is no frame-0 flash and no reflow/rAF trick needed. */
+      if (sheet.animate) {
+        sheet.animate([{ transform: offscreen() }, { transform: REST }], {
+          duration: duration(),
+          easing: EASING,
+          fill: 'backwards',
+        });
       }
 
-      /* Force layout reflow so browser commits the starting transform state before transition */
-      void sheet.offsetHeight;
+      /* 4. Layout exists now: measure the thumbs synchronously, before first paint. */
+      moveAllThumbs(true);
+    }
 
-      requestAnimationFrame(() => {
-        sheet.classList.remove('is-prep');
-        setClosed(false);
-        moveAllThumbs(true);
-      });
+    function finishClose() {
+      if (dialog.open) dialog.close();
     }
 
     function requestClose() {
       if (!dialog.open || closing) return;
       closing = true;
-      setClosed(true);
-      requestAnimationFrame(() => {
-        sheet.style.transform = '';
-      });
-      const delay = reduce.matches ? 0 : 380;
-      window.clearTimeout(unlockTimer);
-      unlockTimer = window.setTimeout(() => {
-        if (dialog.open) dialog.close();
-      }, delay);
+      dialog.dataset.state = 'closing';               /* CSS fades the backdrop in sync */
+
+      if (!sheet.animate) { finishClose(); return; }
+
+      /* Start from wherever the sheet currently is (mid-drag or mid-open) so there is no jump. */
+      const current = getComputedStyle(sheet).transform;
+      const exit = sheet.animate(
+        [{ transform: current === 'none' ? REST : current }, { transform: offscreen() }],
+        { duration: duration(), easing: EASING, fill: 'forwards' }
+      );
+      exit.finished.then(finishClose, finishClose);   /* guarded by dialog.open */
     }
 
-    dialog.addEventListener('cancel', (e) => {
+    dialog.addEventListener('cancel', (e) => {        /* Esc */
       e.preventDefault();
       requestClose();
     });
 
     dialog.addEventListener('close', () => {
       closing = false;
-      setClosed(true);
-      sheet.classList.remove('is-prep');
-      sheet.style.transform = '';
-      unlockPage();
+      resetSheet();
       if (openerTrigger && typeof openerTrigger.focus === 'function') {
-        try { openerTrigger.focus({ preventScroll: true }); }
-        catch (_) {}
+        try { openerTrigger.focus({ preventScroll: true }); } catch (_) {}
       }
     });
 
     dialog.addEventListener('click', (e) => {
-      if (e.target === dialog) requestClose();
+      if (e.target === dialog) requestClose();        /* backdrop tap */
     });
 
     dialog.querySelectorAll('[data-close-size-guide]').forEach((b) => {
@@ -882,14 +887,13 @@
       open(trigger);
     });
 
-    setClosed(true);
-
-    /* ---------------------- mobile: drag with iOS rubber-band physics & velocity */
+    /* ---------------------- mobile: drag with rubber-band physics & velocity */
     dialog.querySelectorAll('[data-sg-grab]').forEach((handle) => {
       let drag = null;
 
       handle.addEventListener('pointerdown', (e) => {
-        if (!mobile.matches || e.target.closest('button')) return;
+        if (!mobile.matches || closing || e.target.closest('button')) return;
+        if (sheet.getAnimations().length) return;     /* enter animation / spring-back still running */
         drag = { y: e.clientY, dy: 0, lastY: e.clientY, lastT: performance.now(), v: 0 };
         handle.setPointerCapture(e.pointerId);
         sheet.classList.add('is-dragging');
@@ -899,14 +903,7 @@
         if (!drag) return;
         const now = performance.now();
         const rawDy = e.clientY - drag.y;
-
-        /* Elastic rubber-band resistance when pulling upwards */
-        if (rawDy < 0) {
-          drag.dy = -Math.pow(-rawDy, 0.72) * 0.45;
-        } else {
-          drag.dy = rawDy;
-        }
-
+        drag.dy = rawDy < 0 ? -Math.pow(-rawDy, 0.72) * 0.45 : rawDy;
         const dt = Math.max(1, now - drag.lastT);
         drag.v = (e.clientY - drag.lastY) / dt;
         drag.lastY = e.clientY;
@@ -918,17 +915,24 @@
         if (!drag) return;
         const shouldClose = drag.dy > 100 || drag.v > 0.55;
         drag = null;
-        sheet.classList.remove('is-dragging');
         if (shouldClose) {
-          requestClose();
+          requestClose();                             /* keeps .is-dragging; exit starts from current drag offset */
         } else {
-          sheet.style.transform = '';
+          sheet.classList.remove('is-dragging');
+          sheet.style.transform = '';                 /* CSS transition springs it back */
         }
       };
       handle.addEventListener('pointerup', end);
       handle.addEventListener('pointercancel', end);
     });
 
-    window.addEventListener('resize', () => { if (dialog.open) moveAllThumbs(true); }, { passive: true });
+    /* ------------------------------------------- keep thumbs correct on any size change */
+    if ('ResizeObserver' in window) {
+      const ro = new ResizeObserver(() => { if (dialog.open) moveAllThumbs(true); });
+      segs.forEach((s) => ro.observe(s));
+    }
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => { if (dialog.open) moveAllThumbs(true); });
+    }
   })();
 </script>

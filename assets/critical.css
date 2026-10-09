@@ -34,7 +34,9 @@ html {
   scrollbar-gutter: stable;
 }
 
-html:has(dialog[scroll-lock][open], details[scroll-lock][open]) {
+html:has(dialog.sg[open]),
+html:has(dialog[scroll-lock][open], details[scroll-lock][open]),
+html[data-scroll-locked] {
   overflow: hidden;
 }
 

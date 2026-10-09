@@ -22,7 +22,14 @@ shopify theme push --theme 188676800690 --nodelete
 ```
 
 ### Push Specific Files Only (Fastest)
-To push only specific assets or snippets (e.g. THREADLINE motion system):
+To push only specific assets or snippets:
+
+**Size Guide Zero-Jerk Fix:**
+```bash
+shopify theme push --theme 188676800690 --nodelete --only snippets/size-guide.liquid assets/critical.css assets/adot-header-system.js assets/header-v2.css
+```
+
+**THREADLINE Motion System:**
 ```bash
 shopify theme push --theme 188676800690 --nodelete --only assets/threadline.css assets/threadline.js snippets/product-card.liquid snippets/product-sticky-bar.liquid
 ```
@@ -30,7 +37,7 @@ shopify theme push --theme 188676800690 --nodelete --only assets/threadline.css 
 ### Push to Git & Remote
 ```bash
 git add .
-git commit -m "feat(motion): update THREADLINE 3.1 Sartorial Hybrid motion system"
+git commit -m "fix(size-guide): zero-jerk scroll lock and synchronized web animations"
 git push origin main
 ```
 

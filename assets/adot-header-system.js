@@ -88,49 +88,20 @@
   };
 
   /* ---------- one scroll lock for everything ---------- */
-  /* Overflow + scrollbar gap only. Do NOT position:fixed the body — that snaps
-     the page behind drawers and feels like a jump on open. */
-  var locks = {};
-  var HAS_STABLE_GUTTER = (function () {
-    try { return window.CSS && CSS.supports && CSS.supports('scrollbar-gutter', 'stable'); }
-    catch (_) { return false; }
-  })();
+  /* Synchronous, ref-counted by id, toggles data-scroll-locked on html.
+     CSS handles overflow: hidden cleanly without padding-right or scrollTo hacks. */
+  var locks = new Set();
 
   function applyLock() {
-    var html = document.documentElement;
-    var on = Object.keys(locks).length > 0;
-    var currentY = window.scrollY || window.pageYOffset || html.scrollTop || 0;
-    if (on && !html.hasAttribute('data-adot-locked')) {
-      html.style.overflow = 'hidden';
-      html.style.overscrollBehavior = 'none';
-      if (!HAS_STABLE_GUTTER) {
-        var gap = window.innerWidth - html.clientWidth;
-        if (gap > 0) {
-          html.style.paddingRight = gap + 'px';
-          html.style.setProperty('--adot-lock-gap', gap + 'px');
-        }
-      }
-      html.setAttribute('data-adot-locked', '');
-      if (window.scrollY !== currentY) {
-        window.scrollTo(0, currentY);
-      }
-    } else if (!on && html.hasAttribute('data-adot-locked')) {
-      html.style.overflow = '';
-      html.style.overscrollBehavior = '';
-      html.style.paddingRight = '';
-      html.style.removeProperty('--adot-lock-gap');
-      html.removeAttribute('data-adot-locked');
-      if (window.scrollY !== currentY) {
-        window.scrollTo(0, currentY);
-      }
-    }
+    document.documentElement.toggleAttribute('data-scroll-locked', locks.size > 0);
   }
-  AdotUI.lock = function (name) {
-    locks[name] = true;
+
+  AdotUI.lock = function (id) {
+    locks.add(id);
     applyLock();
   };
-  AdotUI.unlock = function (name) {
-    delete locks[name];
+  AdotUI.unlock = function (id) {
+    locks.delete(id);
     applyLock();
   };
 
