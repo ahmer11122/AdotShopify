@@ -26,6 +26,7 @@
      --------------------------------------------------------------------------- */
   const config = {
     brandMark: 'ADOT',
+    logoUrl: '',
     maxFlights: 3,
     awaitMs: 8000,
     holdLabelMs: 1700,
@@ -221,6 +222,11 @@
         window.dispatchEvent(new CustomEvent('cart:updated', { detail: { cart } }));
       } catch (_) {}
     },
+    getLogoUrl() {
+      const logoEl = document.querySelector('.header__logo-img, .cart-drawer__logo-img, .header-drawer__logo-img, [data-header-logo] img');
+      if (logoEl && (logoEl.currentSrc || logoEl.src)) return logoEl.currentSrc || logoEl.src;
+      return '';
+    },
     getThumbUrl(form, cta) {
       if (form) {
         const imgInput = form.querySelector('input[name="properties[_adot_image]"]');
@@ -355,6 +361,12 @@
     root.setAttribute('aria-hidden', 'true');
     root.style.setProperty('--tl-w', T.w + 'px');
     root.style.setProperty('--tl-h', T.h + 'px');
+
+    const logoUrl = config.logoUrl || adapters.getLogoUrl();
+    if (logoUrl) {
+      root.style.setProperty('--tl-logo-url', 'url("' + String(logoUrl).replace(/\\/g, '%5C').replace(/"/g, '%22') + '")');
+    }
+
     root.innerHTML =
       '<div class="tl-body' + (isLite() ? ' tl-body--lite' : '') + '">' +
         '<div class="tl-stage tl-stage--1">' +
@@ -368,12 +380,16 @@
           '<div class="tl-base2 tl-lining tl-lining--right"><div class="tl-cast tl-cast--h"></div></div>' +
           '<div class="tl-flap2">' +
             '<div class="tl-face tl-face--front tl-lining"></div>' +
-            '<div class="tl-face tl-face--back tl-label"><span class="tl-brand-mark"></span><span class="tl-tag-size"></span></div>' +
+            '<div class="tl-face tl-face--back tl-label">' +
+              (logoUrl ? '<span class="tl-brand-logo" role="img" aria-label="' + config.brandMark + '"></span>' : '<span class="tl-brand-mark"></span>') +
+              '<span class="tl-tag-size"></span>' +
+            '</div>' +
           '</div>' +
         '</div>' +
       '</div>';
     // textContent, never innerHTML, for anything that came from the page
-    root.querySelector('.tl-brand-mark').textContent = config.brandMark;
+    const brandEl = root.querySelector('.tl-brand-mark');
+    if (brandEl) brandEl.textContent = config.brandMark;
     const tagEl = root.querySelector('.tl-tag-size');
     if (variantLabel) tagEl.textContent = variantLabel; else tagEl.remove();
     if (imageSrc) {

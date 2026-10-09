@@ -1,67 +1,93 @@
-# Shopify Local Development & Preview Guide
+# Shopify Local Development, Remote Push & Preview Guide
 
-This guide contains everything you need to start, preview, and edit your theme locally.
+This guide contains everything you need to preview, edit, push, and test your theme locally and on remote Shopify stores.
 
 ---
 
-## 1. Quick Start Command
+## 1. Active Store & Theme Details
 
-Run this command in the project root (`/home/ahmer/Desktop/AdotShopify`):
+* **Current Store:** `1wa9f5-nc.myshopify.com`
+* **Development Theme ID:** `188676800690`
+* **Direct Storefront Preview Link:** [https://1wa9f5-nc.myshopify.com?preview_theme_id=188676800690](https://1wa9f5-nc.myshopify.com?preview_theme_id=188676800690)
+* **Shopify Theme Customizer / Visual Editor:** [https://1wa9f5-nc.myshopify.com/admin/themes/188676800690/editor](https://1wa9f5-nc.myshopify.com/admin/themes/188676800690/editor)
 
+---
+
+## 2. How to Push Theme Changes to Remote Preview
+
+### Push All Modified Files
+To deploy all changes directly to the active development theme without deleting remote assets:
 ```bash
-SHOPIFY_CLI_NO_AUTO_UPDATE=1 shopify theme dev --store adot-5v045cze.myshopify.com --store-password euyeor
+shopify theme push --theme 188676800690 --nodelete
 ```
 
-> **Note:** If prompted for a one-time authentication code in your browser, approve it to link your session.
-
----
-
-## 2. Preview & Admin Links
-
-Once the command is running, you can access your store through these URLs:
-
-| Environment | URL | Purpose |
-| :--- | :--- | :--- |
-| **Local Preview** | [http://127.0.0.1:9292](http://127.0.0.1:9292) | Hot-reloading local development server |
-| **Remote Share Link** | [https://adot-5v045cze.myshopify.com/?preview_theme_id=166763954411](https://adot-5v045cze.myshopify.com/?preview_theme_id=166763954411) | Shareable link to view on phones or other devices |
-| **Theme Customizer** | [Theme Editor](https://adot-5v045cze.myshopify.com/admin/themes/166763954411/editor?hr=9292) | Visual editor for changing settings, menus, and sections |
-
----
-
-## 3. Store Credentials & Details
-
-* **Store Handle:** `adot-5v045cze.myshopify.com`
-* **Storefront Password:** `euyeor`
-* **Development Theme ID:** `166763954411`
-
----
-
-## 4. Terminal Hotkeys (While Dev Server is Running)
-
-Press these keys directly in the terminal running `shopify theme dev`:
-
-* `t` — Opens your **local preview** in default browser (`127.0.0.1:9292`).
-* `p` — Opens the **remote shareable preview** link.
-* `e` — Opens the **Shopify visual theme editor**.
-* `g` — Opens gift card preview.
-* `Ctrl + C` — Stops the dev server.
-
----
-
-## 5. Helpful Commands & Troubleshooting
-
-### Check Theme for Errors (Linter)
-Before committing or publishing changes:
+### Push Specific Files Only (Fastest)
+To push only specific assets or snippets (e.g. THREADLINE motion system):
 ```bash
-shopify theme check
+shopify theme push --theme 188676800690 --nodelete --only assets/threadline.css assets/threadline.js snippets/product-card.liquid snippets/product-sticky-bar.liquid
 ```
 
-### If Port 9292 is Already in Use
-Specify an alternate port:
+### Push to Git & Remote
 ```bash
-SHOPIFY_CLI_NO_AUTO_UPDATE=1 shopify theme dev --store adot-5v045cze.myshopify.com --store-password euyeor --port 9293
+git add .
+git commit -m "feat(motion): update THREADLINE 3.1 Sartorial Hybrid motion system"
+git push origin main
 ```
-Or find and stop the existing process:
+
+---
+
+## 3. Local Development Server (Live Hot-Reloading)
+
+To run the local development server on your machine:
 ```bash
-fuser -k 9292/tcp
+SHOPIFY_CLI_NO_AUTO_UPDATE=1 shopify theme dev --theme 188676800690
 ```
+
+### Terminal Hotkeys (While `shopify theme dev` is Running):
+* `t` — Opens local preview in browser (`http://127.0.0.1:9292`).
+* `p` — Opens shareable remote preview link for mobile devices.
+* `e` — Opens the visual Shopify Theme Editor.
+* `Ctrl + C` — Stops the local dev server.
+
+---
+
+## 4. THREADLINE 3.1 — "The Sartorial Hybrid" Motion System
+
+The store includes the bespoke **THREADLINE 3.1** Add to Bag motion engine for luxury menswear:
+
+```
+ 1. LIFT & CONDENSE          2. 3D SUITING FOLD            3. CONTINUOUS THREAD FLIGHT       4. VECTOR IMPACT & FINISH
+ ┌─────────────────┐        ┌────────┐  Fold I (rotateX)   ┌────────┐                      ┌─────────┐
+ │ Product Photo / │ ──▶    │ Upper  │ ───────────────▶    │ Woven  │ ═══ Brass Thread ══▶ │ Bag Hit │ (hx,hy)
+ │ Button Socket   │        │ Lower  │  Fold II (rotateY)  │ Label  │                      │ & Drawer│ / Receipt
+ └─────────────────┘        └────────┘                     └────────┘                      └─────────┘
+                            Reveals Oxblood Lining        Hot-Stamped Brass Logo           Knot + Ring + Odometer
+```
+
+### Key Highlights in THREADLINE 3.1:
+1. **Hot-Stamped Maker's Mark:** Replaces generic white badges with a hot-stamped brass foil brand logo (`mask-image`) on **oxblood silk cupro lining** with tailored pinstripes (`#4A1523`).
+2. **Compact Ivory Size Tab:** Crisp, readable contrast size tab (`.tl-tag-size`) with subtle depth shadow.
+3. **Hairline Brass Embroidery:** Solid hairline border (`rgba(201, 168, 106, 0.32)`) replacing dashed lines for a refined, bespoke finish.
+4. **Origin Resolution (`resolveOrigin`):** If the hero image is in the viewport (`coverage >= 35%`), the flyer condenses directly from the garment photograph; otherwise, it seamlessly ascends from the button.
+5. **Continuous SVG Brass Thread:** Unspools along a quadratic Bézier curve, pulling the folded bundle into the bag target.
+6. **Vector-Aware Bag Impact (`bagCatch`):** Compresses and springs home along the exact collision trajectory vector `(hx, hy)`.
+7. **Dual-Finish Context Routing:**
+   - **PDP Full Add:** Opens the cart drawer with a brass thread sweep across the added item.
+   - **Collection Quick-Add:** Displays a floating receipt card with a shortening thread countdown timer.
+
+---
+
+## 5. Troubleshooting & Useful Tips
+
+* **Free Up Port 9292:** If port 9292 is already occupied:
+  ```bash
+  fuser -k 9292/tcp
+  ```
+* **Verify JavaScript Syntax:**
+  ```bash
+  node -c assets/threadline.js
+  ```
+* **Run Shopify Theme Validator:**
+  ```bash
+  shopify theme check
+  ```

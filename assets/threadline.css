@@ -172,46 +172,81 @@
 }
 .tl-lining--right { background-position: calc(var(--tl-w, 96px) / -2) 0, 0 0; }
 
-/* Woven label. 3.1 FIX: 3.0 declared `position: relative` here, which overrode .tl-face's
-   `position: absolute; inset: 0`, so the label stopped filling the flap and collapsed to a thin
-   strip. Keep it absolutely positioned; the ::before border still anchors to it. */
+/* Hot-stamped Maker's Mark Label
+   Hot-stamped brass logo/mark directly on the oxblood lining + small ivory size tab.
+   Eliminates the boxy high-contrast ivory patch and dashed rectangle. */
 .tl-label {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: var(--tl-paper);
+  background-color: var(--tl-lining);
+  background-image:
+    repeating-linear-gradient(90deg, var(--tl-pin) 0 1px, transparent 1px 5px),
+    linear-gradient(180deg, var(--tl-lining-hi), var(--tl-lining));
+  background-size: var(--tl-w, 96px) 100%, 100% 100%;
+  background-position: calc(var(--tl-w, 96px) / -2) 0, 0 0;
+  background-repeat: repeat, no-repeat;
   padding: 4px;
   box-sizing: border-box;
   text-align: center;
   user-select: none;
 }
+/* Hairline solid brass embroidery inset (32% opacity) instead of dashed border */
 .tl-label::before {
   content: "";
   position: absolute;
   inset: 2.5px;
-  border: 1px dashed var(--tl-thread);
+  border: 1px solid rgba(201, 168, 106, 0.32);
   border-radius: 2px;
   pointer-events: none;
 }
+/* Hot-stamped Brass Logo Mark */
+.tl-brand-logo {
+  display: block;
+  position: relative;
+  width: calc(var(--tl-w, 96px) * 0.30);
+  height: calc(var(--tl-w, 96px) * 0.30 * 1.07);
+  background: linear-gradient(180deg, #EBD6AA 0%, #C9A86A 55%, #A8864F 100%);
+  -webkit-mask-image: var(--tl-logo-url);
+  mask-image: var(--tl-logo-url);
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.85)) drop-shadow(0 -0.5px 0 rgba(235, 214, 170, 0.35));
+}
+/* Hot-stamped Brass Typography (Fallback / Monogram) */
 .tl-brand-mark {
   position: relative;
   font-family: var(--font-display, "Cormorant Garamond", Georgia, serif);
   font-weight: 700;
-  font-size: calc(var(--tl-h, 120px) * 0.13);
+  font-size: calc(var(--tl-h, 120px) * 0.125);
   line-height: 1;
-  letter-spacing: 0.12em;
-  color: var(--tl-ink);
+  letter-spacing: 0.14em;
+  color: var(--tl-thread-hi, #C9A86A);
   text-transform: uppercase;
+  text-shadow: 0 1px 1.5px rgba(0, 0, 0, 0.9), 0 -0.5px 0 rgba(235, 214, 170, 0.45);
 }
+/* Small Ivory Size Tab — clean, rounded, soft shadow, highly legible in flight */
 .tl-tag-size {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   position: relative;
   font-family: var(--font-body, "Inter", -apple-system, sans-serif);
-  font-size: calc(var(--tl-h, 120px) * 0.08);
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  color: var(--tl-thread);
-  margin-top: 3px;
+  font-size: calc(var(--tl-h, 120px) * 0.075);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  background: var(--tl-paper, #EFE8DA);
+  color: var(--tl-lining, #4A1523);
+  padding: 1.5px 5px;
+  min-width: 14px;
+  border-radius: 2px;
+  box-shadow: 0 1.5px 4px rgba(0, 0, 0, 0.35), 0 0.5px 1px rgba(0, 0, 0, 0.2);
+  margin-top: 4px;
   line-height: 1;
   text-transform: uppercase;
 }
