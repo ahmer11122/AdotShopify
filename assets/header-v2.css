@@ -944,11 +944,14 @@ body:not(.template-index) .header__logo-img {
     align-items: center;
     gap: 0.875rem;
     padding: 0.625rem 0.75rem;
+    min-height: 84px;
     background-color: var(--color-surface, #FBFBFB);
     border: 1px solid var(--color-border-subtle, rgba(0, 0, 0, 0.06));
     border-radius: 6px;
     text-decoration: none;
     color: var(--color-text);
+    box-sizing: border-box;
+    width: 100%;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
     user-select: none;
@@ -970,19 +973,27 @@ body:not(.template-index) .header__logo-img {
   .search-modal__card-media {
     position: relative;
     width: 56px;
+    min-width: 56px;
+    max-width: 56px;
     height: 70px;
+    min-height: 70px;
+    max-height: 70px;
     aspect-ratio: 4 / 5;
     border-radius: 4px;
     overflow: hidden;
-    background-color: var(--color-background, #fff);
+    background-color: var(--color-surface, #f5f5f5);
     outline: 1px solid rgba(0, 0, 0, 0.05);
     flex-shrink: 0;
   }
 
-  .search-modal__card-img {
+  .search-modal__card-img,
+  .search-modal__card-placeholder {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: center;
     display: block;
   }
 
@@ -999,6 +1010,7 @@ body:not(.template-index) .header__logo-img {
     color: #ffffff;
     border-radius: 2px;
     line-height: 1.2;
+    z-index: 2;
   }
 
   .search-modal__card.is-out .search-modal__card-img {
@@ -1008,8 +1020,10 @@ body:not(.template-index) .header__logo-img {
   .search-modal__card-info {
     display: flex;
     flex-direction: column;
+    justify-content: center;
     gap: 3px;
     min-width: 0;
+    flex: 1;
   }
 
   .search-modal__card-title {
@@ -1064,14 +1078,20 @@ body:not(.template-index) .header__logo-img {
     align-items: center;
     gap: 0.875rem;
     padding: 0.625rem 0.75rem;
+    min-height: 84px;
     border-radius: 6px;
     background-color: var(--color-surface, #FBFBFB);
     border: 1px solid var(--color-border-subtle, rgba(0, 0, 0, 0.06));
+    box-sizing: border-box;
   }
 
   .search-modal__card--skeleton .search-modal__card-media {
     width: 56px;
+    min-width: 56px;
+    max-width: 56px;
     height: 70px;
+    min-height: 70px;
+    max-height: 70px;
     background: var(--color-border, #eaeaea);
   }
 
@@ -1092,6 +1112,7 @@ body:not(.template-index) .header__logo-img {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: var(--space-md);
+    align-items: stretch;
   }
 
   @media (min-width: 990px) {
@@ -1103,6 +1124,7 @@ body:not(.template-index) .header__logo-img {
   .search-modal__card {
     display: flex;
     flex-direction: column;
+    height: 100%;
     text-decoration: none;
     color: var(--color-text);
     background: transparent;
@@ -1125,17 +1147,22 @@ body:not(.template-index) .header__logo-img {
     position: relative;
     width: 100%;
     aspect-ratio: 4 / 5;
-    background-color: var(--color-surface);
+    background-color: var(--color-surface, #f5f5f5);
     overflow: hidden;
     margin-bottom: 0.65rem;
     border-radius: 4px;
     outline: 1px solid rgba(0, 0, 0, 0.04);
+    flex-shrink: 0;
   }
 
-  .search-modal__card-img {
+  .search-modal__card-img,
+  .search-modal__card-placeholder {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: center;
     display: block;
     transition: transform 340ms cubic-bezier(0.16, 1, 0.3, 1);
   }
@@ -1158,6 +1185,7 @@ body:not(.template-index) .header__logo-img {
     background: var(--color-background, #fff);
     color: var(--color-text, #111);
     box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    z-index: 2;
   }
 
   .search-modal__card.is-out .search-modal__card-img {
@@ -1167,7 +1195,9 @@ body:not(.template-index) .header__logo-img {
   .search-modal__card-info {
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 4px;
+    flex: 1;
+    justify-content: flex-start;
   }
 
   .search-modal__card-title {
@@ -1178,11 +1208,13 @@ body:not(.template-index) .header__logo-img {
     text-overflow: ellipsis;
     white-space: nowrap;
     line-height: 1.35;
+    display: block;
   }
 
   .search-modal__card-meta {
     display: flex;
     align-items: center;
+    margin-top: auto;
   }
 
   .search-modal__card-price {
@@ -1207,13 +1239,16 @@ body:not(.template-index) .header__logo-img {
   .search-modal__card--skeleton {
     display: flex;
     flex-direction: column;
+    height: 100%;
   }
 
   .search-modal__card--skeleton .search-modal__card-media {
+    position: relative;
     width: 100%;
     aspect-ratio: 4 / 5;
     background: var(--color-surface, #f7f7f7);
     border-radius: 4px;
+    flex-shrink: 0;
   }
 
   .search-modal__card-arrow-sk {
