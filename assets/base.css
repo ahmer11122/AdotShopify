@@ -112,6 +112,23 @@ select {
   color: var(--color-text);
 }
 
+/* Suppress browser native search cancel button so custom UI clear buttons are not duplicated */
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none !important;
+}
+
+input[type="search"]::-ms-clear,
+input[type="search"]::-ms-reveal {
+  display: none !important;
+  width: 0;
+  height: 0;
+}
+
 /* ==========================================================================
    Links & Interactive Elements
    ========================================================================== */

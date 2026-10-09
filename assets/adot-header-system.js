@@ -495,8 +495,8 @@
     skeleton() {
       var card =
         '<div class="search-modal__card search-modal__card--skeleton" aria-hidden="true">' +
-        '<div class="search-modal__card-media"></div><div class="search-modal__card-info"><span class="sk sk--line"></span><span class="sk sk--short"></span></div></div>';
-      return '<div class="search-modal__grid">' + new Array(6).fill(card).join('') + '</div>';
+        '<div class="search-modal__card-media"></div><div class="search-modal__card-info"><span class="sk sk--line"></span><span class="sk sk--short"></span></div><div class="search-modal__card-arrow-sk"></div></div>';
+      return '<div class="search-modal__grid">' + new Array(5).fill(card).join('') + '</div>';
     }
 
     async fetchResults(query) {
@@ -577,12 +577,19 @@
       if (collections.length) {
         colHtml =
           '<div class="search-modal__collections" role="group" aria-label="Collections">' +
+          '<div class="search-modal__results-header"><span class="text-micro search-modal__results-title">COLLECTIONS (' + collections.length + ')</span></div>' +
+          '<div class="search-modal__collection-list">' +
           collections
-            .map(function (c, i) {
-              return '<a href="' + escapeHtml(c.url) + '" class="search-modal__collection" data-search-option role="option" aria-selected="false">' + self.mark(c.title, query) + '</a>';
+            .map(function (c) {
+              return (
+                '<a href="' + escapeHtml(c.url) + '" class="search-modal__collection" data-search-option role="option" aria-selected="false">' +
+                '<span class="search-modal__collection-title">' + self.mark(c.title, query) + '</span>' +
+                '<svg class="search-modal__collection-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>' +
+                '</a>'
+              );
             })
             .join('') +
-          '</div>';
+          '</div></div>';
       }
 
       var cards = products
@@ -594,10 +601,19 @@
           return (
             '<a href="' + escapeHtml(p.url) + '" class="search-modal__card' + (out ? ' is-out' : '') + '" data-search-option role="option" aria-selected="false">' +
             '<div class="search-modal__card-media">' +
-            (img ? '<img src="' + escapeHtml(img) + '" alt="' + escapeHtml(p.title) + '" class="search-modal__card-img" width="300" height="375" loading="lazy">' : '') +
+            (img ? '<img src="' + escapeHtml(img) + '" alt="' + escapeHtml(p.title) + '" class="search-modal__card-img" width="200" height="250" loading="lazy">' : '') +
             (out ? '<span class="search-modal__badge text-micro">Sold out</span>' : '') +
-            '</div><div class="search-modal__card-info"><span class="search-modal__card-title">' + self.mark(p.title, query) + '</span>' +
-            '<span class="search-modal__card-price text-micro">' + escapeHtml(price) + (was ? ' <s>' + escapeHtml(was) + '</s>' : '') + '</span></div></a>'
+            '</div>' +
+            '<div class="search-modal__card-info">' +
+            '<span class="search-modal__card-title">' + self.mark(p.title, query) + '</span>' +
+            '<div class="search-modal__card-meta">' +
+            '<span class="search-modal__card-price text-micro">' + escapeHtml(price) + (was ? ' <s class="search-modal__card-was">' + escapeHtml(was) + '</s>' : '') + '</span>' +
+            '</div>' +
+            '</div>' +
+            '<div class="search-modal__card-arrow" aria-hidden="true">' +
+            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>' +
+            '</div>' +
+            '</a>'
           );
         })
         .join('');
