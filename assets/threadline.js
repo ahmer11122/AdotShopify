@@ -35,7 +35,7 @@
     imageLiftBonus: 40,   // a big photo needs longer to condense than a button needs to lift
     // VERIFY against the real cart drawer markup. Used to find the new line for the brass sweep.
     lineSelector: (id) => '[data-variant-id="' + id + '"], .cart-drawer__item[data-id="' + id + '"]',
-    gallerySelector: '.product-gallery__item.is-active img, .product-gallery img, .pdp-gallery img, [data-tf-product-image] img',
+    gallerySelector: 'product-gallery img, .pdp-plates img, .pdp-plate__img img, .section-product__gallery img, .product-gallery__item.is-active img, .product-gallery img, .pdp-gallery img, [data-tf-product-image] img',
     desktop: { w: 96, h: 120, lift: 110, fold1: 170, fold2: 150, flight: 380, catch: 340 },
     mobile:  { w: 80, h: 100, lift: 100, fold1: 150, fold2: 130, flight: 340, catch: 320 },
   };
@@ -325,8 +325,15 @@
      --------------------------------------------------------------------------- */
   function photoFor(cta, originEl) {
     if (originEl && originEl.isConnected) return originEl;
-    const card = cta.closest('.product-card');
-    if (card) return card.querySelector('.product-card__image') || card.querySelector('img');
+    const card = cta.closest('.product-card, [data-product-card]');
+    if (card) return card.querySelector('.product-card__media-wrapper, .product-card__image, img');
+    const sheet = cta.closest('.mobile-quick-sheet');
+    if (sheet) {
+      if (sheet._activeImg && sheet._activeImg.isConnected) return sheet._activeImg;
+      if (sheet._activeCard && sheet._activeCard.isConnected) {
+        return sheet._activeCard.querySelector('.product-card__media-wrapper, .product-card__image, img');
+      }
+    }
     return document.querySelector(config.gallerySelector);
   }
 
@@ -338,7 +345,9 @@
       const right = Math.min(r.right, window.innerWidth), bottom = Math.min(r.bottom, window.innerHeight);
       const w = Math.max(0, right - left), h = Math.max(0, bottom - top);
       const coverage = (w * h) / Math.max(1, r.width * r.height);
-      if (coverage >= 0.35 && w >= 90 && h >= 90) {
+      const minDim = isCoarse() ? 40 : 80;
+      const minCov = isCoarse() ? 0.15 : 0.35;
+      if (coverage >= minCov && w >= minDim && h >= minDim) {
         return { mode: 'image', cx: (left + right) / 2, cy: (top + bottom) / 2, s0: clamp((w * 0.75) / T.w, 1.1, 2.2) };
       }
     }
@@ -977,13 +986,12 @@
       dispose();          // flyer + thread are gone NOW; the slot is free for the next tap
       resetLabel();       // label timing is independent of the flight slot
 
-      if (isGrid) {
-        showPeek(cartResult, target, { thumbUrl, variantLabel, productTitle, priceFormatted: adapters.getPriceFormatted(form, cta, cartResult) });
-      } else {
-        adapters.openCart();
-        const vId = cartResult && cartResult.item ? cartResult.item.variant_id : null;
-        if (vId) highlightWhenReady(config.lineSelector(vId), 14);
-      }
+      showPeek(cartResult, target, {
+        thumbUrl,
+        variantLabel,
+        productTitle,
+        priceFormatted: adapters.getPriceFormatted(form, cta, cartResult)
+      });
     } catch (err) {
       console.warn('Threadline error:', err);
       failLabel(cta);

@@ -1923,12 +1923,14 @@
         if (window.Threadline && typeof window.Threadline.add === 'function') {
           const varLabel = current ? current.title : '';
           const prStr = formatMoney(current ? current.price : baseCents);
+          const pdpImg = document.querySelector('product-gallery img, .pdp-plates img, .pdp-plate__img img, .section-product__gallery img');
           window.Threadline.add({
             cta: activeCta,
             form: form,
             variantLabel: varLabel,
             title: '{{ product.title | escape }}',
-            price: prStr
+            price: prStr,
+            originEl: pdpImg
           });
           return;
         }

@@ -1278,6 +1278,8 @@
         }
 
         lastTrigger = trigger;
+        sheet._activeCard = card;
+        sheet._activeImg = card.querySelector('.product-card__media-wrapper') || card.querySelector('.product-card__image') || card.querySelector('img');
         sheet.classList.add('is-active');
         sheet.removeAttribute('inert');
         sheet.setAttribute('aria-hidden', 'false');
@@ -1412,6 +1414,10 @@
         var imgInput = form.querySelector('input[name="properties[_adot_image]"]');
         var imgUrl = imgInput ? imgInput.value : '';
 
+        var sheet = getSheet();
+        var activeCard = (sheet && sheet._activeCard) || (lastTrigger && lastTrigger.closest('[data-product-card], .product-card')) || form.closest('[data-product-card], .product-card');
+        var cardImg = (sheet && sheet._activeImg) || (activeCard ? (activeCard.querySelector('.product-card__media-wrapper') || activeCard.querySelector('.product-card__image') || activeCard.querySelector('img')) : null);
+
         if (window.Threadline && typeof window.Threadline.add === 'function') {
           window.Threadline.add({
             cta: btn,
@@ -1420,6 +1426,7 @@
             title: productTitle,
             price: productPrice,
             thumbUrl: imgUrl,
+            originEl: cardImg,
             context: 'grid',
             onStart: closeSheet
           });
