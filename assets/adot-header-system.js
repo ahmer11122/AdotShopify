@@ -90,17 +90,27 @@
   /* ---------- one scroll lock for everything ---------- */
   /* Overflow + scrollbar gap only. Do NOT position:fixed the body — that snaps
      the page behind drawers and feels like a jump on open. */
+  /* ---------- one scroll lock for everything ---------- */
+  /* Overflow + scrollbar gap only. Do NOT position:fixed the body — that snaps
+     the page behind drawers and feels like a jump on open. */
   var locks = {};
+  var HAS_STABLE_GUTTER = (function () {
+    try { return window.CSS && CSS.supports && CSS.supports('scrollbar-gutter', 'stable'); }
+    catch (_) { return false; }
+  })();
+
   function applyLock() {
     var html = document.documentElement;
     var on = Object.keys(locks).length > 0;
     if (on && !html.hasAttribute('data-adot-locked')) {
-      var gap = window.innerWidth - html.clientWidth;
       html.style.overflow = 'hidden';
       html.style.overscrollBehavior = 'none';
-      if (gap > 0) {
-        html.style.paddingRight = gap + 'px';
-        html.style.setProperty('--adot-lock-gap', gap + 'px');
+      if (!HAS_STABLE_GUTTER) {
+        var gap = window.innerWidth - html.clientWidth;
+        if (gap > 0) {
+          html.style.paddingRight = gap + 'px';
+          html.style.setProperty('--adot-lock-gap', gap + 'px');
+        }
       }
       html.setAttribute('data-adot-locked', '');
     } else if (!on && html.hasAttribute('data-adot-locked')) {

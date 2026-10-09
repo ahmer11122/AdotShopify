@@ -29,6 +29,11 @@ body {
   min-height: 100svh;
 }
 
+/* Reserve scrollbar space so overflow:hidden on lock never shifts the page */
+html {
+  scrollbar-gutter: stable;
+}
+
 html:has(dialog[scroll-lock][open], details[scroll-lock][open]) {
   overflow: hidden;
 }

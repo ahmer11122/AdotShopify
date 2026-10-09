@@ -12,6 +12,8 @@
   top: 0;
   left: 0;
   width: 100%;
+  /* Keep chrome aligned when scroll-lock adds a scrollbar gap */
+  padding-right: var(--adot-lock-gap, 0px);
   z-index: 1000;
   background-color: transparent;
   border-bottom: 1px solid transparent;
