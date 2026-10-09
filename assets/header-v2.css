@@ -1085,6 +1085,17 @@ body:not(.template-index) .header__logo-img {
   transition: opacity 200ms ease;
 }
 
+@media (max-width: 749px) {
+  .cart-drawer__items {
+    gap: 0.85rem;
+  }
+  .cart-drawer__item {
+    grid-template-columns: 68px 1fr;
+    gap: 0.75rem;
+    padding-bottom: 0.85rem;
+  }
+}
+
 .cart-drawer__item.is-updating {
   opacity: 0.4;
   pointer-events: none;
@@ -1268,81 +1279,93 @@ body:not(.template-index) .header__logo-img {
 }
 
 .cart-drawer__footer {
-  padding: var(--space-md);
+  padding: 1.1rem 1.25rem 1.25rem;
   background-color: var(--color-background, #FFFFFF);
   border-top: 1px solid var(--color-border);
   flex-shrink: 0;
 }
 
 @media (max-width: 749px) {
-  .cart-drawer__footer { padding: var(--space-sm); }
+  .cart-drawer__footer {
+    padding: 0.85rem 1rem calc(0.85rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+.cart-drawer__subtotal-wrap {
+  margin-bottom: 0.65rem;
 }
 
 .cart-drawer__subtotal-row {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
-  margin-bottom: 0.25rem;
+  gap: 0.5rem;
 }
 
 .cart-drawer__subtotal-label {
   letter-spacing: var(--tracking-micro);
   color: var(--color-text);
+  font-size: var(--font-size-caption, 0.85rem);
   font-weight: 600;
+  text-transform: uppercase;
 }
 
 .cart-drawer__subtotal-val {
   font-family: var(--font-display);
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--color-text);
 }
 
 .cart-drawer__taxes {
+  font-size: 0.72rem;
   color: var(--color-text-subtle);
-  margin: 0 0 var(--space-md) 0;
+  margin: 3px 0 0 0;
+  letter-spacing: 0.01em;
 }
 
 .cart-drawer__checkout-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.6rem;
+  gap: 0.5rem;
   width: 100%;
+  min-height: 46px;
   background-color: var(--color-surface-dark, #111111);
   color: var(--color-white, #FFFFFF);
   border: none;
   border-radius: 0;
-  padding: 1.15rem 1.5rem;
-  font-size: var(--font-size-caption);
+  padding: 0.85rem 1.25rem;
+  font-size: var(--font-size-caption, 0.82rem);
   font-weight: 600;
   letter-spacing: var(--tracking-micro);
   text-transform: uppercase;
   cursor: pointer;
   touch-action: manipulation;
-  transition: background-color 220ms ease, transform 200ms var(--ease-out), box-shadow 220ms ease;
+  transition: background-color 220ms ease, transform 180ms var(--ease-out), box-shadow 220ms ease;
 }
 
 .cart-drawer__checkout-btn svg { transition: transform 220ms var(--ease-out); }
 .cart-drawer__checkout-btn:hover {
-  background-color: #222222;
+  background-color: #242424;
   transform: translateY(-1px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.16);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 .cart-drawer__checkout-btn:hover svg { transform: translateX(4px); }
 .cart-drawer__checkout-btn:active {
-  transform: translateY(0) scale(0.985);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(0) scale(0.99);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
 .cart-drawer__view-cart {
   display: block;
   text-align: center;
-  margin-top: 0.85rem;
+  margin-top: 0.5rem;
+  font-size: 0.72rem;
   color: var(--color-text-subtle);
   text-decoration: underline;
-  text-underline-offset: 4px;
+  text-underline-offset: 3px;
   text-decoration-color: var(--color-border);
   letter-spacing: var(--tracking-micro);
   text-transform: uppercase;
@@ -1569,16 +1592,31 @@ body.template-index .header:not(.header--scrolled):not(.header--drawer-open) but
 
 .cart-drawer__trust {
   display: flex;
+  align-items: center;
+  justify-content: center;
   flex-wrap: wrap;
-  gap: 0.35rem 1rem;
-  margin: 0 0 var(--space-sm);
-  padding: 0;
+  gap: 0.35rem 0.6rem;
+  margin: 0 0 0.65rem 0;
+  padding: 0.35rem 0.6rem;
+  background-color: var(--color-surface, #F7F7F6);
+  border: 1px solid var(--color-border-subtle, #EFEFEF);
   list-style: none;
-  color: var(--color-text-muted, #555);
+  border-radius: 2px;
 }
 
+.cart-drawer__trust-item,
 .cart-drawer__trust li {
   margin: 0;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  color: var(--color-text-muted, #555555);
+}
+
+.cart-drawer__trust-sep {
+  font-size: 0.75rem;
+  color: var(--color-border, #D0D0D0);
+  user-select: none;
 }
 
 .cart-drawer__wa {

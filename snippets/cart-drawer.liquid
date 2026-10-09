@@ -169,19 +169,25 @@
     </div>
 
     <div class="cart-drawer__footer" {% if cart.item_count == 0 %}hidden{% endif %}>
-      <div class="cart-drawer__subtotal-row">
-        <span class="cart-drawer__subtotal-label text-micro">SUBTOTAL</span>
-        <span class="cart-drawer__subtotal-val" data-cart-subtotal>{{ cart.total_price | money }}</span>
+      <div class="cart-drawer__subtotal-wrap">
+        <div class="cart-drawer__subtotal-row">
+          <span class="cart-drawer__subtotal-label text-micro">SUBTOTAL</span>
+          <span class="cart-drawer__subtotal-val" data-cart-subtotal>{{ cart.total_price | money }}</span>
+        </div>
+        <p class="cart-drawer__taxes text-micro">Delivery & taxes calculated at checkout</p>
       </div>
-      <p class="cart-drawer__taxes text-micro">Delivery is added at checkout.</p>
 
       {% assign trust_lines = trust_text | split: '|' %}
       {% if trust_lines.size > 0 and trust_text != blank %}
-        <ul class="cart-drawer__trust" role="list">
+        <div class="cart-drawer__trust" role="note" aria-label="Order reassurance">
           {% for line in trust_lines %}
-            <li class="text-micro">{{ line | strip | escape }}</li>
+            {% assign trimmed = line | strip %}
+            {% if trimmed != blank %}
+              <span class="cart-drawer__trust-item text-micro">{{ trimmed | escape }}</span>
+              {% unless forloop.last %}<span class="cart-drawer__trust-sep" aria-hidden="true">·</span>{% endunless %}
+            {% endif %}
           {% endfor %}
-        </ul>
+        </div>
       {% endif %}
 
       <form action="{{ routes.cart_url }}" method="post" class="cart-drawer__form">
