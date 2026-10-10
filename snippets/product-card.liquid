@@ -1268,6 +1268,12 @@
       label.textContent = single ? 'Add to bag' : 'Select size';
 
       lastTrigger = trigger;
+      // Threadline reads these for flight origin when the size sheet is open.
+      sheet._activeCard = card;
+      sheet._activeImg = card.querySelector('.product-card__media-wrapper')
+        || card.querySelector('.product-card__image')
+        || card.querySelector('img');
+
       var box = sheetBox(sheet);
       box.style.transition = '';
       box.style.transform = '';
@@ -1289,6 +1295,8 @@
       sheet.classList.remove('is-active');
       sheet.setAttribute('aria-hidden', 'true');
       sheet.setAttribute('inert', '');
+      sheet._activeCard = null;
+      sheet._activeImg = null;
       doc.body.style.overflow = '';
       if (lastTrigger && doc.contains(lastTrigger)) {
         try { lastTrigger.focus({ preventScroll: true }); } catch (err) {}
@@ -1400,15 +1408,52 @@
     doc.addEventListener('pointerup', endDrag);
     doc.addEventListener('pointercancel', endDrag);
 
-    /* ---------- Quick add ---------- */
+    /* ---------- Quick add (Threadline when available) ---------- */
+    // Capture phase so this runs before any global add-to-cart handler.
     doc.addEventListener('submit', function (event) {
-      var form = event.target && event.target.closest ? event.target.closest('.product-card__quick-form') : null;
-      if (!form || event.defaultPrevented) return;
+      var form = event.target;
+      if (!form || !form.classList || !form.classList.contains('product-card__quick-form')) return;
+      if (event.defaultPrevented) return;
 
       event.preventDefault();
-      var btn = form.querySelector('button[type="submit"]');
-      if (!btn || btn.disabled || btn.getAttribute('data-state')) return;
+      var btn = event.submitter || form.querySelector('button[type="submit"]');
+      if (!btn || btn.disabled || btn.getAttribute('data-state') || btn.getAttribute('data-tl-state') === 'lifted') return;
 
+      var size = btn.getAttribute('data-variant-title') || '';
+      var titleInput = form.querySelector('input[name="properties[_adot_title]"]');
+      var productTitle = titleInput ? titleInput.value : '';
+      var priceInput = form.querySelector('input[name="properties[_adot_price]"]');
+      var productPrice = priceInput ? priceInput.value : '';
+      var imgInput = form.querySelector('input[name="properties[_adot_image]"]');
+      var imgUrl = imgInput ? imgInput.value : '';
+
+      var sheet = doc.getElementById('MobileQuickAddSheet');
+      var activeCard = (sheet && sheet._activeCard)
+        || (lastTrigger && lastTrigger.closest('[data-product-card], .product-card'))
+        || form.closest('[data-product-card], .product-card');
+      var cardImg = (sheet && sheet._activeImg)
+        || (activeCard
+          ? (activeCard.querySelector('.product-card__media-wrapper')
+            || activeCard.querySelector('.product-card__image')
+            || activeCard.querySelector('img'))
+          : null);
+
+      if (window.Threadline && typeof window.Threadline.add === 'function') {
+        window.Threadline.add({
+          cta: btn,
+          form: form,
+          variantLabel: size,
+          title: productTitle,
+          price: productPrice,
+          thumbUrl: imgUrl,
+          originEl: cardImg,
+          context: 'grid',
+          onStart: closeSheet
+        });
+        return;
+      }
+
+      // Fallback when Threadline is not on this template.
       btn.setAttribute('data-state', 'adding');
 
       fetch(form.getAttribute('action') + '.js', {
@@ -1423,7 +1468,8 @@
         .then(function () {
           btn.setAttribute('data-state', 'added');
           announce('Added to bag');
-          window.dispatchEvent(new CustomEvent('cart:refresh'));
+          var variantId = Number(form.querySelector('[name="id"]') && form.querySelector('[name="id"]').value);
+          window.dispatchEvent(new CustomEvent('cart:refresh', { detail: { variantId: variantId || undefined } }));
 
           window.setTimeout(function () {
             closeSheet();
@@ -1439,7 +1485,7 @@
           btn.removeAttribute('data-state');
           form.submit();
         });
-    });
+    }, true);
   })();
 </script>
 {%- endif -%}
