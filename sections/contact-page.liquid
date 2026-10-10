@@ -10,7 +10,6 @@
 {%- assign hero_headline = section.settings.headline | default: "Let's *talk.*" -%}
 {%- assign hero_intro = section.settings.intro | default: 'We are here to help. Message us on WhatsApp for the fastest reply, or send the form below.' -%}
 <div class="adot-page adot-page--contact">
-  {% render 'adot-service-index' %}
   <div class="adot-wrap">
     {% render 'adot-hero',
       num: '04',
@@ -50,7 +49,6 @@
                   autocomplete="name"
                   required
                 >
-                <span class="adot-field__stitch" aria-hidden="true"></span>
               </div>
 
               <div class="adot-field">
@@ -65,7 +63,6 @@
                   autocomplete="email"
                   required
                 >
-                <span class="adot-field__stitch" aria-hidden="true"></span>
               </div>
 
               <div class="adot-field">
@@ -80,7 +77,6 @@
                   autocomplete="tel"
                   inputmode="tel"
                 >
-                <span class="adot-field__stitch" aria-hidden="true"></span>
               </div>
 
               <div class="adot-field">
@@ -93,7 +89,6 @@
                   placeholder="e.g. #1042"
                   autocomplete="off"
                 >
-                <span class="adot-field__stitch" aria-hidden="true"></span>
               </div>
 
               <input type="hidden" name="contact[topic]" value="">
@@ -109,7 +104,6 @@
                   required
                   enterkeyhint="send"
                 >{% if form.body %}{{ form.body | escape }}{% endif %}</textarea>
-                <span class="adot-field__stitch" aria-hidden="true"></span>
               </div>
 
               {% render 'adot-btn', label: 'Send message', type: 'submit', variant: 'primary' %}

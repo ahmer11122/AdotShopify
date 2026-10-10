@@ -6,7 +6,6 @@
 {%- assign hero_headline = section.settings.headline | default: 'Find your *fit.*' -%}
 {%- assign hero_intro = section.settings.intro | default: 'Official ADOT hoodies & sweatshirts measurements. Measure your favourite garment flat across a smooth surface to find your fit. Available sizes: M, L, XL, XXL.' -%}
 <div class="adot-page">
-  {% render 'adot-service-index' %}
   <div class="adot-wrap">
     {% render 'adot-hero',
       num: '03',
@@ -15,147 +14,105 @@
       intro: hero_intro
     %}
 
-    <div class="adot-body">
-      <aside class="adot-rail" aria-hidden="true"></aside>
-      <div class="adot-main">
-        <div class="adot-size" data-adot-size data-wa="{{ wa_href | escape }}">
-          <div class="adot-size__diagram">
-            <svg class="adot-size__svg" viewBox="0 0 400 430" role="img" aria-label="Flat-lay hoodie with measurement points A to E">
-              <path class="garment" d="M130 78 L88 96 L26 262 L62 278 L110 176 L110 388 L290 388 L290 176 L338 278 L374 262 L312 96 L270 78"/>
-              <path class="garment" d="M150 78 C150 28 250 28 250 78"/>
-              <path class="garment" d="M166 78 C170 52 230 52 234 78"/>
-              <path class="garment" d="M146 304 H254 L266 352 H134 Z"/>
-              <path class="garment" d="M110 368 H290"/>
-              <g class="m m-a" data-measure="a"><path d="M110 164 H290"/><text class="adot-size__badge" x="200" y="158" text-anchor="middle">A</text></g>
-              <g class="m m-b" data-measure="b"><path d="M200 78 V388"/><text class="adot-size__badge" x="208" y="240">B</text></g>
-              <g class="m m-c" data-measure="c"><path d="M130 90 H270"/><text class="adot-size__badge" x="200" y="84" text-anchor="middle">C</text></g>
-              <g class="m m-d" data-measure="d"><path d="M196 70 L40 270"/><text class="adot-size__badge" x="90" y="160">D</text></g>
-              <g class="m m-e" data-measure="e"><path d="M110 404 H290"/><text class="adot-size__badge" x="200" y="420" text-anchor="middle">E</text></g>
-            </svg>
-          </div>
+    <div class="adot-size" data-adot-size data-wa="{{ wa_href | escape }}">
+      <div class="adot-size__controls">
+        <div>
+          <p class="adot-rail__title adot-size__cat">{{ section.settings.category_title | default: 'Hoodies & Sweatshirts' | escape }}</p>
+          <span class="adot-chip is-active adot-chip--static">{{ section.settings.fit_label | default: 'Regular / Relaxed Fit' | escape }}</span>
+        </div>
+        <div class="adot-seg" data-unit-seg data-unit="cm" role="group" aria-label="Unit">
+          <span class="adot-seg__thumb" aria-hidden="true"></span>
+          <button type="button" class="adot-seg__btn is-on" data-u="cm">cm</button>
+          <button type="button" class="adot-seg__btn" data-u="in">in</button>
+        </div>
+      </div>
 
-          <div class="adot-size__panel">
-            <div class="adot-size__controls">
-              <div>
-                <p class="adot-rail__title adot-size__cat">{{ section.settings.category_title | default: 'Hoodies & Sweatshirts' | escape }}</p>
-                <span class="adot-chip is-active adot-chip--static">{{ section.settings.fit_label | default: 'Regular / Relaxed Fit' | escape }}</span>
-              </div>
-              <div class="adot-seg" data-unit-seg data-unit="cm" role="group" aria-label="Unit">
-                <span class="adot-seg__thumb" aria-hidden="true"></span>
-                <button type="button" class="adot-seg__btn is-on" data-u="cm">cm</button>
-                <button type="button" class="adot-seg__btn" data-u="in">in</button>
-              </div>
-            </div>
+      <div class="adot-find">
+        <label class="adot-field__label" for="FindSize-{{ section.id }}">Find my size — chest width of your best-fitting hoodie, laid flat</label>
+        <div class="adot-field adot-field--tight">
+          <input
+            id="FindSize-{{ section.id }}"
+            class="adot-field__control"
+            type="number"
+            inputmode="decimal"
+            step="0.1"
+            min="40"
+            max="80"
+            placeholder="e.g. 58"
+            data-find-size
+          >
+        </div>
+        <p class="adot-find__status" role="status" data-find-status></p>
+      </div>
 
-            <div class="adot-find">
-              <label class="adot-field__label" for="FindSize-{{ section.id }}">Find my size — chest width of your best-fitting hoodie, laid flat</label>
-              <div class="adot-field adot-field--tight">
-                <input
-                  id="FindSize-{{ section.id }}"
-                  class="adot-field__control"
-                  type="number"
-                  inputmode="decimal"
-                  step="0.1"
-                  min="40"
-                  max="80"
-                  placeholder="e.g. 58"
-                  data-find-size
+      <p class="adot-size__scroll-hint" aria-hidden="true">Swipe chart left / right</p>
+      <div class="adot-matrix-wrap" tabindex="0" role="region" aria-label="Size chart — scroll horizontally">
+        <table class="adot-matrix">
+          <caption class="visually-hidden">{{ section.settings.category_title | default: 'Hoodies & Sweatshirts' | escape }} size chart</caption>
+          <thead>
+            <tr>
+              <th scope="col">Size</th>
+              <th scope="col" data-col="a"><span class="badge">A</span>Chest</th>
+              <th scope="col" data-col="b"><span class="badge">B</span>Length</th>
+              <th scope="col" data-col="c"><span class="badge">C</span>Shoulder</th>
+              <th scope="col" data-col="d"><span class="badge">D</span>Sleeve</th>
+              <th scope="col" data-col="e"><span class="badge">E</span>Hem</th>
+            </tr>
+          </thead>
+          <tbody>
+            {%- for block in section.blocks -%}
+              {%- if block.type == 'size' -%}
+                <tr
+                  data-size-row
+                  data-size="{{ block.settings.size | escape }}"
+                  data-chest="{{ block.settings.chest }}"
+                  data-length="{{ block.settings.length }}"
+                  data-shoulder="{{ block.settings.shoulder }}"
+                  data-sleeve="{{ block.settings.sleeve }}"
+                  data-hem="{{ block.settings.hem }}"
+                  {{ block.shopify_attributes }}
                 >
-                <span class="adot-field__stitch" aria-hidden="true"></span>
-              </div>
-              <p class="adot-find__status" role="status" data-find-status></p>
-            </div>
+                  <td>{{ block.settings.size | escape }}</td>
+                  <td data-col="a"><span data-cm="{{ block.settings.chest }}">{{ block.settings.chest }}</span></td>
+                  <td data-col="b"><span data-cm="{{ block.settings.length }}">{{ block.settings.length }}</span></td>
+                  <td data-col="c"><span data-cm="{{ block.settings.shoulder }}">{{ block.settings.shoulder }}</span></td>
+                  <td data-col="d"><span data-cm="{{ block.settings.sleeve }}">{{ block.settings.sleeve }}</span></td>
+                  <td data-col="e"><span data-cm="{{ block.settings.hem }}">{{ block.settings.hem }}</span></td>
+                </tr>
+              {%- endif -%}
+            {%- endfor -%}
+          </tbody>
+        </table>
+      </div>
 
-            <div class="adot-matrix-wrap">
-              <table class="adot-matrix">
-                <caption class="visually-hidden">{{ section.settings.category_title | default: 'Hoodies & Sweatshirts' | escape }} size chart</caption>
-                <thead>
-                  <tr>
-                    <th scope="col">Size</th>
-                    <th scope="col" data-col="a"><span class="badge">A</span>Chest</th>
-                    <th scope="col" data-col="b"><span class="badge">B</span>Length</th>
-                    <th scope="col" data-col="c"><span class="badge">C</span>Shoulder</th>
-                    <th scope="col" data-col="d"><span class="badge">D</span>Sleeve</th>
-                    <th scope="col" data-col="e"><span class="badge">E</span>Hem</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {%- for block in section.blocks -%}
-                    {%- if block.type == 'size' -%}
-                      <tr
-                        data-size-row
-                        data-size="{{ block.settings.size | escape }}"
-                        data-chest="{{ block.settings.chest }}"
-                        data-length="{{ block.settings.length }}"
-                        data-shoulder="{{ block.settings.shoulder }}"
-                        data-sleeve="{{ block.settings.sleeve }}"
-                        data-hem="{{ block.settings.hem }}"
-                        {{ block.shopify_attributes }}
-                      >
-                        <td>{{ block.settings.size | escape }}</td>
-                        <td data-col="a"><span data-cm="{{ block.settings.chest }}">{{ block.settings.chest }}</span></td>
-                        <td data-col="b"><span data-cm="{{ block.settings.length }}">{{ block.settings.length }}</span></td>
-                        <td data-col="c"><span data-cm="{{ block.settings.shoulder }}">{{ block.settings.shoulder }}</span></td>
-                        <td data-col="d"><span data-cm="{{ block.settings.sleeve }}">{{ block.settings.sleeve }}</span></td>
-                        <td data-col="e"><span data-cm="{{ block.settings.hem }}">{{ block.settings.hem }}</span></td>
-                      </tr>
-                    {%- endif -%}
-                  {%- endfor -%}
-                </tbody>
-              </table>
-            </div>
+      <p class="adot-size__note">{{ section.settings.note | default: 'Chest, shoulder, and hem are laid-flat half widths. Sleeve length is measured from center back.' | escape }}</p>
 
-            <div class="adot-spec">
-              <div class="adot-seg adot-seg--4" data-size-seg data-size="0" role="group" aria-label="Size">
-                <span class="adot-seg__thumb" aria-hidden="true"></span>
-                {%- assign si = 0 -%}
-                {%- for block in section.blocks -%}
-                  {%- if block.type == 'size' -%}
-                    <button type="button" class="adot-seg__btn{% if si == 0 %} is-on{% endif %}">{{ block.settings.size | escape }}</button>
-                    {%- assign si = si | plus: 1 -%}
-                  {%- endif -%}
-                {%- endfor -%}
-              </div>
-              <div class="adot-spec__rows">
-                <button type="button" class="adot-spec__row" data-spec-row data-spec="chest" data-measure="a"><span class="badge">A</span><span>Chest width</span><span class="adot-spec__val" data-cm data-val>—</span></button>
-                <button type="button" class="adot-spec__row" data-spec-row data-spec="length" data-measure="b"><span class="badge">B</span><span>Length</span><span class="adot-spec__val" data-cm data-val>—</span></button>
-                <button type="button" class="adot-spec__row" data-spec-row data-spec="shoulder" data-measure="c"><span class="badge">C</span><span>Shoulder</span><span class="adot-spec__val" data-cm data-val>—</span></button>
-                <button type="button" class="adot-spec__row" data-spec-row data-spec="sleeve" data-measure="d"><span class="badge">D</span><span>Sleeve</span><span class="adot-spec__val" data-cm data-val>—</span></button>
-                <button type="button" class="adot-spec__row" data-spec-row data-spec="hem" data-measure="e"><span class="badge">E</span><span>Hem</span><span class="adot-spec__val" data-cm data-val>—</span></button>
-              </div>
-            </div>
-
-            <p class="adot-size__note">{{ section.settings.note | default: 'Chest, shoulder, and hem are laid-flat half widths. Sleeve length is measured from center back.' | escape }}</p>
-
-            <h2 class="adot-ledger__title adot-size__howto">How to measure</h2>
-            <div class="adot-ledger" data-reveal-group>
-              <div class="adot-ledger__row" data-reveal data-measure="a">
-                <span class="adot-ledger__n">A</span>
-                <h3 class="adot-ledger__title">Chest width</h3>
-                <div class="adot-ledger__body">Measured straight from armpit to armpit flat across the front of the garment.</div>
-              </div>
-              <div class="adot-ledger__row" data-reveal data-measure="b">
-                <span class="adot-ledger__n">B</span>
-                <h3 class="adot-ledger__title">Length</h3>
-                <div class="adot-ledger__body">Measured from the highest point of the shoulder down to the bottom edge of the hem.</div>
-              </div>
-              <div class="adot-ledger__row" data-reveal data-measure="c">
-                <span class="adot-ledger__n">C</span>
-                <h3 class="adot-ledger__title">Shoulder width</h3>
-                <div class="adot-ledger__body">Measured from shoulder seam to shoulder seam straight across the upper back.</div>
-              </div>
-              <div class="adot-ledger__row" data-reveal data-measure="d">
-                <span class="adot-ledger__n">D</span>
-                <h3 class="adot-ledger__title">Sleeve length</h3>
-                <div class="adot-ledger__body">Measured from the center back of the neck, across the shoulder, down to the end of the cuff.</div>
-              </div>
-              <div class="adot-ledger__row" data-reveal data-measure="e">
-                <span class="adot-ledger__n">E</span>
-                <h3 class="adot-ledger__title">Hem width</h3>
-                <div class="adot-ledger__body">Measured flat across the bottom hem opening of the garment.</div>
-              </div>
-            </div>
-          </div>
+      <h2 class="adot-ledger__title adot-size__howto">How to measure</h2>
+      <div class="adot-ledger" data-reveal-group>
+        <div class="adot-ledger__row" data-reveal data-measure="a">
+          <span class="adot-ledger__n">A</span>
+          <h3 class="adot-ledger__title">Chest width</h3>
+          <div class="adot-ledger__body">Measured straight from armpit to armpit flat across the front of the garment.</div>
+        </div>
+        <div class="adot-ledger__row" data-reveal data-measure="b">
+          <span class="adot-ledger__n">B</span>
+          <h3 class="adot-ledger__title">Length</h3>
+          <div class="adot-ledger__body">Measured from the highest point of the shoulder down to the bottom edge of the hem.</div>
+        </div>
+        <div class="adot-ledger__row" data-reveal data-measure="c">
+          <span class="adot-ledger__n">C</span>
+          <h3 class="adot-ledger__title">Shoulder width</h3>
+          <div class="adot-ledger__body">Measured from shoulder seam to shoulder seam straight across the upper back.</div>
+        </div>
+        <div class="adot-ledger__row" data-reveal data-measure="d">
+          <span class="adot-ledger__n">D</span>
+          <h3 class="adot-ledger__title">Sleeve length</h3>
+          <div class="adot-ledger__body">Measured from the center back of the neck, across the shoulder, down to the end of the cuff.</div>
+        </div>
+        <div class="adot-ledger__row" data-reveal data-measure="e">
+          <span class="adot-ledger__n">E</span>
+          <h3 class="adot-ledger__title">Hem width</h3>
+          <div class="adot-ledger__body">Measured flat across the bottom hem opening of the garment.</div>
         </div>
       </div>
     </div>
