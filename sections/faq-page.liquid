@@ -1,52 +1,34 @@
 {%- comment -%}
-  FAQ — Atelier Desk № 01
+  FAQ — quiet editorial
 {%- endcomment -%}
 
 {%- assign hero_headline = section.settings.headline | default: 'Questions, *answered.*' -%}
 {%- assign hero_intro = section.settings.intro | default: 'Find quick answers regarding delivery, Cash on Delivery, sizing, and exchanges.' -%}
+{%- assign c_all = section.blocks.size -%}
+{%- assign c_delivery = 0 -%}
+{%- assign c_payments = 0 -%}
+{%- assign c_sizing = 0 -%}
+{%- assign c_exchanges = 0 -%}
+{%- for block in section.blocks -%}
+  {%- case block.settings.category -%}
+    {%- when 'Delivery' -%}{%- assign c_delivery = c_delivery | plus: 1 -%}
+    {%- when 'Payments' -%}{%- assign c_payments = c_payments | plus: 1 -%}
+    {%- when 'Sizing' -%}{%- assign c_sizing = c_sizing | plus: 1 -%}
+    {%- when 'Exchanges' -%}{%- assign c_exchanges = c_exchanges | plus: 1 -%}
+  {%- endcase -%}
+{%- endfor -%}
+
 <div class="adot-page" data-adot-faq data-cat="all">
   <div class="adot-wrap">
     {% render 'adot-hero',
-      num: '01',
       label: 'FAQ',
       headline: hero_headline,
       intro: hero_intro
     %}
 
     <div class="adot-body">
-      <aside class="adot-rail" aria-label="Categories">
-        <p class="adot-rail__title">On this page</p>
-        <div class="adot-rail__track" aria-hidden="true"></div>
-        <span class="adot-rail__needle" aria-hidden="true"></span>
-        {%- assign c_all = section.blocks.size -%}
-        {%- assign c_delivery = 0 -%}
-        {%- assign c_payments = 0 -%}
-        {%- assign c_sizing = 0 -%}
-        {%- assign c_exchanges = 0 -%}
-        {%- assign c_other = 0 -%}
-        {%- for block in section.blocks -%}
-          {%- case block.settings.category -%}
-            {%- when 'Delivery' -%}{%- assign c_delivery = c_delivery | plus: 1 -%}
-            {%- when 'Payments' -%}{%- assign c_payments = c_payments | plus: 1 -%}
-            {%- when 'Sizing' -%}{%- assign c_sizing = c_sizing | plus: 1 -%}
-            {%- when 'Exchanges' -%}{%- assign c_exchanges = c_exchanges | plus: 1 -%}
-            {%- else -%}{%- assign c_other = c_other | plus: 1 -%}
-          {%- endcase -%}
-        {%- endfor -%}
-        <ul class="adot-rail__list">
-          <li><button type="button" class="adot-filter__btn is-active" data-faq-cat="all"><span class="adot-filter__n">{{ c_all }}</span> All</button></li>
-          <li><button type="button" class="adot-filter__btn" data-faq-cat="Delivery"><span class="adot-filter__n">{{ c_delivery }}</span> Delivery</button></li>
-          <li><button type="button" class="adot-filter__btn" data-faq-cat="Payments"><span class="adot-filter__n">{{ c_payments }}</span> Payments</button></li>
-          <li><button type="button" class="adot-filter__btn" data-faq-cat="Sizing"><span class="adot-filter__n">{{ c_sizing }}</span> Sizing</button></li>
-          <li><button type="button" class="adot-filter__btn" data-faq-cat="Exchanges"><span class="adot-filter__n">{{ c_exchanges }}</span> Exchanges</button></li>
-          {% if c_other > 0 %}
-            <li><button type="button" class="adot-filter__btn" data-faq-cat="Other"><span class="adot-filter__n">{{ c_other }}</span> Other</button></li>
-          {% endif %}
-        </ul>
-      </aside>
-
       <div class="adot-main">
-        <div class="adot-filters adot-filters--mobile" role="toolbar" aria-label="FAQ categories">
+        <div class="adot-filters" role="toolbar" aria-label="FAQ categories">
           <button type="button" class="adot-chip is-active" data-faq-cat="all">All {{ c_all }}</button>
           <button type="button" class="adot-chip" data-faq-cat="Delivery">Delivery {{ c_delivery }}</button>
           <button type="button" class="adot-chip" data-faq-cat="Payments">Payments {{ c_payments }}</button>

@@ -9,17 +9,15 @@
 
 {%- assign hero_headline = section.settings.headline | default: "Let's *talk.*" -%}
 {%- assign hero_intro = section.settings.intro | default: 'We are here to help. Message us on WhatsApp for the fastest reply, or send the form below.' -%}
-<div class="adot-page adot-page--contact">
+<div class="adot-page adot-page--contact adot-page--wide">
   <div class="adot-wrap">
     {% render 'adot-hero',
-      num: '04',
       label: 'Contact',
       headline: hero_headline,
       intro: hero_intro
     %}
 
     <div class="adot-body">
-      <aside class="adot-rail" aria-hidden="true"></aside>
       <div class="adot-main">
         <div class="adot-contact">
           <div class="adot-contact__form">

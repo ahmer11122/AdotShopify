@@ -1,30 +1,22 @@
 {%- comment -%}
-  Params: num, label, headline (supports *accent*), intro, meta (optional)
+  Quiet page hero. Params: label, headline (*accent*), intro, meta (optional)
+  num kept for Theme Editor callers but not rendered (clutter-free).
 {%- endcomment -%}
 <header class="adot-hero">
-  <div class="adot-hero__grid">
-    <div class="adot-hero__main">
-      <div class="adot-hero__label">
-        <span class="adot-hero__num">№ {{ num | default: '—' }}</span>
-        <span class="adot-hero__rule" aria-hidden="true"></span>
-        <span class="adot-hero__tag">{{ label | escape }}</span>
-      </div>
-      <h1 class="adot-hero__title">{% render 'adot-title', headline: headline %}</h1>
-      {% if meta != blank %}
-        <span class="adot-hero__meta">{{ meta | escape }}</span>
+  {% if label != blank %}
+    <p class="adot-hero__eyebrow">{{ label | escape }}</p>
+  {% endif %}
+  <h1 class="adot-hero__title">{% render 'adot-title', headline: headline %}</h1>
+  {% if intro != blank %}
+    <div class="adot-hero__intro">
+      {% if intro contains '<' %}
+        {{ intro }}
       {% else %}
-        <span class="adot-hero__meta" hidden></span>
+        <p>{{ intro | escape }}</p>
       {% endif %}
     </div>
-    {% if intro != blank %}
-      <div class="adot-hero__intro">
-        {% if intro contains '<' %}
-          {{ intro }}
-        {% else %}
-          <p>{{ intro | escape }}</p>
-        {% endif %}
-      </div>
-    {% endif %}
-  </div>
-  <span class="adot-stitch" aria-hidden="true"></span>
+  {% endif %}
+  {% if meta != blank %}
+    <span class="adot-hero__meta">{{ meta | escape }}</span>
+  {% endif %}
 </header>

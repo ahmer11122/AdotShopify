@@ -1,5 +1,5 @@
 {%- comment -%}
-  Shipping & Exchanges — Atelier Desk № 02
+  Shipping & Exchanges — quiet editorial
 {%- endcomment -%}
 {%- capture wa_href -%}{% render 'adot-wa-link', message: 'Hello ADOT, I have a question about delivery.' %}{%- endcapture -%}
 {%- assign support_email = settings.support_email | default: 'support@adotoffical.com' -%}
@@ -11,7 +11,6 @@
 <div class="adot-page">
   <div class="adot-wrap">
     {% render 'adot-hero',
-      num: '02',
       label: 'Shipping & exchanges',
       headline: hero_headline,
       intro: hero_intro,
@@ -19,49 +18,7 @@
     %}
 
     <div class="adot-body">
-      <aside class="adot-rail" aria-label="On this page">
-        <p class="adot-rail__title">On this page</p>
-        <div class="adot-rail__track" aria-hidden="true"></div>
-        <span class="adot-rail__needle" aria-hidden="true"></span>
-        <ul class="adot-rail__list">
-          {%- assign sec_i = 0 -%}
-          {%- for block in section.blocks -%}
-            {%- if block.type == 'section' -%}
-              {%- assign sec_i = sec_i | plus: 1 -%}
-              {%- assign n = sec_i | prepend: '00' | slice: -2, 2 -%}
-              <li>
-                <a class="adot-rail__link" href="#ship-{{ block.id }}">
-                  <span class="adot-rail__n">{{ n }}</span>
-                  <span>{{ block.settings.title | escape }}</span>
-                </a>
-              </li>
-            {%- endif -%}
-          {%- endfor -%}
-        </ul>
-      </aside>
-
       <div class="adot-main">
-        <details class="adot-toc">
-          <summary class="adot-toc__summary">Contents</summary>
-          <div class="adot-toc__body">
-            <ul class="adot-toc__list">
-              {%- assign sec_i = 0 -%}
-              {%- for block in section.blocks -%}
-                {%- if block.type == 'section' -%}
-                  {%- assign sec_i = sec_i | plus: 1 -%}
-                  {%- assign n = sec_i | prepend: '00' | slice: -2, 2 -%}
-                  <li>
-                    <a class="adot-toc__link" href="#ship-{{ block.id }}">
-                      <span class="adot-toc__n">{{ n }}</span>
-                      <span>{{ block.settings.title | escape }}</span>
-                    </a>
-                  </li>
-                {%- endif -%}
-              {%- endfor -%}
-            </ul>
-          </div>
-        </details>
-
         <div class="adot-facts" data-reveal-group>
           {%- assign fact_i = 0 -%}
           {%- for block in section.blocks -%}

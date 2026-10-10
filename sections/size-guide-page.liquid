@@ -5,10 +5,9 @@
 
 {%- assign hero_headline = section.settings.headline | default: 'Find your *fit.*' -%}
 {%- assign hero_intro = section.settings.intro | default: 'Official ADOT hoodies & sweatshirts measurements. Measure your favourite garment flat across a smooth surface to find your fit. Available sizes: M, L, XL, XXL.' -%}
-<div class="adot-page">
+<div class="adot-page adot-page--wide">
   <div class="adot-wrap">
     {% render 'adot-hero',
-      num: '03',
       label: 'Size guide',
       headline: hero_headline,
       intro: hero_intro

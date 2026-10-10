@@ -11,5 +11,5 @@
     {%- assign clean = word | remove: '*' -%}
     {%- assign is_accent = true -%}
   {%- endif -%}
-  <span class="adot-title__w"><span style="--i:{{ forloop.index0 }}">{%- if is_accent -%}<em>{{ clean | escape }}</em>{%- else -%}{{ clean | escape }}{%- endif -%}</span></span>{%- unless forloop.last -%} {% endunless -%}
+  <span class="adot-title__w"><span style="--i:{{ forloop.index0 }}">{%- if is_accent -%}<em>{{ clean | escape }}</em>{%- else -%}{{ clean | escape }}{%- endif -%}</span></span>
 {%- endfor -%}

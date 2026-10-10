@@ -1,14 +1,11 @@
 {%- comment -%}
-  Generic editorial page — Atelier Desk
+  Generic editorial page
 {%- endcomment -%}
-{%- assign page_num = '—' -%}
 {%- assign page_label = page.title -%}
 {%- assign handle_l = page.handle | downcase -%}
 {%- if handle_l contains 'refund' or handle_l contains 'exchange' -%}
-  {%- assign page_num = '05' -%}
   {%- assign page_label = 'Exchange policy' -%}
 {%- elsif handle_l contains 'privacy' -%}
-  {%- assign page_num = '06' -%}
   {%- assign page_label = 'Privacy' -%}
 {%- endif -%}
 {%- capture wa_msg -%}Hello ADOT, I have a question about {{ page.title }}.{%- endcapture -%}
@@ -16,27 +13,12 @@
 <div class="adot-page">
   <div class="adot-wrap">
     {% render 'adot-hero',
-      num: page_num,
       label: page_label,
       headline: page.title
     %}
 
     <div class="adot-body">
-      <aside class="adot-rail" aria-label="On this page">
-        <p class="adot-rail__title">On this page</p>
-        <div class="adot-rail__track" aria-hidden="true"></div>
-        <span class="adot-rail__needle" aria-hidden="true"></span>
-        <ul class="adot-rail__list" data-toc-list></ul>
-      </aside>
-
       <div class="adot-main">
-        <details class="adot-toc">
-          <summary class="adot-toc__summary">Contents</summary>
-          <div class="adot-toc__body">
-            <ul class="adot-toc__list" data-toc-mobile></ul>
-          </div>
-        </details>
-
         <article class="adot-policy rte">
           {{ page.content }}
         </article>

@@ -1,6 +1,5 @@
 {%- comment -%}
-  Stitched ink help patch.
-  Params: message (WhatsApp prefills), eyebrow, title, copy
+  Dark help strip. Params: message, eyebrow, title, copy
 {%- endcomment -%}
 {%- assign wa_msg = message | default: 'Hello ADOT, I need help with…' -%}
 {%- capture wa_href -%}{% render 'adot-wa-link', message: wa_msg %}{%- endcapture -%}
