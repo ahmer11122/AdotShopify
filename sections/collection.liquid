@@ -29,67 +29,9 @@
         </h1>
         <span class="collection__count" data-collection-count>{{ collection.all_products_count }} items</span>
       </div>
-      {%- if collection.description != blank -%}
-        <div class="collection__intro">
-          {{ collection.description }}
-        </div>
-      {%- endif -%}
 
-      <!-- Segmented Category Pill Track (Quiet Luxury Apple-Grade) -->
-      <nav class="collection__filter-nav" aria-label="Filter products by category">
-        <div class="collection__filter-rail">
-          <button
-            type="button"
-            class="collection__filter-btn is-active"
-            data-category-filter="all"
-            aria-pressed="true"
-          >
-            All
-          </button>
-          {%- assign category_filter_blocks = section.blocks | where: 'type', 'category_filter' -%}
-          {%- if category_filter_blocks.size > 0 -%}
-            {%- for block in category_filter_blocks -%}
-              {%- if block.settings.label != blank and block.settings.value != blank -%}
-                <button
-                  type="button"
-                  class="collection__filter-btn"
-                  data-category-filter="{{ block.settings.value | downcase | escape }}"
-                  aria-pressed="false"
-                  {{ block.shopify_attributes }}
-                >
-                  {{ block.settings.label }}
-                </button>
-              {%- endif -%}
-            {%- endfor -%}
-          {%- else -%}
-            {%- assign derived_types = '' -%}
-            {%- for product_type in collection.all_types -%}
-              {%- assign type_stripped = product_type | strip -%}
-              {%- assign type_down = type_stripped | downcase -%}
-              {%- if type_down == blank or type_down == 'gift card' -%}
-                {%- continue -%}
-              {%- endif -%}
-              {%- assign type_token = '|' | append: type_down | append: '|' -%}
-              {%- unless derived_types contains type_token -%}
-                {%- assign derived_types = derived_types | append: type_token -%}
-                <button
-                  type="button"
-                  class="collection__filter-btn"
-                  data-category-filter="{{ type_down | escape }}"
-                  aria-pressed="false"
-                >
-                  {{ type_stripped }}
-                </button>
-              {%- endunless -%}
-            {%- endfor -%}
-            {%- if derived_types == blank -%}
-              <button type="button" class="collection__filter-btn" data-category-filter="hoodies" aria-pressed="false">Hoodies</button>
-              <button type="button" class="collection__filter-btn" data-category-filter="sweatshirts" aria-pressed="false">Sweatshirts</button>
-              <button type="button" class="collection__filter-btn" data-category-filter="trousers" aria-pressed="false">Trousers</button>
-            {%- endif -%}
-          {%- endif -%}
-        </div>
-      </nav>
+
+
     </div>
   </header>
 
@@ -207,71 +149,7 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* Segmented Category Pill Track (Apple-Grade) */
-  .collection__filter-nav {
-    display: flex;
-    align-items: center;
-    overflow-x: auto;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-  }
 
-  .collection__filter-nav::-webkit-scrollbar {
-    display: none;
-  }
-
-  .collection__filter-rail {
-    display: inline-flex;
-    align-items: stretch;
-  }
-
-  .collection__filter-btn {
-    border: 1px solid var(--color-border);
-    margin-inline-start: -1px;
-    background: transparent;
-    color: var(--color-text-subtle);
-    font-family: var(--font-body);
-    font-size: var(--font-size-micro);
-    font-weight: 500;
-    letter-spacing: var(--tracking-micro);
-    text-transform: uppercase;
-    min-height: 44px;
-    padding: 0 var(--space-sm);
-    border-radius: var(--radius-none);
-    cursor: pointer;
-    white-space: nowrap;
-    touch-action: manipulation;
-    transition:
-      color 160ms var(--ease-out),
-      background-color 160ms var(--ease-out),
-      border-color 160ms var(--ease-out),
-      transform 160ms var(--ease-out);
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .collection__filter-btn:first-child {
-    margin-inline-start: 0;
-  }
-
-  @media (hover: hover) and (pointer: fine) {
-    .collection__filter-btn:hover:not(.is-active) {
-      color: var(--color-text);
-      background-color: var(--color-surface);
-    }
-  }
-
-  .collection__filter-btn:active {
-    transform: scale(0.96);
-  }
-
-  .collection__filter-btn.is-active {
-    position: relative;
-    z-index: 1;
-    background: var(--color-btn-bg);
-    color: var(--color-btn-text);
-    border-color: var(--color-btn-bg);
-    font-weight: 600;
-  }
 
   .collection__item:nth-child(2n + 1) { --reveal-delay: 0ms; }
   .collection__item:nth-child(2n) { --reveal-delay: 70ms; }
@@ -354,102 +232,7 @@
   }
 </style>
 
-<script>
-  (function() {
-    const page = document.querySelector('[data-collection-page]');
-    if (!page) return;
 
-    const titleEl = page.querySelector('[data-collection-title]');
-    const countEl = page.querySelector('[data-collection-count]');
-    const filterBtns = page.querySelectorAll('[data-category-filter]');
-    const items = page.querySelectorAll('.collection__item');
-    const baseTitle = (titleEl && (titleEl.dataset.baseTitle || titleEl.textContent.trim())) || 'All Essentials';
-
-    const categoryMeta = { all: { title: baseTitle } };
-    const counts = { all: items.length };
-
-    filterBtns.forEach((btn) => {
-      const key = (btn.dataset.categoryFilter || '').toLowerCase();
-      if (!key || key === 'all') return;
-      categoryMeta[key] = { title: btn.textContent.trim() || key };
-      counts[key] = 0;
-    });
-
-    function matchesCategory(itemCat, cat) {
-      if (!itemCat || !cat) return false;
-      if (itemCat === cat) return true;
-      if (itemCat.includes(cat) || cat.includes(itemCat)) return true;
-      return false;
-    }
-
-    items.forEach((item) => {
-      const itemCat = (item.dataset.category || '').toLowerCase();
-      Object.keys(counts).forEach((key) => {
-        if (key === 'all') return;
-        if (matchesCategory(itemCat, key)) counts[key] += 1;
-      });
-    });
-
-    function setCategory(cat, updateUrl = true) {
-      cat = (cat || 'all').toLowerCase();
-      if (!categoryMeta[cat]) {
-        const btn = Array.prototype.find.call(filterBtns, (b) => b.dataset.categoryFilter === cat);
-        if (btn) {
-          categoryMeta[cat] = { title: btn.textContent.trim() || cat };
-          if (typeof counts[cat] !== 'number') {
-            counts[cat] = 0;
-            items.forEach((item) => {
-              if (matchesCategory((item.dataset.category || '').toLowerCase(), cat)) counts[cat] += 1;
-            });
-          }
-        } else {
-          cat = 'all';
-        }
-      }
-
-      filterBtns.forEach((btn) => {
-        const isMatch = btn.dataset.categoryFilter === cat;
-        btn.classList.toggle('is-active', isMatch);
-        btn.setAttribute('aria-pressed', isMatch);
-      });
-
-      const meta = categoryMeta[cat];
-      if (titleEl) titleEl.textContent = meta.title;
-      if (countEl) countEl.textContent = `${counts[cat] || 0} items`;
-
-      items.forEach((item) => {
-        const itemCat = (item.dataset.category || '').toLowerCase();
-        const show = cat === 'all' || matchesCategory(itemCat, cat);
-        item.style.display = show ? '' : 'none';
-      });
-
-      if (updateUrl) {
-        const url = new URL(window.location);
-        if (cat === 'all') {
-          url.searchParams.delete('category');
-        } else {
-          url.searchParams.set('category', cat);
-        }
-        window.history.pushState({ category: cat }, '', url);
-      }
-    }
-
-    filterBtns.forEach((btn) => {
-      btn.addEventListener('click', () => {
-        setCategory(btn.dataset.categoryFilter, true);
-      });
-    });
-
-    const initialParams = new URLSearchParams(window.location.search);
-    const initialCat = initialParams.get('category') || 'all';
-    setCategory(initialCat, false);
-
-    window.addEventListener('popstate', (e) => {
-      const stateCat = e.state?.category || new URLSearchParams(window.location.search).get('category') || 'all';
-      setCategory(stateCat, false);
-    });
-  })();
-</script>
 
 {% schema %}
 {
@@ -461,27 +244,6 @@
       "label": "All products title",
       "default": "All Essentials",
       "info": "Used when the collection handle is “all” or the title is “Products”."
-    }
-  ],
-  "blocks": [
-    {
-      "type": "category_filter",
-      "name": "Category filter",
-      "settings": [
-        {
-          "type": "text",
-          "id": "label",
-          "label": "Label",
-          "default": "Hoodies"
-        },
-        {
-          "type": "text",
-          "id": "value",
-          "label": "Filter value",
-          "default": "hoodies",
-          "info": "Matched against product type (case-insensitive). Example: hoodies"
-        }
-      ]
     }
   ]
 }
