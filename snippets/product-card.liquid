@@ -7,8 +7,8 @@
   and a "1 / 2" tab; a solid size strip rises from the bottom edge of the image.
   Touch: a flush "+" tab in the corner opens a size sheet that can be dragged down to dismiss.
 
-  The caption sets its own layout from the width the card is given (container query), so the
-  same card works in a 4-up grid, an editorial layout, a rail or a two-column phone grid.
+  Caption stays stacked (title, category, price) at every width so a compare-at price never
+  squeezes the title. Type scales up on wider cards via a container query.
   Only transform, opacity and clip-path are animated.
 
   @param {product} [product] - The product object
@@ -814,28 +814,7 @@
     color: var(--pc-ink);
   }
 
-  /* From about 270px the price moves to the right edge, on the title's baseline. */
-  @container product-card (min-width: 17rem) {
-    .product-card__content {
-      grid-template-columns: minmax(0, 1fr) auto;
-      column-gap: 1.25rem;
-      align-items: baseline;
-      padding-top: 0.875rem;
-    }
-
-    .product-card__meta-row {
-      grid-column: 2;
-      grid-row: 1;
-      justify-content: flex-end;
-      text-align: right;
-    }
-
-    .product-card__price .price__container {
-      justify-content: flex-end;
-    }
-  }
-
-  /* Larger frames earn larger type. */
+  /* Larger frames earn larger type. Caption stays stacked. */
   @container product-card (min-width: 26rem) {
     .product-card__content {
       padding-top: 1rem;

@@ -1,13 +1,13 @@
 {% comment %}
   New Arrivals
 
-  A typographic header over an editorial grid.
-  - Desktop: the pieces hang from one baseline in changing widths (5 / 3 / 4 columns, then the
-    next row mirrored 4 / 3 / 5), so the page reads as a spread, not a table.
-  - Tablet: pairs, 7 / 5 then 5 / 7.
+  A typographic header over an equal-weight product grid.
+  - Desktop: four equal columns, same 3:4 image ratio. Images align at the top; captions hang
+    below at whatever height they need. Editorial mode steps every second card down a beat.
+  - Tablet: two equal columns, right-hand card stepped down.
   - Phone: one column (full width, then a narrower piece on alternating sides) or two columns
     with the right-hand column set lower. Follows the "Mobile Layout" setting.
-  - "Editorial layout" off gives a plain, uniform grid.
+  - "Editorial layout" off keeps the equal grid without the stepped drop.
 
   Entrance: when the header reaches the lower part of the screen its words rise out of a mask
   and the top rule draws; each image is then unveiled with a clip-path wipe, row by row.
@@ -86,29 +86,10 @@
             assign is_lazy = false
           endif
 
-          # Tell the browser how wide this slot really is, so it fetches the right file.
-          assign slot_six = forloop.index0 | modulo: 6
-          assign slot_four = forloop.index0 | modulo: 4
+          # Equal columns: desktop 4-up, tablet 2-up. Phone still steps when editorial + 1-col.
           assign slot_two = forloop.index0 | modulo: 2
-          if editorial
-            case slot_six
-              when 0, 5
-                assign size_desktop = '42vw'
-              when 1, 4
-                assign size_desktop = '25vw'
-              else
-                assign size_desktop = '33vw'
-            endcase
-            case slot_four
-              when 0, 3
-                assign size_tablet = '58vw'
-              else
-                assign size_tablet = '42vw'
-            endcase
-          else
-            assign size_desktop = '25vw'
-            assign size_tablet = '33vw'
-          endif
+          assign size_desktop = '25vw'
+          assign size_tablet = '50vw'
           if mobile_cols == '2'
             assign size_phone = '50vw'
           elsif editorial and slot_two == 1
@@ -368,83 +349,47 @@
     }
   }
 
-  /* ---------- Grid: tablet, 12 columns ---------- */
+  /* ---------- Grid: tablet — two equal columns ---------- */
   @media (min-width: 750px) {
     .featured-collection__grid,
     .featured-collection__grid--mobile-2 {
       grid-template-columns: repeat(12, minmax(0, 1fr));
       column-gap: var(--fc-gap);
       row-gap: clamp(3.5rem, 7vw, 7rem);
-      align-items: end;
+      /* Align image tops; captions may wrap to different heights. */
+      align-items: start;
     }
 
-    /* Uniform grid: three across. */
     .featured-collection__item {
-      grid-column: span 4;
-    }
-
-    /* Editorial: pairs, wide then narrow, then the other way round. */
-    .featured-collection__grid--editorial .featured-collection__item:nth-child(4n + 1) {
-      grid-column: 1 / span 7;
-      --fc-ratio: 4 / 5;
-    }
-
-    .featured-collection__grid--editorial .featured-collection__item:nth-child(4n + 2) {
-      grid-column: 8 / span 5;
+      grid-column: span 6;
       --fc-ratio: 3 / 4;
     }
 
-    .featured-collection__grid--editorial .featured-collection__item:nth-child(4n + 3) {
-      grid-column: 1 / span 5;
-      --fc-ratio: 3 / 4;
-    }
-
-    .featured-collection__grid--editorial .featured-collection__item:nth-child(4n + 4) {
-      grid-column: 6 / span 7;
-      --fc-ratio: 4 / 5;
+    /* Editorial: right-hand column steps down. */
+    .featured-collection__grid--editorial .featured-collection__item:nth-child(even) {
+      margin-top: clamp(2.5rem, 5vw, 4.5rem);
     }
   }
 
-  /* ---------- Grid: desktop ---------- */
+  /* ---------- Grid: desktop — four equal columns ---------- */
   @media (min-width: 990px) {
     .featured-collection {
       --fc-gap: 1.5rem;
     }
 
-    /* Uniform grid: four across. */
     .featured-collection__item {
       grid-column: span 3;
-    }
-
-    /* Editorial: 5 / 3 / 4, then 4 / 3 / 5. Bottoms align, so the captions share a line. */
-    .featured-collection__grid--editorial .featured-collection__item:nth-child(6n + 1) {
-      grid-column: 1 / span 5;
-      --fc-ratio: 4 / 5;
-    }
-
-    .featured-collection__grid--editorial .featured-collection__item:nth-child(6n + 2) {
-      grid-column: 6 / span 3;
       --fc-ratio: 3 / 4;
     }
 
-    .featured-collection__grid--editorial .featured-collection__item:nth-child(6n + 3) {
-      grid-column: 9 / span 4;
-      --fc-ratio: 4 / 5;
+    /* Editorial: 2nd and 4th in each row step down for rhythm. */
+    .featured-collection__grid--editorial .featured-collection__item:nth-child(even) {
+      margin-top: 0;
     }
 
-    .featured-collection__grid--editorial .featured-collection__item:nth-child(6n + 4) {
-      grid-column: 1 / span 4;
-      --fc-ratio: 4 / 5;
-    }
-
-    .featured-collection__grid--editorial .featured-collection__item:nth-child(6n + 5) {
-      grid-column: 5 / span 3;
-      --fc-ratio: 3 / 4;
-    }
-
-    .featured-collection__grid--editorial .featured-collection__item:nth-child(6n + 6) {
-      grid-column: 8 / span 5;
-      --fc-ratio: 4 / 5;
+    .featured-collection__grid--editorial .featured-collection__item:nth-child(4n + 2),
+    .featured-collection__grid--editorial .featured-collection__item:nth-child(4n + 4) {
+      margin-top: clamp(2.5rem, 4vw, 4.5rem);
     }
   }
 
@@ -574,7 +519,7 @@
       "type": "checkbox",
       "id": "editorial_layout",
       "label": "Editorial layout",
-      "info": "Varied card widths on desktop and tablet, and a stepped rhythm on phones. Turn off for a plain, uniform grid.",
+      "info": "Equal card widths with a stepped drop on desktop and tablet, and a stepped rhythm on phones. Turn off for a flat, uniform grid.",
       "default": true
     },
     {
