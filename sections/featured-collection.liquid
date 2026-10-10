@@ -83,14 +83,11 @@
             assign is_lazy = false
           endif
 
-          # Equal columns: desktop 4-up, tablet 2-up. Phone still steps when editorial + 1-col.
-          assign slot_two = forloop.index0 | modulo: 2
+          # Equal columns: desktop 4-up, tablet/phone 2-up (or full width on 1-col phone).
           assign size_desktop = '25vw'
           assign size_tablet = '50vw'
           if mobile_cols == '2'
             assign size_phone = '50vw'
-          elsif editorial and slot_two == 1
-            assign size_phone = '78vw'
           else
             assign size_phone = '100vw'
           endif
