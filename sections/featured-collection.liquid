@@ -53,7 +53,6 @@
           {%- assign heading_words = section.settings.heading | split: ' ' -%}
           {%- for word in heading_words -%}
             <span class="featured-collection__word" style="--w: {{ forloop.index0 }}"><span class="featured-collection__word-inner">{{ word | escape }}</span></span>
-            {%- unless forloop.last %} {% endunless -%}
           {%- endfor -%}
         </h2>
       {%- endif -%}
@@ -203,13 +202,15 @@
 
   .featured-collection__heading {
     margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: 0.22em;
     font-family: var(--font-display);
     font-size: clamp(3.25rem, 11.5vw, 9.5rem);
     font-weight: 400;
     line-height: 0.9;
-    letter-spacing: -0.055em;
+    letter-spacing: -0.03em;
     color: var(--color-text);
-    text-wrap: balance;
   }
 
   /* Each word sits in its own window so it can rise into place. The clip extends
