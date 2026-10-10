@@ -1,13 +1,11 @@
 {% comment %}
   New Arrivals
 
-  A typographic header over an equal-weight product grid.
-  - Desktop: four equal columns, same 3:4 image ratio. Images align at the top; captions hang
-    below at whatever height they need. Editorial mode steps every second card down a beat.
-  - Tablet: two equal columns, right-hand card stepped down.
-  - Phone: two equal columns by default, with the right-hand column stepped down when editorial
-    is on. Theme Editor can switch to 1-column full-width editorial.
-  - "Editorial layout" off keeps the equal grid without the stepped drop.
+  A typographic header over a flat, equal-weight product grid.
+  - Desktop: four equal columns, same 3:4 image ratio. Image tops align; captions hang below.
+  - Tablet: two equal columns, same ratio, tops aligned.
+  - Phone: two equal columns by default (Theme Editor can switch to 1 full-width column).
+  - Every card is the same size and position in its row — no stepped drops.
 
   Entrance: when the header reaches the lower part of the screen its words rise out of a mask
   and the top rule draws; each image is then unveiled with a clip-path wipe, row by row.
@@ -338,28 +336,11 @@
   }
 
   @media (max-width: 749px) {
-    /* One column: a full-width piece, then a narrower one stepped to alternating sides. */
-    .featured-collection__grid--editorial.featured-collection__grid--mobile-1 .featured-collection__item {
-      --fc-ratio: 4 / 5;
-    }
-
-    .featured-collection__grid--editorial.featured-collection__grid--mobile-1 .featured-collection__item:nth-child(even) {
+    .featured-collection__item {
       --fc-ratio: 3 / 4;
-      width: 78%;
-      justify-self: end;
-    }
-
-    .featured-collection__grid--editorial.featured-collection__grid--mobile-1 .featured-collection__item:nth-child(4n) {
-      justify-self: start;
-    }
-
-    /* Two columns: equal weight, right-hand column steps down a beat. */
-    .featured-collection__grid--editorial.featured-collection__grid--mobile-2 .featured-collection__item {
-      --fc-ratio: 3 / 4;
-    }
-
-    .featured-collection__grid--editorial.featured-collection__grid--mobile-2 .featured-collection__item:nth-child(even) {
-      margin-top: 1.75rem;
+      width: 100%;
+      justify-self: stretch;
+      margin-top: 0;
     }
   }
 
@@ -377,11 +358,7 @@
     .featured-collection__item {
       grid-column: span 6;
       --fc-ratio: 3 / 4;
-    }
-
-    /* Editorial: right-hand column steps down. */
-    .featured-collection__grid--editorial .featured-collection__item:nth-child(even) {
-      margin-top: clamp(2.5rem, 5vw, 4.5rem);
+      margin-top: 0;
     }
   }
 
@@ -394,16 +371,7 @@
     .featured-collection__item {
       grid-column: span 3;
       --fc-ratio: 3 / 4;
-    }
-
-    /* Editorial: 2nd and 4th in each row step down for rhythm. */
-    .featured-collection__grid--editorial .featured-collection__item:nth-child(even) {
       margin-top: 0;
-    }
-
-    .featured-collection__grid--editorial .featured-collection__item:nth-child(4n + 2),
-    .featured-collection__grid--editorial .featured-collection__item:nth-child(4n + 4) {
-      margin-top: clamp(2.5rem, 4vw, 4.5rem);
     }
   }
 
@@ -533,7 +501,7 @@
       "type": "checkbox",
       "id": "editorial_layout",
       "label": "Editorial layout",
-      "info": "Equal card widths with a stepped drop on desktop and tablet, and a stepped rhythm on phones. Turn off for a flat, uniform grid.",
+      "info": "Kept for Theme Editor compatibility. The grid is always equal-width and flat (no stepped drop).",
       "default": true
     },
     {

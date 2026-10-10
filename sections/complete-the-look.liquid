@@ -4,8 +4,8 @@
   - Four pieces, drawn first from the same collection as the current product, then from the
     whole catalogue.
   - Desktop (1200px and up): one row under a ruled line. The heading is the first tile of the
-    row, with "Shop all" at its foot; the second and fourth pieces step down so the row reads
-    as a rhythm, not a table. Hovering one piece softens the others (fine pointer only).
+    row, with "Shop all" at its foot; the four product tiles are equal size and top-aligned.
+    Hovering one piece softens the others (fine pointer only).
   - Phone and tablet: a swipeable rail with the next piece peeking in, snapping to each card,
     with a hairline that tracks how far along it is.
   - Entrance: the rule draws and each image is unveiled with a clip-path wipe as it arrives.
@@ -355,11 +355,8 @@
 
     .pdp-more__item {
       grid-row: 1;
-    }
-
-    /* Rhythm: every second card steps down. */
-    .pdp-more__item:nth-child(even) {
-      margin-top: clamp(3rem, 6vw, 6rem);
+      margin-top: 0;
+      align-self: start;
     }
 
     .pdp-more__progress {
