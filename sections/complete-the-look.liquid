@@ -1,18 +1,21 @@
 {% comment %}
-  Related Items Section (PDP cross-sell)
+  Related Items (PDP cross-sell)
 
-  - Four pieces, drawn first from the same collection as the current product, then from the whole catalogue.
-  - Desktop: 4 columns, the 2nd and 4th drop down so the row reads as a rhythm, not a table.
-    Hovering one card softens the others (fine pointer only).
-  - Mobile: one swipeable rail, the next card peeks in from the right.
-  - The heading is the loudest thing on the page below the fold. The way out ("Shop all") sits on its baseline.
+  - Four pieces, drawn first from the same collection as the current product, then from the
+    whole catalogue.
+  - Desktop (1200px and up): one row under a ruled line. The heading is the first tile of the
+    row, with "Shop all" at its foot; the second and fourth pieces step down so the row reads
+    as a rhythm, not a table. Hovering one piece softens the others (fine pointer only).
+  - Phone and tablet: a swipeable rail with the next piece peeking in, snapping to each card,
+    with a hairline that tracks how far along it is.
+  - Entrance: the rule draws and each image is unveiled with a clip-path wipe as it arrives.
+    Never in the theme editor, never with reduced motion.
   - Bottom padding clears the mobile dock.
 {% endcomment %}
 
 {%- liquid
   assign current_handle = product.handle
   assign rendered_count = 0
-  assign max_products = section.settings.products_to_show | default: 6
   assign shown = ','
   assign primary_collection = product.collections | first
 -%}
@@ -23,74 +26,194 @@
   data-section-type="related-items"
   aria-labelledby="RelatedHeading-{{ section.id }}"
 >
-  <header class="pdp-more__head">
-    <h2 class="pdp-more__title" id="RelatedHeading-{{ section.id }}">{{ section.settings.heading | default: 'You may also like' }}</h2>
-    <a class="pdp-more__all" href="{{ routes.all_products_collection_url }}">
-      <span>Shop all</span>
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-        <path d="M3.5 10.5l7-7M4.5 3.5h6v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </a>
-  </header>
+  {% # theme-check-disable ParserBlockingScript %}
+  <script>
+    (function (el) {
+      var reduce = false;
+      try { reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+      var design = !!(window.Shopify && Shopify.designMode);
+      if (reduce || design || !('IntersectionObserver' in window)) return;
+      el.setAttribute('data-reveal', 'pending');
+    })(document.currentScript.parentElement);
+  </script>
+  {% # theme-check-enable ParserBlockingScript %}
 
-  <div class="pdp-more__grid">
-    {%- for pass in (1..2) -%}
-      {%- if rendered_count >= max_products -%}{%- break -%}{%- endif -%}
-      {%- if pass == 1 and primary_collection != blank -%}
-        {%- assign pool = primary_collection.products -%}
-      {%- elsif pass == 2 -%}
-        {%- assign pool = collections.all.products -%}
-      {%- else -%}
-        {%- continue -%}
-      {%- endif -%}
+  <div class="pdp-more__inner">
+    <header class="pdp-more__head">
+      <h2 class="pdp-more__title" id="RelatedHeading-{{ section.id }}">{{ section.settings.heading | default: 'You may also like' }}</h2>
+      <a class="pdp-more__all" href="{{ routes.all_products_collection_url }}">
+        <span class="pdp-more__all-label">Shop all</span>
+      </a>
+    </header>
 
-      {%- for prod_item in pool -%}
-        {%- assign marker = prod_item.handle | prepend: ',' | append: ',' -%}
-        {%- if prod_item.handle == current_handle or prod_item.handle contains 'gift-card' or prod_item.type contains 'Gift' or shown contains marker -%}
+    <div class="pdp-more__grid">
+      {%- for pass in (1..2) -%}
+        {%- if rendered_count >= 4 -%}{%- break -%}{%- endif -%}
+        {%- if pass == 1 and primary_collection != blank -%}
+          {%- assign pool = primary_collection.products -%}
+        {%- elsif pass == 2 -%}
+          {%- assign pool = collections.all.products -%}
+        {%- else -%}
           {%- continue -%}
         {%- endif -%}
 
-        <div class="pdp-more__item">
-          {% render 'product-card', product: prod_item, lazy_load: true %}
-        </div>
+        {%- for prod_item in pool -%}
+          {%- assign marker = prod_item.handle | prepend: ',' | append: ',' -%}
+          {%- if prod_item.handle == current_handle or prod_item.handle contains 'gift-card' or prod_item.type contains 'Gift' or shown contains marker -%}
+            {%- continue -%}
+          {%- endif -%}
 
-        {%- assign shown = shown | append: prod_item.handle | append: ',' -%}
-        {%- assign rendered_count = rendered_count | plus: 1 -%}
-        {%- if rendered_count >= max_products -%}{%- break -%}{%- endif -%}
+          {%- assign first_card = false -%}
+          {%- if rendered_count == 0 -%}
+            {%- assign first_card = true -%}
+          {%- endif -%}
+
+          <div class="pdp-more__item">
+            {% render 'product-card',
+              product: prod_item,
+              lazy_load: true,
+              sizes: '(min-width: 1200px) 20vw, (min-width: 750px) 34vw, 64vw',
+              include_script: first_card
+            %}
+          </div>
+
+          {%- assign shown = shown | append: prod_item.handle | append: ',' -%}
+          {%- assign rendered_count = rendered_count | plus: 1 -%}
+          {%- if rendered_count == 4 -%}{%- break -%}{%- endif -%}
+        {%- endfor -%}
       {%- endfor -%}
-    {%- endfor -%}
+    </div>
+
+    <div class="pdp-more__progress" aria-hidden="true">
+      <span class="pdp-more__thumb"></span>
+    </div>
   </div>
+
+  {% # theme-check-disable ParserBlockingScript %}
+  <script>
+    (function (el) {
+      if (!el) return;
+
+      // Progress hairline under the rail (phone and tablet).
+      var rail = el.querySelector('.pdp-more__grid');
+      var bar = el.querySelector('.pdp-more__progress');
+      var thumb = el.querySelector('.pdp-more__thumb');
+      if (rail && bar && thumb) {
+        var pending = 0;
+        var paint = function () {
+          pending = 0;
+          var total = rail.scrollWidth;
+          var view = rail.clientWidth;
+          var travel = total - view;
+          if (travel <= 1) {
+            bar.hidden = true;
+            return;
+          }
+          bar.hidden = false;
+          var track = bar.clientWidth;
+          var ratio = view / total;
+          var offset = (rail.scrollLeft / travel) * (track - track * ratio);
+          thumb.style.transform = 'translateX(' + offset.toFixed(2) + 'px) scaleX(' + ratio.toFixed(4) + ')';
+        };
+        var schedule = function () {
+          if (!pending) pending = window.requestAnimationFrame(paint);
+        };
+        rail.addEventListener('scroll', schedule, { passive: true });
+        window.addEventListener('resize', schedule, { passive: true });
+        window.addEventListener('load', schedule);
+        schedule();
+      }
+
+      // Entrance.
+      if (el.getAttribute('data-reveal') !== 'pending') return;
+      try {
+        var nodes = el.querySelectorAll('.pdp-more__inner, .pdp-more__item');
+        if (!nodes.length) {
+          el.removeAttribute('data-reveal');
+          return;
+        }
+
+        var reveal = function (batch) {
+          batch.sort(function (a, b) {
+            return a.compareDocumentPosition(b) & 4 ? -1 : 1;
+          });
+          batch.forEach(function (node, i) {
+            node.style.setProperty('--reveal-delay', Math.min(i, 5) * 90 + 'ms');
+            node.classList.add('is-in');
+          });
+        };
+
+        var io = new IntersectionObserver(function (entries) {
+          var batch = [];
+          entries.forEach(function (entry) {
+            var passed = entry.rootBounds && entry.boundingClientRect.bottom <= entry.rootBounds.top;
+            if (!entry.isIntersecting && !passed) return;
+            io.unobserve(entry.target);
+            batch.push(entry.target);
+          });
+          if (batch.length) reveal(batch);
+        }, { threshold: 0, rootMargin: '0px 0px -10% 0px' });
+
+        nodes.forEach(function (node) { io.observe(node); });
+      } catch (e) {
+        el.removeAttribute('data-reveal');
+      }
+    })(document.currentScript.parentElement);
+  </script>
+  {% # theme-check-enable ParserBlockingScript %}
 </section>
 
 {% stylesheet %}
   .section-complete-the-look {
     background-color: var(--color-background, #fff);
-    padding-top: clamp(3rem, 6vw, 6rem);
+    padding-top: clamp(3.5rem, 7vw, 7rem);
     padding-bottom: clamp(6rem, 8vw, 8rem); /* clears the mobile dock */
   }
 
   .pdp-more {
-    display: flex;
-    flex-direction: column;
-    gap: clamp(1.75rem, 3.5vw, 3rem);
+    --pm-ease: var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+    --pm-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --pm-bleed: var(--space-sm, 1rem);
   }
 
+  .pdp-more a:hover,
+  .pdp-more a:focus-visible {
+    opacity: 1;
+  }
+
+  .pdp-more__inner {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: clamp(1.5rem, 4vw, 2.25rem);
+    padding-top: 1rem;
+  }
+
+  /* One ink rule over the whole row. */
+  .pdp-more__inner::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 1px;
+    background: var(--color-text, #111);
+    transform-origin: left center;
+  }
+
+  /* ---------- Heading ---------- */
   .pdp-more__head {
     display: flex;
-    align-items: flex-end;
+    align-items: baseline;
     justify-content: space-between;
     gap: 1.5rem;
-    padding-top: clamp(1.5rem, 3vw, 2.5rem);
-    border-top: 1px solid oklch(0 0 0 / 0.1);
   }
 
   .pdp-more__title {
     margin: 0;
     font-family: var(--font-display, inherit);
-    font-size: clamp(1.75rem, 4vw, 3.25rem);
-    font-weight: 500;
-    line-height: 1.05;
-    letter-spacing: -0.035em;
+    font-size: clamp(1.75rem, 6.5vw, 2.5rem);
+    font-weight: 400;
+    line-height: 1.02;
+    letter-spacing: -0.04em;
     text-wrap: balance;
     color: var(--color-text, #111);
   }
@@ -98,66 +221,62 @@
   .pdp-more__all {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
+    flex-shrink: 0;
     min-height: 44px;
-    padding: 0;
     color: var(--color-text, #111);
-    font-size: 0.875rem;
+    font-size: 0.9375rem;
     font-weight: 500;
     text-decoration: none;
     white-space: nowrap;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
-    user-select: none;
-    -webkit-user-select: none;
-    background-image: linear-gradient(currentColor, currentColor);
-    background-repeat: no-repeat;
-    background-size: 100% 1px;
-    background-position: 0 calc(50% + 0.75em);
-    transition: background-size 320ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), transform 160ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1)), opacity 160ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
   }
 
-  .pdp-more__all:active {
-    opacity: 0.7;
-    transform: scale(0.98);
+  .pdp-more__all-label {
+    position: relative;
+    display: inline-block;
+    padding-block: 0.25rem;
+    transition: transform 180ms var(--pm-ease);
   }
 
-  .pdp-more__all svg {
-    transition: transform 320ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+  .pdp-more__all-label::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 1px;
+    background: currentColor;
+    transform-origin: right center;
   }
 
-  @media (hover: hover) and (pointer: fine) {
-    .pdp-more__all {
-      background-size: 0% 1px;
-    }
-
-    .pdp-more__all:hover {
-      background-size: 100% 1px;
-    }
-
-    .pdp-more__all:hover svg {
-      transform: translate(2px, -2px);
-    }
+  .pdp-more__all:active .pdp-more__all-label {
+    transform: scale(0.96);
   }
 
   .pdp-more__all:focus-visible {
     outline: 2px solid var(--color-text, #111);
-    outline-offset: 3px;
+    outline-offset: 4px;
   }
 
-  /* Mobile: a rail with the next card peeking in */
+  @media (hover: hover) and (pointer: fine) {
+    .pdp-more__all:hover .pdp-more__all-label::after {
+      animation: pm-redraw 760ms var(--pm-expo);
+    }
+  }
+
+  /* ---------- Rail (phone and tablet) ---------- */
   .pdp-more__grid {
     display: grid;
     grid-auto-flow: column;
-    grid-auto-columns: 62%;
+    grid-auto-columns: 64%;
     gap: 0.75rem;
     overflow-x: auto;
     overscroll-behavior-x: contain;
     scroll-snap-type: x mandatory;
     scrollbar-width: none;
-    margin-inline: calc(-1 * var(--page-margin, 1rem));
-    padding-inline: var(--page-margin, 1rem);
-    scroll-padding-inline: var(--page-margin, 1rem);
+    margin-inline: calc(-1 * var(--pm-bleed));
+    padding-inline: var(--pm-bleed);
+    padding-bottom: 0.25rem;
+    scroll-padding-inline: var(--pm-bleed);
     touch-action: pan-x pan-y;
   }
 
@@ -170,35 +289,161 @@
     scroll-snap-align: start;
   }
 
-  @media (min-width: 990px) {
+  /* A hairline that fills as the rail is scrolled. Only its transform changes. */
+  .pdp-more__progress {
+    position: relative;
+    height: 2px;
+    overflow: hidden;
+    background: rgba(17, 17, 17, 0.12);
+  }
+
+  .pdp-more__thumb {
+    position: absolute;
+    inset: 0;
+    background: var(--color-text, #111);
+    transform-origin: 0 50%;
+  }
+
+  @media (min-width: 750px) {
+    .pdp-more {
+      --pm-bleed: var(--space-md, 2rem);
+    }
+
     .pdp-more__grid {
-      grid-auto-flow: row;
-      grid-auto-columns: auto;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 2.5rem 1.5rem;
-      overflow: visible;
-      margin-inline: 0;
-      padding-inline: 0;
-      scroll-snap-type: none;
+      grid-auto-columns: 34%;
+      gap: 1rem;
+    }
+
+    .pdp-more__title {
+      font-size: clamp(2rem, 4vw, 3rem);
     }
   }
 
-  /* Soften the siblings of the card under the pointer */
-  @media (hover: hover) and (pointer: fine) {
-    .pdp-more__item {
-      transition: opacity 280ms var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+  /* ---------- Desktop: the heading is the first tile of the row ---------- */
+  @media (min-width: 1200px) {
+    .pdp-more__inner {
+      grid-template-columns: minmax(0, 0.9fr) repeat(4, minmax(0, 1fr));
+      column-gap: 1.5rem;
+      row-gap: 0;
+      padding-top: 1.25rem;
     }
 
-    .pdp-more__grid:has(.pdp-more__item:hover) .pdp-more__item:not(:hover) {
-      opacity: 0.72;
+    .pdp-more__head {
+      grid-column: 1;
+      grid-row: 1;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 2rem;
+      padding-right: 1rem;
+    }
+
+    .pdp-more__title {
+      font-size: clamp(2rem, 2.9vw, 3.25rem);
+    }
+
+    /* The rail dissolves into the section grid; its cards become tiles two to five. */
+    .pdp-more__grid {
+      display: contents;
+    }
+
+    .pdp-more__item {
+      grid-row: 1;
+    }
+
+    /* Rhythm: every second card steps down. */
+    .pdp-more__item:nth-child(even) {
+      margin-top: clamp(3rem, 6vw, 6rem);
+    }
+
+    .pdp-more__progress {
+      display: none;
+    }
+  }
+
+  /* Soften the siblings of the card under the pointer. */
+  @media (hover: hover) and (pointer: fine) {
+    .pdp-more__item {
+      transition: opacity 400ms var(--pm-ease);
+    }
+
+    .pdp-more__inner:has(.pdp-more__item:hover) .pdp-more__item:not(:hover) {
+      opacity: 0.5;
+    }
+  }
+
+  /* ---------- Motion ---------- */
+  @keyframes pm-rule {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+  }
+
+  @keyframes pm-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes pm-unveil {
+    from { clip-path: inset(100% 0 0 0); }
+    to { clip-path: inset(0 0 0 0); }
+  }
+
+  @keyframes pm-settle {
+    from { transform: scale(1.12); }
+    to { transform: scale(1); }
+  }
+
+  @keyframes pm-redraw {
+    0% { transform-origin: right center; transform: scaleX(1); }
+    45% { transform-origin: right center; transform: scaleX(0); }
+    55% { transform-origin: left center; transform: scaleX(0); }
+    100% { transform-origin: left center; transform: scaleX(1); }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .pdp-more[data-reveal='pending'] .pdp-more__inner:not(.is-in)::before {
+      transform: scaleX(0);
+    }
+
+    .pdp-more[data-reveal='pending'] .pdp-more__item:not(.is-in) {
+      pointer-events: none;
+    }
+
+    .pdp-more[data-reveal='pending'] .pdp-more__item:not(.is-in) .product-card__media-wrapper {
+      clip-path: inset(100% 0 0 0);
+    }
+
+    .pdp-more[data-reveal='pending'] .pdp-more__item:not(.is-in) .product-card__frame:first-child .product-card__image {
+      transform: scale(1.12);
+    }
+
+    .pdp-more[data-reveal='pending'] .pdp-more__item:not(.is-in) .product-card__content {
+      opacity: 0;
+    }
+
+    .pdp-more[data-reveal='pending'] .pdp-more__inner.is-in::before {
+      animation: pm-rule 1200ms var(--pm-expo) var(--reveal-delay, 0ms) backwards;
+    }
+
+    .pdp-more[data-reveal='pending'] .pdp-more__item.is-in .product-card__media-wrapper {
+      animation: pm-unveil 1100ms var(--pm-expo) var(--reveal-delay, 0ms) backwards;
+    }
+
+    .pdp-more[data-reveal='pending'] .pdp-more__item.is-in .product-card__frame:first-child .product-card__image {
+      animation: pm-settle 1500ms var(--pm-expo) var(--reveal-delay, 0ms) backwards;
+    }
+
+    .pdp-more[data-reveal='pending'] .pdp-more__item.is-in .product-card__content {
+      animation: pm-fade 800ms ease calc(var(--reveal-delay, 0ms) + 400ms) backwards;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
     .pdp-more__item,
-    .pdp-more__all,
-    .pdp-more__all svg {
+    .pdp-more__all-label,
+    .pdp-more__all-label::after {
       transition-duration: 0.01ms;
+      animation: none;
     }
   }
 {% endstylesheet %}
@@ -214,15 +459,6 @@
       "id": "heading",
       "label": "Heading",
       "default": "You may also like"
-    },
-    {
-      "type": "range",
-      "id": "products_to_show",
-      "label": "Products to show",
-      "min": 4,
-      "max": 8,
-      "step": 1,
-      "default": 6
     }
   ],
   "presets": [

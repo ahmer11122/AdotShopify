@@ -1,17 +1,15 @@
 {% doc %}
-  ADOT product card. One card for every grid, rail and cross-sell.
+  Product card
 
-  Image first, type second. A 3:4 frame, a quiet caption, and nothing else until the
-  shopper reaches for it.
+  A 3:4 image frame holding up to three views, a quiet caption underneath, and quick add.
 
-  Motion
-  - Pointer: a second photograph rises into the frame like a curtain from the bottom edge.
-    With three photographs the pointer's horizontal position chooses between the two
-    hidden ones. A single-photograph product gets a slow, small push-in instead.
-    A flush size bar rises from the bottom edge.
-  - Touch: the frame presses in under the finger. The plus opens a size sheet that can be
-    dragged down to dismiss.
-  - Only transform, opacity and clip-path are animated. Reduced motion removes the movement.
+  Fine pointer (desktop): moving across the image steps through the views with a clip-path
+  wipe and a "1 / 3" tab; a solid size strip rises from the bottom edge of the image.
+  Touch: a flush "+" tab in the corner opens a size sheet that can be dragged down to dismiss.
+
+  The caption sets its own layout from the width the card is given (container query), so the
+  same card works in a 4-up grid, an editorial layout, a rail or a two-column phone grid.
+  Only transform, opacity and clip-path are animated.
 
   @param {product} [product] - The product object
   @param {string} [title] - Fallback title if product is nil
@@ -24,12 +22,14 @@
   @param {string} [spec] - Technical fabric / fit fact (optional)
   @param {boolean} [available] - Fallback availability
   @param {boolean} [lazy_load] - Whether to lazy load images (default: true)
-  @param {boolean} [show_vendor] - Whether to show the spec / category line
-  @param {string} [image_sizes] - Optional `sizes` attribute so a section can describe how wide its cards render
+  @param {boolean} [show_vendor] - Whether to show the category / fabric line
   @param {string} [class] - Optional additional CSS classes
+  @param {string} [sizes] - Optional `sizes` attribute for the images (default suits a 4-up grid)
+  @param {string} [image_sizes] - Legacy alias for `sizes` (kept so older callers keep working)
+  @param {boolean} [include_script] - Set to false to leave out the script when another card on the page already carries it (default: true)
 {% enddoc %}
 
-{% liquid
+{%- liquid
   if show_vendor == nil
     assign show_vendor = false
   endif
@@ -37,8 +37,9 @@
     assign lazy_load = true
   endif
 
-  assign card_sizes = image_sizes | default: '(min-width: 990px) 25vw, (min-width: 750px) 33vw, 50vw'
-  assign frame_count = 0
+  assign card_sizes = sizes | default: image_sizes | default: '(min-width: 990px) 25vw, (min-width: 750px) 33vw, 50vw'
+  assign srcset_widths = '350,500,750,1000,1200' | split: ','
+  assign frame_count = 1
 
   if product
     assign card_title = product.title
@@ -48,19 +49,19 @@
     assign card_compare_at = product.compare_at_price
     assign is_available = product.available
     assign card_spec = product.metafields.custom.fabric_spec | default: product.type
+    assign featured_media = product.featured_media
     assign has_secondary_image = false
-    if product.media.size > 1
+    if product.images.size > 1
       assign has_secondary_image = true
     endif
+    assign frame_count = product.images.size | at_most: 3
     if product.featured_image
       assign image_src = product.featured_image | image_url: width: 750
     endif
-    assign frame_count = product.images.size | at_most: 3
 
+    assign size_option = product.options_by_name['Size']
     assign has_sizes = false
-    if product.has_only_default_variant == false and product.variants.size > 1
-      assign has_sizes = true
-    elsif product.options_by_name['Size'] or product.options_by_name['size'] or product.options_by_name['Sizes'] or product.options_by_name['SIZE']
+    if size_option and size_option.values.size > 0 and product.has_only_default_variant == false
       assign has_sizes = true
     endif
   else
@@ -78,15 +79,14 @@
     assign has_secondary_image = false
     if secondary_image_src != blank
       assign has_secondary_image = true
+      assign frame_count = 2
     endif
-    if image_src != blank
-      assign frame_count = 1
-      if has_secondary_image
-        assign frame_count = 2
-      endif
-    endif
-    assign has_sizes = true
+    assign has_sizes = false
     assign fallback_variant_id = variant_id | default: fallback_product.selected_or_first_available_variant.id
+  endif
+
+  if frame_count < 1
+    assign frame_count = 1
   endif
 
   assign is_on_sale = false
@@ -104,99 +104,127 @@
     assign image_loading = 'eager'
     assign image_fetch = 'high'
   endif
-
-  capture card_price_prop
-    render 'money', price: card_price
-  endcapture
-%}
+-%}
 
 <div
-  class="product-card {{ class }} {% unless is_available %}product-card--sold-out{% endunless %}"
+  class="product-card {{ class }}{% unless is_available %} product-card--sold-out{% endunless %}{% if frame_count < 2 %} product-card--single{% endif %}"
   data-product-card
   data-category="{{ card_category | default: product.type | downcase }}"
-  data-frames="{{ frame_count }}"
 >
-  <div class="product-card__media-wrapper">
+  <div class="product-card__media-wrapper" data-frames="{{ frame_count }}">
     {%- comment -%}
-      The photograph link is a pointer and touch target only. The title link below is the
-      keyboard and screen-reader link, so each card is one tab stop, not two.
+      The image link is a pointer convenience only. The title link below is the one
+      keyboard and screen reader users get, so the two never double up.
     {%- endcomment -%}
     <a href="{{ card_url }}" class="product-card__media-link" tabindex="-1" aria-hidden="true">
-      {% if product and product.images.size > 0 %}
+      {%- if product and featured_media -%}
         <div class="product-card__film">
-          {% for image in product.images limit: 3 %}
-            {% liquid
-              assign frame_alt = ''
+          {%- for image in product.images limit: 3 -%}
+            {%- liquid
+              assign frame_srcset = ''
+              for w in srcset_widths
+                assign w_num = w | plus: 0
+                if w_num <= image.width
+                  assign candidate = image | image_url: width: w_num | append: ' ' | append: w_num | append: 'w'
+                  if frame_srcset == ''
+                    assign frame_srcset = candidate
+                  else
+                    assign frame_srcset = frame_srcset | append: ', ' | append: candidate
+                  endif
+                endif
+              endfor
               if forloop.first
-                assign frame_alt = image.alt | default: card_title
+                assign frame_loading = image_loading
+                assign frame_fetch = image_fetch
+              else
+                assign frame_loading = 'lazy'
+                assign frame_fetch = 'auto'
               endif
-            %}
-            {{
-              image
-              | image_url: width: 1200
-              | image_tag:
-                loading: image_loading,
-                fetchpriority: image_fetch,
-                decoding: 'async',
-                width: 750,
-                height: 1000,
-                widths: '360, 540, 720, 960, 1200',
-                sizes: card_sizes,
-                class: 'product-card__image',
-                alt: frame_alt | escape
-            }}
-            {% assign image_loading = 'lazy' %}
-            {% assign image_fetch = 'auto' %}
-          {% endfor %}
+            -%}
+            <span class="product-card__frame">
+              <img
+                src="{{ image | image_url: width: 750 }}"
+                {% if frame_srcset != blank %}srcset="{{ frame_srcset }}" sizes="{{ card_sizes }}"{% endif %}
+                alt="{{ image.alt | default: card_title | escape }}"
+                width="750"
+                height="1000"
+                loading="{{ frame_loading }}"
+                fetchpriority="{{ frame_fetch }}"
+                decoding="async"
+                class="product-card__image"
+              >
+            </span>
+          {%- endfor -%}
         </div>
-      {% elsif image_src != blank %}
+      {%- elsif image_src != blank -%}
         <div class="product-card__film">
-          <img
-            src="{{ image_src }}"
-            alt="{{ card_title | escape }}"
-            width="750"
-            height="1000"
-            loading="{{ image_loading }}"
-            fetchpriority="{{ image_fetch }}"
-            decoding="async"
-            class="product-card__image"
-          >
-          {% if has_secondary_image %}
+          <span class="product-card__frame">
             <img
-              src="{{ secondary_image_src }}"
-              alt=""
+              src="{{ image_src }}"
+              alt="{{ card_title | escape }}"
               width="750"
               height="1000"
-              loading="lazy"
+              loading="{{ image_loading }}"
+              fetchpriority="{{ image_fetch }}"
               decoding="async"
               class="product-card__image"
             >
-          {% endif %}
+          </span>
+          {%- if has_secondary_image -%}
+            <span class="product-card__frame">
+              <img
+                src="{{ secondary_image_src }}"
+                alt="{{ card_title | escape }}"
+                width="750"
+                height="1000"
+                loading="lazy"
+                decoding="async"
+                class="product-card__image"
+              >
+            </span>
+          {%- endif -%}
         </div>
-      {% else %}
+      {%- else -%}
         <div class="product-card__placeholder">
           {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
         </div>
-      {% endif %}
+      {%- endif -%}
     </a>
 
-    {% if is_available == false or is_on_sale %}
+    {%- if is_available == false or is_on_sale -%}
       <div class="product-card__badges">
-        {% unless is_available %}
+        {%- unless is_available -%}
           <span class="product-card__badge product-card__badge--sold-out">Sold out</span>
-        {% elsif is_on_sale %}
+        {%- elsif is_on_sale -%}
           <span class="product-card__badge product-card__badge--sale">
             <span class="product-card__badge-kicker">Sale</span>
-            {% if discount_pct > 0 %}
+            {%- if discount_pct > 0 -%}
               <span class="product-card__badge-pct">−{{ discount_pct }}%</span>
-            {% endif %}
+            {%- endif -%}
           </span>
-        {% endunless %}
+        {%- endunless -%}
       </div>
-    {% endif %}
+    {%- endif -%}
 
-    {% if is_available %}
-      <!-- Touch and tablet: a square plus in the corner opens the size sheet -->
+    {%- if frame_count > 1 -%}
+      <span class="product-card__counter" aria-hidden="true">
+        <span data-frame-current>1</span><span>/</span><span>{{ frame_count }}</span>
+      </span>
+    {%- endif -%}
+
+    {%- if is_available -%}
+      {%- capture card_price_prop -%}{% render 'money', price: card_price %}{%- endcapture -%}
+      {%- capture quick_props -%}
+        <input type="hidden" name="quantity" value="1">
+        <input type="hidden" name="properties[_adot_title]" value="{{ card_title | escape }}">
+        <input type="hidden" name="properties[_adot_image]" value="{{ image_src }}">
+        <input type="hidden" name="properties[_adot_price]" value="{{ card_price_prop | strip }}">
+      {%- endcapture -%}
+      {%- capture check_icon -%}
+        <svg class="product-card__size-check" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2.5 7.5l3 3 6-7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      {%- endcapture -%}
+
+      <!-- Touch: flush corner tab that opens the size sheet -->
       <button
         type="button"
         class="product-card__mobile-quick-btn"
@@ -204,111 +232,90 @@
         aria-haspopup="dialog"
         aria-label="Quick add {{ card_title | escape }}"
       >
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-          <path d="M7 1V13M1 7H13" stroke="currentColor" stroke-width="1.4" stroke-linecap="square"/>
+        <svg class="product-card__quick-plus" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <path d="M7 1V13M1 7H13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
         </svg>
       </button>
 
-      <!-- Pointer: a flush size bar rises from the bottom edge of the photograph -->
-      <div
-        class="product-card__desktop-action-bar {% unless has_sizes %}product-card__desktop-action-bar--single{% endunless %}"
-        role="group"
-        aria-label="Quick add sizes"
-      >
-        <span class="product-card__quick-label" aria-hidden="true">Add</span>
+      <!-- Fine pointer: size strip that rises from the bottom edge -->
+      <div class="product-card__desktop-action-bar" role="group" aria-label="Quick add">
         <div class="product-card__quick-size-pills">
-          {% if product and has_sizes %}
-            {% for variant in product.variants %}
-              {% assign var_label = variant.title %}
-              {% if var_label contains '/' %}
-                {% assign var_label = var_label | split: '/' | last | strip %}
-              {% endif %}
+          {%- if product and has_sizes -%}
+            {%- for variant in product.variants -%}
               <form method="post" action="{{ routes.cart_add_url }}" class="product-card__quick-form">
                 <input type="hidden" name="id" value="{{ variant.id }}">
-                <input type="hidden" name="quantity" value="1">
-                <input type="hidden" name="properties[_adot_title]" value="{{ card_title | escape }}">
-                <input type="hidden" name="properties[_adot_image]" value="{{ image_src }}">
-                <input type="hidden" name="properties[_adot_price]" value="{{ card_price_prop | strip }}">
+                {{ quick_props }}
                 <button
                   type="submit"
-                  class="product-card__size-pill {% unless variant.available %}product-card__size-pill--sold-out{% endunless %}"
+                  class="product-card__size-pill{% unless variant.available %} product-card__size-pill--sold-out{% endunless %}"
                   {% unless variant.available %}disabled aria-disabled="true"{% endunless %}
-                  data-variant-title="{{ var_label }}"
-                  title="Add size {{ var_label }}"
+                  data-variant-title="{{ variant.title | escape }}"
+                  aria-label="{% if variant.available %}Add size {{ variant.title | escape }} to bag{% else %}Size {{ variant.title | escape }}, sold out{% endif %}"
                 >
-                  {{ var_label }}
+                  <span class="product-card__size-label">{{ variant.title }}</span>{{ check_icon }}
                 </button>
               </form>
-            {% endfor %}
-          {% elsif product %}
-            {% assign base_variant = product.selected_or_first_available_variant %}
+            {%- endfor -%}
+          {%- elsif product -%}
+            {%- assign base_variant = product.selected_or_first_available_variant -%}
             <form method="post" action="{{ routes.cart_add_url }}" class="product-card__quick-form">
               <input type="hidden" name="id" value="{{ base_variant.id }}">
-              <input type="hidden" name="quantity" value="1">
-              <input type="hidden" name="properties[_adot_title]" value="{{ card_title | escape }}">
-              <input type="hidden" name="properties[_adot_image]" value="{{ image_src }}">
-              <input type="hidden" name="properties[_adot_price]" value="{{ card_price_prop | strip }}">
+              {{ quick_props }}
               <button
                 type="submit"
-                class="product-card__size-pill {% unless base_variant.available %}product-card__size-pill--sold-out{% endunless %}"
+                class="product-card__size-pill{% unless base_variant.available %} product-card__size-pill--sold-out{% endunless %}"
                 {% unless base_variant.available %}disabled aria-disabled="true"{% endunless %}
                 data-variant-title="Add"
-                title="Add to bag"
+                aria-label="Add {{ card_title | escape }} to bag"
               >
-                Add to bag
+                <span class="product-card__size-label">Add to bag</span>{{ check_icon }}
               </button>
             </form>
-          {% elsif fallback_variant_id != blank %}
-            {% assign demo_sizes = 'S,M,L,XL' | split: ',' %}
-            {% for sz in demo_sizes %}
-              <form method="post" action="{{ routes.cart_add_url }}" class="product-card__quick-form">
-                <input type="hidden" name="id" value="{{ fallback_variant_id }}">
-                <input type="hidden" name="quantity" value="1">
-                <input type="hidden" name="properties[_adot_title]" value="{{ card_title | escape }}">
-                <input type="hidden" name="properties[_adot_image]" value="{{ image_src }}">
-                <input type="hidden" name="properties[_adot_price]" value="{{ card_price_prop | strip }}">
-                <input type="hidden" name="properties[Size]" value="{{ sz }}">
-                <button
-                  type="submit"
-                  class="product-card__size-pill"
-                  data-variant-title="{{ sz }}"
-                  title="Add size {{ sz }}"
-                >
-                  {{ sz }}
-                </button>
-              </form>
-            {% endfor %}
-          {% endif %}
+          {%- elsif fallback_variant_id != blank -%}
+            <form method="post" action="{{ routes.cart_add_url }}" class="product-card__quick-form">
+              <input type="hidden" name="id" value="{{ fallback_variant_id }}">
+              {{ quick_props }}
+              <button
+                type="submit"
+                class="product-card__size-pill"
+                data-variant-title="Add"
+                aria-label="Add {{ card_title | escape }} to bag"
+              >
+                <span class="product-card__size-label">Add to bag</span>{{ check_icon }}
+              </button>
+            </form>
+          {%- endif -%}
         </div>
       </div>
-    {% endif %}
+    {%- endif -%}
   </div>
 
   <div class="product-card__content">
-    <h3 class="product-card__title">
-      <a href="{{ card_url }}" class="product-card__title-link">{{ card_title }}</a>
-    </h3>
-
-    {% if show_vendor and card_spec != blank %}
-      <p class="product-card__spec">{{ card_spec }}</p>
-    {% endif %}
+    <div class="product-card__heading">
+      <h3 class="product-card__title">
+        <a href="{{ card_url }}" class="product-card__title-link">{{ card_title }}</a>
+      </h3>
+      {%- if show_vendor and card_spec != blank -%}
+        <div class="product-card__spec">{{ card_spec }}</div>
+      {%- endif -%}
+    </div>
 
     <div class="product-card__meta-row">
       <div class="product-card__price">
-        {% if product %}
+        {%- if product -%}
           {% render 'price', product: product, show_badges: false %}
-        {% else %}
+        {%- else -%}
           <div class="price {% if is_on_sale %}price--on-sale{% endif %}">
             <div class="price__container">
-              {% if is_on_sale %}
+              {%- if is_on_sale -%}
                 <span class="price__item price__item--sale">{% render 'money', price: card_price %}</span>
                 <s class="price__item price__item--regular">{% render 'money', price: card_compare_at %}</s>
-              {% else %}
+              {%- else -%}
                 <span class="price__item price__item--regular">{% render 'money', price: card_price %}</span>
-              {% endif %}
+              {%- endif -%}
             </div>
           </div>
-        {% endif %}
+        {%- endif -%}
       </div>
     </div>
   </div>
@@ -316,18 +323,22 @@
 
 {% stylesheet %}
   /* ==========================================================================
-     ADOT product card
+     Product card
+     Flat and architectural: paper, ink and hairlines, square corners.
+     Colours and fonts come from the theme tokens. Everything that moves is
+     transform, opacity or clip-path.
      ========================================================================== */
   .product-card,
   .mobile-quick-sheet {
     --pc-ink: var(--color-text, #111111);
-    --pc-ink-soft: var(--color-text-subtle, #6b6b6b);
     --pc-paper: var(--color-background, #ffffff);
-    --pc-sheet: var(--color-surface, #f5f5f5);
+    --pc-wash: var(--color-surface, #f5f5f5);
+    --pc-muted: var(--color-text-subtle, #6b6b6b);
+    --pc-line: var(--color-border-subtle, rgba(17, 17, 17, 0.08));
+    --pc-line-strong: rgba(17, 17, 17, 0.18);
     --pc-sale: var(--color-sale, #991b1b);
-    --pc-hairline: rgba(17, 17, 17, 0.12);
-    --pc-out: var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
-    --pc-wipe: cubic-bezier(0.6, 0, 0.1, 1);
+    --pc-ease: var(--ease-out, cubic-bezier(0.23, 1, 0.32, 1));
+    --pc-expo: cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .product-card {
@@ -337,10 +348,9 @@
     width: 100%;
     min-width: 0;
     background: transparent;
-    -webkit-tap-highlight-color: transparent;
+    container: product-card / inline-size;
   }
 
-  /* Global themes often dim links on hover. The card handles its own states. */
   .product-card a:hover,
   .product-card a:focus-visible {
     opacity: 1;
@@ -351,365 +361,389 @@
     outline-offset: 3px;
   }
 
-  /* ---------- Photograph ---------- */
+  /* ---------- Image frame ---------- */
   .product-card__media-wrapper {
     position: relative;
     width: 100%;
-    aspect-ratio: var(--pc-ratio, 3 / 4);
+    aspect-ratio: 3 / 4;
     overflow: hidden;
     isolation: isolate;
-    background-color: var(--pc-sheet);
-    border-radius: var(--radius-none, 0);
+    background: var(--pc-wash);
+    -webkit-tap-highlight-color: transparent;
   }
 
   .product-card__media-link {
     position: absolute;
     inset: 0;
+    z-index: 1;
     display: block;
     text-decoration: none;
     -webkit-tap-highlight-color: transparent;
-    transition: transform 240ms var(--pc-out);
-  }
-
-  /* Touch feedback: the frame presses in under the finger */
-  .product-card__media-link:active {
-    transform: scale(0.985);
   }
 
   .product-card__film {
     position: absolute;
     inset: 0;
-    transform-origin: 50% 100%;
   }
 
-  .product-card__image {
+  .product-card__frame {
     position: absolute;
     inset: 0;
     display: block;
+    overflow: hidden;
+  }
+
+  .product-card__image {
+    display: block;
     width: 100%;
     height: 100%;
-    max-width: none;
     object-fit: cover;
-    object-position: top center;
-  }
-
-  /* Photographs two and three wait below the frame and rise like a curtain */
-  .product-card__image:nth-child(n + 2) {
-    clip-path: inset(100% 0 0 0);
-    transform: scale(1.06);
-    transition:
-      clip-path 460ms var(--pc-wipe),
-      transform 460ms var(--pc-wipe);
-  }
-
-  .product-card[data-frame="1"] .product-card__image:nth-child(2),
-  .product-card[data-frame="2"] .product-card__image:nth-child(-n + 3) {
-    clip-path: inset(0 0 0 0);
-    transform: scale(1);
-    transition-duration: 680ms, 1300ms;
-    transition-timing-function: var(--pc-wipe), var(--pc-out);
-  }
-
-  /* One photograph only: a slow, small push-in so hover is never dead */
-  @media (hover: hover) and (pointer: fine) {
-    .product-card__image:only-child {
-      transition: transform 1400ms var(--pc-out);
-    }
-
-    .product-card__media-wrapper:hover .product-card__image:only-child {
-      transform: scale(1.035);
-    }
-  }
-
-  .product-card--sold-out .product-card__film {
-    opacity: 0.6;
-    filter: grayscale(0.35);
   }
 
   .product-card__placeholder {
-    position: absolute;
-    inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: var(--pc-sheet);
+    width: 100%;
+    height: 100%;
+    background: var(--pc-wash);
   }
 
   .product-card__placeholder svg {
     width: 40%;
     height: 40%;
-    fill: var(--pc-ink-soft);
+    fill: var(--pc-muted);
     opacity: 0.3;
   }
 
-  /* ---------- Badges ---------- */
+  .product-card--sold-out .product-card__image {
+    opacity: 0.68;
+    filter: grayscale(0.4);
+  }
+
+  /* Views after the first wait below the frame and wipe up over it. */
+  .product-card__frame:not(:first-child) {
+    clip-path: inset(100% 0 0 0);
+    transition: clip-path 800ms var(--pc-expo);
+  }
+
+  .product-card__frame:not(:first-child) .product-card__image {
+    transform: scale(1.08);
+    transition: transform 1200ms var(--pc-expo);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .product-card__media-wrapper:hover .product-card__frame:nth-child(2) {
+      clip-path: inset(0 0 0 0);
+    }
+
+    .product-card__media-wrapper:hover .product-card__frame:nth-child(2) .product-card__image {
+      transform: scale(1);
+    }
+
+    /* A single view has nothing to wipe to, so the photograph itself leans in. */
+    .product-card--single .product-card__image {
+      transition: transform 1400ms var(--pc-expo);
+    }
+
+    .product-card--single .product-card__media-wrapper:hover .product-card__image {
+      transform: scale(1.035);
+    }
+  }
+
+  /* Set by the pointer scrub: view N is showing, so every view up to N is open. */
+  .product-card__media-wrapper[data-frame='1'] .product-card__frame:nth-child(-n + 2),
+  .product-card__media-wrapper[data-frame='2'] .product-card__frame:nth-child(-n + 3) {
+    clip-path: inset(0 0 0 0);
+  }
+
+  .product-card__media-wrapper[data-frame='1'] .product-card__frame:nth-child(-n + 2) .product-card__image,
+  .product-card__media-wrapper[data-frame='2'] .product-card__frame:nth-child(-n + 3) .product-card__image {
+    transform: scale(1);
+  }
+
+  /* Keyboard focus anywhere in the card shows the second view too. */
+  .product-card:has(:focus-visible) .product-card__frame:nth-child(2) {
+    clip-path: inset(0 0 0 0);
+  }
+
+  .product-card:has(:focus-visible) .product-card__frame:nth-child(2) .product-card__image {
+    transform: scale(1);
+  }
+
+  /* Touch: the frame gives a little under the finger. */
+  @media (hover: none) {
+    .product-card__media-wrapper {
+      transition: transform 480ms var(--pc-expo);
+    }
+
+    .product-card__media-wrapper:active {
+      transform: scale(0.985);
+      transition-duration: 90ms;
+    }
+  }
+
+  /* ---------- Tabs: badges and the view counter sit flush in the corners ---------- */
   .product-card__badges {
     position: absolute;
-    top: 0.5rem;
-    inset-inline-start: 0.5rem;
-    z-index: 3;
+    top: 0;
+    inset-inline-start: 0;
+    z-index: 4;
     display: flex;
     pointer-events: none;
   }
 
-  .product-card__badge {
+  .product-card__badge,
+  .product-card__counter {
     display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    min-height: 1.625rem;
-    padding: 0 0.55rem;
-    background-color: var(--pc-paper);
+    align-items: baseline;
+    gap: 0.4em;
+    padding: 0.5rem 0.625rem 0.45rem;
+    background: var(--pc-paper);
     color: var(--pc-ink);
     font-family: var(--font-body);
     font-size: 0.75rem;
     font-weight: 500;
-    letter-spacing: 0.01em;
     line-height: 1;
+    letter-spacing: 0.01em;
+    font-variant-numeric: tabular-nums;
     user-select: none;
     -webkit-user-select: none;
   }
 
-  .product-card__badge-pct {
-    color: var(--pc-sale);
-    font-variant-numeric: tabular-nums;
-    font-weight: 600;
-  }
-
   .product-card__badge--sold-out {
-    background-color: var(--pc-ink);
+    background: var(--pc-ink);
     color: var(--pc-paper);
   }
 
-  /* ---------- Size pills (shared by the bar and the sheet) ---------- */
+  .product-card__badge-pct {
+    color: var(--pc-sale);
+  }
+
+  .product-card__counter {
+    position: absolute;
+    top: 0;
+    inset-inline-end: 0;
+    z-index: 4;
+    display: none;
+    pointer-events: none;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .product-card__counter {
+      display: inline-flex;
+      opacity: 0;
+      transition: opacity 240ms var(--pc-ease);
+    }
+
+    .product-card__media-wrapper:hover .product-card__counter {
+      opacity: 1;
+    }
+  }
+
+  /* ---------- Size buttons (shared by the strip and the sheet) ---------- */
   .product-card__quick-form {
-    display: flex;
     margin: 0;
     padding: 0;
   }
 
   .product-card__size-pill {
     position: relative;
-    isolation: isolate;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: grid;
+    place-items: center;
     width: 100%;
-    min-height: 2.75rem;
     margin: 0;
-    padding: 0 0.25rem;
-    appearance: none;
-    -webkit-appearance: none;
-    background: var(--pc-paper, #ffffff);
-    color: var(--pc-ink, #111111);
+    padding: 0;
     border: 0;
     border-radius: 0;
+    background: transparent;
+    color: var(--pc-ink);
     font-family: var(--font-body);
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
     font-weight: 500;
     line-height: 1;
-    letter-spacing: 0.01em;
+    letter-spacing: 0.02em;
     font-variant-numeric: tabular-nums;
-    white-space: nowrap;
     cursor: pointer;
     touch-action: manipulation;
+    -webkit-appearance: none;
+    appearance: none;
     -webkit-tap-highlight-color: transparent;
+  }
+
+  .product-card__size-label,
+  .product-card__size-check {
+    grid-area: 1 / 1;
+  }
+
+  .product-card__size-label {
     transition:
-      transform 160ms var(--pc-out),
-      color 0s linear 50ms;
+      opacity 160ms var(--pc-ease),
+      transform 200ms var(--pc-ease);
   }
 
-  /* The fill rises from the bottom. The label flips colour once the fill has passed it. */
-  .product-card__size-pill::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background-color: var(--pc-ink, #111111);
-    transform: scaleY(0);
-    transform-origin: 50% 100%;
-    transition: transform 300ms var(--pc-out);
+  .product-card__size-check {
+    opacity: 0;
+    transform: scale(0.6);
+    transition:
+      opacity 160ms var(--pc-ease),
+      transform 280ms var(--pc-expo);
   }
 
-  .product-card__size-pill:active:not(:disabled) {
-    transform: scale(0.96);
-    color: var(--pc-paper, #ffffff);
-    transition-delay: 0s, 30ms;
+  .product-card__size-pill[data-state='adding'] .product-card__size-label {
+    opacity: 0.35;
   }
 
-  .product-card__size-pill:active:not(:disabled)::before,
-  .product-card__size-pill:focus-visible:not(:disabled)::before,
-  .product-card__size-pill[data-state]::before {
-    transform: scaleY(1);
+  .product-card__size-pill[data-state='added'] .product-card__size-label {
+    opacity: 0;
   }
 
-  .product-card__size-pill:focus-visible:not(:disabled),
-  .product-card__size-pill[data-state] {
-    color: var(--pc-paper, #ffffff);
-    transition-delay: 0s, 30ms;
+  .product-card__size-pill[data-state='added'] .product-card__size-check {
+    opacity: 1;
+    transform: scale(1);
   }
 
-  .product-card__size-pill[data-state] {
-    pointer-events: none;
-  }
-
-  .product-card__size-pill[data-state="loading"] {
-    opacity: 0.85;
-  }
-
-  .product-card__size-pill:focus-visible {
-    outline: 2px solid var(--pc-paper, #ffffff);
-    outline-offset: -4px;
-  }
-
-  @media (hover: hover) {
-    .product-card__size-pill:hover:not(:disabled) {
-      color: var(--pc-paper, #ffffff);
-      transition-delay: 0s, 30ms;
-    }
-
-    .product-card__size-pill:hover:not(:disabled)::before {
-      transform: scaleY(1);
-    }
-  }
-
-  .product-card__size-pill:disabled,
-  .product-card__size-pill--sold-out {
-    color: var(--pc-ink-soft, #6b6b6b);
-    opacity: 0.55;
+  .product-card__size-pill--sold-out,
+  .product-card__size-pill:disabled {
+    opacity: 0.32;
     text-decoration: line-through;
-    text-decoration-thickness: 1px;
     cursor: not-allowed;
   }
 
-  /* ---------- Pointer: flush size bar ---------- */
+  /* ---------- Fine pointer: the size strip ---------- */
   .product-card__desktop-action-bar {
     display: none;
   }
 
+  @media (hover: hover) and (min-width: 750px) {
+    .product-card__desktop-action-bar {
+      display: block;
+      position: absolute;
+      inset: auto 0 0 0;
+      z-index: 6;
+      background: var(--pc-paper);
+      transform: translateY(101%);
+      transition: transform 420ms var(--pc-expo);
+    }
+
+    /* Hover intent: the strip waits a beat so sweeping across a row does not flicker. */
+    .product-card__media-wrapper:hover .product-card__desktop-action-bar,
+    .product-card:has(:focus-visible) .product-card__desktop-action-bar {
+      transform: none;
+      transition-delay: 90ms;
+    }
+
+    .product-card__quick-size-pills {
+      display: flex;
+    }
+
+    .product-card__quick-form {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+
+    .product-card__quick-form + .product-card__quick-form {
+      border-inline-start: 1px solid var(--pc-line);
+    }
+
+    .product-card__desktop-action-bar .product-card__size-pill {
+      height: 48px;
+    }
+
+    /* The hover state is a drawn underline, so nothing but transform moves. */
+    .product-card__desktop-action-bar .product-card__size-pill::after {
+      content: '';
+      position: absolute;
+      inset: auto 28% 12px 28%;
+      height: 1px;
+      background: currentColor;
+      transform: scaleX(0);
+      transform-origin: left center;
+      transition: transform 320ms var(--pc-expo);
+    }
+
+    .product-card__desktop-action-bar .product-card__size-pill:hover:not(:disabled)::after,
+    .product-card__desktop-action-bar .product-card__size-pill:focus-visible:not(:disabled)::after {
+      transform: scaleX(1);
+    }
+
+    .product-card__desktop-action-bar .product-card__size-pill:active:not(:disabled) .product-card__size-label {
+      transform: scale(0.9);
+    }
+
+    .product-card__desktop-action-bar .product-card__size-pill:focus-visible {
+      outline: 2px solid var(--pc-ink);
+      outline-offset: -4px;
+    }
+  }
+
+  /* ---------- Touch: the corner tab ---------- */
   .product-card__mobile-quick-btn {
     position: absolute;
     right: 0;
     bottom: 0;
-    z-index: 4;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 3rem;
-    height: 3rem;
+    z-index: 5;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
     margin: 0;
     padding: 0;
-    background: transparent;
-    color: var(--pc-ink);
     border: 0;
+    border-radius: 0;
+    background: var(--pc-paper);
+    color: var(--pc-ink);
     cursor: pointer;
     touch-action: manipulation;
+    transform-origin: 100% 100%;
+    transition: transform 180ms var(--pc-ease);
     -webkit-tap-highlight-color: transparent;
   }
 
-  .product-card__mobile-quick-btn::before {
-    content: "";
-    position: absolute;
-    inset: 0.375rem;
-    background-color: var(--pc-paper);
-    box-shadow: 0 0 0 1px var(--pc-hairline);
-    transition: transform 200ms var(--pc-out);
-  }
-
-  .product-card__mobile-quick-btn svg {
-    position: relative;
-    transition: transform 320ms var(--pc-out);
-  }
-
-  /* Touch feedback: the square shrinks, the plus turns a quarter */
-  .product-card__mobile-quick-btn:active::before {
+  .product-card__mobile-quick-btn:active {
     transform: scale(0.88);
   }
 
-  .product-card__mobile-quick-btn:active svg {
-    transform: rotate(90deg) scale(0.9);
-  }
-
   .product-card__mobile-quick-btn:focus-visible {
-    outline-offset: -6px;
+    outline: 2px solid var(--pc-ink);
+    outline-offset: -4px;
   }
 
+  .product-card__quick-plus {
+    transition: transform 360ms var(--pc-expo);
+  }
+
+  .product-card__mobile-quick-btn:active .product-card__quick-plus {
+    transform: rotate(90deg);
+  }
+
+  /* Where the strip is available, the tab steps aside. */
   @media (hover: hover) and (min-width: 750px) {
     .product-card__mobile-quick-btn {
       display: none;
-    }
-
-    .product-card__desktop-action-bar {
-      position: absolute;
-      inset: auto 0 0 0;
-      z-index: 5;
-      display: flex;
-      align-items: stretch;
-      gap: 1px;
-      background-color: #dcdcdc;
-      background-color: color-mix(in srgb, var(--pc-ink) 16%, var(--pc-paper));
-      transform: translateY(101%);
-      transition: transform 260ms var(--pc-out);
-    }
-
-    .product-card:hover .product-card__desktop-action-bar,
-    .product-card__media-wrapper:hover .product-card__desktop-action-bar,
-    .product-card:focus-within .product-card__desktop-action-bar {
-      transform: translateY(0);
-      transition-duration: 320ms;
-    }
-
-    /* Keyboard focus reveals the bar. A mouse click does not leave it stuck open. */
-    .product-card:has(:focus-visible) .product-card__desktop-action-bar {
-      transform: translateY(0);
-      transition-duration: 320ms;
-    }
-
-    .product-card__quick-label {
-      flex: 0 0 auto;
-      display: flex;
-      align-items: center;
-      padding: 0 0.875rem;
-      background-color: var(--pc-paper);
-      color: var(--pc-ink-soft);
-      font-family: var(--font-body);
-      font-size: 0.8125rem;
-      line-height: 1;
-    }
-
-    .product-card__desktop-action-bar--single .product-card__quick-label {
-      display: none;
-    }
-
-    .product-card__quick-size-pills {
-      flex: 1 1 0;
-      min-width: 0;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1px;
-    }
-
-    .product-card__quick-size-pills .product-card__quick-form {
-      flex: 1 0 2.75rem;
     }
   }
 
   /* ---------- Caption ---------- */
   .product-card__content {
-    display: flex;
-    flex-direction: column;
-    gap: 0.1875rem;
-    padding-top: 0.875rem;
-    text-align: start;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 0.25rem;
+    padding-top: 0.75rem;
+    text-align: left;
+  }
+
+  .product-card__heading {
+    min-width: 0;
   }
 
   .product-card__title {
     margin: 0;
-    font-family: var(--font-display, var(--font-body));
-    font-size: clamp(0.9375rem, 0.86rem + 0.25vw, 1.0625rem);
-    font-weight: 500;
-    line-height: 1.25;
-    letter-spacing: -0.012em;
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    font-weight: 400;
+    line-height: 1.35;
+    letter-spacing: 0;
     text-wrap: balance;
   }
 
@@ -718,81 +752,130 @@
     text-decoration: none;
   }
 
-  .product-card__title-link:focus-visible {
-    outline-offset: 4px;
-  }
-
   .product-card__spec {
-    margin: 0;
-    color: var(--pc-ink-soft);
-    font-family: var(--font-body);
-    font-size: 0.8125rem;
-    font-weight: 400;
-    line-height: 1.35;
-    letter-spacing: 0;
-    text-transform: none;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    margin: 0.2rem 0 0;
+    overflow: hidden;
+    color: var(--pc-muted);
+    font-size: 0.75rem;
+    line-height: 1.4;
+    letter-spacing: 0.005em;
   }
 
   .product-card__meta-row {
     display: flex;
     align-items: baseline;
-    margin-top: 0.25rem;
+    min-width: 0;
   }
 
   .product-card__price {
     min-width: 0;
+    font-size: 0.875rem;
+    line-height: 1.35;
     font-variant-numeric: tabular-nums;
   }
 
-  .product-card .product-card__price .price {
+  .product-card__price .price {
     display: flex;
     align-items: baseline;
-    gap: 0.5rem;
-    font-size: 0.875rem;
-    line-height: 1.3;
+    gap: 0;
+    font-size: inherit;
+    line-height: inherit;
+    letter-spacing: 0;
   }
 
-  .product-card .product-card__price .price__container {
+  .product-card__price .price__container {
     display: inline-flex;
     flex-wrap: wrap;
     align-items: baseline;
-    gap: 0.125rem 0.625rem;
+    column-gap: 0.5rem;
   }
 
-  .product-card .product-card__price .price__item--regular {
-    color: var(--pc-ink);
+  .product-card__price .price__item--regular,
+  .product-card__price .price__item--sale {
     font-weight: 400;
     letter-spacing: 0;
   }
 
-  .product-card .product-card__price .price__item--sale {
+  .product-card__price .price__item--sale {
     color: var(--pc-sale);
-    font-weight: 500;
-    letter-spacing: 0;
   }
 
-  .product-card .product-card__price s.price__item--regular {
-    color: var(--pc-ink-soft);
-    font-size: 0.8125rem;
+  .product-card__price .price s.price__item--regular {
+    color: var(--pc-muted);
+    font-size: 0.8125em;
     font-weight: 400;
-    text-decoration: line-through;
     text-decoration-thickness: 1px;
     white-space: nowrap;
   }
 
-  .product-card--sold-out .product-card__title-link,
-  .product-card--sold-out .product-card__price .price__item {
-    color: var(--pc-ink-soft);
+  .product-card--sold-out .product-card__price .price__item--sale {
+    color: var(--pc-ink);
   }
 
-  /* ---------- Size sheet (touch and tablet) ---------- */
+  /* From about 270px the price moves to the right edge, on the title's baseline. */
+  @container product-card (min-width: 17rem) {
+    .product-card__content {
+      grid-template-columns: minmax(0, 1fr) auto;
+      column-gap: 1.25rem;
+      align-items: baseline;
+      padding-top: 0.875rem;
+    }
+
+    .product-card__meta-row {
+      grid-column: 2;
+      grid-row: 1;
+      justify-content: flex-end;
+      text-align: right;
+    }
+
+    .product-card__price .price__container {
+      justify-content: flex-end;
+    }
+  }
+
+  /* Larger frames earn larger type. */
+  @container product-card (min-width: 26rem) {
+    .product-card__content {
+      padding-top: 1rem;
+    }
+
+    .product-card__title,
+    .product-card__price {
+      font-size: 1rem;
+    }
+
+    .product-card__spec {
+      font-size: 0.8125rem;
+    }
+  }
+
+  /* Hidden status line for screen readers. */
+  .product-card__live {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* ==========================================================================
+     Size sheet (touch)
+     ========================================================================== */
   .mobile-quick-sheet {
     position: fixed;
     inset: 0;
     z-index: 1200;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
     pointer-events: none;
     visibility: hidden;
-    transition: visibility 0s linear 440ms;
+    transition: visibility 0s linear 480ms;
   }
 
   .mobile-quick-sheet.is-active {
@@ -802,11 +885,11 @@
   }
 
   .mobile-quick-sheet__backdrop {
-    position: absolute;
+    position: fixed;
     inset: 0;
-    background-color: rgba(17, 17, 17, 0.42);
+    background: rgba(17, 17, 17, 0.42);
     opacity: 0;
-    transition: opacity 360ms var(--pc-out);
+    transition: opacity 360ms var(--pc-ease);
   }
 
   .mobile-quick-sheet.is-active .mobile-quick-sheet__backdrop {
@@ -814,24 +897,17 @@
   }
 
   .mobile-quick-sheet__container {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    position: relative;
     z-index: 2;
-    width: 100%;
-    max-width: 32.5rem;
-    max-height: 85vh;
-    max-height: 85dvh;
-    margin-inline: auto;
-    padding: 0.25rem 1.25rem max(1.5rem, env(safe-area-inset-bottom, 0px));
-    overflow-y: auto;
-    overscroll-behavior: contain;
     box-sizing: border-box;
-    background-color: var(--pc-paper);
-    box-shadow: 0 -1px 0 var(--pc-hairline), 0 -24px 48px rgba(17, 17, 17, 0.1);
-    transform: translateY(104%);
-    transition: transform 440ms cubic-bezier(0.32, 0.72, 0, 1);
+    width: 100%;
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 0 1.25rem max(1.5rem, env(safe-area-inset-bottom, 0px));
+    background: var(--pc-paper);
+    color: var(--pc-ink);
+    transform: translateY(100%);
+    transition: transform 480ms cubic-bezier(0.32, 0.72, 0, 1);
     outline: none;
   }
 
@@ -839,31 +915,28 @@
     transform: translateY(0);
   }
 
-  .mobile-quick-sheet__grab {
-    touch-action: none;
-  }
-
   .mobile-quick-sheet__drag-handle-wrap {
     display: flex;
     justify-content: center;
-    padding: 0.5rem 0 0.75rem;
+    padding: 0.875rem 0 0.75rem;
     cursor: grab;
+    touch-action: none;
   }
 
   .mobile-quick-sheet__drag-handle {
-    width: 2.25rem;
-    height: 3px;
-    background-color: rgba(17, 17, 17, 0.2);
+    width: 32px;
+    height: 2px;
+    background: var(--pc-line-strong);
   }
 
   .mobile-quick-sheet__header {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 0.75rem;
+    gap: 1rem;
     padding-bottom: 1rem;
-    margin-bottom: 1.125rem;
-    border-bottom: 1px solid var(--pc-hairline);
+    border-bottom: 1px solid var(--pc-line);
+    touch-action: none;
   }
 
   .mobile-quick-sheet__product {
@@ -876,10 +949,10 @@
 
   .mobile-quick-sheet__thumb-wrap {
     flex-shrink: 0;
-    width: 3.5rem;
-    height: 4.6667rem;
+    width: 54px;
+    height: 72px;
     overflow: hidden;
-    background-color: var(--pc-sheet);
+    background: var(--pc-wash);
   }
 
   .mobile-quick-sheet__thumb {
@@ -892,79 +965,80 @@
   .mobile-quick-sheet__info {
     display: flex;
     flex-direction: column;
-    gap: 0.125rem;
+    gap: 0.25rem;
     min-width: 0;
   }
 
   .mobile-quick-sheet__title {
     display: -webkit-box;
+    -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
     line-clamp: 2;
-    -webkit-box-orient: vertical;
     margin: 0;
     overflow: hidden;
-    color: var(--pc-ink);
-    font-family: var(--font-display, var(--font-body));
-    font-size: 1rem;
+    font-family: var(--font-body);
+    font-size: 0.9375rem;
     font-weight: 500;
-    line-height: 1.25;
-    letter-spacing: -0.012em;
+    line-height: 1.3;
+    letter-spacing: -0.005em;
   }
 
   .mobile-quick-sheet__price {
-    color: var(--pc-ink);
     font-size: 0.875rem;
+    line-height: 1.3;
     font-variant-numeric: tabular-nums;
   }
 
   .mobile-quick-sheet__price .price {
-    font-size: 0.875rem;
+    font-size: inherit;
+    gap: 0;
+  }
+
+  .mobile-quick-sheet__price .price__item--regular,
+  .mobile-quick-sheet__price .price__item--sale {
+    font-weight: 400;
+    letter-spacing: 0;
   }
 
   .mobile-quick-sheet__price .price__item--sale {
     color: var(--pc-sale);
-    font-weight: 500;
   }
 
-  .mobile-quick-sheet__price .price__item--regular {
+  .mobile-quick-sheet__price .price s.price__item--regular {
+    color: var(--pc-muted);
+    font-size: 0.8125em;
     font-weight: 400;
   }
 
-  .mobile-quick-sheet__price s.price__item--regular {
-    color: var(--pc-ink-soft);
-    font-size: 0.8125rem;
-  }
-
   .mobile-quick-sheet__spec {
-    color: var(--pc-ink-soft);
-    font-size: 0.8125rem;
-    line-height: 1.35;
+    color: var(--pc-muted);
+    font-size: 0.75rem;
+    line-height: 1.4;
   }
 
   .mobile-quick-sheet__close {
+    display: grid;
+    place-items: center;
     flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.75rem;
-    height: 2.75rem;
-    margin: -0.25rem -0.75rem 0 0;
+    width: 44px;
+    height: 44px;
+    margin: -0.5rem -0.75rem 0 0;
     padding: 0;
+    border: 0;
+    border-radius: 0;
     background: transparent;
     color: var(--pc-ink);
-    border: 0;
     cursor: pointer;
     touch-action: manipulation;
+    transition: transform 160ms var(--pc-ease);
     -webkit-tap-highlight-color: transparent;
-    transition: transform 240ms var(--pc-out);
   }
 
   .mobile-quick-sheet__close:active {
-    transform: rotate(90deg) scale(0.9);
+    transform: scale(0.88);
   }
 
-  .mobile-quick-sheet__close:focus-visible,
-  .mobile-quick-sheet__sizes .product-card__size-pill:focus-visible {
+  .mobile-quick-sheet :focus-visible {
     outline: 2px solid var(--pc-ink);
     outline-offset: 2px;
   }
@@ -973,22 +1047,17 @@
     display: flex;
     align-items: baseline;
     justify-content: space-between;
-    margin-bottom: 0.75rem;
-    font-size: 0.8125rem;
-    line-height: 1.2;
+    padding: 1.125rem 0 0.75rem;
   }
 
   .mobile-quick-sheet__label {
-    color: var(--pc-ink);
+    font-size: 0.8125rem;
     font-weight: 500;
   }
 
   .mobile-quick-sheet__hint {
-    color: var(--pc-ink-soft);
-  }
-
-  .mobile-quick-sheet.is-single .mobile-quick-sheet__label-row {
-    display: none;
+    color: var(--pc-muted);
+    font-size: 0.75rem;
   }
 
   .mobile-quick-sheet__sizes {
@@ -997,482 +1066,404 @@
     gap: 0.5rem;
   }
 
-  .mobile-quick-sheet.is-single .mobile-quick-sheet__sizes {
+  .mobile-quick-sheet__sizes.is-single {
     grid-template-columns: minmax(0, 1fr);
   }
 
   .mobile-quick-sheet__sizes .product-card__size-pill {
-    min-height: 3.25rem;
+    min-height: 52px;
+    border: 1px solid var(--pc-line-strong);
+    background: var(--pc-paper);
     font-size: 0.9375rem;
-    box-shadow: inset 0 0 0 1px rgba(17, 17, 17, 0.22);
+    transition: transform 180ms var(--pc-ease);
   }
 
-  .mobile-quick-sheet__sizes .product-card__size-pill:active:not(:disabled) {
-    box-shadow: inset 0 0 0 1px var(--pc-ink);
+  .mobile-quick-sheet__sizes.is-single .product-card__size-pill {
+    font-size: 0.875rem;
   }
 
-  .mobile-quick-sheet__sizes .product-card__size-pill:disabled,
-  .mobile-quick-sheet__sizes .product-card__size-pill--sold-out {
-    box-shadow: inset 0 0 0 1px rgba(17, 17, 17, 0.12);
-  }
-
-  /* One variant only: the sheet is a single decisive button */
-  .mobile-quick-sheet.is-single .mobile-quick-sheet__sizes .product-card__size-pill {
-    background-color: var(--pc-ink);
+  /* The press state flips instantly; only the scale is animated. */
+  .mobile-quick-sheet__sizes .product-card__size-pill:active:not(:disabled),
+  .mobile-quick-sheet__sizes .product-card__size-pill[data-state='added'] {
+    transform: scale(0.97);
+    border-color: var(--pc-ink);
+    background: var(--pc-ink);
     color: var(--pc-paper);
-    box-shadow: none;
-    font-size: 0.9375rem;
   }
 
-  .mobile-quick-sheet.is-single .mobile-quick-sheet__sizes .product-card__size-pill::before {
-    background-color: #000000;
+  .mobile-quick-sheet__sizes .product-card__size-pill--sold-out,
+  .mobile-quick-sheet__sizes .product-card__size-pill:disabled {
+    border-style: dashed;
+    background: transparent;
   }
 
-  .product-card__sr {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    padding: 0;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-    border: 0;
-  }
-
+  /* ---------- Reduced motion ---------- */
   @media (prefers-reduced-motion: reduce) {
     .product-card *,
     .product-card *::before,
+    .product-card *::after,
     .mobile-quick-sheet,
     .mobile-quick-sheet *,
-    .mobile-quick-sheet *::before {
+    .mobile-quick-sheet *::before,
+    .mobile-quick-sheet *::after {
       transition-duration: 0.01ms !important;
       transition-delay: 0s !important;
-      animation-duration: 0.01ms !important;
+      animation: none !important;
     }
 
-    .product-card__image:nth-child(n + 2),
-    .product-card[data-frame="1"] .product-card__image:nth-child(2),
-    .product-card[data-frame="2"] .product-card__image:nth-child(-n + 3),
-    .product-card__media-wrapper:hover .product-card__image:only-child {
-      transform: none;
-    }
-
-    .product-card__media-link:active,
-    .product-card__mobile-quick-btn:active svg {
+    .product-card__media-wrapper:active {
       transform: none;
     }
   }
 {% endstylesheet %}
 
+{%- if include_script == nil or include_script -%}
 <script>
-  // One delegated controller for every card on the page.
-  if (!window._productCardScriptInitialized) {
+  // One delegated script serves every card on the page. The flag keeps it from
+  // binding twice when more than one card (or section) carries it.
+  (function () {
+    if (window._productCardScriptInitialized) return;
     window._productCardScriptInitialized = true;
 
-    (function () {
-      var doc = document;
-      var CART_ADD_URL = '{{ routes.cart_add_url }}.js';
-      var SHEET_ID = 'MobileQuickAddSheet';
+    var doc = document;
+    var fine = false;
+    try {
+      fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    } catch (err) {}
 
-      var lastTrigger = null;
-      var drag = null;
-      var dragMoved = false;
+    /* ---------- Fine pointer: step through the views by moving across the image ---------- */
+    if (fine) {
+      var scrub = { media: null, x: 0, raf: 0 };
 
-      // iOS Safari only paints :active when a touchstart listener exists.
-      doc.addEventListener('touchstart', function () {}, { passive: true });
+      var mediaOf = function (node) {
+        return node && node.closest ? node.closest('.product-card__media-wrapper') : null;
+      };
 
-      /* ------------------------------------------------------------------
-         1. Pointer: choose the photograph by horizontal position
-         ------------------------------------------------------------------ */
-      var finePointer = false;
-      try {
-        finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-      } catch (err) {}
+      var setFrame = function (media, index) {
+        var current = media.getAttribute('data-frame') || '0';
+        if (current === String(index)) return;
+        if (index === 0) media.removeAttribute('data-frame');
+        else media.setAttribute('data-frame', String(index));
+        var label = media.querySelector('[data-frame-current]');
+        if (label) label.textContent = String(index + 1);
+      };
 
-      if (finePointer) {
-        var scrub = { media: null, card: null, count: 0, x: 0, raf: 0 };
+      var settle = function () {
+        scrub.raf = 0;
+        var media = scrub.media;
+        if (!media) return;
+        var count = parseInt(media.getAttribute('data-frames'), 10) || 1;
+        if (count < 2) return;
+        // Hovering always opens the second view; with a third, the pointer's side decides.
+        var index = 1;
+        if (count > 2) {
+          var box = media.getBoundingClientRect();
+          var ratio = box.width ? (scrub.x - box.left) / box.width : 0;
+          index = 1 + Math.min(count - 2, Math.max(0, Math.floor(ratio * (count - 1))));
+        }
+        setFrame(media, index);
+      };
 
-        var frameAt = function () {
-          if (scrub.count === 2) return 1;
-          var rect = scrub.media.getBoundingClientRect();
-          var ratio = rect.width ? (scrub.x - rect.left) / rect.width : 0;
-          ratio = Math.min(Math.max(ratio, 0), 0.999);
-          return 1 + Math.floor(ratio * (scrub.count - 1));
-        };
+      var follow = function (event) {
+        if (event.pointerType && event.pointerType !== 'mouse' && event.pointerType !== 'pen') return;
+        var media = mediaOf(event.target);
+        if (!media) return;
+        scrub.media = media;
+        scrub.x = event.clientX;
+        if (!scrub.raf) scrub.raf = window.requestAnimationFrame(settle);
+      };
 
-        var paint = function () {
-          scrub.raf = 0;
-          if (!scrub.media) return;
-          var next = String(frameAt());
-          if (scrub.card.getAttribute('data-frame') !== next) {
-            scrub.card.setAttribute('data-frame', next);
-          }
-        };
+      doc.addEventListener('pointerover', follow, { passive: true });
+      doc.addEventListener('pointermove', follow, { passive: true });
+      doc.addEventListener('pointerout', function (event) {
+        var media = mediaOf(event.target);
+        if (!media || media === mediaOf(event.relatedTarget)) return;
+        if (scrub.media === media) scrub.media = null;
+        setFrame(media, 0);
+      }, { passive: true });
+    }
 
-        var onMove = function (event) {
-          scrub.x = event.clientX;
-          if (!scrub.raf) scrub.raf = window.requestAnimationFrame(paint);
-        };
+    /* ---------- Screen reader status ---------- */
+    var live = null;
+    var announce = function (message) {
+      if (!live) {
+        live = doc.createElement('div');
+        live.className = 'product-card__live';
+        live.setAttribute('role', 'status');
+        live.setAttribute('aria-live', 'polite');
+        doc.body.appendChild(live);
+      }
+      live.textContent = '';
+      window.setTimeout(function () { live.textContent = message; }, 40);
+    };
 
-        var stopScrub = function () {
-          if (!scrub.media) return;
-          scrub.media.removeEventListener('pointermove', onMove);
-          if (scrub.raf) {
-            window.cancelAnimationFrame(scrub.raf);
-            scrub.raf = 0;
-          }
-          scrub.card.removeAttribute('data-frame');
-          scrub.media = null;
-          scrub.card = null;
-        };
+    /* ---------- Size sheet ---------- */
+    var lastTrigger = null;
 
-        doc.addEventListener('pointerover', function (event) {
-          if (event.pointerType === 'touch' || !event.target.closest) return;
-          var media = event.target.closest('.product-card__media-wrapper');
-          if (!media || media === scrub.media) return;
-          stopScrub();
-          var film = media.querySelector('.product-card__film');
-          var card = media.closest('[data-product-card]');
-          if (!film || !card || film.children.length < 2) return;
-          scrub.media = media;
-          scrub.card = card;
-          scrub.count = film.children.length;
-          scrub.x = event.clientX;
-          media.addEventListener('pointermove', onMove, { passive: true });
-          paint();
-        });
+    var ensureSheet = function () {
+      var sheet = doc.getElementById('MobileQuickAddSheet');
+      if (sheet) return sheet;
+      sheet = doc.createElement('div');
+      sheet.id = 'MobileQuickAddSheet';
+      sheet.className = 'mobile-quick-sheet';
+      sheet.setAttribute('role', 'dialog');
+      sheet.setAttribute('aria-modal', 'true');
+      sheet.setAttribute('aria-labelledby', 'MobileQuickAddSheetTitle');
+      sheet.setAttribute('aria-hidden', 'true');
+      sheet.setAttribute('inert', '');
+      sheet.innerHTML = [
+        '<div class="mobile-quick-sheet__backdrop" data-quick-sheet-close></div>',
+        '<div class="mobile-quick-sheet__container" tabindex="-1">',
+        '  <div class="mobile-quick-sheet__drag-handle-wrap" data-quick-sheet-grip>',
+        '    <div class="mobile-quick-sheet__drag-handle"></div>',
+        '  </div>',
+        '  <div class="mobile-quick-sheet__header" data-quick-sheet-grip>',
+        '    <div class="mobile-quick-sheet__product">',
+        '      <div class="mobile-quick-sheet__thumb-wrap">',
+        '        <img class="mobile-quick-sheet__thumb" src="" alt="" width="54" height="72" decoding="async">',
+        '      </div>',
+        '      <div class="mobile-quick-sheet__info">',
+        '        <h4 class="mobile-quick-sheet__title" id="MobileQuickAddSheetTitle"></h4>',
+        '        <div class="mobile-quick-sheet__price"></div>',
+        '        <div class="mobile-quick-sheet__spec"></div>',
+        '      </div>',
+        '    </div>',
+        '    <button type="button" class="mobile-quick-sheet__close" data-quick-sheet-close aria-label="Close">',
+        '      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">',
+        '        <path d="M1 1L11 11M1 11L11 1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>',
+        '      </svg>',
+        '    </button>',
+        '  </div>',
+        '  <div class="mobile-quick-sheet__body">',
+        '    <div class="mobile-quick-sheet__label-row">',
+        '      <span class="mobile-quick-sheet__label" data-quick-sheet-label>Select size</span>',
+        '      <span class="mobile-quick-sheet__hint">Tap to add</span>',
+        '    </div>',
+        '    <div class="mobile-quick-sheet__sizes" data-quick-sheet-sizes></div>',
+        '  </div>',
+        '</div>'
+      ].join('\n');
+      doc.body.appendChild(sheet);
+      // Commit the closed state once, so the very first open still slides up.
+      sheet.getBoundingClientRect();
+      return sheet;
+    };
 
-        doc.addEventListener('pointerout', function (event) {
-          if (!scrub.media) return;
-          if (event.relatedTarget && scrub.media.contains(event.relatedTarget)) return;
-          stopScrub();
-        });
+    var sheetBox = function (sheet) {
+      return sheet.querySelector('.mobile-quick-sheet__container');
+    };
+
+    var openSheet = function (card, trigger) {
+      var sheet = ensureSheet();
+
+      var titleEl = card.querySelector('.product-card__title-link') || card.querySelector('.product-card__title');
+      var title = titleEl ? titleEl.textContent.trim() : '';
+      var priceEl = card.querySelector('.product-card__price');
+      var imgEl = card.querySelector('.product-card__image');
+      var imgSrc = imgEl ? (imgEl.currentSrc || imgEl.src) : '';
+      var specEl = card.querySelector('.product-card__spec');
+      var specText = specEl ? specEl.textContent.trim() : '';
+      var forms = card.querySelector('.product-card__quick-size-pills');
+
+      sheet.querySelector('.mobile-quick-sheet__title').textContent = title;
+
+      var sheetPrice = sheet.querySelector('.mobile-quick-sheet__price');
+      if (priceEl) sheetPrice.innerHTML = priceEl.innerHTML;
+
+      var thumb = sheet.querySelector('.mobile-quick-sheet__thumb');
+      if (imgSrc) {
+        thumb.src = imgSrc;
+        thumb.alt = '';
       }
 
-      /* ------------------------------------------------------------------
-         2. Screen-reader confirmation
-         ------------------------------------------------------------------ */
-      var announce = function (message) {
-        var live = doc.getElementById('ProductCardStatus');
-        if (!live) {
-          live = doc.createElement('div');
-          live.id = 'ProductCardStatus';
-          live.className = 'product-card__sr';
-          live.setAttribute('role', 'status');
-          live.setAttribute('aria-live', 'polite');
-          doc.body.appendChild(live);
-        }
-        live.textContent = '';
-        window.setTimeout(function () {
-          live.textContent = message;
-        }, 60);
-      };
+      var spec = sheet.querySelector('.mobile-quick-sheet__spec');
+      spec.textContent = specText;
+      spec.style.display = specText ? 'block' : 'none';
 
-      /* ------------------------------------------------------------------
-         3. Size sheet (touch and tablet)
-         ------------------------------------------------------------------ */
-      var getSheet = function () {
-        return doc.getElementById(SHEET_ID);
-      };
-
-      var ensureSheet = function () {
-        var sheet = getSheet();
-        if (sheet) return sheet;
-
-        sheet = doc.createElement('div');
-        sheet.id = SHEET_ID;
-        sheet.className = 'mobile-quick-sheet';
-        sheet.setAttribute('role', 'dialog');
-        sheet.setAttribute('aria-modal', 'true');
-        sheet.setAttribute('aria-labelledby', 'MobileQuickAddTitle');
-        sheet.setAttribute('aria-hidden', 'true');
-        sheet.setAttribute('inert', '');
-        sheet.innerHTML = [
-          '<div class="mobile-quick-sheet__backdrop" data-quick-sheet-close></div>',
-          '<div class="mobile-quick-sheet__container" tabindex="-1">',
-          '  <div class="mobile-quick-sheet__grab" data-quick-sheet-grab>',
-          '    <div class="mobile-quick-sheet__drag-handle-wrap" data-quick-sheet-close>',
-          '      <div class="mobile-quick-sheet__drag-handle"></div>',
-          '    </div>',
-          '    <div class="mobile-quick-sheet__header">',
-          '      <div class="mobile-quick-sheet__product">',
-          '        <div class="mobile-quick-sheet__thumb-wrap">',
-          '          <img class="mobile-quick-sheet__thumb" src="" alt="" width="56" height="75" loading="lazy">',
-          '        </div>',
-          '        <div class="mobile-quick-sheet__info">',
-          '          <h2 class="mobile-quick-sheet__title" id="MobileQuickAddTitle"></h2>',
-          '          <div class="mobile-quick-sheet__price"></div>',
-          '          <div class="mobile-quick-sheet__spec"></div>',
-          '        </div>',
-          '      </div>',
-          '      <button type="button" class="mobile-quick-sheet__close" data-quick-sheet-close aria-label="Close size sheet">',
-          '        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">',
-          '          <path d="M1.5 1.5L12.5 12.5M1.5 12.5L12.5 1.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="square"/>',
-          '        </svg>',
-          '      </button>',
-          '    </div>',
-          '  </div>',
-          '  <div class="mobile-quick-sheet__body">',
-          '    <div class="mobile-quick-sheet__label-row">',
-          '      <span class="mobile-quick-sheet__label">Select a size</span>',
-          '      <span class="mobile-quick-sheet__hint">Tap to add to bag</span>',
-          '    </div>',
-          '    <div class="mobile-quick-sheet__sizes" data-quick-sheet-sizes></div>',
-          '  </div>',
-          '</div>'
-        ].join('');
-        doc.body.appendChild(sheet);
-        // Commit the closed state so the first opening animates too.
-        sheet.getBoundingClientRect();
-        return sheet;
-      };
-
-      var closeSheet = function () {
-        var sheet = getSheet();
-        if (!sheet || !sheet.classList.contains('is-active')) return;
-        sheet.classList.remove('is-active');
-        sheet.setAttribute('aria-hidden', 'true');
-        sheet.setAttribute('inert', '');
-        doc.body.style.overflow = '';
-        if (lastTrigger && doc.contains(lastTrigger)) {
-          try { lastTrigger.focus({ preventScroll: true }); } catch (err) {}
-        }
-        lastTrigger = null;
-      };
-
-      var openSheet = function (trigger) {
-        var card = trigger.closest('[data-product-card]');
-        if (!card) return;
-        var sheet = ensureSheet();
-
-        var titleEl = card.querySelector('.product-card__title-link') || card.querySelector('.product-card__title');
-        var title = titleEl ? titleEl.textContent.trim() : '';
-        var priceEl = card.querySelector('.product-card__price');
-        var imgEl = card.querySelector('.product-card__image');
-        var imgSrc = imgEl ? (imgEl.currentSrc || imgEl.src) : '';
-        var specEl = card.querySelector('.product-card__spec');
-        var specText = specEl ? specEl.textContent.trim() : '';
-
-        sheet.querySelector('.mobile-quick-sheet__title').textContent = title;
-
-        var sheetPrice = sheet.querySelector('.mobile-quick-sheet__price');
-        if (priceEl) sheetPrice.innerHTML = priceEl.innerHTML;
-
-        var thumb = sheet.querySelector('.mobile-quick-sheet__thumb');
-        if (imgSrc) {
-          thumb.src = imgSrc;
-          thumb.alt = '';
-        }
-
-        var sheetSpec = sheet.querySelector('.mobile-quick-sheet__spec');
-        sheetSpec.textContent = specText;
-        sheetSpec.style.display = specText ? 'block' : 'none';
-
-        var source = card.querySelector('.product-card__quick-size-pills');
-        var target = sheet.querySelector('[data-quick-sheet-sizes]');
-        if (source && target) {
-          target.innerHTML = source.innerHTML;
-          var forms = target.querySelectorAll('.product-card__quick-form');
-          var single = forms.length === 1 && !!forms[0].querySelector('[data-variant-title="Add"]');
-          sheet.classList.toggle('is-single', single);
-        }
-
-        lastTrigger = trigger;
-        sheet._activeCard = card;
-        sheet._activeImg = card.querySelector('.product-card__media-wrapper') || card.querySelector('.product-card__image') || card.querySelector('img');
-        sheet.classList.add('is-active');
-        sheet.removeAttribute('inert');
-        sheet.setAttribute('aria-hidden', 'false');
-        doc.body.style.overflow = 'hidden';
-
-        var container = sheet.querySelector('.mobile-quick-sheet__container');
-        window.requestAnimationFrame(function () {
-          try { container.focus({ preventScroll: true }); } catch (err) {}
-        });
-      };
-
-      doc.addEventListener('click', function (event) {
-        var node = event.target;
-        if (!node || !node.closest) return;
-
-        var trigger = node.closest('[data-mobile-quick-trigger]');
-        if (trigger) {
-          event.preventDefault();
-          event.stopPropagation();
-          openSheet(trigger);
-          return;
-        }
-
-        if (node.closest('[data-quick-sheet-close]')) {
-          if (dragMoved) {
-            dragMoved = false;
-            return;
-          }
-          event.preventDefault();
-          closeSheet();
-        }
+      var sizes = sheet.querySelector('[data-quick-sheet-sizes]');
+      var label = sheet.querySelector('[data-quick-sheet-label]');
+      if (forms) sizes.innerHTML = forms.innerHTML;
+      Array.prototype.forEach.call(sizes.querySelectorAll('[data-state]'), function (node) {
+        node.removeAttribute('data-state');
       });
+      // A product with no size choice gets one plain "Add to bag" button.
+      var single = !!sizes.querySelector('[data-variant-title="Add"]');
+      sizes.classList.toggle('is-single', single);
+      label.textContent = single ? 'Add to bag' : 'Select size';
 
-      doc.addEventListener('keydown', function (event) {
-        var sheet = getSheet();
-        if (!sheet || !sheet.classList.contains('is-active')) return;
+      lastTrigger = trigger;
+      var box = sheetBox(sheet);
+      box.style.transition = '';
+      box.style.transform = '';
+      sheet.querySelector('.mobile-quick-sheet__backdrop').style.opacity = '';
 
-        if (event.key === 'Escape') {
-          closeSheet();
+      sheet.classList.add('is-active');
+      sheet.removeAttribute('inert');
+      sheet.setAttribute('aria-hidden', 'false');
+      doc.body.style.overflow = 'hidden';
+
+      window.requestAnimationFrame(function () {
+        try { box.focus({ preventScroll: true }); } catch (err) { box.focus(); }
+      });
+    };
+
+    var closeSheet = function () {
+      var sheet = doc.getElementById('MobileQuickAddSheet');
+      if (!sheet || !sheet.classList.contains('is-active')) return;
+      sheet.classList.remove('is-active');
+      sheet.setAttribute('aria-hidden', 'true');
+      sheet.setAttribute('inert', '');
+      doc.body.style.overflow = '';
+      if (lastTrigger && doc.contains(lastTrigger)) {
+        try { lastTrigger.focus({ preventScroll: true }); } catch (err) {}
+      }
+      lastTrigger = null;
+    };
+
+    doc.addEventListener('click', function (event) {
+      var target = event.target;
+      if (!target || !target.closest) return;
+
+      var trigger = target.closest('[data-mobile-quick-trigger]');
+      if (trigger) {
+        event.preventDefault();
+        event.stopPropagation();
+        var card = trigger.closest('[data-product-card]');
+        if (card) openSheet(card, trigger);
+        return;
+      }
+
+      if (target.closest('[data-quick-sheet-close]')) {
+        event.preventDefault();
+        closeSheet();
+      }
+    });
+
+    doc.addEventListener('keydown', function (event) {
+      var sheet = doc.getElementById('MobileQuickAddSheet');
+      if (!sheet || !sheet.classList.contains('is-active')) return;
+
+      if (event.key === 'Escape') {
+        closeSheet();
+        return;
+      }
+
+      if (event.key === 'Tab') {
+        var stops = sheet.querySelectorAll('button:not(:disabled)');
+        if (!stops.length) {
+          event.preventDefault();
           return;
         }
-        if (event.key !== 'Tab') return;
-
-        var focusable = sheet.querySelectorAll('button:not([disabled])');
-        if (!focusable.length) return;
-        var first = focusable[0];
-        var last = focusable[focusable.length - 1];
-        var container = sheet.querySelector('.mobile-quick-sheet__container');
+        var first = stops[0];
+        var last = stops[stops.length - 1];
         var active = doc.activeElement;
-
-        if (event.shiftKey && (active === first || active === container)) {
+        if (event.shiftKey && (active === first || active === sheetBox(sheet))) {
           event.preventDefault();
           last.focus();
         } else if (!event.shiftKey && active === last) {
           event.preventDefault();
           first.focus();
         }
-      });
+      }
+    });
 
-      window.addEventListener('pageshow', function (event) {
-        if (event.persisted) closeSheet();
-      });
+    /* ---------- Drag the sheet down to dismiss ---------- */
+    var drag = null;
 
-      /* Drag the sheet down to dismiss: transform and opacity only */
-      doc.addEventListener('pointerdown', function (event) {
-        dragMoved = false;
-        if (!event.target.closest) return;
-        var grab = event.target.closest('[data-quick-sheet-grab]');
-        if (!grab || event.target.closest('button')) return;
-        var sheet = getSheet();
-        if (!sheet || !sheet.classList.contains('is-active')) return;
+    doc.addEventListener('pointerdown', function (event) {
+      var target = event.target;
+      if (!target || !target.closest) return;
+      var grip = target.closest('[data-quick-sheet-grip]');
+      if (!grip || target.closest('button')) return;
+      var sheet = doc.getElementById('MobileQuickAddSheet');
+      if (!sheet || !sheet.classList.contains('is-active')) return;
 
-        var container = sheet.querySelector('.mobile-quick-sheet__container');
-        drag = {
-          id: event.pointerId,
-          startY: event.clientY,
-          lastY: event.clientY,
-          lastT: event.timeStamp,
-          velocity: 0,
-          dy: 0,
-          height: container.offsetHeight || 1,
-          container: container,
-          backdrop: sheet.querySelector('.mobile-quick-sheet__backdrop')
-        };
-        container.style.transition = 'none';
-        try { grab.setPointerCapture(event.pointerId); } catch (err) {}
-      });
-
-      doc.addEventListener('pointermove', function (event) {
-        if (!drag || event.pointerId !== drag.id) return;
-        var dy = Math.max(0, event.clientY - drag.startY);
-        if (dy > 4) dragMoved = true;
-        var dt = event.timeStamp - drag.lastT;
-        if (dt > 0) drag.velocity = (event.clientY - drag.lastY) / dt;
-        drag.lastY = event.clientY;
-        drag.lastT = event.timeStamp;
-        drag.dy = dy;
-        drag.container.style.transform = 'translateY(' + dy + 'px)';
-        drag.backdrop.style.opacity = String(Math.max(0, 1 - dy / drag.height));
-      });
-
-      var endDrag = function (event) {
-        if (!drag || (event && event.pointerId !== drag.id)) return;
-        var state = drag;
-        drag = null;
-        state.container.style.transition = '';
-        state.container.style.transform = '';
-        state.backdrop.style.opacity = '';
-        if (state.dy > state.height * 0.28 || state.velocity > 0.6) closeSheet();
+      var box = sheetBox(sheet);
+      drag = {
+        id: event.pointerId,
+        grip: grip,
+        box: box,
+        backdrop: sheet.querySelector('.mobile-quick-sheet__backdrop'),
+        startY: event.clientY,
+        offset: 0,
+        lastY: event.clientY,
+        lastT: event.timeStamp,
+        velocity: 0
       };
-      doc.addEventListener('pointerup', endDrag);
-      doc.addEventListener('pointercancel', endDrag);
+      box.style.transition = 'none';
+      try { grip.setPointerCapture(event.pointerId); } catch (err) {}
+    });
 
-      /* ------------------------------------------------------------------
-         4. Instant add to bag
-         Capture phase, so this runs before any global add-to-cart handler
-         and a card never submits twice.
-         ------------------------------------------------------------------ */
-      doc.addEventListener('submit', function (event) {
-        var form = event.target;
-        if (!form || !form.classList || !form.classList.contains('product-card__quick-form')) return;
+    doc.addEventListener('pointermove', function (event) {
+      if (!drag || event.pointerId !== drag.id) return;
+      var offset = Math.max(0, event.clientY - drag.startY);
+      var dt = event.timeStamp - drag.lastT;
+      if (dt > 0) drag.velocity = (event.clientY - drag.lastY) / dt;
+      drag.lastY = event.clientY;
+      drag.lastT = event.timeStamp;
+      drag.offset = offset;
+      drag.box.style.transform = 'translateY(' + offset + 'px)';
+      var height = drag.box.offsetHeight || 1;
+      drag.backdrop.style.opacity = String(Math.max(0, 1 - offset / height));
+    });
 
-        event.preventDefault();
-        var btn = event.submitter || form.querySelector('button[type="submit"]');
-        if (!btn || btn.disabled || btn.hasAttribute('data-state')) return;
+    var endDrag = function (event) {
+      if (!drag || event.pointerId !== drag.id) return;
+      var current = drag;
+      drag = null;
+      try { current.grip.releasePointerCapture(event.pointerId); } catch (err) {}
 
-        var size = btn.getAttribute('data-variant-title') || '';
-        var titleInput = form.querySelector('input[name="properties[_adot_title]"]');
-        var productTitle = titleInput ? titleInput.value : '';
-        var priceInput = form.querySelector('input[name="properties[_adot_price]"]');
-        var productPrice = priceInput ? priceInput.value : '';
-        var imgInput = form.querySelector('input[name="properties[_adot_image]"]');
-        var imgUrl = imgInput ? imgInput.value : '';
+      var dismiss = current.offset > 96 || current.velocity > 0.6;
+      // Handing the transition back first lets the release glide from where the finger left it.
+      current.box.style.transition = '';
+      current.backdrop.style.opacity = '';
+      current.box.style.transform = '';
+      if (dismiss) closeSheet();
+    };
 
-        var sheet = getSheet();
-        var activeCard = (sheet && sheet._activeCard) || (lastTrigger && lastTrigger.closest('[data-product-card], .product-card')) || form.closest('[data-product-card], .product-card');
-        var cardImg = (sheet && sheet._activeImg) || (activeCard ? (activeCard.querySelector('.product-card__media-wrapper') || activeCard.querySelector('.product-card__image') || activeCard.querySelector('img')) : null);
+    doc.addEventListener('pointerup', endDrag);
+    doc.addEventListener('pointercancel', endDrag);
 
-        if (window.Threadline && typeof window.Threadline.add === 'function') {
-          window.Threadline.add({
-            cta: btn,
-            form: form,
-            variantLabel: size,
-            title: productTitle,
-            price: productPrice,
-            thumbUrl: imgUrl,
-            originEl: cardImg,
-            context: 'grid',
-            onStart: closeSheet
-          });
-          return;
-        }
-        closeSheet();
+    /* ---------- Quick add ---------- */
+    doc.addEventListener('submit', function (event) {
+      var form = event.target && event.target.closest ? event.target.closest('.product-card__quick-form') : null;
+      if (!form || event.defaultPrevented) return;
 
-        var originalText = btn.textContent;
-        btn.setAttribute('data-state', 'loading');
-        btn.setAttribute('aria-busy', 'true');
-        btn.textContent = '…';
+      event.preventDefault();
+      var btn = form.querySelector('button[type="submit"]');
+      if (!btn || btn.disabled || btn.getAttribute('data-state')) return;
 
-        fetch(CART_ADD_URL, {
-          method: 'POST',
-          headers: { 'Accept': 'application/json' },
-          body: new FormData(form)
+      btn.setAttribute('data-state', 'adding');
+
+      fetch(form.getAttribute('action') + '.js', {
+        method: 'POST',
+        headers: { 'Accept': 'application/json' },
+        body: new FormData(form)
+      })
+        .then(function (res) {
+          if (!res.ok) throw new Error('Add to cart failed');
+          return res.json();
         })
-          .then(function (res) {
-            if (!res.ok) throw new Error('Add to cart failed');
-            return res.json();
-          })
-          .then(function () {
-            btn.setAttribute('data-state', 'done');
-            btn.textContent = '✓';
-            announce(productTitle + (size && size !== 'Add' ? ', size ' + size : '') + ' added to bag.');
+        .then(function () {
+          btn.setAttribute('data-state', 'added');
+          announce('Added to bag');
+          window.dispatchEvent(new CustomEvent('cart:refresh'));
 
-            window.setTimeout(function () {
-              btn.textContent = originalText;
-              btn.removeAttribute('data-state');
-              btn.removeAttribute('aria-busy');
-              if (btn.blur) btn.blur();
+          window.setTimeout(function () {
+            closeSheet();
+            window.dispatchEvent(new CustomEvent('cart:open'));
+          }, 380);
 
-              var variantId = Number(form.querySelector('[name="id"]') && form.querySelector('[name="id"]').value);
-              window.dispatchEvent(new CustomEvent('cart:refresh', { detail: { variantId: variantId || undefined } }));
-              window.dispatchEvent(new CustomEvent('cart:open'));
-            }, 360);
-          })
-          .catch(function (err) {
-            console.error('Quick add failed:', err);
-            btn.textContent = originalText;
+          window.setTimeout(function () {
             btn.removeAttribute('data-state');
-            btn.removeAttribute('aria-busy');
-            form.submit();
-          });
-      }, true);
-    })();
-  }
+          }, 1400);
+        })
+        .catch(function (err) {
+          console.error('Quick add failed:', err);
+          btn.removeAttribute('data-state');
+          form.submit();
+        });
+    });
+  })();
 </script>
+{%- endif -%}
