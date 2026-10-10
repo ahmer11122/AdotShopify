@@ -23,7 +23,7 @@
     assign grid_products = collections.all.products
   endif
 
-  assign mobile_cols = section.settings.mobile_columns | default: '1'
+  assign mobile_cols = section.settings.mobile_columns | default: '2'
   assign editorial = section.settings.editorial_layout
   if editorial == nil
     assign editorial = true
@@ -213,6 +213,15 @@
     color: var(--color-text);
   }
 
+  /* Phone: keep the display voice, but leave room for the first product above the fold. */
+  @media (max-width: 749px) {
+    .featured-collection__heading {
+      font-size: clamp(2.5rem, 12vw, 3.25rem);
+      line-height: 0.98;
+      column-gap: 0.18em;
+    }
+  }
+
   /* Each word sits in its own window so it can rise into place. The clip extends
      past the box so descenders and tight tracking are never cut. */
   .featured-collection__word {
@@ -311,7 +320,7 @@
   .featured-collection__grid--mobile-2 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     column-gap: 0.75rem;
-    row-gap: 2.5rem;
+    row-gap: 1.75rem;
   }
 
   .featured-collection__item {
@@ -344,9 +353,13 @@
       justify-self: start;
     }
 
-    /* Two columns: the right-hand column hangs lower. */
+    /* Two columns: equal weight, right-hand column steps down a beat. */
+    .featured-collection__grid--editorial.featured-collection__grid--mobile-2 .featured-collection__item {
+      --fc-ratio: 3 / 4;
+    }
+
     .featured-collection__grid--editorial.featured-collection__grid--mobile-2 .featured-collection__item:nth-child(even) {
-      margin-top: 2.5rem;
+      margin-top: 1.75rem;
     }
   }
 
