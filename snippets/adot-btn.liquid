@@ -1,0 +1,39 @@
+{%- comment -%}
+  Atelier Desk button with brass wipe + arrow slide-through.
+  Params: label, href, variant (primary|ghost|light), type (link|button|submit),
+          external (bool), class, attrs, busy_label, show_live (bool)
+{%- endcomment -%}
+{%- assign v = variant | default: 'primary' -%}
+{%- assign tag = 'a' -%}
+{%- if type == 'button' or type == 'submit' -%}
+  {%- assign tag = 'button' -%}
+{%- endif -%}
+{%- capture arrow -%}
+  <span class="adot-btn__arrow" aria-hidden="true">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="7" x2="13" y2="7"></line><polyline points="8 2 13 7 8 12"></polyline></svg>
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="7" x2="13" y2="7"></line><polyline points="8 2 13 7 8 12"></polyline></svg>
+  </span>
+{%- endcapture -%}
+{%- if tag == 'a' -%}
+  <a
+    href="{{ href }}"
+    class="adot-btn adot-btn--{{ v }}{% if class != blank %} {{ class }}{% endif %}"
+    {% if external %}target="_blank" rel="noopener noreferrer"{% endif %}
+    {{ attrs }}
+  >
+    {% if show_live %}<span class="adot-live__dot" aria-hidden="true"></span>{% endif %}
+    <span class="adot-btn__label">{{ label | escape }}</span>
+    {{ arrow }}
+    <span class="adot-btn__spin" aria-hidden="true"></span>
+  </a>
+{%- else -%}
+  <button
+    type="{{ type | default: 'button' }}"
+    class="adot-btn adot-btn--{{ v }}{% if class != blank %} {{ class }}{% endif %}"
+    {{ attrs }}
+  >
+    <span class="adot-btn__label">{{ label | escape }}</span>
+    {{ arrow }}
+    <span class="adot-btn__spin" aria-hidden="true"></span>
+  </button>
+{%- endif -%}

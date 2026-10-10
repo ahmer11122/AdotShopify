@@ -1,110 +1,163 @@
-<section class="shipping-policy-section section-padding">
-  <div class="container container--narrow">
-    <div class="shipping-header text-center">
-      <span class="text-eyebrow">Customer Care &amp; Logistics</span>
-      <h1 class="h2">Shipping, Delivery &amp; Exchanges</h1>
-      <p class="text-body">Order dispatch, Cash on Delivery, and exchanges for ADOT Wear — Pakistan only.</p>
+{%- comment -%}
+  Shipping & Exchanges — Atelier Desk № 02
+{%- endcomment -%}
+{%- capture wa_href -%}{% render 'adot-wa-link', message: 'Hello ADOT, I have a question about delivery.' %}{%- endcapture -%}
+{%- assign support_email = settings.support_email | default: 'support@adotoffical.com' -%}
+{%- assign mail_href = 'mailto:' | append: support_email -%}
+
+{%- assign hero_headline = section.settings.headline | default: 'Delivery & *exchanges.*' -%}
+{%- assign hero_intro = section.settings.intro | default: 'Order dispatch, Cash on Delivery and exchanges for ADOT Wear. Pakistan only.' -%}
+{%- assign hero_meta = section.settings.last_updated | default: 'Last updated: October 2026' -%}
+<div class="adot-page">
+  {% render 'adot-service-index' %}
+  <div class="adot-wrap">
+    {% render 'adot-hero',
+      num: '02',
+      label: 'Shipping & exchanges',
+      headline: hero_headline,
+      intro: hero_intro,
+      meta: hero_meta
+    %}
+
+    <div class="adot-body">
+      <aside class="adot-rail" aria-label="On this page">
+        <p class="adot-rail__title">On this page</p>
+        <div class="adot-rail__track" aria-hidden="true"></div>
+        <span class="adot-rail__needle" aria-hidden="true"></span>
+        <ul class="adot-rail__list">
+          {%- assign sec_i = 0 -%}
+          {%- for block in section.blocks -%}
+            {%- if block.type == 'section' -%}
+              {%- assign sec_i = sec_i | plus: 1 -%}
+              {%- assign n = sec_i | prepend: '00' | slice: -2, 2 -%}
+              <li>
+                <a class="adot-rail__link" href="#ship-{{ block.id }}">
+                  <span class="adot-rail__n">{{ n }}</span>
+                  <span>{{ block.settings.title | escape }}</span>
+                </a>
+              </li>
+            {%- endif -%}
+          {%- endfor -%}
+        </ul>
+      </aside>
+
+      <div class="adot-main">
+        <details class="adot-toc">
+          <summary class="adot-toc__summary">Contents</summary>
+          <div class="adot-toc__body">
+            <ul class="adot-toc__list">
+              {%- assign sec_i = 0 -%}
+              {%- for block in section.blocks -%}
+                {%- if block.type == 'section' -%}
+                  {%- assign sec_i = sec_i | plus: 1 -%}
+                  {%- assign n = sec_i | prepend: '00' | slice: -2, 2 -%}
+                  <li>
+                    <a class="adot-toc__link" href="#ship-{{ block.id }}">
+                      <span class="adot-toc__n">{{ n }}</span>
+                      <span>{{ block.settings.title | escape }}</span>
+                    </a>
+                  </li>
+                {%- endif -%}
+              {%- endfor -%}
+            </ul>
+          </div>
+        </details>
+
+        <div class="adot-facts" data-reveal-group>
+          {%- assign fact_i = 0 -%}
+          {%- for block in section.blocks -%}
+            {%- if block.type == 'fact' -%}
+              <div class="adot-fact" data-reveal style="--i:{{ fact_i }}" {{ block.shopify_attributes }}>
+                <span class="adot-fact__v"><span style="--i:{{ fact_i }}">{{ block.settings.value | escape }}</span></span>
+                <span class="adot-fact__l">{{ block.settings.label | escape }}</span>
+              </div>
+              {%- assign fact_i = fact_i | plus: 1 -%}
+            {%- endif -%}
+          {%- endfor -%}
+        </div>
+
+        <p class="adot-estimate" data-adot-eta hidden data-reveal>
+          If you order today, expect arrival between <strong data-eta-range>—</strong>.
+          <span class="adot-estimate__note">Estimate only. Remote areas, public holidays and weather can add time.</span>
+        </p>
+
+        <div class="adot-ledger" data-reveal-group>
+          {%- assign sec_i = 0 -%}
+          {%- for block in section.blocks -%}
+            {%- if block.type == 'section' -%}
+              {%- assign sec_i = sec_i | plus: 1 -%}
+              {%- assign n = sec_i | prepend: '00' | slice: -2, 2 -%}
+              <article class="adot-ledger__row" id="ship-{{ block.id }}" data-reveal {{ block.shopify_attributes }}>
+                <span class="adot-ledger__n">{{ n }}</span>
+                <h2 class="adot-ledger__title">{{ block.settings.title | escape }}</h2>
+                <div class="adot-ledger__body rte">
+                  {{ block.settings.body }}
+                  {%- if block.settings.title == 'Contact us' -%}
+                    <div class="adot-help__actions adot-ledger__actions">
+                      {% render 'adot-btn', label: 'Chat on WhatsApp', href: wa_href, variant: 'primary', external: true %}
+                      {% render 'adot-btn', label: 'Email us', href: mail_href, variant: 'ghost' %}
+                    </div>
+                  {%- endif -%}
+                </div>
+              </article>
+            {%- endif -%}
+          {%- endfor -%}
+        </div>
+      </div>
     </div>
 
-    <div class="shipping-content-cards">
-      <div class="shipping-card">
-        <h2 class="h4">Where we deliver</h2>
-        <ul>
-          <li>We deliver all over Pakistan. We do not ship outside Pakistan.</li>
-        </ul>
-      </div>
-
-      <div class="shipping-card">
-        <h2 class="h4">How long it takes</h2>
-        <ul>
-          <li>We process your order within <strong>24 hours</strong>.</li>
-          <li>Delivery takes <strong>3 to 4 working days</strong> (Monday to Friday).</li>
-          <li>Delivery to remote areas may take longer.</li>
-          <li>Public holidays and bad weather can cause delays.</li>
-        </ul>
-      </div>
-
-      <div class="shipping-card">
-        <h2 class="h4">Shipping charges</h2>
-        <ul>
-          <li>Orders under Rs. 6,000: <strong>Rs. 250</strong> shipping fee.</li>
-          <li>Orders of Rs. 6,000 and above: <strong>FREE shipping</strong>.</li>
-          <li>You will see the exact amount at checkout before you pay.</li>
-        </ul>
-      </div>
-
-      <div class="shipping-card">
-        <h2 class="h4">Payment methods</h2>
-        <ul>
-          <li>Cash on Delivery: pay cash when your parcel arrives. No extra COD fee.</li>
-          <li>Bank transfer, Easypaisa, or JazzCash.</li>
-          <li>We may call or WhatsApp you to confirm your order before we send it.</li>
-        </ul>
-      </div>
-
-      <div class="shipping-card">
-        <h2 class="h4">Tracking</h2>
-        <ul>
-          <li>When your order ships, we send you a tracking number by email or WhatsApp.</li>
-        </ul>
-      </div>
-
-      <div class="shipping-card">
-        <h2 class="h4">7-day exchange</h2>
-        <ul>
-          <li>Size or colour exchange within <strong>7 days</strong> of delivery. Item must be unworn, unwashed, and have tags on.</li>
-          <li>One exchange per order, and only if in stock. Sale items cannot be exchanged.</li>
-          <li>For size or colour exchanges, you pay the courier charge to return the item. We send the new item.</li>
-          <li><strong>Wrong, damaged, or faulty:</strong> WhatsApp us within <strong>48 hours</strong> with clear photos and an unboxing video. We send a replacement and cover the return shipping.</li>
-          <li>We do not offer refunds. Full rules: <a href="/policies/refund-policy">Exchange Policy</a> and <a href="/policies/shipping-policy">Shipping Policy</a>.</li>
-        </ul>
-      </div>
-
-      <div class="shipping-card">
-        <h2 class="h4">Contact us</h2>
-        <ul>
-          <li>WhatsApp: <a href="https://wa.me/923706735800" target="_blank" rel="noopener noreferrer">+92 370 6735800</a></li>
-          <li>Email: <a href="mailto:support@adotoffical.com">support@adotoffical.com</a></li>
-          <li>Hours: Monday to Saturday, 10:00 AM to 12:00 AM (Pakistan time)</li>
-        </ul>
-        <p class="shipping-card__updated text-micro">Last updated: October 2026</p>
-      </div>
-    </div>
+    {% render 'adot-help-card', message: 'Hello ADOT, I have a question about delivery.' %}
   </div>
-</section>
+  {% render 'adot-mobile-help', message: 'Hello ADOT, I have a question about delivery.' %}
+</div>
 
-<style>
-  .shipping-policy-section {
-    padding: 60px 20px;
-    background-color: var(--color-background, #fff);
-  }
-  .shipping-header {
-    margin-bottom: 40px;
-  }
-  .shipping-header h1 {
-    margin: 8px 0 12px;
-  }
-  .shipping-content-cards {
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-  }
-  .shipping-card {
-    padding: 24px;
-    border: 1px solid var(--color-border, #e5e5e5);
-  }
-  .shipping-card h2 {
-    margin: 0 0 12px;
-  }
-  .shipping-card ul {
-    margin: 0;
-    padding-left: 1.25rem;
-  }
-  .shipping-card li + li {
-    margin-top: 8px;
-  }
-  .shipping-card__updated {
-    margin-top: 16px;
-    opacity: 0.7;
-  }
-</style>
+{% schema %}
+{
+  "name": "Shipping Policy Page",
+  "settings": [
+    {
+      "type": "text",
+      "id": "headline",
+      "label": "Headline",
+      "default": "Delivery & *exchanges.*"
+    },
+    {
+      "type": "textarea",
+      "id": "intro",
+      "label": "Intro",
+      "default": "Order dispatch, Cash on Delivery and exchanges for ADOT Wear. Pakistan only."
+    },
+    {
+      "type": "text",
+      "id": "last_updated",
+      "label": "Last updated",
+      "default": "Last updated: October 2026"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "fact",
+      "name": "Fact",
+      "limit": 4,
+      "settings": [
+        { "type": "text", "id": "value", "label": "Value", "default": "24h" },
+        { "type": "text", "id": "label", "label": "Label", "default": "Order processing" }
+      ]
+    },
+    {
+      "type": "section",
+      "name": "Section",
+      "limit": 12,
+      "settings": [
+        { "type": "text", "id": "title", "label": "Title", "default": "Where we deliver" },
+        {
+          "type": "richtext",
+          "id": "body",
+          "label": "Body",
+          "default": "<p>We deliver all over Pakistan. We do not ship outside Pakistan.</p>"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,7 @@
+{% comment %}
+  Policy pages (/policies/*). Shopify often ignores this file and injects
+  shopify-policy__* via content_for_layout. layout/theme.liquid intercepts
+  /policies/* and renders snippets/adot-policy-layout.liquid instead.
+  Kept so Theme Check / future Shopify versions still have a policy template.
+{% endcomment %}
+{% render 'adot-policy-layout' %}

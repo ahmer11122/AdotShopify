@@ -1,0 +1,9 @@
+{%- comment -%}
+  Builds a wa.me URL from settings.whatsapp_number + message.
+  Params: message (optional)
+{%- endcomment -%}
+{%- assign wa_digits = settings.whatsapp_number | default: '923706735800' | remove: '+' | remove: ' ' | remove: '-' -%}
+{%- assign wa_msg = message | default: 'Hello ADOT, I need help with…' -%}
+{%- assign wa_encoded = wa_msg | url_encode -%}
+{%- assign wa_href = 'https://wa.me/' | append: wa_digits | append: '?text=' | append: wa_encoded -%}
+{{- wa_href -}}

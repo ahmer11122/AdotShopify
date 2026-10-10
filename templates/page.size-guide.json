@@ -2,10 +2,33 @@
   "sections": {
     "main": {
       "type": "size-guide-page",
-      "settings": {}
+      "blocks": {
+        "m": {
+          "type": "size",
+          "settings": { "size": "M", "chest": 55, "length": 68, "shoulder": 50, "sleeve": 87, "hem": 50 }
+        },
+        "l": {
+          "type": "size",
+          "settings": { "size": "L", "chest": 58, "length": 70, "shoulder": 52, "sleeve": 89, "hem": 52 }
+        },
+        "xl": {
+          "type": "size",
+          "settings": { "size": "XL", "chest": 61, "length": 72, "shoulder": 54, "sleeve": 91, "hem": 54 }
+        },
+        "xxl": {
+          "type": "size",
+          "settings": { "size": "XXL", "chest": 64, "length": 74, "shoulder": 56, "sleeve": 93, "hem": 56 }
+        }
+      },
+      "block_order": ["m", "l", "xl", "xxl"],
+      "settings": {
+        "headline": "Find your *fit.*",
+        "intro": "Official ADOT hoodies & sweatshirts measurements. Measure your favourite garment flat across a smooth surface to find your fit. Available sizes: M, L, XL, XXL.",
+        "category_title": "Hoodies & Sweatshirts",
+        "fit_label": "Regular / Relaxed Fit",
+        "note": "Chest, shoulder, and hem are laid-flat half widths. Sleeve length is measured from center back."
+      }
     }
   },
-  "order": [
-    "main"
-  ]
+  "order": ["main"]
 }

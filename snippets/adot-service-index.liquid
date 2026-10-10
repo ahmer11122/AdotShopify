@@ -1,0 +1,45 @@
+{%- comment -%}
+  Sticky cross-page customer-care nav.
+  Prefers linklist handle "service-index"; falls back to footer page URLs.
+{%- endcomment -%}
+{%- assign menu = linklists['service-index'] -%}
+<nav class="adot-index" aria-label="Customer care">
+  <ul class="adot-index__list">
+    {%- if menu != blank and menu.links.size > 0 -%}
+      {%- for link in menu.links -%}
+        <li class="adot-index__item">
+          <a
+            href="{{ link.url }}"
+            class="adot-index__link"
+            {% if link.active or link.current %}aria-current="page"{% endif %}
+          >{{ link.title | escape }}</a>
+        </li>
+      {%- endfor -%}
+    {%- else -%}
+      {%- assign path = request.path -%}
+      {%- assign items = 'FAQ|/pages/faq|Shipping|/pages/shipping-delivery|Size guide|/pages/size-guide|Contact|/pages/contact|Exchange|/policies/refund-policy|Privacy|/policies/privacy-policy' | split: '|' -%}
+      {%- for i in (0..5) -%}
+        {%- assign label_i = i | times: 2 -%}
+        {%- assign url_i = label_i | plus: 1 -%}
+        {%- assign item_label = items[label_i] -%}
+        {%- assign item_url = items[url_i] -%}
+        {%- assign is_active = false -%}
+        {%- if path == item_url or path contains item_url -%}
+          {%- assign is_active = true -%}
+        {%- endif -%}
+        {%- comment -%}Also match policy title pages via template{%- endcomment -%}
+        {%- if template.name == 'policy' -%}
+          {%- if item_url contains 'refund' and policy.handle == 'refund-policy' -%}{%- assign is_active = true -%}{%- endif -%}
+          {%- if item_url contains 'privacy' and policy.handle == 'privacy-policy' -%}{%- assign is_active = true -%}{%- endif -%}
+        {%- endif -%}
+        <li class="adot-index__item">
+          <a
+            href="{{ item_url }}"
+            class="adot-index__link"
+            {% if is_active %}aria-current="page"{% endif %}
+          >{{ item_label }}</a>
+        </li>
+      {%- endfor -%}
+    {%- endif -%}
+  </ul>
+</nav>

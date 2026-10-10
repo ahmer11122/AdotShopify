@@ -1,0 +1,15 @@
+{%- comment -%}
+  Splits a headline into masked words. Wrap an accent with *word* → brass-ink <em>.
+  Params: headline
+{%- endcomment -%}
+{%- assign raw = headline | default: '' | strip -%}
+{%- assign words = raw | split: ' ' -%}
+{%- for word in words -%}
+  {%- assign clean = word -%}
+  {%- assign is_accent = false -%}
+  {%- if word contains '*' -%}
+    {%- assign clean = word | remove: '*' -%}
+    {%- assign is_accent = true -%}
+  {%- endif -%}
+  <span class="adot-title__w"><span style="--i:{{ forloop.index0 }}">{%- if is_accent -%}<em>{{ clean | escape }}</em>{%- else -%}{{ clean | escape }}{%- endif -%}</span></span>{%- unless forloop.last -%} {% endunless -%}
+{%- endfor -%}

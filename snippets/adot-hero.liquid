@@ -1,0 +1,30 @@
+{%- comment -%}
+  Params: num, label, headline (supports *accent*), intro, meta (optional)
+{%- endcomment -%}
+<header class="adot-hero">
+  <div class="adot-hero__grid">
+    <div class="adot-hero__main">
+      <div class="adot-hero__label">
+        <span class="adot-hero__num">№ {{ num | default: '—' }}</span>
+        <span class="adot-hero__rule" aria-hidden="true"></span>
+        <span class="adot-hero__tag">{{ label | escape }}</span>
+      </div>
+      <h1 class="adot-hero__title">{% render 'adot-title', headline: headline %}</h1>
+      {% if meta != blank %}
+        <span class="adot-hero__meta">{{ meta | escape }}</span>
+      {% else %}
+        <span class="adot-hero__meta" hidden></span>
+      {% endif %}
+    </div>
+    {% if intro != blank %}
+      <div class="adot-hero__intro">
+        {% if intro contains '<' %}
+          {{ intro }}
+        {% else %}
+          <p>{{ intro | escape }}</p>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+  <span class="adot-stitch" aria-hidden="true"></span>
+</header>

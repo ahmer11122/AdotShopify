@@ -31,6 +31,24 @@
     {{ 'base.css' | asset_url | stylesheet_tag }}
     {% render 'threadline-assets', part: 'css' %}
 
+    {%- liquid
+      assign adot_pages_kit = false
+      if template.name == 'page' or template.name == 'policy'
+        assign adot_pages_kit = true
+      endif
+      if request.path contains '/policies/'
+        assign adot_pages_kit = true
+      endif
+    -%}
+    {%- if adot_pages_kit -%}
+      {% # theme-check-disable ParserBlockingScript %}
+      <script>document.documentElement.classList.add('js')</script>
+      {% # theme-check-enable ParserBlockingScript %}
+      {{ 'adot-pages.css' | asset_url | stylesheet_tag: preload: true }}
+      <script src="{{ 'adot-pages.js' | asset_url }}" defer></script>
+      <script src="{{ 'adot-pages-ui.js' | asset_url }}" defer></script>
+    {%- endif -%}
+
     {% # Social, title, etc. %}
     {% render 'meta-tags' %}
 
@@ -41,12 +59,27 @@
     {{ content_for_header }}
   </head>
 
-  <body class="template-{{ template.name | default: 'index' }}">
+  {%- liquid
+    assign adot_is_policy = false
+    if request.path contains '/policies/'
+      assign adot_is_policy = true
+    endif
+  -%}
+  <body class="template-{{ template.name | default: 'index' }}{% if adot_is_policy %} template-policy{% endif %}">
     <a class="skip-link" href="#MainContent">Skip to content</a>
     {% sections 'header-group' %}
 
     <main id="MainContent" role="main" tabindex="-1">
-      {{ content_for_layout }}
+      {%- comment -%}
+        Shopify ignores templates/policy.liquid and injects a bare
+        shopify-policy__* shell into content_for_layout. Replace that shell
+        with the Atelier Desk policy layout on every /policies/* URL.
+      {%- endcomment -%}
+      {%- if adot_is_policy -%}
+        {% render 'adot-policy-layout' %}
+      {%- else -%}
+        {{ content_for_layout }}
+      {%- endif -%}
     </main>
 
     {% sections 'footer-group' %}

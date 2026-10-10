@@ -132,13 +132,14 @@
         "id": "whatsapp_number",
         "label": "WhatsApp number",
         "default": "923706735800",
-        "info": "Digits only with country code, no +. Used on password page and schema contact when set."
+        "info": "Digits only with country code, no +. Used on FAQ, Contact, Size Guide, Shipping, policies, password page, and schema."
       },
       {
         "type": "text",
         "id": "support_email",
         "label": "Public support email",
-        "info": "Shown on password page when set. Leave blank to hide."
+        "default": "support@adotoffical.com",
+        "info": "Central support address for footer pages and password page. Leave blank to hide on password."
       }
     ]
   }

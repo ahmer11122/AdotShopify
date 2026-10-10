@@ -1,17 +1,21 @@
+{% # theme-check-disable UndefinedObject %}
 {%- comment -%}
-  Generic editorial page — Atelier Desk
+  Shopify /policies/* renderer — Atelier Desk № 05 / 06
 {%- endcomment -%}
 {%- assign page_num = '—' -%}
-{%- assign page_label = page.title -%}
-{%- assign handle_l = page.handle | downcase -%}
-{%- if handle_l contains 'refund' or handle_l contains 'exchange' -%}
+{%- assign page_label = policy.title -%}
+{%- assign handle_l = policy.handle | default: '' | downcase -%}
+{%- if handle_l contains 'refund' or policy.title contains 'Refund' or policy.title contains 'Exchange' -%}
   {%- assign page_num = '05' -%}
   {%- assign page_label = 'Exchange policy' -%}
-{%- elsif handle_l contains 'privacy' -%}
+{%- elsif handle_l contains 'privacy' or policy.title contains 'Privacy' -%}
   {%- assign page_num = '06' -%}
   {%- assign page_label = 'Privacy' -%}
+{%- elsif handle_l contains 'shipping' -%}
+  {%- assign page_num = '02' -%}
+  {%- assign page_label = 'Shipping policy' -%}
 {%- endif -%}
-{%- capture wa_msg -%}Hello ADOT, I have a question about {{ page.title }}.{%- endcapture -%}
+{%- capture wa_msg -%}Hello ADOT, I have a question about {{ policy.title }}.{%- endcapture -%}
 
 <div class="adot-page">
   {% render 'adot-service-index' %}
@@ -19,7 +23,7 @@
     {% render 'adot-hero',
       num: page_num,
       label: page_label,
-      headline: page.title
+      headline: policy.title
     %}
 
     <div class="adot-body">
@@ -39,7 +43,7 @@
         </details>
 
         <article class="adot-policy rte">
-          {{ page.content }}
+          {{ policy.body }}
         </article>
       </div>
     </div>
@@ -53,7 +57,7 @@
 
 {% schema %}
 {
-  "name": "t:general.page",
+  "name": "Policy",
   "settings": [
     {
       "type": "checkbox",
@@ -64,3 +68,4 @@
   ]
 }
 {% endschema %}
+{% # theme-check-enable UndefinedObject %}

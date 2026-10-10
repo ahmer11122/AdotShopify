@@ -2,10 +2,80 @@
   "sections": {
     "main": {
       "type": "shipping-policy-page",
-      "settings": {}
+      "blocks": {
+        "f1": {
+          "type": "fact",
+          "settings": { "value": "24h", "label": "Order processing" }
+        },
+        "f2": {
+          "type": "fact",
+          "settings": { "value": "3–4", "label": "Working days to deliver" }
+        },
+        "f3": {
+          "type": "fact",
+          "settings": { "value": "Rs. 250", "label": "Shipping under Rs. 6,000 — free above" }
+        },
+        "f4": {
+          "type": "fact",
+          "settings": { "value": "7", "label": "Day exchange window" }
+        },
+        "s1": {
+          "type": "section",
+          "settings": {
+            "title": "Where we deliver",
+            "body": "<ul><li>We deliver all over Pakistan. We do not ship outside Pakistan.</li></ul>"
+          }
+        },
+        "s2": {
+          "type": "section",
+          "settings": {
+            "title": "How long it takes",
+            "body": "<ul><li>We process your order within <strong>24 hours</strong>.</li><li>Delivery takes <strong>3 to 4 working days</strong> (Monday to Friday).</li><li>Delivery to remote areas may take longer.</li><li>Public holidays and bad weather can cause delays.</li></ul>"
+          }
+        },
+        "s3": {
+          "type": "section",
+          "settings": {
+            "title": "Shipping charges",
+            "body": "<ul><li>Orders under Rs. 6,000: <strong>Rs. 250</strong> shipping fee.</li><li>Orders of Rs. 6,000 and above: <strong>FREE shipping</strong>.</li><li>You will see the exact amount at checkout before you pay.</li></ul>"
+          }
+        },
+        "s4": {
+          "type": "section",
+          "settings": {
+            "title": "Payment methods",
+            "body": "<ul><li>Cash on Delivery: pay cash when your parcel arrives. No extra COD fee.</li><li>Bank transfer, Easypaisa, or JazzCash.</li><li>We may call or WhatsApp you to confirm your order before we send it.</li></ul>"
+          }
+        },
+        "s5": {
+          "type": "section",
+          "settings": {
+            "title": "Tracking",
+            "body": "<ul><li>When your order ships, we send you a tracking number by email or WhatsApp.</li></ul>"
+          }
+        },
+        "s6": {
+          "type": "section",
+          "settings": {
+            "title": "7-day exchange",
+            "body": "<ul><li>Size or colour exchange within <strong>7 days</strong> of delivery. Item must be unworn, unwashed, and have tags on.</li><li>One exchange per order, and only if in stock. Sale items cannot be exchanged.</li><li>For size or colour exchanges, you pay the courier charge to return the item. We send the new item.</li><li><strong>Wrong, damaged, or faulty:</strong> WhatsApp us within <strong>48 hours</strong> with clear photos and an unboxing video. We send a replacement and cover the return shipping.</li><li>We do not offer refunds. Full rules: <a href=\"/policies/refund-policy\">Exchange Policy</a> and <a href=\"/policies/shipping-policy\">Shipping Policy</a>.</li></ul>"
+          }
+        },
+        "s7": {
+          "type": "section",
+          "settings": {
+            "title": "Contact us",
+            "body": "<ul><li>Hours: Monday to Saturday, 10:00 AM to 12:00 AM (Pakistan time)</li></ul>"
+          }
+        }
+      },
+      "block_order": ["f1", "f2", "f3", "f4", "s1", "s2", "s3", "s4", "s5", "s6", "s7"],
+      "settings": {
+        "headline": "Delivery & *exchanges.*",
+        "intro": "Order dispatch, Cash on Delivery and exchanges for ADOT Wear. Pakistan only.",
+        "last_updated": "Last updated: October 2026"
+      }
     }
   },
-  "order": [
-    "main"
-  ]
+  "order": ["main"]
 }

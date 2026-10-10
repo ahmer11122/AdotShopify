@@ -3,11 +3,14 @@
     "main": {
       "type": "contact-page",
       "settings": {
-        "working_hours": "Monday to Saturday, 10:00 AM to 12:00 AM (Pakistan time)"
+        "headline": "Let's *talk.*",
+        "intro": "We are here to help. Message us on WhatsApp for the fastest reply, or send the form below.",
+        "working_hours": "Monday to Saturday, 10:00 AM to 12:00 AM (Pakistan time)",
+        "open_hour": 10,
+        "close_hour": 24,
+        "open_days": "1,2,3,4,5,6"
       }
     }
   },
-  "order": [
-    "main"
-  ]
+  "order": ["main"]
 }

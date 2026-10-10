@@ -1,0 +1,43 @@
+{%- comment -%}
+  Stitched ink help patch.
+  Params: message (WhatsApp prefills), eyebrow, title, copy
+{%- endcomment -%}
+{%- assign wa_msg = message | default: 'Hello ADOT, I need help with…' -%}
+{%- capture wa_href -%}{% render 'adot-wa-link', message: wa_msg %}{%- endcapture -%}
+{%- assign support_email = settings.support_email | default: 'support@adotoffical.com' -%}
+<aside class="adot-help" data-reveal>
+  <div class="adot-help__grid">
+    <div class="adot-help__text">
+      <span
+        class="adot-live"
+        data-adot-status
+        data-open="10"
+        data-close="24"
+        data-days="1,2,3,4,5,6"
+      >
+        <span class="adot-live__dot" aria-hidden="true"></span>
+        <span data-status-label>WhatsApp support · Mon–Sat 10 AM–12 AM</span>
+      </span>
+      <span class="adot-help__eyebrow">{{ eyebrow | default: 'Still need help?' | escape }}</span>
+      <h2 class="adot-help__title">{{ title | default: 'Have a specific question?' | escape }}</h2>
+      <p class="adot-help__copy">{{ copy | default: 'Our team is available on WhatsApp to answer questions about sizes, fabrics, or orders.' | escape }}</p>
+    </div>
+    <div class="adot-help__actions">
+      {% render 'adot-btn',
+        label: 'Chat on WhatsApp',
+        href: wa_href,
+        variant: 'light',
+        external: true,
+        show_live: true
+      %}
+      {% if support_email != blank %}
+        {%- assign mail_href = 'mailto:' | append: support_email -%}
+        {% render 'adot-btn',
+          label: 'Email us',
+          href: mail_href,
+          variant: 'ghost'
+        %}
+      {% endif %}
+    </div>
+  </div>
+</aside>

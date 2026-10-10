@@ -1,0 +1,85 @@
+{%- comment -%}
+  Atelier Desk layout for /policies/* .
+  Shopify ignores templates/policy.liquid and injects shopify-policy__* into
+  content_for_layout. theme.liquid renders this snippet instead.
+
+  The request-scoped `policy` drop is empty outside that ignored template, so
+  we resolve body/title from shop.*_policy globals by path.
+{%- endcomment -%}
+{%- assign page_num = '—' -%}
+{%- assign page_label = 'Policy' -%}
+{%- assign policy_title = '' -%}
+{%- assign policy_body = '' -%}
+{%- assign path_l = request.path | downcase -%}
+
+{%- if path_l contains 'refund' -%}
+  {%- assign page_num = '05' -%}
+  {%- assign page_label = 'Exchange policy' -%}
+  {%- if shop.refund_policy != blank -%}
+    {%- assign policy_title = shop.refund_policy.title -%}
+    {%- assign policy_body = shop.refund_policy.body -%}
+  {%- endif -%}
+{%- elsif path_l contains 'privacy' -%}
+  {%- assign page_num = '06' -%}
+  {%- assign page_label = 'Privacy' -%}
+  {%- if shop.privacy_policy != blank -%}
+    {%- assign policy_title = shop.privacy_policy.title -%}
+    {%- assign policy_body = shop.privacy_policy.body -%}
+  {%- endif -%}
+{%- elsif path_l contains 'shipping' -%}
+  {%- assign page_num = '02' -%}
+  {%- assign page_label = 'Shipping policy' -%}
+  {%- if shop.shipping_policy != blank -%}
+    {%- assign policy_title = shop.shipping_policy.title -%}
+    {%- assign policy_body = shop.shipping_policy.body -%}
+  {%- endif -%}
+{%- elsif path_l contains 'terms' -%}
+  {%- assign page_num = '—' -%}
+  {%- assign page_label = 'Terms' -%}
+  {%- if shop.terms_of_service != blank -%}
+    {%- assign policy_title = shop.terms_of_service.title -%}
+    {%- assign policy_body = shop.terms_of_service.body -%}
+  {%- endif -%}
+{%- endif -%}
+
+{%- if policy_title == blank -%}
+  {%- assign policy_title = page_label -%}
+{%- endif -%}
+
+{%- capture wa_msg -%}Hello ADOT, I have a question about {{ policy_title }}.{%- endcapture -%}
+
+<div class="adot-page adot-page--policy">
+  {% render 'adot-service-index' %}
+  <div class="adot-wrap">
+    {% render 'adot-hero',
+      num: page_num,
+      label: page_label,
+      headline: policy_title
+    %}
+
+    <div class="adot-body">
+      <aside class="adot-rail" aria-label="On this page">
+        <p class="adot-rail__title">On this page</p>
+        <div class="adot-rail__track" aria-hidden="true"></div>
+        <span class="adot-rail__needle" aria-hidden="true"></span>
+        <ul class="adot-rail__list" data-toc-list></ul>
+      </aside>
+
+      <div class="adot-main">
+        <details class="adot-toc">
+          <summary class="adot-toc__summary">Contents</summary>
+          <div class="adot-toc__body">
+            <ul class="adot-toc__list" data-toc-mobile></ul>
+          </div>
+        </details>
+
+        <article class="adot-policy rte" data-adot-policy-body>
+          {{ policy_body }}
+        </article>
+      </div>
+    </div>
+
+    {% render 'adot-help-card', message: wa_msg %}
+  </div>
+  {% render 'adot-mobile-help', message: wa_msg %}
+</div>

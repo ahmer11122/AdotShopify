@@ -6,90 +6,108 @@
         "q1": {
           "type": "question",
           "settings": {
-            "question": "How long does delivery take?",
-            "answer": "<p>We deliver all over Pakistan in 3 to 4 working days, Monday to Friday. Remote areas may take longer.</p>"
+            "category": "Delivery",
+            "question": "Where do you deliver?",
+            "answer": "<p>All over Pakistan. We do not ship outside Pakistan.</p>"
           }
         },
         "q2": {
           "type": "question",
           "settings": {
-            "question": "Do you offer Cash on Delivery?",
-            "answer": "<p>Yes. Cash on Delivery is available in all cities and towns across Pakistan.</p>"
+            "category": "Delivery",
+            "question": "How long does delivery take?",
+            "answer": "<p>We process orders within 24 hours. Delivery takes 3 to 4 working days (Monday to Friday). Remote areas may take longer. Public holidays and bad weather can cause delays.</p>"
           }
         },
         "q3": {
           "type": "question",
           "settings": {
-            "question": "What payment methods do you accept?",
-            "answer": "<p>Cash on Delivery, bank transfer, Easypaisa, and JazzCash.</p>"
+            "category": "Delivery",
+            "question": "How much is shipping?",
+            "answer": "<p>Orders under Rs. 6,000 pay Rs. 250. Orders of Rs. 6,000 and above ship free. You see the exact amount at checkout before you pay.</p>"
           }
         },
         "q4": {
           "type": "question",
           "settings": {
-            "question": "Can I exchange my order if the size is wrong?",
-            "answer": "<p>Yes. You can exchange within 7 days of delivery for a different size or colour, if it is in stock. The item must be unworn, unwashed, and have its tags on. For size or colour exchanges, you pay the courier charge to send the item back to us.</p>"
+            "category": "Delivery",
+            "question": "How do I track my order?",
+            "answer": "<p>When your order ships, we send a tracking number by email or WhatsApp.</p>"
           }
         },
         "q5": {
           "type": "question",
           "settings": {
-            "question": "Can I exchange sale items?",
-            "answer": "<p>No. Sale items cannot be exchanged.</p>"
+            "category": "Payments",
+            "question": "Do you offer Cash on Delivery?",
+            "answer": "<p>Yes. Pay cash when your parcel arrives. No extra COD fee.</p>"
           }
         },
         "q6": {
           "type": "question",
           "settings": {
-            "question": "What if I receive a wrong, damaged, or faulty item?",
-            "answer": "<p>Message us on WhatsApp within 48 hours of delivery with clear photos and a short unboxing video. We will send a replacement and cover the return shipping.</p>"
+            "category": "Payments",
+            "question": "Which other payment methods do you accept?",
+            "answer": "<p>Bank transfer, Easypaisa, or JazzCash.</p>"
           }
         },
         "q7": {
           "type": "question",
           "settings": {
-            "question": "How do I choose my size?",
-            "answer": "<p>Check the size guide on each product page for exact measurements. If you prefer a loose, relaxed fit, we suggest sizing up.</p>"
+            "category": "Payments",
+            "question": "Will you confirm my order?",
+            "answer": "<p>We may call or WhatsApp you to confirm your order before we send it.</p>"
           }
         },
         "q8": {
           "type": "question",
           "settings": {
-            "question": "Can I order by WhatsApp, or ask about my order?",
-            "answer": "<p>Yes. Message us on WhatsApp to place an order or ask any question about your order. For a new order, send the item name, your size, and your delivery address.</p>"
+            "category": "Sizing",
+            "question": "Which sizes do you have?",
+            "answer": "<p>M, L, XL and XXL. See the <a href=\"/pages/size-guide\">Size Guide</a> for exact measurements in cm and inches.</p>"
           }
         },
         "q9": {
           "type": "question",
           "settings": {
-            "question": "How do I wash my clothes?",
-            "answer": "<p>Care instructions are on each product page.</p>"
+            "category": "Sizing",
+            "question": "How do I pick my size?",
+            "answer": "<p>Measure your best-fitting hoodie laid flat and compare it with our chart, or use \"Find my size\" on the <a href=\"/pages/size-guide\">Size Guide</a> page.</p>"
           }
         },
         "q10": {
           "type": "question",
           "settings": {
-            "question": "How can I get help?",
-            "answer": "<p>Message us on WhatsApp at +92 370 6735800 (Monday to Saturday, 10:00 AM to 12:00 AM), or email support@adotoffical.com.</p>"
+            "category": "Exchanges",
+            "question": "Can I exchange my order?",
+            "answer": "<p>Within 7 days of delivery, for a different size or colour, once per order, if in stock. The item must be unworn, unwashed, with tags on. Sale items cannot be exchanged. You pay the courier charge to send it back; we send the new item. Full rules: <a href=\"/policies/refund-policy\">Exchange Policy</a>.</p>"
+          }
+        },
+        "q11": {
+          "type": "question",
+          "settings": {
+            "category": "Exchanges",
+            "question": "What if I receive a wrong, damaged or faulty item?",
+            "answer": "<p>WhatsApp us within 48 hours with clear photos and an unboxing video. We send a replacement and cover the return shipping. See the <a href=\"/policies/refund-policy\">Exchange Policy</a>.</p>"
+          }
+        },
+        "q12": {
+          "type": "question",
+          "settings": {
+            "category": "Exchanges",
+            "question": "Do you offer refunds?",
+            "answer": "<p>We do not offer refunds. We help with exchanges and replacements. See the <a href=\"/policies/refund-policy\">Exchange Policy</a>.</p>"
           }
         }
       },
       "block_order": [
-        "q1",
-        "q2",
-        "q3",
-        "q4",
-        "q5",
-        "q6",
-        "q7",
-        "q8",
-        "q9",
-        "q10"
+        "q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8", "q9", "q10", "q11", "q12"
       ],
-      "settings": {}
+      "settings": {
+        "headline": "Questions, *answered.*",
+        "intro": "Find quick answers regarding delivery, Cash on Delivery, sizing, and exchanges."
+      }
     }
   },
-  "order": [
-    "main"
-  ]
+  "order": ["main"]
 }

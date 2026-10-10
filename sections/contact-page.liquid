@@ -1,410 +1,184 @@
-{% comment %}
-  Contact Page — Clean Editorial Form + WhatsApp Direct Support
-  Assign this template to your Contact page in Shopify Admin > Pages.
-{% endcomment %}
+{%- comment -%}
+  Contact — Atelier Desk № 04
+{%- endcomment -%}
+{%- assign wa_msg_default = section.settings.whatsapp_message | default: 'Hello ADOT, I need help with an order.' -%}
+{%- capture wa_href -%}{% render 'adot-wa-link', message: wa_msg_default %}{%- endcapture -%}
+{%- assign wa_digits = settings.whatsapp_number | default: '923706735800' | remove: '+' | remove: ' ' | remove: '-' -%}
+{%- assign wa_base = 'https://wa.me/' | append: wa_digits -%}
+{%- assign support_email = settings.support_email | default: 'support@adotoffical.com' -%}
 
-<div class="contact-page container">
-  <!-- Header -->
-  <header class="contact-page__header">
-    <span class="contact-page__eyebrow text-micro">CUSTOMER CARE</span>
-    <h1 class="contact-page__title">{{ page.title | default: 'Get in Touch' }}</h1>
-    {% if page.content != blank %}
-      <div class="contact-page__intro rte">{{ page.content }}</div>
-    {% else %}
-      <p class="contact-page__intro">
-        We are here to help. Send us an email using the form below or chat with us on WhatsApp for fast support.
-      </p>
-    {% endif %}
-  </header>
+{%- assign hero_headline = section.settings.headline | default: "Let's *talk.*" -%}
+{%- assign hero_intro = section.settings.intro | default: 'We are here to help. Message us on WhatsApp for the fastest reply, or send the form below.' -%}
+<div class="adot-page adot-page--contact">
+  {% render 'adot-service-index' %}
+  <div class="adot-wrap">
+    {% render 'adot-hero',
+      num: '04',
+      label: 'Contact',
+      headline: hero_headline,
+      intro: hero_intro
+    %}
 
-  <div class="contact-page__grid">
-    <!-- Contact Form Column -->
-    <div class="contact-page__form-wrap">
-      {% form 'contact', id: 'ContactForm', class: 'contact-page__form' %}
-        {% if form.posted_successfully? %}
-          <div class="contact-page__alert contact-page__alert--success" role="status">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-            <p>{{ section.settings.success_message | default: 'Thank you! Your message has been sent. We will get back to you shortly.' }}</p>
+    <div class="adot-body">
+      <aside class="adot-rail" aria-hidden="true"></aside>
+      <div class="adot-main">
+        <div class="adot-contact">
+          <div class="adot-contact__form">
+            {% form 'contact', id: 'ContactForm', class: 'adot-form' %}
+              {% if form.posted_successfully? %}
+                <div class="adot-alert adot-alert--ok" role="status">
+                  <svg class="adot-alert__check" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5.5 5.5L20 6"/></svg>
+                  <p>{{ section.settings.success_message | default: 'Thank you! Your message has been sent. We will get back to you shortly.' | escape }}</p>
+                </div>
+              {% endif %}
+
+              {% if form.errors %}
+                <div class="adot-alert" role="alert">
+                  {{ form.errors | default_errors }}
+                </div>
+              {% endif %}
+
+              <div class="adot-field">
+                <label class="adot-field__label" for="ContactName-{{ section.id }}">Your name</label>
+                <input
+                  type="text"
+                  name="contact[name]"
+                  id="ContactName-{{ section.id }}"
+                  class="adot-field__control"
+                  value="{% if form.name %}{{ form.name | escape }}{% elsif customer %}{{ customer.name | escape }}{% endif %}"
+                  placeholder="Full name"
+                  autocomplete="name"
+                  required
+                >
+                <span class="adot-field__stitch" aria-hidden="true"></span>
+              </div>
+
+              <div class="adot-field">
+                <label class="adot-field__label" for="ContactEmail-{{ section.id }}">Email address</label>
+                <input
+                  type="email"
+                  name="contact[email]"
+                  id="ContactEmail-{{ section.id }}"
+                  class="adot-field__control"
+                  value="{% if form.email %}{{ form.email | escape }}{% elsif customer %}{{ customer.email | escape }}{% endif %}"
+                  placeholder="name@example.com"
+                  autocomplete="email"
+                  required
+                >
+                <span class="adot-field__stitch" aria-hidden="true"></span>
+              </div>
+
+              <div class="adot-field">
+                <label class="adot-field__label" for="ContactPhone-{{ section.id }}">Phone number (optional)</label>
+                <input
+                  type="tel"
+                  name="contact[phone]"
+                  id="ContactPhone-{{ section.id }}"
+                  class="adot-field__control"
+                  value="{% if form.phone %}{{ form.phone | escape }}{% elsif customer %}{{ customer.phone | escape }}{% endif %}"
+                  placeholder="0300 1234567"
+                  autocomplete="tel"
+                  inputmode="tel"
+                >
+                <span class="adot-field__stitch" aria-hidden="true"></span>
+              </div>
+
+              <div class="adot-field">
+                <label class="adot-field__label" for="ContactOrder-{{ section.id }}">Order number (optional)</label>
+                <input
+                  type="text"
+                  name="contact[order_number]"
+                  id="ContactOrder-{{ section.id }}"
+                  class="adot-field__control"
+                  placeholder="e.g. #1042"
+                  autocomplete="off"
+                >
+                <span class="adot-field__stitch" aria-hidden="true"></span>
+              </div>
+
+              <input type="hidden" name="contact[topic]" value="">
+
+              <div class="adot-field">
+                <label class="adot-field__label" for="ContactMessage-{{ section.id }}">Message</label>
+                <textarea
+                  name="contact[body]"
+                  id="ContactMessage-{{ section.id }}"
+                  class="adot-field__control"
+                  rows="5"
+                  placeholder="Tell us about your order, size inquiry, or question…"
+                  required
+                  enterkeyhint="send"
+                >{% if form.body %}{{ form.body | escape }}{% endif %}</textarea>
+                <span class="adot-field__stitch" aria-hidden="true"></span>
+              </div>
+
+              {% render 'adot-btn', label: 'Send message', type: 'submit', variant: 'primary' %}
+            {% endform %}
           </div>
-        {% endif %}
 
-        {% if form.errors %}
-          <div class="contact-page__alert contact-page__alert--error" role="alert">
-            {{ form.errors | default_errors }}
-          </div>
-        {% endif %}
+          <aside class="adot-contact__aside" aria-label="Support details">
+            <div class="adot-wa-patch">
+              <span
+                class="adot-live"
+                data-adot-status
+                data-open="{{ section.settings.open_hour | default: 10 }}"
+                data-close="{{ section.settings.close_hour | default: 24 }}"
+                data-days="{{ section.settings.open_days | default: '1,2,3,4,5,6' }}"
+              >
+                <span class="adot-live__dot" aria-hidden="true"></span>
+                <span data-status-label>{{ section.settings.working_hours | default: 'Monday to Saturday, 10:00 AM to 12:00 AM (Pakistan time)' | escape }}</span>
+              </span>
+              <h2 class="adot-wa-patch__title">Message on WhatsApp</h2>
+              <p class="adot-wa-patch__copy">For fastest help with orders, sizing, or exchanges.</p>
+              <a
+                href="{{ wa_href }}"
+                class="adot-btn adot-btn--light"
+                target="_blank"
+                rel="noopener noreferrer"
+                data-wa-dynamic
+                data-base="{{ wa_base }}"
+              >
+                <span class="adot-live__dot" aria-hidden="true"></span>
+                <span class="adot-btn__label">Open WhatsApp chat</span>
+                <span class="adot-btn__arrow" aria-hidden="true">
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="7" x2="13" y2="7"></line><polyline points="8 2 13 7 8 12"></polyline></svg>
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="7" x2="13" y2="7"></line><polyline points="8 2 13 7 8 12"></polyline></svg>
+                </span>
+              </a>
+              <div class="adot-topics" role="group" aria-label="Message topic">
+                <button type="button" class="adot-chip" data-topic="Order status">Order status</button>
+                <button type="button" class="adot-chip" data-topic="Size help">Size help</button>
+                <button type="button" class="adot-chip" data-topic="Exchange">Exchange</button>
+                <button type="button" class="adot-chip" data-topic="Something else">Something else</button>
+              </div>
+            </div>
 
-        <div class="contact-page__field">
-          <label for="ContactName-{{ section.id }}" class="contact-page__label text-micro">YOUR NAME</label>
-          <input
-            type="text"
-            name="contact[name]"
-            id="ContactName-{{ section.id }}"
-            class="contact-page__input"
-            value="{% if form.name %}{{ form.name }}{% elsif customer %}{{ customer.name }}{% endif %}"
-            placeholder="Full name"
-            autocomplete="name"
-            required
-          >
+            <dl class="adot-dl">
+              <div class="adot-dl__row">
+                <dt class="adot-dl__dt">Response time</dt>
+                <dd class="adot-dl__dd">{{ section.settings.response_time | default: 'Within 2 to 4 hours on business days.' | escape }}</dd>
+              </div>
+              <div class="adot-dl__row">
+                <dt class="adot-dl__dt">Working hours</dt>
+                <dd class="adot-dl__dd">{{ section.settings.working_hours | default: 'Monday to Saturday, 10:00 AM to 12:00 AM (Pakistan time)' | escape }}</dd>
+              </div>
+              {% if support_email != blank %}
+                <div class="adot-dl__row">
+                  <dt class="adot-dl__dt">Email</dt>
+                  <dd class="adot-dl__dd"><a href="mailto:{{ support_email | escape }}">{{ support_email | escape }}</a></dd>
+                </div>
+              {% endif %}
+              <div class="adot-dl__row">
+                <dt class="adot-dl__dt">Delivery coverage</dt>
+                <dd class="adot-dl__dd">{{ section.settings.coverage | default: 'Cash on Delivery available nationwide across Pakistan.' | escape }}</dd>
+              </div>
+            </dl>
+          </aside>
         </div>
-
-        <div class="contact-page__field">
-          <label for="ContactEmail-{{ section.id }}" class="contact-page__label text-micro">EMAIL ADDRESS</label>
-          <input
-            type="email"
-            name="contact[email]"
-            id="ContactEmail-{{ section.id }}"
-            class="contact-page__input"
-            value="{% if form.email %}{{ form.email }}{% elsif customer %}{{ customer.email }}{% endif %}"
-            placeholder="name@example.com"
-            autocomplete="email"
-            required
-          >
-        </div>
-
-        <div class="contact-page__field">
-          <label for="ContactPhone-{{ section.id }}" class="contact-page__label text-micro">PHONE NUMBER (OPTIONAL)</label>
-          <input
-            type="tel"
-            name="contact[phone]"
-            id="ContactPhone-{{ section.id }}"
-            class="contact-page__input"
-            value="{% if form.phone %}{{ form.phone }}{% elsif customer %}{{ customer.phone }}{% endif %}"
-            placeholder="0300 1234567"
-            autocomplete="tel"
-          >
-        </div>
-
-        <div class="contact-page__field">
-          <label for="ContactMessage-{{ section.id }}" class="contact-page__label text-micro">MESSAGE</label>
-          <textarea
-            name="contact[body]"
-            id="ContactMessage-{{ section.id }}"
-            class="contact-page__textarea"
-            rows="5"
-            placeholder="Tell us about your order, size inquiry, or question..."
-            required
-          >{% if form.body %}{{ form.body }}{% endif %}</textarea>
-        </div>
-
-        <button type="submit" class="contact-page__submit">
-          Send Message
-        </button>
-      {% endform %}
+      </div>
     </div>
-
-    <!-- Sidebar Info & WhatsApp Column -->
-    <aside class="contact-page__sidebar" aria-label="Support details">
-      <!-- WhatsApp Box -->
-      <div class="contact-page__card contact-page__card--wa">
-        <div class="contact-page__card-header">
-          <span class="contact-page__card-badge text-micro">INSTANT CHAT</span>
-          <h2 class="contact-page__card-title">Message on WhatsApp</h2>
-          <p class="contact-page__card-text">
-            For fastest help with your orders, sizing questions, or exchange requests.
-          </p>
-        </div>
-
-        {%- assign wa_num = section.settings.whatsapp_number | default: '923706735800' | remove: '+' | remove: ' ' | remove: '-' -%}
-        <a
-          href="https://wa.me/{{ wa_num }}?text={{ section.settings.whatsapp_message | default: 'Hello ADOT, I need help with an order.' | url_encode }}"
-          class="contact-page__wa-btn"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <span class="contact-page__wa-dot" aria-hidden="true"></span>
-          <span>Open WhatsApp Chat</span>
-        </a>
-      </div>
-
-      <!-- Quick Details Box -->
-      <div class="contact-page__card contact-page__card--details">
-        <div class="contact-page__info-row">
-          <span class="contact-page__info-title text-micro">RESPONSE TIME</span>
-          <p class="contact-page__info-body">{{ section.settings.response_time | default: 'Within 2 to 4 hours on business days.' }}</p>
-        </div>
-
-        <div class="contact-page__info-row">
-          <span class="contact-page__info-title text-micro">WORKING HOURS</span>
-          <p class="contact-page__info-body">{{ section.settings.working_hours | default: 'Monday to Saturday, 10:00 AM to 12:00 AM (Pakistan time)' }}</p>
-        </div>
-
-        {%- assign support_email = settings.support_email | default: 'support@adotoffical.com' -%}
-        {%- if support_email != blank -%}
-          <div class="contact-page__info-row">
-            <span class="contact-page__info-title text-micro">EMAIL</span>
-            <p class="contact-page__info-body">
-              <a href="mailto:{{ support_email | escape }}">{{ support_email | escape }}</a>
-            </p>
-          </div>
-        {%- endif -%}
-
-        <div class="contact-page__info-row">
-          <span class="contact-page__info-title text-micro">DELIVERY COVERAGE</span>
-          <p class="contact-page__info-body">Cash on Delivery available nationwide across Pakistan.</p>
-        </div>
-      </div>
-    </aside>
   </div>
 </div>
-
-{% stylesheet %}
-  .contact-page {
-    padding-top: clamp(2.5rem, 5vw, 4rem);
-    padding-bottom: clamp(4rem, 8vw, 7rem);
-  }
-
-  .contact-page__header {
-    margin-bottom: clamp(2.5rem, 4vw, 3.5rem);
-    padding-bottom: clamp(1.5rem, 3vw, 2rem);
-    border-bottom: 1px solid var(--color-border);
-    max-width: 640px;
-  }
-
-  .contact-page__eyebrow {
-    display: block;
-    color: var(--color-text-subtle);
-    margin-bottom: 0.75rem;
-  }
-
-  .contact-page__title {
-    font-family: var(--font-display);
-    font-size: clamp(2.25rem, 4.5vw, 3.5rem);
-    font-weight: 500;
-    letter-spacing: var(--tracking-tight);
-    line-height: var(--leading-tight);
-    margin: 0 0 1rem 0;
-  }
-
-  .contact-page__intro {
-    font-size: var(--font-size-body);
-    color: var(--color-text-muted);
-    line-height: var(--leading-normal);
-    margin: 0;
-  }
-
-  .contact-page .rte a {
-    color: inherit;
-    text-decoration: underline;
-    text-underline-offset: 0.15em;
-  }
-
-  .contact-page .rte p {
-    margin: 0 0 0.75rem;
-  }
-
-  .contact-page .rte p:last-child {
-    margin-bottom: 0;
-  }
-
-  .contact-page__grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: clamp(2.5rem, 5vw, 4.5rem);
-  }
-
-  @media (min-width: 900px) {
-    .contact-page__grid {
-      grid-template-columns: 1.15fr 0.85fr;
-      align-items: start;
-    }
-  }
-
-  /* Form */
-  .contact-page__form {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-
-  .contact-page__field {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .contact-page__label {
-    color: var(--color-text-muted);
-  }
-
-  .contact-page__input,
-  .contact-page__textarea {
-    width: 100%;
-    padding: 0.95rem 1rem;
-    border: 1px solid var(--color-border-strong);
-    background: var(--color-background);
-    color: var(--color-text);
-    font-family: var(--font-body);
-    font-size: 16px; /* Prevents auto-zoom on mobile */
-    border-radius: 0;
-    transition: border-color var(--transition-fast);
-    -webkit-appearance: none;
-    appearance: none;
-  }
-
-  .contact-page__input:focus,
-  .contact-page__textarea:focus {
-    border-color: var(--color-text);
-    outline: none;
-  }
-
-  .contact-page__textarea {
-    resize: vertical;
-    min-height: 140px;
-    line-height: var(--leading-normal);
-  }
-
-  .contact-page__submit {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1.1rem 2.5rem;
-    background: var(--color-text);
-    color: var(--color-white);
-    border: none;
-    border-radius: 0;
-    font-family: var(--font-body);
-    font-size: var(--font-size-micro);
-    font-weight: 600;
-    letter-spacing: var(--tracking-micro);
-    text-transform: uppercase;
-    cursor: pointer;
-    align-self: flex-start;
-    transition: background-color var(--transition-fast);
-  }
-
-  .contact-page__submit:hover {
-    background-color: #333333;
-  }
-
-  @media (max-width: 600px) {
-    .contact-page__submit {
-      width: 100%;
-    }
-  }
-
-  /* Alerts */
-  .contact-page__alert {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 1rem 1.25rem;
-    font-size: var(--font-size-body);
-  }
-
-  .contact-page__alert--success {
-    background: #f0fdf4;
-    border: 1px solid #bbf7d0;
-    color: var(--color-in-stock, #15803d);
-  }
-
-  .contact-page__alert--error {
-    background: #fef2f2;
-    border: 1px solid #fecaca;
-    color: var(--color-sale, #b91c1c);
-  }
-
-  /* Sidebar */
-  .contact-page__sidebar {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-
-  .contact-page__card {
-    border: 1px solid var(--color-border);
-    padding: clamp(1.5rem, 3vw, 2.25rem);
-    background: var(--color-surface);
-  }
-
-  .contact-page__card--wa {
-    border-color: var(--color-border-strong);
-  }
-
-  .contact-page__card-badge {
-    display: inline-block;
-    color: #15803d;
-    margin-bottom: 0.5rem;
-  }
-
-  .contact-page__card-title {
-    font-family: var(--font-display);
-    font-size: var(--font-size-h3);
-    font-weight: 500;
-    letter-spacing: var(--tracking-tight);
-    margin: 0 0 0.75rem 0;
-  }
-
-  .contact-page__card-text {
-    font-size: var(--font-size-caption);
-    color: var(--color-text-muted);
-    line-height: var(--leading-normal);
-    margin: 0 0 1.5rem 0;
-  }
-
-  .contact-page__wa-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.75rem;
-    width: 100%;
-    padding: 1rem 1.5rem;
-    background: #25D366;
-    color: #ffffff;
-    border: none;
-    text-decoration: none;
-    font-family: var(--font-body);
-    font-size: var(--font-size-micro);
-    font-weight: 600;
-    letter-spacing: var(--tracking-micro);
-    text-transform: uppercase;
-    transition: background-color var(--transition-fast);
-  }
-
-  .contact-page__wa-btn:hover {
-    background-color: #20bd5a;
-  }
-
-  .contact-page__wa-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background-color: #ffffff;
-    animation: wa-pulse 2s infinite;
-  }
-
-  @keyframes wa-pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.4; transform: scale(0.85); }
-  }
-
-  .contact-page__info-row {
-    padding-bottom: 1.25rem;
-    margin-bottom: 1.25rem;
-    border-bottom: 1px solid var(--color-border);
-  }
-
-  .contact-page__info-row:last-child {
-    padding-bottom: 0;
-    margin-bottom: 0;
-    border-bottom: none;
-  }
-
-  .contact-page__info-title {
-    display: block;
-    color: var(--color-text-subtle);
-    margin-bottom: 0.35rem;
-  }
-
-  .contact-page__info-body {
-    font-size: var(--font-size-caption);
-    color: var(--color-text);
-    line-height: var(--leading-normal);
-    margin: 0;
-  }
-{% endstylesheet %}
 
 {% schema %}
 {
@@ -412,34 +186,63 @@
   "settings": [
     {
       "type": "text",
-      "id": "whatsapp_number",
-      "label": "WhatsApp Phone Number",
-      "default": "923706735800",
-      "info": "Include country code without plus sign or spaces (e.g. 923706735800)."
+      "id": "headline",
+      "label": "Headline",
+      "default": "Let's *talk.*"
+    },
+    {
+      "type": "textarea",
+      "id": "intro",
+      "label": "Intro",
+      "default": "We are here to help. Message us on WhatsApp for the fastest reply, or send the form below."
     },
     {
       "type": "text",
       "id": "whatsapp_message",
-      "label": "Pre-filled WhatsApp Message",
+      "label": "Default WhatsApp message",
       "default": "Hello ADOT, I need help with an order."
     },
     {
       "type": "text",
       "id": "success_message",
-      "label": "Success Message",
+      "label": "Success message",
       "default": "Thank you! Your message has been sent. We will get back to you shortly."
     },
     {
       "type": "text",
       "id": "response_time",
-      "label": "Response Time Note",
+      "label": "Response time note",
       "default": "Within 2 to 4 hours on business days."
     },
     {
       "type": "text",
       "id": "working_hours",
-      "label": "Working Hours",
+      "label": "Working hours",
       "default": "Monday to Saturday, 10:00 AM to 12:00 AM (Pakistan time)"
+    },
+    {
+      "type": "text",
+      "id": "coverage",
+      "label": "Delivery coverage",
+      "default": "Cash on Delivery available nationwide across Pakistan."
+    },
+    {
+      "type": "number",
+      "id": "open_hour",
+      "label": "Open hour (PKT, 0–23)",
+      "default": 10
+    },
+    {
+      "type": "number",
+      "id": "close_hour",
+      "label": "Close hour (PKT, 0–24)",
+      "default": 24
+    },
+    {
+      "type": "text",
+      "id": "open_days",
+      "label": "Open days (Mon=1 … Sun=7)",
+      "default": "1,2,3,4,5,6"
     }
   ]
 }
