@@ -101,7 +101,9 @@
   list-style: none;
   margin: 0;
   padding: 0 var(--adot-gutter);
-  min-height: var(--index-h);
+  /* Fixed floor only — do NOT use var(--index-h) here. JS writes --index-h from
+     the measured index height; a min-height feedback loop stretches the bar forever. */
+  min-height: 56px;
   max-width: var(--adot-max);
   margin-inline: auto;
   overflow-x: auto;
@@ -977,9 +979,12 @@ textarea.adot-field__control {
 }
 .adot-size__svg {
   width: 100%;
+  height: auto;
   max-height: 46svh;
+  aspect-ratio: 400 / 430;
   color: var(--adot-ink);
   display: block;
+  overflow: visible;
 }
 .adot-size__svg .garment {
   fill: none;
