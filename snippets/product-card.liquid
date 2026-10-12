@@ -482,9 +482,11 @@
   }
 
   /* ---------- Tabs: badges and the view counter sit flush in the corners ---------- */
+  /* Badge sits bottom-left so it never clips the model's head in portrait
+     fashion photos; mirrors the quick-add [+] tab in the bottom-right. */
   .product-card__badges {
     position: absolute;
-    top: 0;
+    bottom: 0;
     inset-inline-start: 0;
     z-index: 4;
     display: flex;
@@ -516,6 +518,14 @@
 
   .product-card__badge-pct {
     color: var(--pc-sale);
+  }
+
+  /* On compact mobile cards hide the word "Sale" and show only the
+     percentage so the tab stays tight and doesn't crowd the image. */
+  @media (max-width: 749px) {
+    .product-card__badge-kicker {
+      display: none;
+    }
   }
 
   .product-card__counter {
@@ -743,6 +753,12 @@
     line-height: 1.35;
     letter-spacing: 0;
     text-wrap: balance;
+    /* Clamp to 2 lines so cards stay level in the mobile 2-col grid. */
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
   }
 
   .product-card__title-link {
@@ -761,6 +777,14 @@
     font-size: 0.75rem;
     line-height: 1.4;
     letter-spacing: 0.005em;
+  }
+
+  /* Hide the category/spec line on small screens to keep
+     the 2-column grid caption compact: title + price only. */
+  @media (max-width: 749px) {
+    .product-card__spec {
+      display: none;
+    }
   }
 
   .product-card__meta-row {
