@@ -482,11 +482,9 @@
   }
 
   /* ---------- Tabs: badges and the view counter sit flush in the corners ---------- */
-  /* Badge sits bottom-left so it never clips the model's head in portrait
-     fashion photos; mirrors the quick-add [+] tab in the bottom-right. */
   .product-card__badges {
     position: absolute;
-    bottom: 0;
+    top: 0;
     inset-inline-start: 0;
     z-index: 4;
     display: flex;
@@ -520,11 +518,17 @@
     color: var(--pc-sale);
   }
 
-  /* On compact mobile cards hide the word "Sale" and show only the
-     percentage so the tab stays tight and doesn't crowd the image. */
+  /* On compact mobile cards: show only the percentage (hide "Sale")
+     and tighten padding so the tab is small and doesn't crowd the
+     model's face in the top corner of a portrait photo. */
   @media (max-width: 749px) {
     .product-card__badge-kicker {
       display: none;
+    }
+
+    .product-card__badge {
+      padding: 0.375rem 0.5rem 0.325rem;
+      font-size: 0.6875rem;
     }
   }
 
