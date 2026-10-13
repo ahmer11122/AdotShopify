@@ -15,7 +15,7 @@ After the tool answers, place the cutout on a transparent canvas. Image tools wi
 - Size after placement: **1600 × 2000 px**, PNG, transparent background.
 - The brass ring is centred left to right. The **middle of the ring is 80 px from the top** (4%). The theme draws the rod and the swing point there.
 - Above the collar, only a short slim brass neck and a small round ring show. The wooden bar stays hidden inside the garment. It must not stick out past the shoulders or the waist.
-- The top of the collar, hood, or waistband is about **200 px from the top** (10%). That neck of space is what makes the piece look hung, not pinned to the rod.
+- The top of the collar, hood, or waistband is **160 px from the top** (8%). The hook is drawn **behind** the garment, down to a fixed depth, so the cloth hides the neck where the cloth is solid. Do not paint brass on top of the cloth.
 - The longest piece fills about **90%** of the height (about 1800 px). Do not stretch a short piece to fill the frame. A tee is shorter than a hoodie. Trousers are the longest.
 - At least 6% empty space on the left and the right.
 - Soft daylight from the front-left. No floor, no wall, no shadow on the background.
@@ -54,7 +54,8 @@ gradient, no shadow on the background.
 
 Frame: portrait 4:5 (1600 x 2000 px). The hook ring is exactly centred left
 to right. The middle of the ring is 4% down from the top edge (80 px).
-The top of the collar or shoulder line is about 10% down (200 px).
+The top of the collar or shoulder line is about 8% down (160 px).
+The hook is drawn behind the garment, not on top of the cloth.
 The garment is centred. The longest piece fills about 90% of the height.
 Other pieces keep their real size compared with it: do not stretch a short
 piece to fill the frame.
@@ -120,7 +121,7 @@ No side photo. Paste the master block, then:
 
 ```text
 The trousers hang straight from the waistband on two small clips. The clips
-and the bar are hidden behind the waistband. The waistband top is about 10%
+and the bar are hidden behind the waistband. The waistband top is about 8%
 down from the top edge. The legs hang straight down to about 90% of the
 height. Keep the pleats, creases, belt loops, pockets and the real colour
 exactly as in the attached photo.
@@ -167,7 +168,7 @@ the print, colour, shape or fabric). Only: remove the background and make
 it plain flat light grey (#E6E6E6), soften harsh shadows, and lightly
 smooth messy wrinkles. Do not redraw the garment.
 Keep the framing: hook ring centred, ring middle 4% from the top, collar
-about 10% from the top, portrait 4:5.
+about 8% from the top, portrait 4:5. The hook is drawn behind the garment.
 ```
 
 Use mid grey (#9A9A9A) when the garment is white or cream.
@@ -176,7 +177,7 @@ Use mid grey (#9A9A9A) when the garment is white or cream.
 
 1. Remove the background. View the cutout on `#F4F2EE` and on `#111`. Rub out any grey or green fringe.
 2. New canvas, **1600 × 2000 px**, transparent.
-3. Paste the cutout. Put the **middle of the brass ring at x = 800, y = 80**. The collar, hood, or waistband starts near **y = 200**. No wood past the cloth.
+3. Paste the cutout. Put the **middle of the brass ring at x = 800, y = 80**. The collar, hood, or waistband starts near **y = 160**. Draw the hook **behind** the garment. No wood past the cloth. No brass on top of the cloth.
 4. Match scale to the hero piece. Every ring sits on the same line. The longest piece ends near y = 1800.
 5. Export PNG. Compress under about 900 KB.
 6. Name the file `adot-rail-{handle}-front.png`, `-side.png`, or `-back.png`.
@@ -200,7 +201,7 @@ When the real photos fill about 90% of the frame, set **Move the text under the 
 - Colour matches the garment in your hand.
 - No extra pocket, button, seam, or tag. Nothing missing.
 - The ring is centred. Its middle is about 80 px from the top. Allow about 24 px.
-- The collar or waistband is about 200 px from the top.
+- The collar or waistband is about 160 px from the top. The hook sits behind the cloth.
 - The longest piece fills about 90% of the height. A tee is shorter than a hoodie.
 - The side picture is a real 90° view, with the ring above the shoulder seam.
 - Trousers have no side picture.
