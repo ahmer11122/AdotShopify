@@ -44,12 +44,20 @@
   <div class="category-tiles__track" role="region" aria-label="{{ section.settings.heading | default: 'Shop by Category' }}">
     {% for block in section.blocks %}
       {%- assign fallback_jpg = 'category-' | append: block.settings.title | downcase | append: '.jpg' -%}
+      {%- liquid
+        assign tile_cta = 'Shop All'
+        assign tile_label = block.settings.title | append: ' - Shop All'
+        if block.settings.coming_soon
+          assign tile_cta = 'Coming soon'
+          assign tile_label = block.settings.title | append: ', coming soon'
+        endif
+      -%}
       <div class="category-tile" style="--i: {{ forloop.index0 }}" {{ block.shopify_attributes }}>
         <a
           href="{{ block.settings.link | default: routes.all_products_collection_url }}"
           class="category-tile__link"
           data-category-link
-          aria-label="{{ block.settings.title | escape }} - Shop All"
+          aria-label="{{ tile_label | escape }}"
         >
           <div class="category-tile__stage">
             <div class="category-tile__media-box">
@@ -92,7 +100,7 @@
               <div class="category-tile__text">
                 <h3 class="category-tile__title"><span class="category-tile__title-mask"><span class="category-tile__title-i">{{ block.settings.title }}</span></span></h3>
                 <span class="category-tile__cta">
-                  <span>Shop All</span>
+                  <span>{{ tile_cta }}</span>
                 </span>
               </div>
 
@@ -845,6 +853,13 @@
           "type": "url",
           "id": "link",
           "label": "Link"
+        },
+        {
+          "type": "checkbox",
+          "id": "coming_soon",
+          "label": "Coming soon",
+          "info": "Keeps the tile, and changes the label from Shop All to Coming soon.",
+          "default": false
         }
       ]
     }

@@ -27,7 +27,11 @@
         <h1 class="collection__title" data-collection-title data-base-title="{{ collection_heading | escape }}">
           {{ collection_heading }}
         </h1>
-        <span class="collection__count" data-collection-count>{{ collection.all_products_count }} items</span>
+        {%- if collection.handle == 'sweatshirts' or collection.handle == 'trousers' -%}
+          <span class="collection__count" data-collection-count>Coming soon</span>
+        {%- else -%}
+          <span class="collection__count" data-collection-count>{{ collection.all_products_count }} items</span>
+        {%- endif -%}
       </div>
 
 
@@ -36,6 +40,9 @@
   </header>
 
   <div class="collection__grid" id="CollectionProductGrid">
+    {%- if collection.handle == 'sweatshirts' or collection.handle == 'trousers' -%}
+      <p class="collection__empty">Coming soon. These arrive in the next few days. <a href="{{ routes.collections_url }}/hoodies">Shop hoodies</a>.</p>
+    {%- else -%}
     {% paginate collection.products by 50 %}
       {% for product in collection.products %}
         {% if product.handle == 'gift-card' %}
@@ -55,6 +62,7 @@
         </div>
       {% endif %}
     {% endpaginate %}
+    {%- endif -%}
   </div>
   {% # theme-check-disable ParserBlockingScript %}
   <script>
@@ -208,6 +216,11 @@
     padding-block: var(--space-lg);
     text-align: center;
     color: var(--color-text-muted);
+  }
+
+  .collection__empty a {
+    color: var(--color-text);
+    text-underline-offset: 0.18em;
   }
 
   .collection__pagination {

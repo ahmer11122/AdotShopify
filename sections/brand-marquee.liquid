@@ -125,7 +125,7 @@
                               >
                             {%- endif -%}
                           </span>
-                          <span class="brand-marquee__label">{{ chip_title }}</span>
+                          <span class="brand-marquee__label">{{ chip_title }}{% if chip.settings.coming_soon %} · Soon{% endif %}</span>
                           <svg class="brand-marquee__arrow" width="18" height="18" viewBox="0 0 18 18" aria-hidden="true" focusable="false"><path d="M4 14L14 4M6 4h8v8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg>
                         </a>
                         <svg class="brand-marquee__star brand-marquee__star--small" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 0C12 6.6 17.4 12 24 12 17.4 12 12 17.4 12 24 12 17.4 6.6 12 0 12 6.6 12 12 6.6 12 0z" fill="currentColor"/></svg>
@@ -907,6 +907,13 @@
           "type": "url",
           "id": "link",
           "label": "Link"
+        },
+        {
+          "type": "checkbox",
+          "id": "coming_soon",
+          "label": "Coming soon",
+          "info": "Adds “Soon” after the chip label.",
+          "default": false
         }
       ]
     }

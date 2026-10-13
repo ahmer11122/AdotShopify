@@ -133,8 +133,8 @@
               {%- endfor -%}
             {%- else -%}
               <li><a href="{{ routes.collections_url }}/hoodies" class="footer__link"><span class="footer__roll"><span class="footer__roll-a">Hoodies</span><span class="footer__roll-b" aria-hidden="true">Hoodies</span></span></a></li>
-              <li><a href="{{ routes.collections_url }}/sweatshirts" class="footer__link"><span class="footer__roll"><span class="footer__roll-a">Sweatshirts</span><span class="footer__roll-b" aria-hidden="true">Sweatshirts</span></span></a></li>
-              <li><a href="{{ routes.collections_url }}/trousers" class="footer__link"><span class="footer__roll"><span class="footer__roll-a">Trousers</span><span class="footer__roll-b" aria-hidden="true">Trousers</span></span></a></li>
+              <li><a href="{{ routes.collections_url }}/sweatshirts" class="footer__link"><span class="footer__roll"><span class="footer__roll-a">Sweatshirts</span><span class="footer__roll-b" aria-hidden="true">Sweatshirts</span></span><span class="footer__soon">Soon</span></a></li>
+              <li><a href="{{ routes.collections_url }}/trousers" class="footer__link"><span class="footer__roll"><span class="footer__roll-a">Trousers</span><span class="footer__roll-b" aria-hidden="true">Trousers</span></span><span class="footer__soon">Soon</span></a></li>
               <li><a href="{{ routes.collections_url }}/shop-all" class="footer__link"><span class="footer__roll"><span class="footer__roll-a">Shop All</span><span class="footer__roll-b" aria-hidden="true">Shop All</span></span></a></li>
             {%- endif -%}
           </ul>
@@ -547,6 +547,16 @@
      3 · Link columns + text-roll
      ====================================================================== */
   .footer__links { display: flex; flex-direction: column; }
+
+  .footer__soon {
+    margin-inline-start: 0.45em;
+    font-family: var(--font-body);
+    font-size: 0.62rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.62;
+  }
 
   .footer__link {
     position: relative;

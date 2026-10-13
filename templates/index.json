@@ -9,11 +9,11 @@
         "cinematic_reveal": true,
         "badge_label": "",
         "edition_tag": "",
-        "heading": "Hoodies and Sweatshirts. Made for Daily Wear.",
-        "subheading": "Heavy fleece essentials for everyday comfort across Pakistan.",
+        "heading": "Hoodies. Made for Daily Wear.",
+        "subheading": "Heavyweight fleece for everyday wear across Pakistan.",
         "text_alignment": "left",
-        "primary_button_label": "Shop New Arrivals",
-        "primary_button_link": "/collections/new-arrivals",
+        "primary_button_label": "Shop Hoodies",
+        "primary_button_link": "/collections/hoodies",
         "secondary_button_label": "",
         "show_category_bar": false,
         "show_scroll_indicator": true,
@@ -50,7 +50,8 @@
           "settings": {
             "title": "Sweatshirts",
             "link": "/collections/sweatshirts",
-            "image": "shopify://shop_images/adot-theme-category-sweatshirts.jpg"
+            "image": "shopify://shop_images/adot-theme-category-sweatshirts.jpg",
+            "coming_soon": true
           }
         },
         "tile_trousers": {
@@ -58,7 +59,8 @@
           "settings": {
             "title": "Trousers",
             "link": "/collections/trousers",
-            "image": "shopify://shop_images/adot-theme-category-trousers.jpg"
+            "image": "shopify://shop_images/adot-theme-category-trousers.jpg",
+            "coming_soon": true
           }
         }
       },
@@ -87,7 +89,8 @@
           "settings": {
             "title": "Sweatshirts",
             "link": "/collections/sweatshirts",
-            "image": "shopify://shop_images/adot-theme-category-sweatshirts.jpg"
+            "image": "shopify://shop_images/adot-theme-category-sweatshirts.jpg",
+            "coming_soon": true
           }
         },
         "chip_trousers": {
@@ -95,7 +98,8 @@
           "settings": {
             "title": "Trousers",
             "link": "/collections/trousers",
-            "image": "shopify://shop_images/adot-theme-category-trousers.jpg"
+            "image": "shopify://shop_images/adot-theme-category-trousers.jpg",
+            "coming_soon": true
           }
         }
       },

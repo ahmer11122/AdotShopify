@@ -12,20 +12,6 @@
             "query": "Hoodie"
           }
         },
-        "search_tag_sweatshirts": {
-          "type": "search_tag",
-          "settings": {
-            "label": "Sweatshirts",
-            "query": "Sweatshirt"
-          }
-        },
-        "search_tag_trousers": {
-          "type": "search_tag",
-          "settings": {
-            "label": "Trousers",
-            "query": "Trouser"
-          }
-        },
         "search_tag_winter": {
           "type": "search_tag",
           "settings": {
@@ -36,15 +22,13 @@
       },
       "block_order": [
         "search_tag_hoodies",
-        "search_tag_sweatshirts",
-        "search_tag_trousers",
         "search_tag_winter"
       ],
       "settings": {
         "direct_categories": true,
         "sticky": true,
         "drawer_meta_text": "ADOT STUDIO",
-        "search_placeholder": "Search hoodies, sweatshirts, trousers",
+        "search_placeholder": "Search hoodies",
         "smart_hide": false,
         "free_shipping_threshold": 6000,
         "cart_trust_text": "Cash on delivery|7-day exchange|Delivery in 3-4 days",
