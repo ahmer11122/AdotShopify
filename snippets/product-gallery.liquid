@@ -22,7 +22,7 @@
 {% enddoc %}
 
 {%- liquid
-  assign total = product.images.size
+  assign total = product.media.size
   assign total_label = total | prepend: '00' | slice: -2, 2
   assign view_label = product.title | escape
   assign rail_label = product.type | default: product.vendor | escape
@@ -48,7 +48,7 @@
     <aside class="pdp-rail" aria-hidden="true">
       <span class="pdp-rail__label">{{ rail_label }}</span>
       <ol class="pdp-rail__list">
-        {%- for image in product.images -%}
+        {%- for media in product.media -%}
           <li>
             <button
               type="button"
@@ -68,7 +68,7 @@
         <span data-gallery-current>01</span><i></i><span>{{ total_label }}</span>
       </span>
       <span class="pdp-hud__segs">
-        {%- for image in product.images -%}
+        {%- for media in product.media -%}
           <i class="pdp-hud__seg{% if forloop.first %} is-on{% endif %}" data-gallery-segment></i>
         {%- endfor -%}
       </span>
@@ -77,41 +77,71 @@
 
   <div class="pdp-plates__track" data-gallery-track>
     {%- if total > 0 -%}
-      {%- for image in product.images -%}
-        {%- liquid
-          assign loading_val = 'lazy'
-          assign priority_val = 'auto'
-          if forloop.first
-            assign loading_val = 'eager'
-            assign priority_val = 'high'
-          endif
-          assign frame_alt = image.alt | default: view_label
-        -%}
-        <div class="pdp-plate" data-media-id="{{ image.id }}" data-index="{{ forloop.index }}">
-          <button
-            type="button"
-            class="pdp-plate__open"
-            data-gallery-open
-            aria-label="Open image {{ forloop.index }} of {{ total }} full screen"
-            aria-haspopup="dialog"
-          >
-            <span class="pdp-plate__frame">
-              <span class="pdp-plate__img">
-                {{
-                  image
-                  | image_url: width: 1600
-                  | image_tag:
-                    loading: loading_val,
-                    fetchpriority: priority_val,
-                    widths: '600, 800, 1000, 1200, 1400, 1600',
-                    sizes: '(min-width: 990px) 50vw, 100vw',
-                    alt: frame_alt
-                }}
+      {%- for media in product.media -%}
+        {%- if media.media_type == 'video' -%}
+          <div class="pdp-plate pdp-plate--video" data-kind="video" data-media-id="{{ media.id }}" data-index="{{ forloop.index }}">
+            <button
+              type="button"
+              class="pdp-plate__open"
+              data-gallery-open
+              aria-label="Play or pause the video, plate {{ forloop.index }} of {{ total }}"
+            >
+              <span class="pdp-plate__frame">
+                <span class="pdp-plate__img">
+                  <video
+                    class="pdp-plate__video"
+                    data-pdp-video
+                    muted
+                    loop
+                    playsinline
+                    preload="metadata"
+                    poster="{{ media.preview_image | image_url: width: 1600 }}"
+                  >
+                    {%- for source in media.sources -%}
+                      <source src="{{ source.url }}" type="{{ source.mime_type }}">
+                    {%- endfor -%}
+                  </video>
+                </span>
+                <span class="pdp-plate__shade" aria-hidden="true"></span>
               </span>
-              <span class="pdp-plate__shade" aria-hidden="true"></span>
-            </span>
-          </button>
-        </div>
+            </button>
+          </div>
+        {%- elsif media.media_type == 'image' -%}
+          {%- liquid
+            assign loading_val = 'lazy'
+            assign priority_val = 'auto'
+            if forloop.first
+              assign loading_val = 'eager'
+              assign priority_val = 'high'
+            endif
+            assign frame_alt = media.alt | default: view_label
+          -%}
+          <div class="pdp-plate" data-kind="image" data-media-id="{{ media.id }}" data-index="{{ forloop.index }}">
+            <button
+              type="button"
+              class="pdp-plate__open"
+              data-gallery-open
+              aria-label="Open image {{ forloop.index }} of {{ total }} full screen"
+              aria-haspopup="dialog"
+            >
+              <span class="pdp-plate__frame">
+                <span class="pdp-plate__img">
+                  {{
+                    media
+                    | image_url: width: 1600
+                    | image_tag:
+                      loading: loading_val,
+                      fetchpriority: priority_val,
+                      widths: '600, 800, 1000, 1200, 1400, 1600',
+                      sizes: '(min-width: 990px) 50vw, 100vw',
+                      alt: frame_alt
+                  }}
+                </span>
+                <span class="pdp-plate__shade" aria-hidden="true"></span>
+              </span>
+            </button>
+          </div>
+        {%- endif -%}
       {%- endfor -%}
     {%- else -%}
       <div class="pdp-plate pdp-plate--placeholder">
@@ -139,16 +169,32 @@
       </div>
 
       <div class="pdp-viewer__track" data-viewer-track>
-        {%- for image in product.images -%}
+        {%- for media in product.media -%}
           <div class="pdp-viewer__slide" data-viewer-slide data-index="{{ forloop.index }}">
-            <img
-              class="pdp-viewer__img"
-              alt="{{ image.alt | default: view_label | escape }}"
-              width="{{ image.width }}"
-              height="{{ image.height }}"
-              data-hi="{{ image | image_url: width: 2000 }}"
-              decoding="async"
-            >
+            {%- if media.media_type == 'image' -%}
+              <img
+                class="pdp-viewer__img"
+                alt="{{ media.alt | default: view_label | escape }}"
+                width="{{ media.width }}"
+                height="{{ media.height }}"
+                data-hi="{{ media | image_url: width: 2000 }}"
+                decoding="async"
+              >
+            {%- elsif media.media_type == 'video' -%}
+              <video
+                class="pdp-viewer__img pdp-viewer__video"
+                controls
+                playsinline
+                loop
+                muted
+                preload="metadata"
+                poster="{{ media.preview_image | image_url: width: 1600 }}"
+              >
+                {%- for source in media.sources -%}
+                  <source src="{{ source.url }}" type="{{ source.mime_type }}">
+                {%- endfor -%}
+              </video>
+            {%- endif -%}
           </div>
         {%- endfor -%}
       </div>
@@ -242,12 +288,17 @@
     transform-origin: top center;
   }
 
-  .pdp-plate__img img {
+  .pdp-plate__img img,
+  .pdp-plate__video {
     display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
     object-position: top center;
+  }
+
+  .pdp-plate--video .pdp-plate__open {
+    cursor: pointer;
   }
 
   .pdp-plate__shade {
@@ -870,8 +921,10 @@
 
         this.plates.forEach((plate, i) => {
           const opener = plate.querySelector('[data-gallery-open]');
-          if (opener) opener.addEventListener('click', () => this.openViewer(i));
+          if (!opener || plate.dataset.kind === 'video') return;
+          opener.addEventListener('click', () => this.openViewer(i));
         });
+        this.bindVideo();
 
         this.initCursor();
         if (this.viewer) this.initViewer();
@@ -887,6 +940,7 @@
         window.removeEventListener('resize', this.queue);
         if (this._hideCursor) window.removeEventListener('blur', this._hideCursor);
         if (this._io) this._io.disconnect();
+        if (this._videoIo) this._videoIo.disconnect();
       }
 
       pad(n) {
@@ -1045,10 +1099,37 @@
         if (this.viewerCount) this.viewerCount.textContent = this.pad(this.viewerIndex + 1) + ' / ' + this.pad(this.total);
       }
 
+      bindVideo() {
+        const video = this.querySelector('[data-pdp-video]');
+        if (!video) return;
+        const plate = video.closest('.pdp-plate');
+        const opener = plate && plate.querySelector('[data-gallery-open]');
+        if (opener) {
+          opener.addEventListener('click', () => {
+            if (video.paused) video.play();
+            else video.pause();
+          });
+        }
+        if (this.reduce.matches) {
+          video.controls = true;
+          return;
+        }
+        if (!('IntersectionObserver' in window)) return;
+        const io = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting && entry.intersectionRatio >= 0.55) video.play().catch(() => {});
+            else video.pause();
+          });
+        }, { threshold: [0, 0.55, 1] });
+        io.observe(plate || video);
+        this._videoIo = io;
+      }
+
       loadSlide(i) {
         const slide = this.slides[i];
         if (!slide) return;
         const img = slide.querySelector('img');
+        if (!img) return;
         const source = this.plates[i].querySelector('img');
         if (!img.getAttribute('src') && source) img.src = source.currentSrc || source.src;
         if (img.dataset.upgraded) return;
@@ -1074,8 +1155,10 @@
         if (!dlg || dlg.open) return;
         if (this._hideCursor) this._hideCursor();
 
+        if (this.plates[index].dataset.kind === 'video') return;
         const frame = this.plates[index].querySelector('.pdp-plate__frame');
         const img = this.slides[index].querySelector('img');
+        if (!img) return;
         this.loadSlide(index);
 
         const reveal = () => {
@@ -1116,6 +1199,11 @@
         const i = this.viewerIndex;
         const img = this.slides[i].querySelector('img');
         const frame = this.plates[i].querySelector('.pdp-plate__frame');
+        if (!img) {
+          dlg.close();
+          this.scrollToPlate(i, false);
+          return;
+        }
 
         const settle = () => {
           this.scrollToPlate(i, false);
@@ -1155,6 +1243,7 @@
           slide.addEventListener('click', (e) => {
             if (!this.finePointer.matches) return;
             const img = slide.querySelector('img');
+            if (!img) return;
             if (this.zoom.on) { this.resetZoom(); return; }
             this.zoom.on = true;
             this.zoom.img = img;
