@@ -47,11 +47,9 @@
   <div class="featured-collection__header">
     <div class="featured-collection__title-group">
       {%- if section.settings.heading != blank -%}
-        <h2 class="featured-collection__heading">
+        <h2 class="featured-collection__heading" aria-label="{{ section.settings.heading | escape }}">
           {%- assign heading_words = section.settings.heading | split: ' ' -%}
-          {%- for word in heading_words -%}
-            <span class="featured-collection__word" style="--w: {{ forloop.index0 }}"><span class="featured-collection__word-inner">{{ word | escape }}</span></span>
-          {%- endfor -%}
+          {%- for word in heading_words -%}<span class="featured-collection__word" style="--w: {{ forloop.index0 }}"><span class="featured-collection__word-inner">{{ word | escape }}</span></span>{%- endfor -%}
         </h2>
       {%- endif -%}
     </div>
@@ -195,6 +193,7 @@
     min-width: 0;
   }
 
+  /* Word gap comes from column-gap only — Liquid emits no text space between spans. */
   .featured-collection__heading {
     margin: 0;
     display: flex;
@@ -222,7 +221,8 @@
   .featured-collection__word {
     display: inline-block;
     vertical-align: top;
-    clip-path: inset(-0.1em -0.15em -0.22em -0.15em);
+    /* Extra horizontal inset so tight tracking never clips into “Anivals”. */
+    clip-path: inset(-0.1em -0.22em -0.22em -0.22em);
   }
 
   .featured-collection__word-inner {
