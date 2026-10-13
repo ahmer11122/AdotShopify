@@ -94,12 +94,26 @@
                     muted
                     loop
                     playsinline
-                    preload="metadata"
-                    poster="{{ media.preview_image | image_url: width: 1600 }}"
+                    preload="auto"
+                    poster="{{ product.images.first | image_url: width: 2000 }}"
                   >
-                    {%- for source in media.sources -%}
-                      <source src="{{ source.url }}" type="{{ source.mime_type }}">
-                    {%- endfor -%}
+                    {%- liquid
+                      assign best_video = blank
+                      for source in media.sources
+                        if source.mime_type == 'video/mp4'
+                          if best_video == blank or source.height > best_video.height
+                            assign best_video = source
+                          endif
+                        endif
+                      endfor
+                    -%}
+                    {%- if best_video -%}
+                      <source src="{{ best_video.url }}" type="video/mp4">
+                    {%- else -%}
+                      {%- for source in media.sources -%}
+                        <source src="{{ source.url }}" type="{{ source.mime_type }}">
+                      {%- endfor -%}
+                    {%- endif -%}
                   </video>
                 </span>
                 <span class="pdp-plate__shade" aria-hidden="true"></span>
@@ -187,12 +201,26 @@
                 playsinline
                 loop
                 muted
-                preload="metadata"
-                poster="{{ media.preview_image | image_url: width: 1600 }}"
+                preload="auto"
+                poster="{{ product.images.first | image_url: width: 2000 }}"
               >
-                {%- for source in media.sources -%}
-                  <source src="{{ source.url }}" type="{{ source.mime_type }}">
-                {%- endfor -%}
+                {%- liquid
+                  assign best_video = blank
+                  for source in media.sources
+                    if source.mime_type == 'video/mp4'
+                      if best_video == blank or source.height > best_video.height
+                        assign best_video = source
+                      endif
+                    endif
+                  endfor
+                -%}
+                {%- if best_video -%}
+                  <source src="{{ best_video.url }}" type="video/mp4">
+                {%- else -%}
+                  {%- for source in media.sources -%}
+                    <source src="{{ source.url }}" type="{{ source.mime_type }}">
+                  {%- endfor -%}
+                {%- endif -%}
               </video>
             {%- endif -%}
           </div>
