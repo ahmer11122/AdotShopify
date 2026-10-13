@@ -158,7 +158,9 @@
       userAct() {
         if (this.userActed) return;
         this.userActed = true;
+        this.attractDone = true;
         clearTimeout(this.attractT);
+        this.attractT = 0;
         if (this.attractRunning) {
           this.attractRunning = false;
           this.setTarget(-1);

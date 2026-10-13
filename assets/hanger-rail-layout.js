@@ -145,26 +145,46 @@
         this.section.classList.add('is-in');
       },
 
+      // One pass when the rail is first seen. After that, only a hover turns a piece.
       startAttract() {
         var self = this;
-        if (!this.attractOn || this.userActed || this.reduce.matches || this.mode !== 'rail') return;
+        if (!this.attractOn || this.attractDone || this.userActed || this.reduce.matches || this.mode !== 'rail') return;
         if (this.attractT || this.attractRunning) return;
-        var idx = Math.floor(this.n / 3);
+        var idx = 0;
         var step = function () {
           self.attractT = 0;
-          if (self.userActed || self.mode !== 'rail' || self.attractCount >= 7) return;
-          if (!self.visible) return;
+          if (self.userActed || self.mode !== 'rail') {
+            self.attractRunning = false;
+            self.attractDone = true;
+            return;
+          }
+          // Left before the first turn: allow one retry when the rail comes back.
+          if (!self.visible) {
+            self.attractRunning = false;
+            return;
+          }
+          if (idx >= self.n) {
+            self.attractRunning = false;
+            self.attractDone = true;
+            if (!self.ptr) self.setTarget(-1);
+            return;
+          }
           self.attractRunning = true;
-          self.attractCount++;
-          self.setTarget(idx % self.n);
-          idx += 2;
+          self.attractDone = true;
+          self.setTarget(idx);
+          idx += 1;
+          var last = idx >= self.n;
           self.attractT = setTimeout(function () {
             if (self.userActed) return;
-            self.setTarget(-1);
-            self.attractT = setTimeout(step, 650);
-          }, 1900);
+            if (!self.ptr) self.setTarget(-1);
+            if (last) {
+              self.attractRunning = false;
+              return;
+            }
+            self.attractT = setTimeout(step, 480);
+          }, 1600);
         };
-        this.attractT = setTimeout(step, 1900);
+        this.attractT = setTimeout(step, 1100);
       },
 
       // ---------- animation loop ----------

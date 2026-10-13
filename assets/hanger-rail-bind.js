@@ -128,6 +128,11 @@
                 self.warm();
               } else {
                 clearTimeout(self.attractT);
+                self.attractT = 0;
+                if (self.attractRunning && !self.userActed && !self.ptr) {
+                  self.attractRunning = false;
+                  self.setTarget(-1);
+                }
               }
             });
           },

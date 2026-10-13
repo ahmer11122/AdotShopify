@@ -202,6 +202,8 @@
         "button_link": "/collections/hoodies",
         "whatsapp_number": "923706735800",
         "mobile_layout": "carousel",
+        "show_sizes": true,
+        "quick_add": true,
         "show_photos": false,
         "label_pull": 0,
         "background_color": "#F4F2EE",

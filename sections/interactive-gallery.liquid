@@ -333,8 +333,8 @@
       "type": "checkbox",
       "id": "quick_add",
       "label": "Add to bag button",
-      "info": "Needs a product on every piece. Keep off until the header bag drawer is verified. If off, the main button opens the product page.",
-      "default": false
+      "info": "Shows Add to bag for the size the visitor picks. Turn this on when sizes are shown. If off, the main button is View product and the sizes do nothing.",
+      "default": true
     },
     { "type": "text", "id": "add_label", "label": "Add to bag label", "default": "Add to bag" },
     { "type": "text", "id": "view_label", "label": "Main button label (when Add to bag is off)", "default": "View product" },
@@ -346,7 +346,7 @@
     },
     { "type": "header", "content": "Motion" },
     { "type": "checkbox", "id": "idle_sway", "label": "Gentle sway on the rail (desktop)", "default": true },
-    { "type": "checkbox", "id": "attract_mode", "label": "Auto-demo on desktop (stops when the visitor moves)", "default": true },
+    { "type": "checkbox", "id": "attract_mode", "label": "Turn each piece once when the rail first appears", "info": "Desktop only. One pass, then a piece turns only on hover. Stops as soon as the visitor moves.", "default": true },
     {
       "type": "select",
       "id": "mobile_layout",

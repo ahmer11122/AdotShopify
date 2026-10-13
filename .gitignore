@@ -16,6 +16,9 @@ Thumbs.db
 *.swp
 *.swo
 
+# Campaign source package (product stills, model shots, video). Not theme code.
+manus/
+
 # Node / package manager artifacts (if any local tooling is used)
 node_modules/
 npm-debug.log*
