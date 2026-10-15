@@ -1,0 +1,12 @@
+{
+  "name": "adot-thank-you",
+  "private": true,
+  "version": "1.0.0",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@shopify/ui-extensions": "^2024.4.0",
+    "@shopify/ui-extensions-react": "^2024.4.0",
+    "react": "^18.2.0",
+    "react-reconciler": "^0.29.2"
+  }
+}

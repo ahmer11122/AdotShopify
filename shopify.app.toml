@@ -1,0 +1,18 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "c994162870dd04720e0b372157c14ac2"
+name = "antigravity"
+application_url = "https://example.com"
+embedded = true
+
+[webhooks]
+api_version = "2026-10"
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "read_price_rules,write_price_rules,read_discounts,write_discounts,read_files,write_files,write_inventory,read_inventory,write_inventory_shipments,read_inventory_shipments,read_legal_policies,write_legal_policies,read_locations,read_online_store_navigation,write_online_store_navigation,read_privacy_settings,write_privacy_settings,read_products,write_products,read_shipping,write_shipping,read_content,write_content"
+optional_scopes = [ ]
+use_legacy_install_flow = false
+
+[auth]
+redirect_urls = [ ]
