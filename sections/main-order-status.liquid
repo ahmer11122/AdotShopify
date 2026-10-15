@@ -111,6 +111,61 @@
           </div>
         </div>
 
+        <!-- Bank Transfer Details Card (Allied Bank with 1-Click Copy Buttons) -->
+        <div class="adot-bank-card">
+          <div class="adot-bank-card__header">
+            <div class="adot-bank-card__eyebrow">Payment Verification // Action Required</div>
+            <div class="adot-bank-card__amount">{{ order_total }}</div>
+          </div>
+          <div class="adot-bank-card__body">
+            <p class="adot-bank-card__intro">
+              Please transfer <strong>{{ order_total }}</strong> to our official atelier bank account below. Once transferred, click the direct button below to send your payment screenshot on WhatsApp.
+            </p>
+
+            <div class="adot-bank-fields">
+              <div class="adot-bank-row">
+                <span class="adot-bank-row__label">Bank Name</span>
+                <span class="adot-bank-row__value">Allied Bank</span>
+                <button type="button" class="adot-copy-btn" onclick="adotCopy('Allied Bank', this)">Copy</button>
+              </div>
+
+              <div class="adot-bank-row">
+                <span class="adot-bank-row__label">Account Title</span>
+                <span class="adot-bank-row__value">Muhammad Talha Shahzad</span>
+                <button type="button" class="adot-copy-btn" onclick="adotCopy('Muhammad Talha Shahzad', this)">Copy</button>
+              </div>
+
+              <div class="adot-bank-row">
+                <span class="adot-bank-row__label">Account No.</span>
+                <span class="adot-bank-row__value">08870010159734540017</span>
+                <button type="button" class="adot-copy-btn" onclick="adotCopy('08870010159734540017', this)">Copy</button>
+              </div>
+
+              <div class="adot-bank-row">
+                <span class="adot-bank-row__label">IBAN</span>
+                <span class="adot-bank-row__value">PK74ABPA0010159734540017</span>
+                <button type="button" class="adot-copy-btn" onclick="adotCopy('PK74ABPA0010159734540017', this)">Copy</button>
+              </div>
+
+              <div class="adot-bank-row">
+                <span class="adot-bank-row__label">Reference</span>
+                <span class="adot-bank-row__value">{{ order_ref }}</span>
+                <button type="button" class="adot-copy-btn" onclick="adotCopy('{{ order_ref }}', this)">Copy</button>
+              </div>
+            </div>
+
+            <a href="https://wa.me/{{ wa_number }}?text={{ 'Hi ADOT, I have placed order ' | append: order_ref | append: ' (' | append: order_total | append: '). Here is my payment receipt screenshot:' | url_encode }}" target="_blank" rel="noopener noreferrer" class="adot-btn adot-btn--wa" style="width: 100%;">
+              <svg viewBox="0 0 24 24" aria-hidden="true" style="width: 20px; height: 20px; fill: currentColor;">
+                <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0012.04 2z"/>
+              </svg>
+              <span>Send Payment Screenshot on WhatsApp</span>
+            </a>
+            <p style="font-size: 0.75rem; color: var(--ao-muted); text-align: center; margin: 0.75rem 0 0;">
+              Opens directly in WhatsApp with order details pre-filled. Dispatch begins immediately after verification.
+            </p>
+          </div>
+        </div>
+
         <!-- High-Conversion WhatsApp Concierge Card (Pakistan COD Verification) -->
         {% if section.settings.show_whatsapp_card %}
           <div class="adot-concierge">
@@ -150,6 +205,22 @@
             {% endif %}
           </div>
         {% endif %}
+
+        <script>
+          function adotCopy(text, btn) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(text).then(function() {
+                var orig = btn.textContent;
+                btn.textContent = 'COPIED ✓';
+                btn.classList.add('copied');
+                setTimeout(function() {
+                  btn.textContent = orig;
+                  btn.classList.remove('copied');
+                }, 2000);
+              });
+            }
+          }
+        </script>
 
         <!-- Order Particulars Grid: Addresses & Delivery Info -->
         <div class="adot-details-grid">

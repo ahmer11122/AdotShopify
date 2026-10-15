@@ -1,0 +1,431 @@
+<!-- ADOT Wear — Quiet Luxury Order Status & Thank You Transformation -->
+<!-- Paste this code into: Shopify Admin -> Settings -> Checkout -> Order status page -> Additional scripts -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  /* ADOT Quiet Luxury Tokens & Overrides for Checkout / Thank You */
+  :root {
+    --adot-bg: #FFFFFF;
+    --adot-surface: #F5F5F5;
+    --adot-dark: #111111;
+    --adot-text: #111111;
+    --adot-muted: #555555;
+    --adot-border: #E5E5E5;
+    --adot-emerald: #166534;
+    --adot-emerald-bg: #F0FDF4;
+    --adot-font-display: "Inter Tight", -apple-system, BlinkMacSystemFont, sans-serif;
+    --adot-font-body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  /* Monolithic typography & reset */
+  body, .os-order-number, .heading-2, .heading-3, p, span {
+    font-family: var(--adot-font-body) !important;
+    letter-spacing: -0.01em;
+  }
+
+  h1, h2, h3, .os-header__title {
+    font-family: var(--adot-font-display) !important;
+    font-weight: 600 !important;
+    letter-spacing: -0.02em !important;
+    color: var(--adot-text) !important;
+  }
+
+  /* Sharp zero-radius geometry across checkout */
+  .content-box, .step__footer__continue-btn, .btn, .content-box__row, input, select {
+    border-radius: 0px !important;
+  }
+
+  .content-box {
+    border: 1px solid var(--adot-border) !important;
+    box-shadow: none !important;
+    background: #FFFFFF !important;
+  }
+
+  /* ADOT Atelier Custom Bank & WhatsApp Concierge Card */
+  .adot-bank-card {
+    background: #FFFFFF;
+    border: 1px solid var(--adot-dark);
+    margin-bottom: 1.5rem;
+    font-family: var(--adot-font-body);
+  }
+
+  .adot-bank-card__header {
+    background: var(--adot-dark);
+    color: #FFFFFF;
+    padding: 1.125rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .adot-bank-card__eyebrow {
+    font-family: var(--adot-font-display);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #A3A3A3;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .adot-bank-card__eyebrow::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: #22C55E;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .adot-bank-card__amount {
+    font-family: var(--adot-font-display);
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #FFFFFF;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .adot-bank-card__body {
+    padding: 1.5rem;
+  }
+
+  .adot-bank-card__intro {
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--adot-muted);
+    margin-bottom: 1.5rem;
+  }
+
+  /* Bank Details Rows */
+  .adot-bank-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .adot-bank-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.875rem 1rem;
+    background: var(--adot-surface);
+    border: 1px solid var(--adot-border);
+    gap: 1rem;
+  }
+
+  .adot-bank-row__label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--adot-muted);
+    min-width: 100px;
+  }
+
+  .adot-bank-row__value {
+    font-family: var(--adot-font-display);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--adot-dark);
+    word-break: break-all;
+    font-variant-numeric: tabular-nums;
+    flex-grow: 1;
+  }
+
+  /* Copy Button */
+  .adot-copy-btn {
+    background: #FFFFFF;
+    border: 1px solid var(--adot-border);
+    color: var(--adot-dark);
+    font-family: var(--adot-font-display);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.4rem 0.75rem;
+    cursor: pointer;
+    border-radius: 0px;
+    transition: all 150ms ease;
+    flex-shrink: 0;
+  }
+
+  .adot-copy-btn:hover {
+    background: var(--adot-dark);
+    border-color: var(--adot-dark);
+    color: #FFFFFF;
+  }
+
+  .adot-copy-btn:active {
+    transform: scale(0.96);
+  }
+
+  .adot-copy-btn.copied {
+    background: #166534 !important;
+    border-color: #166534 !important;
+    color: #FFFFFF !important;
+  }
+
+  /* WhatsApp Direct Button */
+  .adot-wa-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.625rem;
+    width: 100%;
+    padding: 1.125rem 1.5rem;
+    background: var(--adot-dark);
+    color: #FFFFFF !important;
+    font-family: var(--adot-font-display);
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none !important;
+    border-radius: 0px;
+    border: 1px solid var(--adot-dark);
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: background-color 200ms ease, transform 150ms ease;
+  }
+
+  .adot-wa-btn:hover {
+    background: #25D366;
+    border-color: #25D366;
+  }
+
+  .adot-wa-btn:active {
+    transform: scale(0.97);
+  }
+
+  .adot-wa-btn svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+  }
+
+  .adot-wa-note {
+    font-size: 0.75rem;
+    line-height: 1.5;
+    color: var(--adot-muted);
+    text-align: center;
+    margin-top: 0.75rem;
+    margin-bottom: 0;
+  }
+
+  /* 4-Stage Tracker */
+  .adot-steps-tracker {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    background: var(--adot-surface);
+    border: 1px solid var(--adot-border);
+    padding: 1rem 0.5rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    gap: 0.25rem;
+  }
+
+  .adot-step-item__num {
+    font-family: var(--adot-font-display);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--adot-muted);
+    margin-bottom: 0.25rem;
+  }
+
+  .adot-step-item__title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--adot-dark);
+  }
+
+  .adot-step-item--active .adot-step-item__num {
+    color: #166534;
+  }
+
+  .adot-step-item--active .adot-step-item__title {
+    color: var(--adot-dark);
+    font-weight: 700;
+  }
+
+  @media (max-width: 640px) {
+    .adot-bank-row {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+    .adot-copy-btn {
+      align-self: flex-end;
+    }
+    .adot-steps-tracker {
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+  }
+</style>
+
+<script>
+(function() {
+  // Capture dynamic Shopify order variables (or fallback for preview)
+  var orderName = "{{ order.name | default: checkout.order_name }}";
+  if (!orderName || orderName === "") {
+    var titleEl = document.querySelector('.os-order-number');
+    if (titleEl) {
+      orderName = titleEl.textContent.trim().replace('Order ', '').replace('Confirmation ', '');
+    } else {
+      orderName = "#ADOT-ORDER";
+    }
+  }
+
+  var totalPrice = "{{ order.total_price | money | default: checkout.total_price | money }}";
+  if (!totalPrice || totalPrice.indexOf('$') !== -1 || totalPrice === "") {
+    var priceEl = document.querySelector('.payment-due__price');
+    if (priceEl) {
+      totalPrice = priceEl.textContent.trim();
+    } else {
+      totalPrice = "Rs. 3,450.00";
+    }
+  }
+
+  var waNumber = "923706735800";
+  var waMessage = encodeURIComponent(
+    "Hi ADOT, I have placed order " + orderName + " (" + totalPrice + "). Here is my payment receipt screenshot:"
+  );
+  var waLink = "https://wa.me/" + waNumber + "?text=" + waMessage;
+
+  // Build the Quiet Luxury Bank Transfer Card
+  var bankCardHtml = '' +
+    '<div class="adot-bank-card">' +
+      '<div class="adot-bank-card__header">' +
+        '<div class="adot-bank-card__eyebrow">Payment Verification // Action Required</div>' +
+        '<div class="adot-bank-card__amount">' + totalPrice + '</div>' +
+      '</div>' +
+      '<div class="adot-bank-card__body">' +
+        '<p class="adot-bank-card__intro">' +
+          'Please transfer <strong>' + totalPrice + '</strong> to our official bank account below. Once transferred, click the direct button to send your payment screenshot on WhatsApp for instant atelier dispatch.' +
+        '</p>' +
+
+        '<div class="adot-steps-tracker">' +
+          '<div class="adot-step-item adot-step-item--active">' +
+            '<div class="adot-step-item__num">01 DONE</div>' +
+            '<div class="adot-step-item__title">Order Placed</div>' +
+          '</div>' +
+          '<div class="adot-step-item adot-step-item--active">' +
+            '<div class="adot-step-item__num">02 PENDING</div>' +
+            '<div class="adot-step-item__title">Send Screenshot</div>' +
+          '</div>' +
+          '<div class="adot-step-item">' +
+            '<div class="adot-step-item__num">03 ATELIER</div>' +
+            '<div class="adot-step-item__title">Pack & Dispatch</div>' +
+          '</div>' +
+          '<div class="adot-step-item">' +
+            '<div class="adot-step-item__num">04 COURIER</div>' +
+            '<div class="adot-step-item__title">3-4 Day Delivery</div>' +
+          '</div>' +
+        '</div>' +
+
+        '<div class="adot-bank-fields">' +
+          '<div class="adot-bank-row">' +
+            '<span class="adot-bank-row__label">Bank Name</span>' +
+            '<span class="adot-bank-row__value" id="val-bank">Allied Bank</span>' +
+            '<button type="button" class="adot-copy-btn" onclick="copyField(\'Allied Bank\', this)">Copy</button>' +
+          '</div>' +
+
+          '<div class="adot-bank-row">' +
+            '<span class="adot-bank-row__label">Account Title</span>' +
+            '<span class="adot-bank-row__value" id="val-title">Muhammad Talha Shahzad</span>' +
+            '<button type="button" class="adot-copy-btn" onclick="copyField(\'Muhammad Talha Shahzad\', this)">Copy</button>' +
+          '</div>' +
+
+          '<div class="adot-bank-row">' +
+            '<span class="adot-bank-row__label">Account No.</span>' +
+            '<span class="adot-bank-row__value" id="val-acc">08870010159734540017</span>' +
+            '<button type="button" class="adot-copy-btn" onclick="copyField(\'08870010159734540017\', this)">Copy</button>' +
+          '</div>' +
+
+          '<div class="adot-bank-row">' +
+            '<span class="adot-bank-row__label">IBAN</span>' +
+            '<span class="adot-bank-row__value" id="val-iban">PK74ABPA0010159734540017</span>' +
+            '<button type="button" class="adot-copy-btn" onclick="copyField(\'PK74ABPA0010159734540017\', this)">Copy</button>' +
+          '</div>' +
+
+          '<div class="adot-bank-row">' +
+            '<span class="adot-bank-row__label">Reference</span>' +
+            '<span class="adot-bank-row__value" id="val-ref">' + orderName + '</span>' +
+            '<button type="button" class="adot-copy-btn" onclick="copyField(\'' + orderName + '\', this)">Copy</button>' +
+          '</div>' +
+        '</div>' +
+
+        '<a href="' + waLink + '" target="_blank" rel="noopener noreferrer" class="adot-wa-btn">' +
+          '<svg viewBox="0 0 24 24"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0012.04 2z"/></svg>' +
+          '<span>Send Payment Screenshot on WhatsApp</span>' +
+        '</a>' +
+
+        '<p class="adot-wa-note">Opens directly in WhatsApp with order details pre-filled. Dispatch starts immediately after screenshot confirmation.</p>' +
+      '</div>' +
+    '</div>';
+
+  // Inject using Shopify's official ContentBox API or prepend into main content
+  function injectAdotCard() {
+    if (window.Shopify && Shopify.Checkout && Shopify.Checkout.OrderStatus) {
+      Shopify.Checkout.OrderStatus.addContentBox(bankCardHtml);
+    } else {
+      var mainSection = document.querySelector('.main__content') || document.querySelector('.section--thank-you') || document.querySelector('.step__sections');
+      if (mainSection) {
+        var wrapper = document.createElement('div');
+        wrapper.innerHTML = bankCardHtml;
+        mainSection.insertBefore(wrapper, mainSection.firstChild);
+      }
+    }
+
+    // Hide the raw default plain text box if present to avoid redundancy
+    var contentBoxes = document.querySelectorAll('.content-box');
+    contentBoxes.forEach(function(box) {
+      if (box.textContent.indexOf('08870010159734540017') !== -1 && !box.querySelector('.adot-bank-card')) {
+        box.style.display = 'none';
+      }
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', injectAdotCard);
+  } else {
+    injectAdotCard();
+  }
+
+  // Global Clipboard Copy Handler
+  window.copyField = function(text, btn) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function() {
+        showCopied(btn);
+      });
+    } else {
+      var textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      showCopied(btn);
+    }
+  };
+
+  function showCopied(btn) {
+    var orig = btn.textContent;
+    btn.textContent = 'COPIED ✓';
+    btn.classList.add('copied');
+    setTimeout(function() {
+      btn.textContent = orig;
+      btn.classList.remove('copied');
+    }, 2000);
+  }
+})();
+</script>

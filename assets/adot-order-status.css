@@ -618,6 +618,7 @@
 /* Print Styles */
 @media print {
   .adot-concierge,
+  .adot-bank-card,
   .adot-receipt__actions,
   header, footer, nav {
     display: none !important;
@@ -629,3 +630,142 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================================================
+   Atelier Bank Transfer Card (Allied Bank with 1-Click Copy Buttons)
+   ========================================================================== */
+.adot-bank-card {
+  background: var(--ao-bg);
+  border: 1px solid var(--ao-surface-dark);
+  font-family: var(--ao-font-body);
+}
+
+.adot-bank-card__header {
+  background: var(--ao-surface-dark);
+  color: #FFFFFF;
+  padding: 1rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.adot-bank-card__eyebrow {
+  font-family: var(--ao-font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #A3A3A3;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.adot-bank-card__eyebrow::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background: #22C55E;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.adot-bank-card__amount {
+  font-family: var(--ao-font-display);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  font-variant-numeric: tabular-nums;
+}
+
+.adot-bank-card__body {
+  padding: clamp(1.25rem, 2.5vw, 1.75rem);
+}
+
+.adot-bank-card__intro {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--ao-muted);
+  margin: 0 0 1.25rem;
+}
+
+.adot-bank-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.adot-bank-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.875rem 1rem;
+  background: var(--ao-surface);
+  border: 1px solid var(--ao-border);
+  gap: 1rem;
+}
+
+.adot-bank-row__label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ao-muted);
+  min-width: 100px;
+}
+
+.adot-bank-row__value {
+  font-family: var(--ao-font-display);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--ao-text);
+  word-break: break-all;
+  font-variant-numeric: tabular-nums;
+  flex-grow: 1;
+}
+
+.adot-copy-btn {
+  background: #FFFFFF;
+  border: 1px solid var(--ao-border);
+  color: var(--ao-text);
+  font-family: var(--ao-font-display);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.45rem 0.85rem;
+  cursor: pointer;
+  border-radius: 0px;
+  transition: all 150ms ease;
+  flex-shrink: 0;
+  min-height: 32px;
+}
+
+.adot-copy-btn:hover {
+  background: var(--ao-surface-dark);
+  border-color: var(--ao-surface-dark);
+  color: #FFFFFF;
+}
+
+.adot-copy-btn:active {
+  transform: scale(0.96);
+}
+
+.adot-copy-btn.copied {
+  background: #166534 !important;
+  border-color: #166534 !important;
+  color: #FFFFFF !important;
+}
+
+@media (max-width: 640px) {
+  .adot-bank-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  .adot-copy-btn {
+    align-self: flex-end;
+  }
+}
+
