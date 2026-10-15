@@ -8,5 +8,5 @@ module = "./src/Checkout.jsx"
 target = "purchase.thank-you.block.render"
 
 [[targeting]]
-module = "./src/Checkout.jsx"
+module = "./src/OrderStatus.jsx"
 target = "customer-account.order-status.block.render"

@@ -1,14 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   reactExtension,
   useOrder,
   useShippingAddress,
   BlockStack,
   InlineLayout,
+  InlineStack,
   Text,
   Heading,
   Divider,
-  Banner,
   Button,
   View
 } from '@shopify/ui-extensions-react/checkout';
@@ -18,59 +18,74 @@ export default reactExtension('purchase.thank-you.block.render', () => <App />);
 function App() {
   const order = useOrder();
   const address = useShippingAddress();
+  const [copiedKey, setCopiedKey] = useState(null);
 
   const waNumber = '923706735800';
   const orderName = order?.name || 'ADOT Order';
+  const customerFirstName = address?.name ? address.name.split(' ')[0] : 'there';
   const orderTotal = order?.totalPrice?.amount
     ? `Rs. ${Math.round(order.totalPrice.amount).toLocaleString()}`
     : 'Rs. 3,450';
 
   const waMessage = encodeURIComponent(
-    `Hi ADOT, I have placed order ${orderName} (${orderTotal}). Here is my payment receipt screenshot:`
+    `Hi ADOT, I have placed order ${orderName} (${orderTotal}) for ${address?.name || 'Customer'}. Here is my payment receipt screenshot:`
   );
   const waUrl = `https://wa.me/${waNumber}?text=${waMessage}`;
 
+  const copyToClipboard = (text, key) => {
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).catch(() => {});
+      }
+    } catch (e) {}
+    setCopiedKey(key);
+    setTimeout(() => {
+      setCopiedKey(null);
+    }, 1500);
+  };
+
   return (
-    <BlockStack spacing="base" border="base" padding="loose" background="subdued" cornerRadius="none">
+    <BlockStack spacing="loose" border="base" padding="loose" background="subdued" cornerRadius="none">
       
       {/* Editorial Header */}
-      <InlineLayout columns={['auto', 'fill']} spacing="base" blockAlignment="center">
+      <InlineStack spacing="tight" blockAlignment="center">
         <View minInlineSize="8px" minBlockSize="8px" background="success" cornerRadius="full" />
-        <Text size="small" appearance="subdued">
-          PAYMENT VERIFICATION // ACTION REQUIRED
+        <Text size="extraSmall" appearance="subdued" emphasis="bold">
+          PAYMENT VERIFICATION REQUIRED
         </Text>
-      </InlineLayout>
+      </InlineStack>
 
-      <Heading level={2}>
-        {address?.name ? `Thank you, ${address.name.split(' ')[0]}.` : 'Order Placed.'}
-      </Heading>
-
-      <Text size="base">
-        Please transfer <strong>{orderTotal}</strong> to our official Allied Bank account below to initiate immediate atelier dispatch.
-      </Text>
+      <BlockStack spacing="extraTight">
+        <Heading level={2}>
+          Order Confirmed, {customerFirstName}.
+        </Heading>
+        <Text size="base">
+          Please transfer <Text size="base" emphasis="bold">{orderTotal}</Text> using any account below. Tap <Text size="small" emphasis="bold">COPY</Text> to paste directly into your banking app, then tap the WhatsApp button to submit your receipt.
+        </Text>
+      </BlockStack>
 
       <Divider />
 
-      {/* 4-Stage Tracker */}
+      {/* 4-Stage Logistics Journey */}
       <BlockStack spacing="tight">
-        <Text size="small" appearance="subdued">
-          LOGISTICS JOURNEY
+        <Text size="extraSmall" appearance="subdued" emphasis="bold">
+          ORDER JOURNEY
         </Text>
         <InlineLayout columns={['fill', 'fill', 'fill', 'fill']} spacing="extraTight">
           <BlockStack spacing="none" alignment="center">
-            <Text size="small" emphasis="bold">01 Placed</Text>
-            <Text size="extraSmall" appearance="subdued">Done</Text>
+            <Text size="extraSmall" emphasis="bold">01 PLACED</Text>
+            <Text size="extraSmall" appearance="subdued">Recorded</Text>
           </BlockStack>
           <BlockStack spacing="none" alignment="center">
-            <Text size="small" emphasis="bold">02 Verify</Text>
-            <Text size="extraSmall" appearance="subdued">WhatsApp</Text>
+            <Text size="extraSmall" emphasis="bold">02 VERIFY</Text>
+            <Text size="extraSmall" appearance="success">WhatsApp</Text>
           </BlockStack>
           <BlockStack spacing="none" alignment="center">
-            <Text size="small" emphasis="bold">03 Atelier</Text>
+            <Text size="extraSmall" emphasis="bold">03 ATELIER</Text>
             <Text size="extraSmall" appearance="subdued">Packing</Text>
           </BlockStack>
           <BlockStack spacing="none" alignment="center">
-            <Text size="small" emphasis="bold">04 Courier</Text>
+            <Text size="extraSmall" emphasis="bold">04 COURIER</Text>
             <Text size="extraSmall" appearance="subdued">3-4 Days</Text>
           </BlockStack>
         </InlineLayout>
@@ -78,38 +93,152 @@ function App() {
 
       <Divider />
 
-      {/* Bank Account Details */}
-      <BlockStack spacing="tight">
-        <InlineLayout columns={['110px', 'fill']} spacing="base">
-          <Text size="small" appearance="subdued">Bank Name</Text>
-          <Text size="base" emphasis="bold">Allied Bank</Text>
+      {/* Option 1: Allied Bank */}
+      <BlockStack spacing="base" border="base" padding="base" cornerRadius="none" background="base">
+        <InlineLayout columns={['fill', 'auto']} spacing="base" blockAlignment="center">
+          <Text size="small" emphasis="bold">01 // ALLIED BANK (RAAST / DIRECT)</Text>
+          <Text size="extraSmall" appearance="subdued">Instant Verification</Text>
         </InlineLayout>
 
-        <InlineLayout columns={['110px', 'fill']} spacing="base">
-          <Text size="small" appearance="subdued">Account Title</Text>
-          <Text size="base" emphasis="bold">Muhammad Talha Shahzad</Text>
+        {/* Account Title */}
+        <InlineLayout columns={['fill', 'auto']} spacing="tight" blockAlignment="center">
+          <BlockStack spacing="none">
+            <Text size="extraSmall" appearance="subdued">ACCOUNT TITLE</Text>
+            <Text size="small" emphasis="bold">Muhammad Talha Shahzad</Text>
+          </BlockStack>
+          <Button
+            size="small"
+            kind="secondary"
+            accessibilityLabel="Copy account title"
+            onPress={() => copyToClipboard('Muhammad Talha Shahzad', 'allied_title')}
+          >
+            {copiedKey === 'allied_title' ? 'COPIED ✓' : 'COPY'}
+          </Button>
         </InlineLayout>
 
-        <InlineLayout columns={['110px', 'fill']} spacing="base">
-          <Text size="small" appearance="subdued">Account No.</Text>
-          <Text size="base" emphasis="bold">08870010159734540017</Text>
+        {/* Account Number */}
+        <InlineLayout columns={['fill', 'auto']} spacing="tight" blockAlignment="center">
+          <BlockStack spacing="none">
+            <Text size="extraSmall" appearance="subdued">ACCOUNT NUMBER</Text>
+            <Text size="small" emphasis="bold">08870010159734540017</Text>
+          </BlockStack>
+          <Button
+            size="small"
+            kind="secondary"
+            accessibilityLabel="Copy account number"
+            onPress={() => copyToClipboard('08870010159734540017', 'allied_acc')}
+          >
+            {copiedKey === 'allied_acc' ? 'COPIED ✓' : 'COPY'}
+          </Button>
         </InlineLayout>
 
-        <InlineLayout columns={['110px', 'fill']} spacing="base">
-          <Text size="small" appearance="subdued">IBAN</Text>
-          <Text size="base" emphasis="bold">PK74ABPA0010159734540017</Text>
-        </InlineLayout>
-
-        <InlineLayout columns={['110px', 'fill']} spacing="base">
-          <Text size="small" appearance="subdued">Reference</Text>
-          <Text size="base" emphasis="bold">{orderName}</Text>
+        {/* IBAN */}
+        <InlineLayout columns={['fill', 'auto']} spacing="tight" blockAlignment="center">
+          <BlockStack spacing="none">
+            <Text size="extraSmall" appearance="subdued">IBAN</Text>
+            <Text size="small" emphasis="bold">PK74ABPA0010159734540017</Text>
+          </BlockStack>
+          <Button
+            size="small"
+            kind="secondary"
+            accessibilityLabel="Copy IBAN"
+            onPress={() => copyToClipboard('PK74ABPA0010159734540017', 'allied_iban')}
+          >
+            {copiedKey === 'allied_iban' ? 'COPIED ✓' : 'COPY'}
+          </Button>
         </InlineLayout>
       </BlockStack>
 
+      {/* Option 2: Easypaisa */}
+      <BlockStack spacing="base" border="base" padding="base" cornerRadius="none" background="base">
+        <Text size="small" emphasis="bold">02 // EASYPAISA</Text>
+
+        <InlineLayout columns={['fill', 'auto']} spacing="tight" blockAlignment="center">
+          <BlockStack spacing="none">
+            <Text size="extraSmall" appearance="subdued">ACCOUNT TITLE</Text>
+            <Text size="small" emphasis="bold">Muhammad Talha Shahzad</Text>
+          </BlockStack>
+          <Button
+            size="small"
+            kind="secondary"
+            accessibilityLabel="Copy Easypaisa title"
+            onPress={() => copyToClipboard('Muhammad Talha Shahzad', 'ep_title')}
+          >
+            {copiedKey === 'ep_title' ? 'COPIED ✓' : 'COPY'}
+          </Button>
+        </InlineLayout>
+
+        <InlineLayout columns={['fill', 'auto']} spacing="tight" blockAlignment="center">
+          <BlockStack spacing="none">
+            <Text size="extraSmall" appearance="subdued">MOBILE NUMBER</Text>
+            <Text size="small" emphasis="bold">03706735800</Text>
+          </BlockStack>
+          <Button
+            size="small"
+            kind="secondary"
+            accessibilityLabel="Copy Easypaisa number"
+            onPress={() => copyToClipboard('03706735800', 'ep_num')}
+          >
+            {copiedKey === 'ep_num' ? 'COPIED ✓' : 'COPY'}
+          </Button>
+        </InlineLayout>
+      </BlockStack>
+
+      {/* Option 3: JazzCash */}
+      <BlockStack spacing="base" border="base" padding="base" cornerRadius="none" background="base">
+        <Text size="small" emphasis="bold">03 // JAZZCASH</Text>
+
+        <InlineLayout columns={['fill', 'auto']} spacing="tight" blockAlignment="center">
+          <BlockStack spacing="none">
+            <Text size="extraSmall" appearance="subdued">ACCOUNT TITLE</Text>
+            <Text size="small" emphasis="bold">Muhammad Talha Shahzad</Text>
+          </BlockStack>
+          <Button
+            size="small"
+            kind="secondary"
+            accessibilityLabel="Copy JazzCash title"
+            onPress={() => copyToClipboard('Muhammad Talha Shahzad', 'jc_title')}
+          >
+            {copiedKey === 'jc_title' ? 'COPIED ✓' : 'COPY'}
+          </Button>
+        </InlineLayout>
+
+        <InlineLayout columns={['fill', 'auto']} spacing="tight" blockAlignment="center">
+          <BlockStack spacing="none">
+            <Text size="extraSmall" appearance="subdued">MOBILE NUMBER</Text>
+            <Text size="small" emphasis="bold">03706735800</Text>
+          </BlockStack>
+          <Button
+            size="small"
+            kind="secondary"
+            accessibilityLabel="Copy JazzCash number"
+            onPress={() => copyToClipboard('03706735800', 'jc_num')}
+          >
+            {copiedKey === 'jc_num' ? 'COPIED ✓' : 'COPY'}
+          </Button>
+        </InlineLayout>
+      </BlockStack>
+
+      {/* Order Reference */}
+      <InlineLayout columns={['fill', 'auto']} spacing="base" padding="extraTight" blockAlignment="center">
+        <BlockStack spacing="none">
+          <Text size="extraSmall" appearance="subdued">PAYMENT REFERENCE</Text>
+          <Text size="base" emphasis="bold">{orderName}</Text>
+        </BlockStack>
+        <Button
+          size="small"
+          kind="secondary"
+          accessibilityLabel="Copy order reference"
+          onPress={() => copyToClipboard(orderName, 'ref')}
+        >
+          {copiedKey === 'ref' ? 'COPIED ✓' : 'COPY'}
+        </Button>
+      </InlineLayout>
+
       <Divider />
 
-      {/* WhatsApp Action */}
-      <BlockStack spacing="base">
+      {/* Direct WhatsApp Call-to-Action */}
+      <BlockStack spacing="tight">
         <Button
           kind="primary"
           appearance="monochrome"
@@ -120,7 +249,7 @@ function App() {
         </Button>
 
         <Text size="extraSmall" appearance="subdued" alignment="center">
-          Clicking directly opens WhatsApp with your order details pre-filled.
+          Opens WhatsApp (+92 370 6735800) with order reference pre-filled. Attach your transfer receipt and send.
         </Text>
       </BlockStack>
 
