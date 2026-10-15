@@ -1,0 +1,15 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-order-status",
+      "settings": {
+        "eyebrow_text": "Atelier Dispatch // Order Confirmed",
+        "subtitle_text": "Your order has been registered at our atelier. Garments are undergoing quality check before courier handover.",
+        "show_whatsapp_card": true,
+        "show_cod_alert": true,
+        "whatsapp_number": "923706735800"
+      }
+    }
+  },
+  "order": ["main"]
+}

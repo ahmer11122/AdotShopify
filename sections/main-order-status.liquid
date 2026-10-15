@@ -1,0 +1,348 @@
+{%- comment -%}
+  ADOT Wear — Main Order Status & Thank You Section
+  Modern Editorial Minimalism: Quiet luxury layout, monolithic typography,
+  zero-radius geometry, and WhatsApp COD verification concierge.
+{%- endcomment -%}
+
+{{ 'adot-order-status.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign wa_number = section.settings.whatsapp_number | default: settings.whatsapp_number | default: '923706735800' | remove: '+' | remove: ' ' | remove: '-'
+  
+  if order
+    assign order_ref = order.name
+    assign customer_name = order.customer.name | default: order.shipping_address.name | default: 'Valued Client'
+    assign order_total = order.total_price | money
+    assign order_subtotal = order.subtotal_price | money
+    assign order_shipping = order.shipping_price | money
+    assign payment_gateway = order.gateway | default: 'Cash on Delivery (COD)'
+    assign items_count = order.line_items.size
+  else
+    # Standalone Demo / Preview Mode Data
+    assign order_ref = '#ADOT-8492'
+    assign customer_name = 'Zain Ahmed'
+    assign order_total = 'Rs. 8,900'
+    assign order_subtotal = 'Rs. 8,900'
+    assign order_shipping = 'Free'
+    assign payment_gateway = 'Cash on Delivery (COD)'
+    assign items_count = 2
+  endif
+
+  assign wa_order_text = 'Hi ADOT, I just placed order ' | append: order_ref | append: ' for ' | append: order_total | append: '. Please confirm dispatch.'
+  assign wa_encoded_text = wa_order_text | url_encode
+  assign wa_link = 'https://wa.me/' | append: wa_number | append: '?text=' | append: wa_encoded_text
+-%}
+
+<section class="adot-order" data-section-id="{{ section.id }}">
+  <div class="adot-order__container">
+    
+    <!-- Top Editorial Confirmation Header -->
+    <header class="adot-order__banner">
+      <div class="adot-order__badge-wrap">
+        <span class="adot-order__pulse-dot" aria-hidden="true"></span>
+        <span class="adot-order__manifest-tag">
+          {{ section.settings.eyebrow_text | default: 'Atelier Dispatch // Order Confirmed' }}
+        </span>
+      </div>
+
+      <h1 class="adot-order__title">
+        Thank you, {{ customer_name | split: ' ' | first }}.
+      </h1>
+
+      <p class="adot-order__subtitle">
+        {{ section.settings.subtitle_text | default: 'Your order has been registered at our atelier. Garments are undergoing quality check before courier handover.' }}
+      </p>
+
+      <div class="adot-order__ref-pill">
+        <span>Reference: <strong>{{ order_ref }}</strong></span>
+        {% if order.created_at %}
+          <span>&bull;</span>
+          <time datetime="{{ order.created_at | date: '%Y-%m-%d' }}">
+            {{ order.created_at | date: '%b %d, %Y' }}
+          </time>
+        {% else %}
+          <span>&bull;</span>
+          <span>Today</span>
+        {% endif %}
+      </div>
+    </header>
+
+    <!-- 2-Column Responsive Split -->
+    <div class="adot-order__grid">
+      
+      <!-- Left Column: Logistics & Manifest Details -->
+      <div class="adot-order__main">
+        
+        <!-- 4-Step Interactive Logistics Progress Tracker -->
+        <div class="adot-timeline" aria-label="Order Delivery Progress">
+          <div class="adot-timeline__title">
+            <span>Logistics Journey</span>
+            <span class="adot-timeline__eta">Est. Delivery: 3 to 4 Working Days</span>
+          </div>
+
+          <div class="adot-timeline__track">
+            <!-- Step 1: Confirmed -->
+            <div class="adot-timeline__step adot-timeline__step--complete">
+              <div class="adot-timeline__node">01</div>
+              <span class="adot-timeline__step-label">Confirmed</span>
+              <span class="adot-timeline__step-sub">Logged in atelier</span>
+            </div>
+
+            <!-- Step 2: Atelier Packing -->
+            <div class="adot-timeline__step adot-timeline__step--current">
+              <div class="adot-timeline__node">02</div>
+              <span class="adot-timeline__step-label">Packing</span>
+              <span class="adot-timeline__step-sub">Within 24 Hours</span>
+            </div>
+
+            <!-- Step 3: Courier Handover -->
+            <div class="adot-timeline__step">
+              <div class="adot-timeline__node">03</div>
+              <span class="adot-timeline__step-label">Dispatch</span>
+              <span class="adot-timeline__step-sub">Courier Tracking</span>
+            </div>
+
+            <!-- Step 4: Doorstep Delivery -->
+            <div class="adot-timeline__step">
+              <div class="adot-timeline__node">04</div>
+              <span class="adot-timeline__step-label">Delivery</span>
+              <span class="adot-timeline__step-sub">Cash on Delivery</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- High-Conversion WhatsApp Concierge Card (Pakistan COD Verification) -->
+        {% if section.settings.show_whatsapp_card %}
+          <div class="adot-concierge">
+            <div class="adot-concierge__header">
+              <div>
+                <span class="adot-concierge__tag">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10" />
+                  </svg>
+                  Fast-Track Verification
+                </span>
+                <h2 class="adot-concierge__title">Confirm & Track on WhatsApp</h2>
+                <p class="adot-concierge__desc">
+                  To ensure fastest dispatch and immediate priority handling across Pakistan, connect with our concierge team on WhatsApp.
+                </p>
+              </div>
+            </div>
+
+            <div class="adot-concierge__actions">
+              <a href="{{ wa_link }}" target="_blank" rel="noopener noreferrer" class="adot-btn adot-btn--wa">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0012.04 2z"/>
+                </svg>
+                <span>Confirm Order via WhatsApp</span>
+              </a>
+
+              <a href="tel:+{{ wa_number }}" class="adot-btn adot-btn--secondary">
+                <span>Call Atelier: +{{ wa_number }}</span>
+              </a>
+            </div>
+
+            {% if section.settings.show_cod_alert %}
+              <div class="adot-cod-notice" role="alert">
+                <strong>Cash on Delivery (COD) Reminder:</strong>
+                Please keep exact cash (<strong>{{ order_total }}</strong>) ready upon courier arrival. Our courier partner will contact you via SMS or phone prior to doorstep delivery.
+              </div>
+            {% endif %}
+          </div>
+        {% endif %}
+
+        <!-- Order Particulars Grid: Addresses & Delivery Info -->
+        <div class="adot-details-grid">
+          <!-- Shipping Address -->
+          <div class="adot-detail-col">
+            <h3 class="adot-detail-col__label">Delivery Destination</h3>
+            <div class="adot-detail-col__content">
+              {% if order.shipping_address %}
+                <p><strong>{{ order.shipping_address.name }}</strong></p>
+                <p>{{ order.shipping_address.street }}</p>
+                <p>{{ order.shipping_address.city }}, {{ order.shipping_address.province }}</p>
+                <p>{{ order.shipping_address.zip }}</p>
+                <p>Phone: {{ order.shipping_address.phone }}</p>
+              {% else %}
+                <p><strong>Zain Ahmed</strong></p>
+                <p>House 42, Street 8, Phase 5, DHA</p>
+                <p>Lahore, Punjab</p>
+                <p>Phone: 0300 1234567</p>
+              {% endif %}
+            </div>
+          </div>
+
+          <!-- Payment & Contact -->
+          <div class="adot-detail-col">
+            <h3 class="adot-detail-col__label">Payment & Contact</h3>
+            <div class="adot-detail-col__content">
+              <p><strong>Payment Method:</strong></p>
+              <p>{{ payment_gateway }}</p>
+              <p style="margin-top: 0.75rem;"><strong>Email:</strong></p>
+              <p>{{ order.email | default: 'zain.ahmed@example.com' }}</p>
+              {% if order.shipping_methods.first %}
+                <p style="margin-top: 0.75rem;"><strong>Shipping Method:</strong></p>
+                <p>{{ order.shipping_methods.first.title }}</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Sticky Editorial Garment Receipt -->
+      <aside class="adot-order__sidebar">
+        <div class="adot-receipt">
+          <div class="adot-receipt__header">
+            <h2 class="adot-receipt__title">Order Summary</h2>
+            <span class="adot-receipt__count">{{ items_count }} {% if items_count == 1 %}Garment{% else %}Garments{% endif %}</span>
+          </div>
+
+          <!-- Items Manifest -->
+          <div class="adot-items-list">
+            {% if order.line_items.size > 0 %}
+              {% for line in order.line_items %}
+                <div class="adot-item">
+                  <div class="adot-item__img-wrap">
+                    {% if line.image %}
+                      <img src="{{ line.image | image_url: width: 160 }}" alt="{{ line.title | escape }}" class="adot-item__img" loading="lazy">
+                    {% else %}
+                      <img src="{{ 'adot-rail-hoodie-front.png' | asset_url }}" alt="{{ line.title | escape }}" class="adot-item__img" loading="lazy">
+                    {% endif %}
+                  </div>
+                  <div class="adot-item__info">
+                    <h3 class="adot-item__title">{{ line.title }}</h3>
+                    {% if line.variant.title != blank and line.variant.title != 'Default Title' %}
+                      <span class="adot-item__variant">{{ line.variant.title }}</span>
+                    {% endif %}
+                    {% if line.sku != blank %}
+                      <span class="adot-item__sku">SKU: {{ line.sku }}</span>
+                    {% endif %}
+                    <span class="adot-item__qty">Qty: {{ line.quantity }}</span>
+                  </div>
+                  <div class="adot-item__price">
+                    {{ line.final_line_price | money }}
+                  </div>
+                </div>
+              {% endfor %}
+            {% else %}
+              <!-- Preview / Demo Line Items -->
+              <div class="adot-item">
+                <div class="adot-item__img-wrap">
+                  <img src="{{ 'adot-rail-hoodie-front.png' | asset_url }}" alt="ADOT Heavyweight Pullover Hoodie" class="adot-item__img" loading="lazy">
+                </div>
+                <div class="adot-item__info">
+                  <h3 class="adot-item__title">ADOT Heavyweight Pullover Hoodie</h3>
+                  <span class="adot-item__variant">Jet Black / L</span>
+                  <span class="adot-item__sku">SKU: ADOT-HD-BLK-L</span>
+                  <span class="adot-item__qty">Qty: 1</span>
+                </div>
+                <div class="adot-item__price">
+                  Rs. 5,450
+                </div>
+              </div>
+
+              <div class="adot-item">
+                <div class="adot-item__img-wrap">
+                  <img src="{{ 'adot-rail-shirt-front.png' | asset_url }}" alt="ADOT Tailored Overshirt" class="adot-item__img" loading="lazy">
+                </div>
+                <div class="adot-item__info">
+                  <h3 class="adot-item__title">ADOT Tailored Cotton Overshirt</h3>
+                  <span class="adot-item__variant">Vintage Charcoal / M</span>
+                  <span class="adot-item__sku">SKU: ADOT-SH-CHR-M</span>
+                  <span class="adot-item__qty">Qty: 1</span>
+                </div>
+                <div class="adot-item__price">
+                  Rs. 3,450
+                </div>
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- Financial Calculation Breakdown -->
+          <div class="adot-calc">
+            <div class="adot-calc__row">
+              <span>Subtotal</span>
+              <span class="adot-calc__val">{{ order_subtotal }}</span>
+            </div>
+
+            <div class="adot-calc__row">
+              <span>Delivery (Pakistan Express)</span>
+              {% if order.shipping_price == 0 or order_shipping == 'Free' %}
+                <span class="adot-calc__val adot-calc__val--free">FREE</span>
+              {% else %}
+                <span class="adot-calc__val">{{ order_shipping }}</span>
+              {% endif %}
+            </div>
+
+            {% if order.total_discounts > 0 %}
+              <div class="adot-calc__row">
+                <span>Discounts</span>
+                <span class="adot-calc__val">-{{ order.total_discounts | money }}</span>
+              </div>
+            {% endif %}
+
+            <div class="adot-calc__row adot-calc__row--total">
+              <span>Total Payable</span>
+              <span class="adot-calc__val">{{ order_total }}</span>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="adot-receipt__actions">
+            <a href="{{ routes.all_products_collection_url | default: '/collections/all' }}" class="adot-btn adot-btn--primary" style="width: 100%;">
+              <span>Continue Exploring</span>
+            </a>
+
+            <button type="button" onclick="window.print()" class="adot-btn adot-btn--secondary" style="width: 100%;">
+              <span>Print / Save Receipt</span>
+            </button>
+
+            <p class="adot-receipt__policy-note">
+              Questions regarding sizing or delivery? Read our <a href="/policies/shipping-policy">Shipping Policy</a> or <a href="/policies/refund-policy">Exchange Policy</a>.
+            </p>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Order Status & Thank You",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow_text",
+      "label": "Eyebrow tag",
+      "default": "Atelier Dispatch // Order Confirmed"
+    },
+    {
+      "type": "text",
+      "id": "subtitle_text",
+      "label": "Subtitle",
+      "default": "Your order has been registered at our atelier. Garments are undergoing quality check before courier handover."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_whatsapp_card",
+      "label": "Show WhatsApp concierge card",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_cod_alert",
+      "label": "Show Cash on Delivery alert",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "whatsapp_number",
+      "label": "WhatsApp phone number",
+      "default": "923706735800"
+    }
+  ]
+}
+{% endschema %}
