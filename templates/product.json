@@ -28,7 +28,8 @@
           "type": "accordion",
           "settings": {
             "title": "Details & Care",
-            "content": "Crafted from custom heavyweight combed cotton loopback fleece. Pre-shrunk construction for enduring shape. Machine wash cold inside-out, hang dry recommended."
+            "use_product_description": true,
+            "content": "Crafted from custom combed cotton loopback fleece. Pre-shrunk construction for enduring shape. Machine wash cold inside-out, hang dry recommended."
           }
         },
         "shipping": {

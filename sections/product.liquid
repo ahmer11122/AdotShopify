@@ -238,6 +238,33 @@
     },
     {
       "type": "header",
+      "content": "Price & Discount Override"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_price_override",
+      "label": "Enable Strikethrough Price Override",
+      "default": false,
+      "info": "When enabled, calculate or override the strikethrough price and discount percentage from template settings instead of variant data."
+    },
+    {
+      "type": "range",
+      "id": "template_discount_pct",
+      "label": "Target Discount Percentage",
+      "min": 5,
+      "max": 70,
+      "step": 1,
+      "default": 15,
+      "unit": "%"
+    },
+    {
+      "type": "text",
+      "id": "template_compare_price",
+      "label": "Custom Strikethrough Price (PKR, optional)",
+      "info": "Leave blank to auto-calculate from discount % (e.g. 15% discount on 2700 = Rs. 3,180)."
+    },
+    {
+      "type": "header",
       "content": "Fit scale"
     },
     {
@@ -373,12 +400,19 @@
           "type": "text",
           "id": "title",
           "label": "Accordion Title",
-          "default": "Fabric & Material"
+          "default": "Details & Care"
+        },
+        {
+          "type": "checkbox",
+          "id": "use_product_description",
+          "label": "Use Product Description from Shopify",
+          "default": false,
+          "info": "Displays the full product description from Shopify Admin (including features, composition & care) inside this accordion."
         },
         {
           "type": "textarea",
           "id": "content",
-          "label": "Content",
+          "label": "Fallback / Custom Content",
           "default": "Heavyweight combed cotton with reinforced stitching. Pre-shrunk for maximum durability."
         },
         {

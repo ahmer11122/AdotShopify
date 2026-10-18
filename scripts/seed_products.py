@@ -51,7 +51,7 @@ def make_request(token, endpoint, method="GET", data=None):
         raise e
 
 # Descriptions and Size Guides
-HOODIE_DESC = """<p>Upgrade your winter wardrobe with the <strong>ADOT Heavyweight Pullover Hoodie</strong>. Engineered from an ultra-soft, thermal 350 GSM 3-end fleece blend, this hoodie delivers structured drape, exceptional warmth, and an effortless contemporary silhouette.</p>
+HOODIE_DESC = """<p>Upgrade your winter wardrobe with the <strong>ADOT 350 GSM Heavyweight Pullover Hoodie</strong>. Engineered from an ultra-soft, thermal 350 GSM 3-end fleece blend, this hoodie delivers structured drape, exceptional warmth, and an effortless contemporary silhouette.</p>
 
 <h4>Key Features</h4>
 <ul>
@@ -137,8 +137,8 @@ PRODUCTS_DATA = [
         "product_type": "Hoodies",
         "tags": "Hoodies, Heavyweight, 350 GSM, Black, Winter Drop, Fleece, Cash on Delivery",
         "body_html": HOODIE_DESC,
-        "price": "3200.00",
-        "compare_at": "3770.00",
+        "price": "2700.00",
+        "compare_at": "3180.00",
         "sku_prefix": "ADOT-HD-BLK",
         "quantities": {"M": 2, "L": 8, "XL": 8, "XXL": 2}
     },
@@ -147,8 +147,8 @@ PRODUCTS_DATA = [
         "product_type": "Hoodies",
         "tags": "Hoodies, Heavyweight, 350 GSM, Navy Blue, Winter Drop, Fleece, Cash on Delivery",
         "body_html": HOODIE_DESC,
-        "price": "3200.00",
-        "compare_at": "3770.00",
+        "price": "2700.00",
+        "compare_at": "3180.00",
         "sku_prefix": "ADOT-HD-NVY",
         "quantities": {"M": 2, "L": 8, "XL": 8, "XXL": 2}
     },
@@ -157,8 +157,8 @@ PRODUCTS_DATA = [
         "product_type": "Hoodies",
         "tags": "Hoodies, Heavyweight, 350 GSM, Off-White, Cream, Winter Drop, Fleece, Cash on Delivery",
         "body_html": HOODIE_DESC,
-        "price": "3200.00",
-        "compare_at": "3770.00",
+        "price": "2700.00",
+        "compare_at": "3180.00",
         "sku_prefix": "ADOT-HD-OFW",
         "quantities": {"M": 2, "L": 8, "XL": 8, "XXL": 2}
     },
@@ -167,8 +167,8 @@ PRODUCTS_DATA = [
         "product_type": "Hoodies",
         "tags": "Hoodies, Heavyweight, 350 GSM, Bottle Green, Forest Green, Winter Drop, Fleece, Cash on Delivery",
         "body_html": HOODIE_DESC,
-        "price": "3200.00",
-        "compare_at": "3770.00",
+        "price": "2700.00",
+        "compare_at": "3180.00",
         "sku_prefix": "ADOT-HD-BGN",
         "quantities": {"M": 2, "L": 8, "XL": 8, "XXL": 2}
     },
@@ -177,8 +177,8 @@ PRODUCTS_DATA = [
         "product_type": "Hoodies",
         "tags": "Hoodies, Heavyweight, 350 GSM, Heather Grey, Grey, Winter Drop, Fleece, Cash on Delivery",
         "body_html": HOODIE_DESC,
-        "price": "3200.00",
-        "compare_at": "3770.00",
+        "price": "2700.00",
+        "compare_at": "3180.00",
         "sku_prefix": "ADOT-HD-GRY",
         "quantities": {"M": 2, "L": 8, "XL": 8, "XXL": 2}
     },

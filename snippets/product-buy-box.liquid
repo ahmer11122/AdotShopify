@@ -29,6 +29,24 @@
   assign adot_image = product.featured_image | image_url: width: 1200
   assign adot_description = product.description
 
+  assign override_price_active = section.settings.enable_price_override | default: false
+  assign custom_comp_input = section.settings.template_compare_price | default: '' | strip
+  if override_price_active
+    if custom_comp_input != blank
+      assign custom_comp_num = custom_comp_input | plus: 0
+      assign custom_comp_cents = custom_comp_num | times: 100
+      if custom_comp_cents > adot_price
+        assign adot_compare_at = custom_comp_cents
+      endif
+    elsif section.settings.template_discount_pct > 0
+      assign target_pct = section.settings.template_discount_pct
+      assign mult = 100 | minus: target_pct
+      if mult > 0
+        assign adot_compare_at = adot_price | times: 100 | divided_by: mult
+      endif
+    endif
+  endif
+
   assign is_on_sale = false
   assign discount_pct = 0
   if adot_compare_at > adot_price
@@ -98,17 +116,30 @@
     {%- endfor -%}
   </h1>
 
-  <div class="pdp-price" id="ProductPrice-{{ section.id }}" data-price-root>
+  <div
+    class="pdp-price"
+    id="ProductPrice-{{ section.id }}"
+    data-price-root
+    data-override="{% if override_price_active %}true{% else %}false{% endif %}"
+    data-override-pct="{{ section.settings.template_discount_pct | default: 15 }}"
+    data-override-compare="{{ section.settings.template_compare_price | default: '' }}"
+  >
     <span class="pdp-price__now{% if is_on_sale %} is-sale{% endif %}" data-price-now>{{ adot_price_formatted }}</span>
     <s class="pdp-price__was" data-price-was{% unless is_on_sale %} hidden{% endunless %}>{{ adot_compare_formatted }}</s>
     <span class="pdp-price__off" data-price-off{% unless is_on_sale %} hidden{% endunless %}>{% if is_on_sale %}−{{ discount_pct }}%{% endif %}</span>
   </div>
 
   {%- liquid
-    assign clean_desc = adot_description | default: product.description | strip_html | strip | split: '. ' | first | remove_last: '.'
+    assign raw_summary = adot_description | default: product.description | split: '<h4>' | first | strip_html | strip
+    assign first_sentence = raw_summary | split: '. ' | first | remove_last: '.'
+    if raw_summary contains 'GSM' and first_sentence contains 'GSM' == false
+      assign clean_desc = raw_summary
+    else
+      assign clean_desc = first_sentence
+    endif
   -%}
   {%- if clean_desc != blank -%}
-    <p class="pdp-summary">{{ clean_desc }}.</p>
+    <p class="pdp-summary">{{ clean_desc }}{% unless clean_desc contains '.' %}.{% endunless %}</p>
   {%- endif -%}
 
   <form
@@ -338,7 +369,27 @@
           {%- if block.type == 'spec' and block.settings.value != blank -%}
             <div class="pdp-glance__row" {{ block.shopify_attributes }}>
               <dt>{{ block.settings.label }}</dt>
-              <dd>{{ block.settings.value }}</dd>
+              <dd>
+                {%- if block.settings.label == 'Weight' -%}
+                  {%- if product.description contains '350 GSM' or product.tags contains '350 GSM' -%}
+                    Heavyweight (350 GSM)
+                  {%- elsif product.description contains '280 GSM' or product.tags contains '280 GSM' -%}
+                    Mid-weight (280 GSM)
+                  {%- else -%}
+                    {{ block.settings.value }}
+                  {%- endif -%}
+                {%- elsif block.settings.label == 'Fabric' -%}
+                  {%- if product.description contains '350 GSM' or product.tags contains '350 GSM' -%}
+                    350 GSM Combed Cotton Fleece
+                  {%- elsif product.description contains '280 GSM' or product.tags contains '280 GSM' -%}
+                    280 GSM Cotton-Poly Fleece
+                  {%- else -%}
+                    {{ block.settings.value }}
+                  {%- endif -%}
+                {%- else -%}
+                  {{ block.settings.value }}
+                {%- endif -%}
+              </dd>
             </div>
           {%- endif -%}
         {%- endfor -%}
@@ -371,14 +422,29 @@
             endif
           endif
         -%}
-        {%- if block.settings.content != blank or mf_value.value != blank -%}
+        {%- assign show_product_desc = false -%}
+        {%- if block.settings.use_product_description -%}
+          {%- if product.description != blank -%}
+            {%- assign show_product_desc = true -%}
+          {%- endif -%}
+        {%- elsif block.settings.title == 'Details & Care' or block.settings.title == 'Description' -%}
+          {%- if block.settings.content == blank or block.settings.content contains 'Crafted from custom heavyweight combed cotton loopback fleece' -%}
+            {%- if product.description != blank -%}
+              {%- assign show_product_desc = true -%}
+            {%- endif -%}
+          {%- endif -%}
+        {%- endif -%}
+
+        {%- if show_product_desc or block.settings.content != blank or mf_value.value != blank -%}
           <details class="pdp-acc" name="pdp-info-{{ section.id }}" {{ block.shopify_attributes }}>
             <summary class="pdp-acc__summary">
               <span>{{ block.settings.title }}</span>
               <span class="pdp-acc__icon" aria-hidden="true"></span>
             </summary>
             <div class="pdp-acc__body">
-              {%- if mf_value.value != blank -%}
+              {%- if show_product_desc -%}
+                <div class="pdp-rte-content">{{ product.description }}</div>
+              {%- elsif mf_value.value != blank -%}
                 {{ mf_value | metafield_tag }}
               {%- else -%}
                 <p>{{ block.settings.content }}</p>
@@ -1282,6 +1348,62 @@
     text-wrap: pretty;
   }
 
+  .pdp-rte-content {
+    font-size: var(--pdp-fs-body);
+    line-height: 1.65;
+    color: var(--pdp-ink-2);
+  }
+
+  .pdp-rte-content p {
+    max-width: 58ch;
+    margin-bottom: var(--s-3);
+    white-space: normal;
+  }
+
+  .pdp-rte-content h4,
+  .pdp-rte-content h5 {
+    font-family: var(--pdp-font-display);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--pdp-ink);
+    margin-top: var(--s-4);
+    margin-bottom: var(--s-2);
+    letter-spacing: -0.01em;
+  }
+
+  .pdp-rte-content ul,
+  .pdp-rte-content ol {
+    padding-left: 1.25rem;
+    margin-top: var(--s-2);
+    margin-bottom: var(--s-4);
+  }
+
+  .pdp-rte-content li {
+    margin-bottom: var(--s-1);
+    color: var(--pdp-ink-2);
+  }
+
+  .pdp-rte-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: var(--s-3);
+    margin-bottom: var(--s-4);
+    font-size: var(--pdp-fs-small);
+  }
+
+  .pdp-rte-content table th,
+  .pdp-rte-content table td {
+    padding: var(--s-2) var(--s-3);
+    border-bottom: 1px solid var(--pdp-line);
+    text-align: left;
+  }
+
+  .pdp-rte-content table th {
+    font-weight: 600;
+    color: var(--pdp-ink);
+    background: var(--pdp-sunk);
+  }
+
   @supports selector(::details-content) {
     .pdp-acc::details-content {
       block-size: 0;
@@ -1655,16 +1777,35 @@
 
     function renderPrice(variant) {
       rollNumber(priceNow, formatMoney(variant.price));
-      const onSale = variant.compare_at_price && variant.compare_at_price > variant.price;
+      const priceRoot = document.getElementById('ProductPrice-{{ section.id }}');
+      const isOverride = priceRoot && priceRoot.dataset.override === 'true';
+      let compareAt = variant.compare_at_price;
+      let discountPct = 0;
+
+      if (isOverride) {
+        const directCompare = parseFloat(priceRoot.dataset.overrideCompare);
+        const overridePct = parseInt(priceRoot.dataset.overridePct, 10) || 15;
+        if (!isNaN(directCompare) && directCompare * 100 > variant.price) {
+          compareAt = Math.round(directCompare * 100);
+          discountPct = Math.round(((compareAt - variant.price) * 100) / compareAt);
+        } else if (overridePct > 0 && overridePct < 100) {
+          discountPct = overridePct;
+          compareAt = Math.round((variant.price * 100) / (100 - overridePct));
+        }
+      } else if (compareAt && compareAt > variant.price) {
+        discountPct = Math.round(((compareAt - variant.price) * 100) / compareAt);
+      }
+
+      const onSale = compareAt && compareAt > variant.price;
       if (priceNow) priceNow.classList.toggle('is-sale', !!onSale);
       if (priceWas) {
         priceWas.hidden = !onSale;
-        if (onSale) priceWas.textContent = formatMoney(variant.compare_at_price);
+        if (onSale) priceWas.textContent = formatMoney(compareAt);
       }
       if (priceOff) {
         priceOff.hidden = !onSale;
         if (onSale) {
-          priceOff.textContent = '\u2212' + Math.round(((variant.compare_at_price - variant.price) * 100) / variant.compare_at_price) + '%';
+          priceOff.textContent = '\u2212' + discountPct + '%';
         }
       }
       if (priceProp) priceProp.value = formatMoney(variant.price);
