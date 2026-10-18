@@ -51,24 +51,24 @@ def make_request(token, endpoint, method="GET", data=None):
         raise e
 
 # Descriptions and Size Guides
-HOODIE_DESC = """<p>Upgrade your winter wardrobe with the <strong>ADOT 350 GSM Heavyweight Pullover Hoodie</strong>. Engineered from an ultra-soft, thermal 350 GSM 3-end fleece blend, this hoodie delivers structured drape, exceptional warmth, and an effortless contemporary silhouette.</p>
+HOODIE_DESC = """<p>Stay warm and stylish this winter with the <strong>ADOT Heavyweight Pullover Hoodie</strong>. Made from thick 350 GSM fleece, it is super soft on the inside, keeps the chilly winter out, and gives you a clean relaxed fit for everyday wear.</p>
 
-<h4>Key Features</h4>
+<h4>Why You’ll Love It</h4>
 <ul>
-  <li><strong>Fabric Weight:</strong> Premium 350 GSM Heavyweight Fleece (Cotton-Rich Blend)</li>
-  <li><strong>Construction:</strong> Double-layered drawstring hood, kangaroo front pocket, and heavy-duty ribbed cuffs & hem</li>
-  <li><strong>Fit:</strong> Tailored regular/relaxed fit designed for layering</li>
-  <li><strong>Colorfast Guarantee:</strong> High-grade reactive dye to prevent fading</li>
-  <li><strong>Payment:</strong> Cash on Delivery (COD) Available Across Pakistan</li>
+  <li><strong>Warm & Heavy:</strong> Thick fleece fabric built to keep you properly warm in Pakistani winter</li>
+  <li><strong>Super Soft Feel:</strong> Brushed interior lining that feels comfortable on the skin all day</li>
+  <li><strong>Everyday Fit:</strong> Relaxed modern cut with a deep hood and front kangaroo pocket</li>
+  <li><strong>Durable Shape:</strong> Heavy-duty ribbed cuffs and hem that do not loosen or fade after washing</li>
+  <li><strong>Cash on Delivery:</strong> Pay at your doorstep anywhere in Pakistan with fast 3–4 day delivery & easy 7-day size exchange</li>
 </ul>
 
-<h4>Composition & Care</h4>
+<h4>Fabric & Care</h4>
 <ul>
-  <li>80% Combed Cotton / 20% Polyester (3-End Fleece)</li>
-  <li>Machine wash cold on gentle cycle (Max 30°C)</li>
-  <li>Wash inside out with similar colors</li>
-  <li>Low heat iron inside out (do not iron over direct print/embroidery)</li>
-  <li>Do not bleach, tumble dry, or dry clean</li>
+  <li>80% Combed Cotton / 20% Polyester fleece</li>
+  <li>Machine wash cold on gentle cycle (wash inside out)</li>
+  <li>Wash with similar colors</li>
+  <li>Iron inside out on low heat (do not iron over prints)</li>
+  <li>Do not bleach or dry clean</li>
 </ul>
 
 <h4>Size Guide (Inches)</h4>
