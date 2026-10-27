@@ -116,6 +116,25 @@
     {%- endfor -%}
   </h1>
 
+  {%- comment -%} Star rating under the title, before the price {%- endcomment -%}
+  <div class="pdp-rating-badge" data-pdp-rating>
+    {%- assign rendered_app_rating = false -%}
+    {%- for block in section.blocks -%}
+      {%- if block.type == '@app' -%}
+        {%- assign rendered_app_rating = true -%}
+        <div class="pdp-rating-badge__app" {{ block.shopify_attributes }}>
+          {% render block %}
+        </div>
+      {%- endif -%}
+    {%- endfor -%}
+
+    {%- unless rendered_app_rating -%}
+      <div class="jdgm-widget jdgm-preview-badge" data-id="{{ product.id }}">
+        {{ product.metafields.judgeme.badge }}
+      </div>
+    {%- endunless -%}
+  </div>
+
   <div
     class="pdp-price"
     id="ProductPrice-{{ section.id }}"
@@ -633,6 +652,32 @@
   .pdp-w > span {
     display: inline-block;
     transform-origin: 0 100%;
+  }
+
+  /* ------------------------------------------------------- 2b · rating badge */
+  .pdp-rating-badge {
+    margin-top: var(--s-2);
+    min-height: 0;
+  }
+
+  .pdp-rating-badge:empty,
+  .pdp-rating-badge:has(.jdgm-widget[style*="display: none"]),
+  .pdp-rating-badge:has([data-number-of-reviews="0"]) {
+    display: none !important;
+    margin: 0 !important;
+  }
+
+  .pdp-rating-badge .jdgm-prev-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-2);
+    cursor: pointer;
+  }
+
+  .pdp-rating-badge .jdgm-prev-badge__text {
+    font-family: var(--pdp-font);
+    font-size: var(--pdp-fs-small);
+    color: var(--pdp-ink-2);
   }
 
   /* --------------------------------------------------------------- 3 · price */
