@@ -117,21 +117,17 @@
   </h1>
 
   {%- comment -%} Star rating under the title, before the price {%- endcomment -%}
-  <div class="pdp-rating-badge" data-pdp-rating>
+  {%- assign pdp_review_count = product.metafields.reviews.rating_count | default: 0 | plus: 0 -%}
+  <div class="pdp-rating-badge" data-pdp-rating{% if pdp_review_count == 0 %} style="display: none;"{% endif %}>
     {%- assign rendered_app_rating = false -%}
     {%- for block in section.blocks -%}
       {%- if block.type == '@app' -%}
         {%- assign rendered_app_rating = true -%}
-        <div class="pdp-rating-badge__app" {{ block.shopify_attributes }}>
-          {% render block %}
-        </div>
+        <div class="pdp-rating-badge__app" {{ block.shopify_attributes }}>{% render block %}</div>
       {%- endif -%}
     {%- endfor -%}
-
     {%- unless rendered_app_rating -%}
-      <div class="jdgm-widget jdgm-preview-badge" data-id="{{ product.id }}">
-        {{ product.metafields.judgeme.badge }}
-      </div>
+      <div class="jdgm-widget jdgm-preview-badge" data-id="{{ product.id }}">{{ product.metafields.judgeme.badge }}</div>
     {%- endunless -%}
   </div>
 
@@ -661,7 +657,9 @@
     min-height: 0;
   }
 
+  .pdp-rating-badge[style*="display: none"],
   .pdp-rating-badge:empty,
+  .pdp-rating-badge:has(.jdgm-widget:empty),
   .pdp-rating-badge:has(.jdgm-widget[style*="display: none"]),
   .pdp-rating-badge:has([data-number-of-reviews="0"]) {
     display: none !important;

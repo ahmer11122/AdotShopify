@@ -8,7 +8,14 @@
   id="ProductReviews-{{ section.id }}"
   data-section-id="{{ section.id }}"
   data-section-type="product-reviews"
-  {% if section.settings.hide_if_empty %}data-hide-if-empty="true"{% endif %}
+  {% if section.settings.hide_if_empty %}
+    data-hide-if-empty="true"
+    {% assign r_count = product.metafields.reviews.rating_count | default: 0 | plus: 0 %}
+    {% if r_count == 0 %}
+      data-is-empty="true"
+      style="display: none;"
+    {% endif %}
+  {% endif %}
 >
   <div class="section-product-reviews__inner">
     {%- if section.settings.heading != blank -%}
@@ -35,9 +42,7 @@
           class="jdgm-widget jdgm-review-widget"
           data-product-title="{{ product.title | escape }}"
           data-id="{{ product.id }}"
-        >
-          {{ product.metafields.judgeme.widget }}
-        </div>
+        >{{ product.metafields.judgeme.widget }}</div>
       {%- endunless -%}
     </div>
   </div>
