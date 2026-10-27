@@ -151,10 +151,11 @@
   {%- liquid
     assign raw_summary = adot_description | default: product.description | split: '<h4>' | first | strip_html | strip
     assign first_sentence = raw_summary | split: '. ' | first | remove_last: '.'
-    if raw_summary contains 'GSM' and first_sentence contains 'GSM' == false
-      assign clean_desc = raw_summary
-    else
-      assign clean_desc = first_sentence
+    assign clean_desc = first_sentence
+    if raw_summary contains 'GSM'
+      unless first_sentence contains 'GSM'
+        assign clean_desc = raw_summary
+      endunless
     endif
   -%}
   {%- if clean_desc != blank -%}
